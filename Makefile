@@ -1,5 +1,4 @@
 PROJECT = unicorn
-INSTALLDIR = /usr/local/games/
 CC = gcc
 CFLAGS =
 LFLAGS =
@@ -18,27 +17,12 @@ else
 EXE =
 endif
 
-.PHONY: all clean dist docs install
+.PHONY: all clean
 
-# Defs for compiling with UNIX/Text
-#DEFS = -DUNIX -O3 -Wall -DASCII -DHC 
-#LIBDIR = 
-#LIBS = 
-
-# Defs for compiling with UNIX/X-Windows
-DEFS = -DUNIX -O3 -Wall -DX -DHC 
-LIBDIR = -L/usr/X11/lib
-LIBS = -lX11
-
-# Defs for compiling with MINGW for native Windows binary
-#DEFS = -DUNIX -O3 -Wall -DASCII -DHC -DMINGW  -UWIN32
-#LIBDIR = 
-#LIBS = 
-
-# Defs for compiling with MINGW for native Windows binary graphics
-#DEFS = -DUNIX -O3 -Wall -DWIN32 -DMINGW -DHC 
-#LIBDIR = 
-#LIBS = -s -lgdi32 -lcomctl32 -lwinmm -Wl,--subsystem,windows
+# Win32 GDI build (MinGW-w64)
+DEFS = -DUNIX -O3 -Wall -DWIN32 -DMINGW -DHC
+LIBDIR =
+LIBS = -s -lgdi32 -lcomctl32 -lwinmm -Wl,--subsystem,windows
 
 #HEADERS = header.h maps.h objects.h world.h gen.h lore.h monsters.h recipe.h spells.h races.h classes.h trophies.h Makefile
 HEADERS = header.h maps.h objects.h world.h gen.h lore.h monsters.h recipe.h spells.h races.h classes.h trophies.h terminal.h
@@ -198,7 +182,6 @@ OBJS = \
 	maxdamage.o \
 	mechmerchant.o \
 	meleehit.o \
-	minimap.o \
 	missile.o \
 	mounts.o \
 	moveenemy.o \
@@ -322,7 +305,6 @@ OBJS = \
 
 GAME = $(BINDIR)/$(PROJECT)$(EXE)
 MAPCNVT = $(BINDIR)/mapcnvt$(EXE)
-MAKEDOC = $(BINDIR)/makedoc$(EXE)
 
 # The game reads these from its working directory, so they sit beside it
 RUNTIME = $(BINDIR)/unicorn.cfg $(BINDIR)/unicorn.doc
@@ -357,41 +339,11 @@ $(OBJDIR)/%.o: %.c $(HEADERS) | $(OBJDIR)
 
 $(OBJDIR)/graphics.o: rgb.h graphics.h
 $(OBJDIR)/terminal.o: graphics.h
-$(OBJDIR)/selectsprite.o: unicorn.xpm unicorn.text
+$(OBJDIR)/selectsprite.o: unicorn.xpm
 $(OBJDIR)/gothicfont.o: gothic.h
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
-
-docs: $(MAKEDOC)
-	$(MAKEDOC) -ls80 -rm5 -lm5 -tp5 -ps2 unicorn
-
-$(MAKEDOC): $(OBJDIR)/makedoc.o
-	$(CC) $(LFLAGS) $(LIBDIR) $(LIBS) -o $@ $<
-
-dist:
-	-mkdir dist
-	-mkdir dist/unicorn
-	-mkdir dist/unicorn/src
-	-mkdir dist/unicorn/src/SaveConvert
-	cp *.c dist/unicorn/src
-	cp *.h dist/unicorn/src
-	cp *.map dist/unicorn/src
-	cp ../Documentation/unicorn.doc dist/unicorn/src
-	cp unicorn.xpm dist/unicorn/src
-	cp unicorn.text dist/unicorn/src
-	cp unicorn.cfg dist/unicorn/src
-	cat Makefile | sed -e 's///' > dist/unicorn/src/Makefile
-	-rm dist/unicorn/src/makedoc.c
-	cp ./SaveConvert/*.c dist/unicorn/src/SaveConvert
-	cp ./SaveConvert/*.h dist/unicorn/src/SaveConvert
-	cp ./SaveConvert/Makefile dist/unicorn/src/SaveConvert
-	cd dist; \
-	   tar cvfz unicorn_src.tgz ./unicorn/src/*
-	
-
-install: $(GAME)
-	cp $(GAME) $(INSTALLDIR)
 
 clean:
 	-rm -rf $(BINDIR)

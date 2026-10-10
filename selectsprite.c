@@ -9,11 +9,7 @@
 */
 
 #include "header.h"
-#ifdef ASCII
-#include "unicorn.text"
-#else
 #include "unicorn.xpm"
-#endif
 
 char** select_sprite(Int32 n) {
   switch (n) {

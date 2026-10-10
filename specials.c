@@ -15,37 +15,6 @@ Int32 gacha[2500];
 Int32 num_gacha;
 
 void display_scroll() {
-#ifdef ASCII
-  Int32 i;
-  gotoxy(12,5); textcolor(14);
-  txt_write("+------+                                      +------+");
-  gotoxy(12,6); textcolor(14);
-  txt_write("|      +");
-  textcolor(7); txt_write("--------------------------------------");
-  textcolor(14); txt_write("+      |");
-  gotoxy(12,7); textcolor(14);
-  txt_write("|      +");
-  textcolor(7); txt_write("+------------------------------------+");
-  textcolor(14); txt_write("+      |");
-  gotoxy(12,8); textcolor(14);
-  txt_write("+------+                                      +------+");
-  gotoxy(12,18); textcolor(14);
-  txt_write("+------+                                      +------+");
-  gotoxy(12,19); textcolor(14);
-  txt_write("|      +");
-  textcolor(7); txt_write("+------------------------------------+");
-  textcolor(14); txt_write("+      |");
-  gotoxy(12,20); textcolor(14);
-  txt_write("|      +");
-  textcolor(7); txt_write("--------------------------------------");
-  textcolor(14); txt_write("+      |");
-  gotoxy(12,21); textcolor(14);
-  txt_write("+------+                                      +------+");
-  for (i=8; i<19; i++) {
-    gotoxy(20,i); textcolor(7);
-    textcolor(7); txt_write("|                                    |");
-    }
-#else
   graphmode();
   setfillstyle(1,15);
   bar(50,50,450,430);
@@ -63,7 +32,6 @@ void display_scroll() {
   bar(40,440,49,460);
   bar(451,440,460,460);
   settextstyle(4,0,3);
-#endif
   }
 
 void display_msg(Int32 msg,char ext) {
@@ -211,14 +179,7 @@ void special10() {
     for (i=0; i<=strlen(general.message); i++)
       if ((general.message[i] >= 'A' && general.message[i] <= 'Z') ||
           (general.message[i] >= 'a' && general.message[i] <= 'z'))
-#ifdef ASCII
-        {
-          if (general.message[i] >= 'A' && general.message[i] <= 'Z') general.message[i] = 'A' + 'Z'-general.message[i];
-          if (general.message[i] >= 'a' && general.message[i] <= 'z') general.message[i] = 'a' + 'z'-general.message[i];
-	}
-#else
         general.message[i] += 128;
-#endif
     }
   saveScreen();
   display_scroll();
@@ -267,14 +228,7 @@ void special11() {
     for (i=0; i<=strlen(general.message); i++)
       if ((general.message[i] >= 'A' && general.message[i] <= 'Z') ||
           (general.message[i] >= 'a' && general.message[i] <= 'z'))
-#ifdef ASCII
-        {
-          if (general.message[i] >= 'A' && general.message[i] <= 'Z') general.message[i] = 'A' + 'Z'-general.message[i];
-          if (general.message[i] >= 'a' && general.message[i] <= 'z') general.message[i] = 'a' + 'z'-general.message[i];
-	}
-#else
         general.message[i] += 128;
-#endif
     }
   saveScreen();
   display_scroll();
@@ -381,9 +335,7 @@ void special20() {
   player.gen[i] = -1;
   add_skill(SK_LANG,1);
   saveScreen();
-#ifndef ASCII
   graphmode();
-#endif
   display_scroll();
 //  x = 160; y = 160; space = 25; size = 30;
   setcolor(0);

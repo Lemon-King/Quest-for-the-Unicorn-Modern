@@ -20,9 +20,6 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
   NPC_REC* monster;
   OBJECT_REC* item;
   sprt = -1;
-#ifdef ASCII
-  sprt = 100;
-#endif
   if (weapon != NULL && weapon->otype == O_BOW) stats.counts[STAT_ARROWS_FIRED]++;
   if (weapon != NULL && weapon->otype != O_BOW)
     sprt = weapon->sprite;

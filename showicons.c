@@ -16,32 +16,14 @@ Int32 maxcol;
 Int32 maxrow;
 
 void show_icon_help(Int32 tileNumber, char* desc) {
-#ifdef ASCII
-  Int32 offset,toffset;
-  offset = 60;
-  toffset = 30;
-  switch (helpcol) {
-    case 0: offset = 60; toffset = 30; break;
-    case 1: offset = 700; toffset = 230; break;
-    case 2: offset = 1320; toffset = 430; break;
-    }
-  putimage(offset, helprow * 27 + 27 * 5,select_sprite(tileNumber),0);
-  textcolor(14);
-  outtextxy(toffset, 10*helprow+30, desc);
-#else
   putimage(helpcol*200,helprow*30,select_sprite(tileNumber),0);
   outtextxy(helpcol*200+30,helprow*30+15,desc);
-#endif
   helprow++;
   if (helprow == maxrow) {
     helprow = 0;
     helpcol++;
     if (helpcol == maxcol) {
-#ifdef ASCII
-      gotoxy(28,23); txt_write("Press any key to continue");
-#else
       outtextxy(200, screen_height - 20, "Press any key to continue");
-#endif
       inkey();
       clrscr();
       helpcol = 0;
@@ -52,10 +34,8 @@ void show_icon_help(Int32 tileNumber, char* desc) {
 void show_icons() {
   maxcol = 3;
   maxrow = 16;
-#ifndef ASCII
   maxcol = screen_width / 200;
   maxrow = (screen_height - 50) / 30;
-#endif
   graphmode();
   helpcol = 0;
   helprow = 0;
@@ -191,11 +171,7 @@ void show_icons() {
   show_icon_help(164, "Cleric");
   show_icon_help(165, "Wizard");
   show_icon_help(166, "Dark Magi");
-#ifdef ASCII
-   gotoxy(28,23); txt_write("Press any key to continue");
-#else
   outtextxy(200, screen_height - 20, "Press any key to continue");
-#endif
   inkey();
   show_screen();
   }

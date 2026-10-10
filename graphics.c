@@ -1,62 +1,11 @@
-#ifndef ASCII
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include "graphics.h"
 
-#ifdef MINGW
-#include <stdint.h>
 typedef int32_t  Int32;
 typedef uint32_t UInt32;
-#else
-typedef int32_t   Int32;
-typedef u_int32_t UInt32;
-#endif
-
-Int32 red_mask;
-Int32 green_mask;
-Int32 blue_mask;
-Int32 red_shift;
-Int32 green_shift;
-Int32 blue_shift;
-
-void rcs_buildColorMapping(rcs_Display* display) {
-#ifndef WIN32
-  Visual* visual;
-  visual = DefaultVisual(display, DefaultScreen(display));
-  red_mask = visual->red_mask;
-  green_mask = visual->green_mask;
-  blue_mask = visual->blue_mask;
-  red_shift = 0;
-  while (red_mask >= 0x10000) {
-    red_mask >>= 1;
-    red_shift--;
-    }
-  while (red_mask < 0x8000) {
-    red_mask <<= 1;
-    red_shift++;
-    }
-  green_shift = 0;
-  while (green_mask >= 0x10000) {
-    green_mask >>= 1;
-    green_shift--;
-    }
-  while (green_mask < 0x8000) {
-    green_mask <<= 1;
-    green_shift++;
-    }
-  blue_shift = 0;
-  while (blue_mask >= 0x10000) {
-    blue_mask >>= 1;
-    blue_shift--;
-    }
-  while (blue_mask < 0x8000) {
-    blue_mask <<= 1;
-    blue_shift++;
-    }
-#endif
-  }
 
 /* ******************** */
 /* ***** Viewport ***** */
@@ -99,19 +48,10 @@ struct _rcs_Viewport {
   Int32        left;
   Int32        top;
   _rcs_Rect    dirty;
-#ifdef X
-  GC           gc;
-#endif
   };
 
-/* What the window is painted through: the window itself on X11, a device context on Win32 */
-#ifdef X
-typedef Drawable _rcs_Surface;
-static XContext  _rcs_viewports;
-#endif
-#ifdef WIN32
+/* What the window is painted through: a device context */
 typedef HDC _rcs_Surface;
-#endif
 
 static Int32 _rcs_rectWidth(_rcs_Rect area) {
   return area.right - area.left;
@@ -179,21 +119,14 @@ static void _rcs_layoutViewport(rcs_Viewport v,Int32 windowWidth,Int32 windowHei
   }
 
 static void _rcs_fillBlack(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
-#ifdef WIN32
   RECT rect;
-#endif
   if (w <= 0 || h <= 0) return;
 
-#ifdef X
-  XFillRectangle(v->display,surface,v->gc,x,y,w,h);
-#endif
-#ifdef WIN32
   rect.left = x;
   rect.top = y;
   rect.right = x + w;
   rect.bottom = y + h;
   FillRect(surface,&rect,(HBRUSH)GetStockObject(BLACK_BRUSH));
-#endif
   }
 
 static UInt32* _rcs_allocPixels(_rcs_Rect area) {
@@ -254,30 +187,7 @@ static Int32 _rcs_scaleImage(rcs_Viewport v,_rcs_Image* source,_rcs_Image* scale
   return 1;
   }
 
-#ifdef X
-/* Inverse of rcs_RGBToPixel() for one channel, scaled to 8 bits. */
-static unsigned char _rcs_pixelChannel(unsigned long pixel,Int32 mask,Int32 shift) {
-  unsigned long value;
-  if (shift < 0)
-    value = (pixel >> -shift) & mask;
-  else
-    value = (pixel << shift) & mask;
-  return value >> 8;
-  }
 
-static UInt32 _rcs_RGBFromPixel(unsigned long pixel) {
-  return ((UInt32)_rcs_pixelChannel(pixel,red_mask,red_shift) << 16) |
-         ((UInt32)_rcs_pixelChannel(pixel,green_mask,green_shift) << 8) |
-         _rcs_pixelChannel(pixel,blue_mask,blue_shift);
-  }
-
-/* rcs_RGBToPixel() takes 16-bit channels */
-static unsigned long _rcs_pixelFromRGB(UInt32 rgb) {
-  return rcs_RGBToPixel(((rgb >> 16) & 0xff) * 257,((rgb >> 8) & 0xff) * 257,(rgb & 0xff) * 257);
-  }
-#endif
-
-#ifdef WIN32
 /* A top-down 32-bit DIB, whose pixels read as 0x00RRGGBB */
 static void _rcs_imageInfo(BITMAPINFO* info,_rcs_Rect area) {
   memset(info,0,sizeof(BITMAPINFO));
@@ -288,18 +198,11 @@ static void _rcs_imageInfo(BITMAPINFO* info,_rcs_Rect area) {
   info->bmiHeader.biBitCount = 32;
   info->bmiHeader.biCompression = BI_RGB;
   }
-#endif
 
 /* Reads the image's area of the buffer into its pixels. */
 static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
   Int32      width;
   Int32      height;
-#ifdef X
-  XImage*    source;
-  UInt32*    out;
-  Int32      x,y;
-#endif
-#ifdef WIN32
   BITMAPINFO info;
   HBITMAP    section;
   void*      bits;
@@ -307,21 +210,9 @@ static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
   HDC        target;
   HGDIOBJ    previousSource;
   HGDIOBJ    previousTarget;
-#endif
   width = _rcs_rectWidth(image->area);
   height = _rcs_rectHeight(image->area);
 
-#ifdef X
-  source = XGetImage(v->display,v->buffer,image->area.left,image->area.top,width,height,AllPlanes,ZPixmap);
-  if (source == NULL) return 0;
-
-  out = image->pixels;
-  for (y=0; y<height; y++)
-    for (x=0; x<width; x++) *out++ = _rcs_RGBFromPixel(XGetPixel(source,x,y));
-
-  XDestroyImage(source);
-#endif
-#ifdef WIN32
   /* GetDIBits only reads whole rows, so the area is first copied into a DIB section */
   _rcs_imageInfo(&info,image->area);
   section = CreateDIBSection(NULL,&info,DIB_RGB_COLORS,&bits,NULL,0);
@@ -340,7 +231,6 @@ static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
   DeleteDC(target);
   DeleteDC(source);
   DeleteObject(section);
-#endif
   return 1;
   }
 
@@ -348,61 +238,25 @@ static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
 static void _rcs_writeWindow(rcs_Viewport v,_rcs_Surface surface,_rcs_Image* image) {
   Int32      width;
   Int32      height;
-#ifdef X
-  XImage*    output;
-  UInt32*    in;
-  Int32      x,y;
-#endif
-#ifdef WIN32
   BITMAPINFO info;
-#endif
   width = _rcs_rectWidth(image->area);
   height = _rcs_rectHeight(image->area);
 
-#ifdef X
-  output = XCreateImage(v->display,DefaultVisual(v->display,DefaultScreen(v->display)),
-                        DefaultDepth(v->display,DefaultScreen(v->display)),ZPixmap,0,NULL,width,height,32,0);
-  if (output == NULL) return;
-
-  output->data = (char*)malloc(output->bytes_per_line * height);
-  if (output->data == NULL) {
-    XDestroyImage(output);
-    return;
-    }
-
-  in = image->pixels;
-  for (y=0; y<height; y++)
-    for (x=0; x<width; x++) XPutPixel(output,x,y,_rcs_pixelFromRGB(*in++));
-
-  XPutImage(v->display,surface,v->gc,output,0,0,v->left + image->area.left,v->top + image->area.top,
-            width,height);
-  XDestroyImage(output);
-#endif
-#ifdef WIN32
   _rcs_imageInfo(&info,image->area);
   SetDIBitsToDevice(surface,v->left + image->area.left,v->top + image->area.top,width,height,
                     0,0,0,height,image->pixels,&info,DIB_RGB_COLORS);
-#endif
   }
 
 /* At 1:1 the buffer is copied as it is. */
 static void _rcs_copyUnscaled(rcs_Viewport v,_rcs_Surface surface,_rcs_Rect area) {
-#ifdef WIN32
   HDC     source;
   HGDIOBJ previous;
-#endif
-#ifdef X
-  XCopyArea(v->display,v->buffer,surface,v->gc,area.left,area.top,_rcs_rectWidth(area),_rcs_rectHeight(area),
-            v->left + area.left,v->top + area.top);
-#endif
-#ifdef WIN32
   source = CreateCompatibleDC(surface);
   previous = SelectObject(source,v->buffer);
   BitBlt(surface,v->left + area.left,v->top + area.top,_rcs_rectWidth(area),_rcs_rectHeight(area),
          source,area.left,area.top,SRCCOPY);
   SelectObject(source,previous);
   DeleteDC(source);
-#endif
   }
 
 /* Redraws the window pixels that show a buffer area, from the buffer pixels under them. */
@@ -455,25 +309,7 @@ static void _rcs_paintViewport(rcs_Viewport v,_rcs_Surface surface) {
   _rcs_clearDirty(v);
   }
 
-#ifdef X
-/* Refits and repaints a viewport's window when X resizes or exposes it. */
-static void _rcs_viewportEvent(rcs_Display* d,XEvent* event) {
-  rcs_Viewport v;
-  XPointer     data;
-  if (XFindContext(d,event->xany.window,_rcs_viewports,&data) != 0) return;
-  v = (rcs_Viewport)data;
 
-  if (event->type == ConfigureNotify &&
-      (event->xconfigure.width != v->windowWidth || event->xconfigure.height != v->windowHeight)) {
-    _rcs_layoutViewport(v,event->xconfigure.width,event->xconfigure.height);
-    _rcs_paintViewport(v,v->window);
-    }
-
-  if (event->type == Expose && event->xexpose.count == 0) _rcs_paintViewport(v,v->window);
-  }
-#endif
-
-#ifdef WIN32
 /* Outer window size for a client area of width x height, with the frame at the window's DPI. */
 static void _rcs_frameSize(HWND win,Int32 width,Int32 height,Int32* outerWidth,Int32* outerHeight) {
   RECT frame;
@@ -518,18 +354,11 @@ static void _rcs_limitWindowSize(rcs_Viewport v,MINMAXINFO* limits) {
   limits->ptMinTrackSize.x = outerWidth;
   limits->ptMinTrackSize.y = outerHeight;
   }
-#endif
 
 rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,Int32 width,Int32 height) {
   rcs_Viewport      v;
-#ifdef X
-  XWindowAttributes attr;
-  XSizeHints*       hints;
-#endif
-#ifdef WIN32
   RECT              client;
   Int32             scale;
-#endif
   if (width < 1 || height < 1) return NULL;
   v = (rcs_Viewport)malloc(sizeof(struct _rcs_Viewport));
   if (v == NULL) return NULL;
@@ -543,31 +372,11 @@ rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,
   v->rows.scaled = height;
   _rcs_clearDirty(v);
 
-#ifdef X
-  v->gc = XCreateGC(d,win,0,NULL);
-  XSetForeground(d,v->gc,BlackPixel(d,DefaultScreen(d)));
-  XGetWindowAttributes(d,win,&attr);
-  _rcs_layoutViewport(v,attr.width,attr.height);
-
-  hints = XAllocSizeHints();
-  if (hints != NULL) {
-    hints->flags = PMinSize;
-    hints->min_width = width;
-    hints->min_height = height;
-    XSetWMNormalHints(d,win,hints);
-    XFree(hints);
-    }
-
-  if (_rcs_viewports == 0) _rcs_viewports = XUniqueContext();
-  XSaveContext(d,win,_rcs_viewports,(XPointer)v);
-#endif
-#ifdef WIN32
   SetWindowLongPtr(win,GWLP_USERDATA,(LONG_PTR)v);
   scale = _rcs_dpiScale(v);
   _rcs_setClientSize(win,width * scale,height * scale);
   GetClientRect(win,&client);
   _rcs_layoutViewport(v,client.right,client.bottom);
-#endif
   return v;
   }
 
@@ -598,24 +407,15 @@ void rcs_invalidateViewport(rcs_Viewport v,Int32 x,Int32 y,Int32 w,Int32 h) {
   }
 
 void rcs_presentViewport(rcs_Viewport v) {
-#ifdef WIN32
   HDC dc;
-#endif
   if (v->dirty.right <= v->dirty.left) return;
 
-#ifdef X
-  _rcs_copyToWindow(v,v->window,v->dirty);
-  XFlush(v->display);
-#endif
-#ifdef WIN32
   dc = GetDC(v->window);
   _rcs_copyToWindow(v,dc,v->dirty);
   ReleaseDC(v->window,dc);
-#endif
   _rcs_clearDirty(v);
   }
 
-#ifdef WIN32
 rcs_Display disp;
 Int32 _shiftState;
 Int32 _ctrlState;
@@ -797,35 +597,11 @@ void rcs_initWin32(HINSTANCE hInstance) {
         _capsState = (GetKeyState(VK_CAPITAL)) ? 1 : 0;
   }
 
-#endif
-
-unsigned long rcs_RGBToPixel(Int32 red, Int32 green, Int32 blue) {
-  unsigned long pixel;
-  if (red_shift < 0)
-    pixel = (red & red_mask) << -red_shift;
-  else
-    pixel = (red & red_mask) >> red_shift;
-  if (green_shift < 0)
-    pixel |= (green & green_mask) << -green_shift;
-  else
-    pixel |= (green & green_mask) >> green_shift;
-  if (blue_shift < 0)
-    pixel |= (blue & blue_mask) << -blue_shift;
-  else
-    pixel |= (blue & blue_mask) >> blue_shift;
-  return pixel;
-  }
 
 /* ************************ */
 /* ***** Build Colors ***** */
 /* ************************ */
-#ifdef X
-void  _rcs_buildColors(rcs_Display* d,unsigned long* colors,const char** data,Int32 *none) {
-  XColor clr1,clr2;
-#endif
-#ifdef WIN32
 void  _rcs_buildColors(rcs_Display* d,COLORREF* colors,const char** data,Int32 *none) {
-#endif
   Int32        sizeX,sizeY,numColors;
   Int32        x,i;
   char       index,temp,index2;
@@ -846,15 +622,8 @@ void  _rcs_buildColors(rcs_Display* d,COLORREF* colors,const char** data,Int32 *
       }
     if (buffer[0] != '#') {
       if (strcmp(buffer,"None")==0) *none=index;
-#ifdef X
-      XAllocNamedColor(d,DefaultColormap(d,DefaultScreen(d)),buffer,
-                       &clr1,&clr2);
-      colors[colorIndex]=clr1.pixel;
-#endif
-#ifdef WIN32
       rcs_namedColor(buffer,&red,&green,&blue);
       colors[colorIndex]=RGB(red,green,blue);
-#endif
       } else {
       for (i=0;i<4;i++) nbuffer[i]=buffer[i+1];
       nbuffer[4]=0;
@@ -865,22 +634,10 @@ void  _rcs_buildColors(rcs_Display* d,COLORREF* colors,const char** data,Int32 *
       for (i=0;i<4;i++) nbuffer[i]=buffer[i+9];
       nbuffer[4]=0;
       sscanf(nbuffer,"%lx",&blue);
-#ifdef WIN32
       if (red>255) red/=256;
       if (blue>255) blue/=256;
       if (green>255) green/=256;
-#endif
-#ifdef X
-//      colors[colorIndex].blue=blue;
-//      colors[colorIndex].red=red;
-//      colors[colorIndex].green=green;
-//      colors[colorIndex].flags=DoRed | DoGreen | DoBlue;
-//      XAllocColor(d,DefaultColormap(d,DefaultScreen(d)),&colors[colorIndex]);
-      colors[colorIndex] = rcs_RGBToPixel(red, green, blue);
-#endif
-#ifdef WIN32
       colors[colorIndex]=RGB(red,green,blue);
-#endif
       }
     }
   }
@@ -889,22 +646,13 @@ void  _rcs_buildColors(rcs_Display* d,COLORREF* colors,const char** data,Int32 *
 /* ***** Close GC ***** */
 /* ******************** */
 void rcs_closeGC(rcs_Display* d,rcs_GC gc) {
-#ifdef X
-  XFreeGC(d,gc);
-#endif
-#ifdef WIN32
   free(gc);
-#endif
   }
 
 /* ********************* */
 /* ***** Copy Area ***** */
 /* ********************* */
 void rcs_copyArea(rcs_Display* d,rcs_Window src,rcs_Window dest,rcs_GC gc,Int32 sx,Int32 sy,Int32 w,Int32 h,Int32 dx,Int32 dy) {
-#ifdef X
-  XCopyArea(d,src,dest,gc,sx,sy,w,h,dx,dy);
-#endif
-#ifdef WIN32
   HDC dc;
   HDC ddc;
   if (_rcs_isBitmap(src)==TRUE) {
@@ -920,7 +668,6 @@ void rcs_copyArea(rcs_Display* d,rcs_Window src,rcs_Window dest,rcs_GC gc,Int32 
     else ReleaseDC(src,dc);
   if (_rcs_isBitmap(dest)==TRUE) DeleteDC(ddc);
     else ReleaseDC(dest,ddc);
-#endif
   }
 
 /* ************************* */
@@ -928,12 +675,6 @@ void rcs_copyArea(rcs_Display* d,rcs_Window src,rcs_Window dest,rcs_GC gc,Int32 
 /* ************************* */
 rcs_Pixmap rcs_createPixmap(rcs_Display* d,rcs_Window win,Int32 x,Int32 y) {
   rcs_Pixmap ret;
-#ifdef X
-  XWindowAttributes attr;
-  XGetWindowAttributes(d,win,&attr);
-  ret=XCreatePixmap(d,win,x,y,attr.depth);
-#endif
-#ifdef WIN32
   HBITMAP    bitmap;
   HDC        dc;
   dc=GetDC(win);
@@ -943,7 +684,6 @@ rcs_Pixmap rcs_createPixmap(rcs_Display* d,rcs_Window win,Int32 x,Int32 y) {
   if (disp.numPixmaps == 0) disp.pixmapIDs=(rcs_Window*)malloc(sizeof(rcs_Window));
     else disp.pixmapIDs=(rcs_Window*)realloc(disp.pixmapIDs,(sizeof(rcs_Window))*(disp.numPixmaps+1));
   disp.pixmapIDs[disp.numPixmaps++]=ret;
-#endif
   return ret;
   }
 
@@ -952,24 +692,6 @@ rcs_Pixmap rcs_createPixmap(rcs_Display* d,rcs_Window win,Int32 x,Int32 y) {
 /* ************************* */
 rcs_Window  rcs_createWindow(rcs_Display* d,rcs_Window parent,Int32 x,Int32 y,Int32 width,Int32 height) {
   rcs_Window ret;
-#ifdef X
-  unsigned long mask;
-  XSetWindowAttributes attr;
-  attr.background_pixel=BlackPixel(d,DefaultScreen(d));
-  mask=CWBackPixel;
-  ret=XCreateWindow(d,parent,x,y,width,height,0,
-                       CopyFromParent,
-                       CopyFromParent,
-                       CopyFromParent,
-                       mask,&attr);
-  XSelectInput(d,ret,ExposureMask | ButtonPressMask | ButtonReleaseMask |
-               ButtonMotionMask | KeyPressMask | KeyReleaseMask |
-               StructureNotifyMask | FocusChangeMask | EnterWindowMask |
-               LeaveWindowMask | PointerMotionMask);
-  ShiftState = 0;
-  AltState = 0;
-#endif
-#ifdef WIN32
 
   if (parent == GetDesktopWindow()) {
     ret = CreateWindow(d->className, "rcsawlib", WS_OVERLAPPEDWINDOW,
@@ -982,7 +704,6 @@ rcs_Window  rcs_createWindow(rcs_Display* d,rcs_Window parent,Int32 x,Int32 y,In
     }
   if (!ret) MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
 
-#endif
   return ret;
   }
 
@@ -991,10 +712,6 @@ rcs_Window  rcs_createWindow(rcs_Display* d,rcs_Window parent,Int32 x,Int32 y,In
 /* *************************** */
 void rcs_drawFilledBox(rcs_Display* d,rcs_Window win,rcs_GC gc,
                   Int32 x,Int32 y,Int32 w,Int32 h) {
-#ifdef X
-  XFillRectangle(d,win,gc,x,y,w,h);
-#endif
-#ifdef WIN32
   HDC dc;
   HPEN pen;
   HBRUSH brush;
@@ -1016,17 +733,12 @@ void rcs_drawFilledBox(rcs_Display* d,rcs_Window win,rcs_GC gc,
   DeleteObject(brush);
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
-#endif
   }
 
 /* ********************* */
 /* ***** Draw Line ***** */
 /* ********************* */
 void rcs_drawLine(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x1,Int32 y1,Int32 x2,Int32 y2) {
-#ifdef X
-  XDrawLine(d,win,gc,x1,y1,x2,y2);
-#endif
-#ifdef WIN32
   HDC dc;
   HPEN pen;
   if (_rcs_isBitmap(win)==TRUE) {
@@ -1041,7 +753,6 @@ void rcs_drawLine(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x1,Int32 y1,Int3
   DeleteObject(pen);
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
-#endif
   }
 
 /* *********************** */
@@ -1054,57 +765,38 @@ void  rcs_drawPixmap(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 dx,Int32 dy,c
   Int32        none;
   Int32        colorIndex;
   Int32        bytesPer;
-#ifdef X
-  unsigned long colors[10000];
-#endif
-#ifdef WIN32
   HDC        dc;
   HPEN       pen,oldPen;
   COLORREF   colors[10000];
-#endif
   none=-1;
   _rcs_buildColors(d,colors,data,&none);
   sscanf(data[0],"%d %d %d %d",&sizeX,&sizeY,&numColors,&bytesPer);
-#ifdef WIN32
   if (_rcs_isBitmap(win)==TRUE) {
     dc=CreateCompatibleDC(0);
     SelectObject(dc,win);
     } else dc=GetDC(win);
-#endif
   for (y=0;y<sizeY;y++)
     for (x=0;x<sizeX;x++) {
       if (bytesPer != 2) colorIndex=data[y+numColors+1][x];
         else colorIndex = (data[y+numColors+1][x*2]-32) * 96 +
                           (data[y+numColors+1][x*2+1]-32);
       if (colorIndex != none) {
-#ifdef X
-        XSetForeground(d,gc,colors[colorIndex]);
-        XDrawPoint(d,win,gc,x+dx,y+dy);
-#endif
-#ifdef WIN32
         pen=CreatePen(PS_SOLID,0,colors[colorIndex]);
         oldPen=(HPEN)SelectObject(dc,pen);
         MoveToEx(dc,x+dx,y+dy,NULL);
         LineTo(dc,x+1+dx,y+dy);
         oldPen=(HPEN)SelectObject(dc,oldPen);
         DeleteObject(oldPen);
-#endif
         }
       }
-#ifdef WIN32
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
-#endif    
   }
 
 /* ********************** */
 /* ***** Draw Point ***** */
 /* ********************** */
 void rcs_drawPoint(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y) {
-#ifdef X
-  XDrawPoint(d,win,gc,x,y);
-#endif
-#ifdef WIN32
   HDC dc;
   HPEN pen;
   if (_rcs_isBitmap(win)==TRUE) {
@@ -1119,18 +811,12 @@ void rcs_drawPoint(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y) {
   DeleteObject(pen);
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
-#endif
   }
 
 /* *********************** */
 /* ***** Draw String ***** */
 /* *********************** */
 void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char* buffer,Int32 clr) {
-#ifdef X
-  if (clr) XDrawImageString(d,win,gc,x,y,buffer,strlen(buffer));
-  else     XDrawString(d,win,gc,x,y,buffer,strlen(buffer));
-#endif
-#ifdef WIN32
   HDC   dc;
   Int32 i;
   if (_rcs_isBitmap(win)==TRUE) {
@@ -1149,7 +835,6 @@ void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char
 
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
-#endif
   }
 
 /* ************************* */
@@ -1159,51 +844,12 @@ void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char
 void rcs_stringBounds(rcs_Display* d,rcs_GC gc,Int32 x,Int32 y,char* buffer,
                       Int32* left,Int32* top,Int32* width,Int32* height) {
   Int32 length;
-#ifdef X
-  /* No GC is ever given its own font, so they all share the server default */
-  static XFontStruct* font = NULL;
-  XCharStruct overall;
-  Int32       direction,ascent,descent;
-  Int32       inkLeft,inkRight,above,below;
-#endif
   length = strlen(buffer);
 
-#ifdef X
-  if (font == NULL) font = XQueryFont(d,XGContextFromGC(gc));
-  if (font == NULL) {
-    *left = x;
-    *top = y;
-    *width = 0;
-    *height = 0;
-    return;
-    }
-
-  XTextExtents(font,buffer,length,&direction,&ascent,&descent,&overall);
-  inkLeft = (overall.lbearing < 0) ? overall.lbearing : 0;
-  inkRight = (overall.rbearing > overall.width) ? overall.rbearing : overall.width;
-  above = (overall.ascent > ascent) ? overall.ascent : ascent;
-  below = (overall.descent > descent) ? overall.descent : descent;
-
-  *left = x + inkLeft;
-  *top = y - above;
-  *width = inkRight - inkLeft;
-  *height = above + below;
-#endif
-#ifdef WIN32
   *left = x;
   *top = y - d->fontAscent;
   *width = (length > 0) ? length * FONT_WIDTH + d->fontOverhang : 0;
   *height = d->fontHeight;
-#endif
-  }
-
-/* ***************** */
-/* ***** Flush ***** */
-/* ***************** */
-void rcs_Flush(rcs_Display* d) {
-#ifdef X
-  XFlush(d);
-#endif
   }
 
 /* ********************* */
@@ -1211,134 +857,6 @@ void rcs_Flush(rcs_Display* d) {
 /* ********************* */
 rcs_Event rcs_getEvent(rcs_Display* d) {
   rcs_Event ret;
-#ifdef X
-  XEvent event;
-  KeySym key;
-  XComposeStatus status;
-  char tmp[10];
-  XNextEvent(d,&event);
-  switch (event.type) {
-    case FocusIn:     ret.type=EVENT_FOCUSIN;
-                      ret.d3=event.xcrossing.mode;
-                      ret.d4=event.xcrossing.focus;
-                      ret.window=event.xcrossing.window;
-                      break;
-    case FocusOut:    ret.type=EVENT_FOCUSOUT;
-                      ret.d3=event.xcrossing.mode;
-                      ret.d4=event.xcrossing.focus;
-                      ret.window=event.xcrossing.window;
-                      break;
-    case EnterNotify: ret.type=EVENT_ENTER;
-                      ret.d1=event.xcrossing.x;
-                      ret.d2=event.xcrossing.y;
-                      ret.d3=event.xcrossing.mode;
-                      ret.d4=event.xcrossing.focus;
-                      ret.window=event.xcrossing.window;
-                      break;
-    case LeaveNotify: ret.type=EVENT_LEAVE;
-                      ret.d1=event.xcrossing.x;
-                      ret.d2=event.xcrossing.y;
-                      ret.d3=event.xcrossing.mode;
-                      ret.d4=event.xcrossing.focus;
-                      ret.window=event.xcrossing.window;
-                      break;
-    case ConfigureNotify:
-                      ret.type=EVENT_CONFIGURE;
-                      ret.d1=event.xconfigure.x;
-                      ret.d2=event.xconfigure.y;
-                      ret.d3=event.xconfigure.width;
-                      ret.d4=event.xconfigure.height;
-                      ret.window=event.xconfigure.window;
-                      break;
-    case MotionNotify:ret.type=EVENT_MOTION;
-                      ret.d1=event.xmotion.state;
-                      ret.d2=event.xmotion.x;
-                      ret.d3=event.xmotion.y;
-                      ret.window=event.xmotion.window;
-                      break;
-    case ButtonPress:ret.type=EVENT_BUTTON_PRESS;
-                     ret.window=event.xbutton.window;
-                     ret.d1=event.xbutton.button;
-                     ret.d2=event.xbutton.x;
-                     ret.d3=event.xbutton.y;
-                     break;
-    case ButtonRelease:ret.type=EVENT_BUTTON_RELEASE;
-                     ret.window=event.xbutton.window;
-                     ret.d1=event.xbutton.button;
-                     ret.d2=event.xbutton.x;
-                     ret.d3=event.xbutton.y;
-                     break;
-    case Expose:ret.type=EVENT_EXPOSE;
-                ret.window=event.xexpose.window;
-                ret.d1=event.xexpose.x;
-                ret.d2=event.xexpose.y;
-                ret.d3=event.xexpose.width;
-                ret.d4=event.xexpose.height;
-                ret.d5=event.xexpose.count;
-                break;
-    case KeyRelease:ret.type=EVENT_KEY_RELEASE;
-                  ret.window=event.xkey.window;
-                  XLookupString((XKeyEvent*)&event,tmp,10,&key,&status);
-                  ret.d1=key;
-                  switch (ret.d1) {
-                    case XK_Return:ret.d1=13; break;
-                    case XK_Escape:ret.d1=27; break;
-                    case XK_Shift_L: ShiftState = 0; break;
-                    case XK_Shift_R: ShiftState = 0; break;
-                    case XK_Alt_L: AltState = 0; break;
-                    case XK_Alt_R: AltState = 0; break;
-                    case XK_Control_L: CtrlState = 0; ret.d1 = 0; break;
-                    case XK_Control_R: CtrlState = 0; ret.d1 = 0; break;
-                    case XK_F1:
-                    case XK_F2:
-                    case XK_F3:
-                    case XK_F4:
-                    case XK_F5:
-                    case XK_F6:
-                    case XK_F7:
-                    case XK_F8:
-                    case XK_F9:
-                    case XK_F10:if (ShiftState) ret.d1 |= 0x10000;
-                                if (AltState) ret.d1 |= 0x20000;
-                                if (CtrlState) ret.d1 |= 0x40000;
-                    }
-                  break;
-    case KeyPress:ret.type=EVENT_KEY_PRESS;
-                  ret.window=event.xkey.window;
-                  XLookupString((XKeyEvent*)&event,tmp,10,&key,&status);
-                  ret.d1=key;
-                  switch (ret.d1) {
-                    case XK_Return:ret.d1=13; break;
-                    case XK_Escape:ret.d1=27; break;
-                    case XK_Shift_L: ShiftState = -1; break;
-                    case XK_Shift_R: ShiftState = -1; break;
-                    case XK_Alt_L: AltState = -1; break;
-                    case XK_Alt_R: AltState = -1; break;
-                    case XK_Control_L: CtrlState = -1; break;
-                    case XK_Control_R: CtrlState = -1; break;
-                    case XK_F1:
-                    case XK_F2:
-                    case XK_F3:
-                    case XK_F4:
-                    case XK_F5:
-                    case XK_F6:
-                    case XK_F7:
-                    case XK_F8:
-                    case XK_F9:
-                    case XK_F10:if (ShiftState) ret.d1 |= 0x10000;
-                                if (AltState) ret.d1 |= 0x20000;
-                                if (CtrlState) ret.d1 |= 0x40000;
-                               break;
-                    }
-                  /* Ctrl+M would become 13, the same as Enter */
-                  if (CtrlState && (ret.d1 == XK_m || ret.d1 == XK_M)) ret.d1 = KEY_CTRL_M;
-                  if (CtrlState && ret.d1 >= XK_a && ret.d1 <= XK_z) ret.d1 -= XK_a - 1;
-                  if (CtrlState && ret.d1 >= XK_A && ret.d1 <= XK_Z) ret.d1 -= XK_A - 1;
-                  break;
-    }
-  _rcs_viewportEvent(d,&event);
-#endif
-#ifdef WIN32
   MSG msg;
   RECT rect;
 
@@ -1453,7 +971,6 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
 */
 		DispatchMessage(&msg);
       
-#endif
   return ret;
   }
 
@@ -1461,69 +978,37 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
 /* ***** Named Background ***** */
 /* **************************** */
 void rcs_namedBackground(rcs_Display* d,rcs_GC gc,const char* color) {
-#ifdef X
-  XColor clr,exact;
-  XAllocNamedColor(d,DefaultColormap(d,DefaultScreen(d)),color,
-                   &clr,&exact);
-  XSetBackground(d,gc,clr.pixel);
-#endif
-#ifdef WIN32
   Int32 red,green,blue;
   rcs_namedColor(color,&red,&green,&blue);
   gc->background=RGB(red,green,blue);
-#endif
   }
 
 /* **************************** */
 /* ***** Named Foreground ***** */
 /* **************************** */
 void rcs_namedForeground(rcs_Display* d,rcs_GC gc,const char* color) {
-#ifdef X
-  XColor clr,exact;
-  XAllocNamedColor(d,DefaultColormap(d,DefaultScreen(d)),color,
-                   &clr,&exact);
-  XSetForeground(d,gc,clr.pixel);
-#endif
-#ifdef WIN32
   Int32 red,green,blue;
   rcs_namedColor(color,&red,&green,&blue);
   gc->foreground=RGB(red,green,blue);
-#endif
   }
 
 /* ************************ */
 /* ***** Open Display ***** */
 /* ************************ */
 rcs_Display *rcs_openDisplay(char* display_name) {
-#ifdef X
-  return XOpenDisplay(display_name);
-#endif
-#ifdef WIN32
   return &disp;
-#endif
   }
 
 /* ******************* */
 /* ***** Open GC ***** */
 /* ******************* */
 rcs_GC rcs_openGC(rcs_Display* d,rcs_Window win) {
-#ifdef X
-  unsigned long mask;
-  XGCValues     values;
-  mask=0;
-  mask=GCForeground | GCBackground;
-  values.foreground=BlackPixel(d,DefaultScreen(d));
-  values.background=WhitePixel(d,DefaultScreen(d));
-  return XCreateGC(d,win,mask,&values);
-#endif
-#ifdef WIN32
   rcs_GC ret;
         ret=(rcs_GC)malloc(sizeof(struct _GC));
   ret->foreground=RGB(0,0,0);
   ret->background=RGB(255,255,255);
   ret->font=disp.font;
   return ret;
-#endif
   }
 
 /* ********************** */
@@ -1531,34 +1016,17 @@ rcs_GC rcs_openGC(rcs_Display* d,rcs_Window win) {
 /* ********************** */
 rcs_Event rcs_pollEvent(rcs_Display* d) {
   rcs_Event ret;
-#ifdef X
-  if (XPending(d)>0) return rcs_getEvent(d);
-#endif
-#ifdef WIN32
   MSG msg;
   if (PeekMessage(&msg, NULL, 0, 0,PM_NOREMOVE)!=0) return rcs_getEvent(d);
-#endif
   ret.type=EVENT_NONE;
   return ret;
-  }
-
-void  rcs_getDisplaySize(rcs_Display* d,Int32* width,Int32* height) {
-#ifdef X
-  *height = XDisplayHeight(d,DefaultScreen(d));
-  *width = XDisplayWidth(d,DefaultScreen(d));
-#endif
   }
 
 /* *********************** */
 /* ***** Root Window ***** */
 /* *********************** */
 rcs_Window rcs_rootWindow(rcs_Display* d) {
-#ifdef X
-  return DefaultRootWindow(d);
-#endif
-#ifdef WIN32
   return GetDesktopWindow();
-#endif
   }
 
 /* *********************** */
@@ -1567,28 +1035,6 @@ rcs_Window rcs_rootWindow(rcs_Display* d) {
 /* Fills pixels with bottom-up rows of 24-bit BGR, the pixel layout of a BMP file. */
 static Int32 _rcs_readPixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,
                              UInt32 rowSize,unsigned char* pixels) {
-#ifdef X
-  XImage*        image;
-  unsigned long  pixel;
-  unsigned char* out;
-  Int32          x,y;
-  image = XGetImage(d,pixmap,0,0,width,height,AllPlanes,ZPixmap);
-  if (image == NULL) return 0;
-
-  for (y=0; y<height; y++) {
-    out = pixels + (height-1-y) * rowSize;
-    for (x=0; x<width; x++) {
-      pixel = XGetPixel(image,x,y);
-      *out++ = _rcs_pixelChannel(pixel,blue_mask,blue_shift);
-      *out++ = _rcs_pixelChannel(pixel,green_mask,green_shift);
-      *out++ = _rcs_pixelChannel(pixel,red_mask,red_shift);
-      }
-    }
-
-  XDestroyImage(image);
-  return 1;
-#endif
-#ifdef WIN32
   BITMAPINFO info;
   HDC        dc;
   Int32      lines;
@@ -1604,7 +1050,6 @@ static Int32 _rcs_readPixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 
   lines = GetDIBits(dc,(HBITMAP)pixmap,0,height,pixels,&info,DIB_RGB_COLORS);
   ReleaseDC(NULL,dc);
   return lines == height;
-#endif
   }
 
 static void _rcs_writeShort(FILE* file,UInt32 value) {
@@ -1669,29 +1114,15 @@ Int32 rcs_savePixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,c
 /* ***** Set Window Name ***** */
 /* *************************** */
 void rcs_setWindowName(rcs_Display* d,rcs_Window w,char* name) {
-#ifdef X
-  XTextProperty text;
-  XStringListToTextProperty(&name,1,&text);
-  XSetWMName(d,w,&text);
-#endif
-#ifdef WIN32
   SetWindowText(w,name);
-#endif
   }
 
 /* *********************** */
 /* ***** Show Window ***** */
 /* *********************** */
 void rcs_showWindow(rcs_Display* d,rcs_Window win) {
-#ifdef X
-  XMapWindow(d,win);
-  XFlush(d);
-#endif
-#ifdef WIN32
   ShowWindow(win,SW_SHOW);
   UpdateWindow(win);
-#endif
   }
 
-#endif
 

@@ -11,10 +11,8 @@
 #include "header.h"
 
 void write_font(Int32 x,Int32 y,Int32 color,char* line) {
-#ifndef ASCII
   byte letter;
   Int32  i;
-#endif
 
   void small_a(Int32 x,Int32 y,Int32 color) {
     draw(x+2,y+6,x+5,y+6,color);
@@ -1359,11 +1357,6 @@ void write_font(Int32 x,Int32 y,Int32 color,char* line) {
     draw(x+6,y+2,x+6,y+3,color);
   }
 
-#ifdef ASCII
-  textcolor(7);
-  gotoxy(x/9,y/19);
-  txt_write(line);
-#else
   open_display();
   for (i=0; i<=strlen(line); i++)
     {
@@ -1497,6 +1490,5 @@ void write_font(Int32 x,Int32 y,Int32 color,char* line) {
     x = x+9;
   }
   close_display();
-#endif
 }
 

@@ -18,7 +18,6 @@
 
 static char* MENU_LABELS[MENU_COUNT] = { "New Game", "Load Game" };
 
-#ifndef ASCII
 typedef struct {
   Int32  x;
   Int32  y;
@@ -37,7 +36,6 @@ static const TITLE_LINE TITLE_LINES[] = {
   };
 
 #define TITLE_LINE_COUNT ((Int32)(sizeof(TITLE_LINES) / sizeof(TITLE_LINE)))
-#endif
 
 static void show_text_title() {
   setcolor(14);
@@ -52,7 +50,6 @@ static void show_text_title() {
   gotoxy(34, 11); txt_write("by Mike Riley");
   }
 
-#ifndef ASCII
 static char show_gothic_title() {
   STROKE_FONT* font;
   Int32        i;
@@ -71,18 +68,13 @@ static char show_gothic_title() {
 
   return 'Y';
   }
-#endif
 
 static void show_title_screen() {
   textmode(3);
 #ifdef MHR
 #include "./Mhr/title.c"
 #else
-#ifdef ASCII
-  show_text_title();
-#else
   if (show_gothic_title() != 'Y') show_text_title();
-#endif
 #endif
   setcolor(15);
   gotoxy(3, 17);

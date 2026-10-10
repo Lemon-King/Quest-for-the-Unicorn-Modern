@@ -17,10 +17,6 @@ void show_sprite(Int32 x,Int32 y,Int32 sprt) {
   if (sprt >= 800 && sprt <900) sprt = 7;
   if (sprt >= 520 && sprt <=535) sprt = 28;
   if (sprt == 536) sprt = 350;
-#ifdef ASCII
-  putimage(10+25*x,10+27*y,select_sprite(sprt),0);
-#else
   putimage(-15+25*x,-16+27*y,select_sprite(sprt),0);
-#endif
   }
 

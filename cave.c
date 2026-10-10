@@ -1080,13 +1080,6 @@ void cave() {
                  break;
         case 'Z':show_number(); break;
         case ':':wizard(); break;
-#ifdef ASCII
-        case 'M':
-                  saveScreen();
-                  miniMap();
-                  restoreScreen();
-                  break;
-#endif
 /*        case '^':pit_trap(); break; */
         }
     key = ' ';
@@ -1453,25 +1446,12 @@ void cave() {
             else if (player.x<sx && player.y>sy) x = 95;
             else if (player.x>sx && player.y>sy) x = 96;
             else x = 10;
-#ifdef ASCII
-            putimage(400,675,select_sprite(10),0);
-            putimage(400,675,select_sprite(x),0);
-#else
             putimage(300,screen_height-27,select_sprite(10),0);
             putimage(300,screen_height-27,select_sprite(x),0);
-#endif
             } else
-#ifdef ASCII		
-  		  putimage(400,675,select_sprite(10),0);
-#else
   		  putimage(300,screen_height-27,select_sprite(10),0);
-#endif
           } else
-#ifdef ASCII
-  	       	putimage(400,675,select_sprite(10),0);
-#else
   	       	putimage(300,screen_height-27,select_sprite(10),0);
-#endif
         check_trophies();
         if (player.d_level == 0) exitf = 2;
         if (player.chp<1) exitf = 6;
