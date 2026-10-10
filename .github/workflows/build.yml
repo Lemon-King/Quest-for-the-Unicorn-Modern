@@ -69,11 +69,12 @@ jobs:
       - name: platformtests
         run: .\bin\${{ env.CONFIGURATION }}\platformtests.exe .
 
-      # Same as tests/golden/screens.ps1: a work folder holding only the fixture config
+      # Same as tests/golden/screens.ps1: a work folder holding the fixture config and the maps
       - name: unicorn -s against the golden report
         run: |
           $work = (New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\smoke").FullName
           Copy-Item tests\fixtures\unicorn.cfg $work
+          Copy-Item maps $work -Recurse
           $game = "$env:GITHUB_WORKSPACE\bin\${{ env.CONFIGURATION }}\unicorn.exe"
           $process = Start-Process $game -ArgumentList '-s' -WorkingDirectory $work `
                        -RedirectStandardOutput "$work\smoke.txt" -NoNewWindow -Wait -PassThru
@@ -95,6 +96,7 @@ jobs:
           $out = "bin\${{ env.CONFIGURATION }}"
           Copy-Item "$out\unicorn.exe", "$out\unicorn.cfg", "$out\unicorn.doc", LICENSE.md $stage
           Copy-Item "$out\music" $stage -Recurse
+          Copy-Item "$out\maps" $stage -Recurse
           "name=$name" >> $env:GITHUB_OUTPUT
           "dir=$stage" >> $env:GITHUB_OUTPUT
 

@@ -371,6 +371,9 @@
     <CopyFileToFolders Include="music\*.mid">
       <DestinationFolders>$(OutDir)music</DestinationFolders>
     </CopyFileToFolders>
+    <CopyFileToFolders Include="maps\*.map">
+      <DestinationFolders>$(OutDir)maps</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
 
   <ItemGroup>
