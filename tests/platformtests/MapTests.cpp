@@ -30,14 +30,6 @@ namespace {
 
 using MapTiles = int32_t[101][101];
 
-/* Temporary, until maps.h is deleted: the maps the game compiles in today */
-namespace compiled {
-typedef int MAP_TYPE[101][101];
-#define MAIN
-#include "../../maps.h"
-#undef MAIN
-}
-
 /* Each map character and the tile it must become */
 struct TileCase {
   char    character;
@@ -208,27 +200,6 @@ void loadedMapsInOrder(TestRunner& runner, const std::string& root) {
     }
   }
 
-/* Temporary: load_maps() fills every map exactly as maps.h compiled it in */
-void mapsMatchMapsH(TestRunner& runner, const std::string& root) {
-  if (root.empty()) return;
-
-  static MapTiles world[std::size(LOAD_ORDER)];
-  std::string     error = loadInRoot(root, world);
-  runner.check(error.empty(), "MapsMatchMapsH", error);
-  if (!error.empty()) return;
-
-  int32_t     differ = 0;
-  std::string first;
-  for (size_t i = 0; i < std::size(LOAD_ORDER); i++)
-    for (int32_t y = 0; y <= 100; y++)
-      for (int32_t x = 0; x <= 100; x++) {
-        if (world[i][y][x] == compiled::maps[i][y][x]) continue;
-        if (differ++ == 0)
-          first = "maps[" + std::to_string(i) + "][" + std::to_string(y) + "][" + std::to_string(x) + "]";
-        }
-  runner.check(differ == 0, "MapsMatchMapsH", std::to_string(differ) + " tiles differ, first " + first);
-  }
-
 }
 
 void runMapTests(TestRunner& runner, const std::string& root) {
@@ -237,5 +208,4 @@ void runMapTests(TestRunner& runner, const std::string& root) {
   mapErrors(runner);
   committedMaps(runner, root);
   loadedMapsInOrder(runner, root);
-  mapsMatchMapsH(runner, root);
   }

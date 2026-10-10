@@ -968,7 +968,6 @@ LINK PLAYER_REC         player;
 #include "gen.h"
 #include "objects.h"
 #include "monsters.h"
-#include "maps.h"
 #include "recipe.h"
 #include "races.h"
 #include "classes.h"
@@ -1096,6 +1095,7 @@ LINK char               macros[12][1024];
 LINK char               currentMacro[1024];
 LINK char               takes_time;
 LINK KNOW_TYPE          known_maps[51];
+LINK MAP_TYPE           maps[MAP_COUNT];
 LINK char               encrypt_save_file;
 
 

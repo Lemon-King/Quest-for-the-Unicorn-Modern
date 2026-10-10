@@ -342,7 +342,6 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="terminal.h" />
     <ClInclude Include="gothic.h" />
-    <ClInclude Include="maps.h" />
     <ClInclude Include="objects.h" />
     <ClInclude Include="monsters.h" />
     <ClInclude Include="spells.h" />
