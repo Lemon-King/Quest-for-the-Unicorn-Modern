@@ -1,0 +1,126 @@
+# Builds Quest for the Unicorn for Windows x64.
+#   Manual: Actions → Build → Run workflow (pick a branch or tag) → the zip is uploaded as a run artifact
+#   Tag:    pushing v7.0.0 runs the same build, then attaches the zip to a draft GitHub Release
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Build configuration
+        type: choice
+        options: [Release, Debug]
+        default: Release
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+env:
+  CONFIGURATION: ${{ inputs.configuration || 'Release' }}
+
+jobs:
+  build:
+    runs-on: windows-2025          # ships Visual Studio 2026 (toolset v145) since June 2026
+    timeout-minutes: 30
+    outputs:
+      package: ${{ steps.package.outputs.name }}
+    steps:
+      - uses: actions/checkout@v6
+
+      # A version bump touches header.h, load.c and res/unicorn.rc; the tag has to agree with them
+      - name: Check the tag matches VERSION
+        if: github.ref_type == 'tag'
+        run: |
+          $version = [regex]::Match((Get-Content -Raw header.h), '#define\s+VERSION\s+"([^"]+)"').Groups[1].Value
+          if ($version -ne $env:GITHUB_REF_NAME) { throw "tag $env:GITHUB_REF_NAME does not match VERSION $version in header.h" }
+
+      # The hosted image has Enterprise, not Community, so MSBuild is found with vswhere instead of a fixed path
+      - name: Find MSBuild from Visual Studio 2026
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -version '[18.0,19.0)' -products * `
+                  -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw 'Visual Studio 2026 with the C++ tools is not on this runner' }
+          Add-Content $env:GITHUB_PATH "$vs\MSBuild\Current\Bin\amd64"
+
+      - name: Build
+        run: |
+          msbuild Unicorn.slnx /m /nologo /nodeReuse:false /t:Build `
+            /p:Configuration=${{ env.CONFIGURATION }} /p:Platform=x64 `
+            "/flp1:WarningsOnly;LogFile=warnings.log"
+
+      # The run-unicorn driver's rule: the game's root .c/.h files may not exceed tests\legacy-warnings.txt,
+      # and platform, assetgen and platformtests must build clean
+      - name: Hold warnings to the baseline
+        run: |
+          $lines = @(Get-Content warnings.log -ErrorAction SilentlyContinue | Where-Object { $_ -match ': warning ' } |
+                     ForEach-Object { $_ -replace '^\s*\d+>', '' } | Sort-Object -Unique)
+          $game = [regex]::Escape("$env:GITHUB_WORKSPACE\") + '[^\\]+\.[ch]\(\d+'
+          $legacy = @($lines | Where-Object { $_ -match $game })
+          $other = @($lines | Where-Object { $_ -notmatch $game })
+          $allowed = [int](Get-Content tests\legacy-warnings.txt)
+          "C warnings $($legacy.Count) (baseline $allowed), other warnings $($other.Count)"
+          $other | Select-Object -First 15
+          if ($legacy.Count -gt $allowed) { throw "C warnings grew from $allowed to $($legacy.Count)" }
+          if ($other.Count -gt 0) { throw "$($other.Count) warnings outside the game's C files" }
+
+      - name: platformtests
+        run: .\bin\${{ env.CONFIGURATION }}\platformtests.exe .
+
+      # Same as tests/golden/screens.ps1: a work folder holding only the fixture config
+      - name: unicorn -s against the golden report
+        run: |
+          $work = (New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\smoke").FullName
+          Copy-Item tests\fixtures\unicorn.cfg $work
+          $game = "$env:GITHUB_WORKSPACE\bin\${{ env.CONFIGURATION }}\unicorn.exe"
+          $process = Start-Process $game -ArgumentList '-s' -WorkingDirectory $work `
+                       -RedirectStandardOutput "$work\smoke.txt" -NoNewWindow -Wait -PassThru
+          Get-Content "$work\smoke.txt"
+          if ($process.ExitCode -ne 0) { throw "unicorn -s exited with $($process.ExitCode)" }
+          $expected = (Get-Content tests\golden\smoke.txt) -join "`n"
+          $actual = (Get-Content "$work\smoke.txt") -join "`n"
+          if ($actual -cne $expected) { throw 'the -s report differs from tests\golden\smoke.txt' }
+
+      # Only what a player needs: no assetgen, platformtests, platform.lib, PDBs or unicorn.sco
+      - name: Stage the package
+        id: package
+        run: |
+          $label = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME }
+                   else { ($env:GITHUB_REF_NAME -replace '[^\w.-]', '-') + '-' + $env:GITHUB_SHA.Substring(0, 7) }
+          $name = "Unicorn-$label-win-x64"
+          if ('${{ env.CONFIGURATION }}' -ne 'Release') { $name += '-${{ env.CONFIGURATION }}' }
+          $stage = (New-Item -ItemType Directory "$env:RUNNER_TEMP\package\$name").FullName
+          $out = "bin\${{ env.CONFIGURATION }}"
+          Copy-Item "$out\unicorn.exe", "$out\unicorn.cfg", "$out\unicorn.doc", LICENSE.md $stage
+          Copy-Item "$out\music" $stage -Recurse
+          "name=$name" >> $env:GITHUB_OUTPUT
+          "dir=$stage" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.package.outputs.name }}
+          path: ${{ steps.package.outputs.dir }}
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.build.outputs.package }}
+          path: ${{ needs.build.outputs.package }}
+
+      - name: Draft the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ needs.build.outputs.package }}
+        run: |
+          zip -r "$NAME.zip" "$NAME"
+          gh release create "$GITHUB_REF_NAME" "$NAME.zip" --repo "$GITHUB_REPOSITORY" \
+            --title "Quest for the Unicorn $GITHUB_REF_NAME" --generate-notes --draft --verify-tag
