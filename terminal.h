@@ -27,18 +27,19 @@
 #define KY_S_F11 232
 #define KY_S_F12 233
 
-#define KY_A_F1 211
-#define KY_A_F2 212
-#define KY_A_F3 213
-#define KY_A_F4 214
-#define KY_A_F5 215
-#define KY_A_F6 216
-#define KY_A_F7 217
-#define KY_A_F8 218
-#define KY_A_F9 219
-#define KY_A_F10 210
-#define KY_A_F11 234
-#define KY_A_F12 235
+/* Alt with the number row 1..9, 0, -, = ; Alt+F-keys belong to Windows (Alt+F4 closes the window) */
+#define KY_A_1 211
+#define KY_A_2 212
+#define KY_A_3 213
+#define KY_A_4 214
+#define KY_A_5 215
+#define KY_A_6 216
+#define KY_A_7 217
+#define KY_A_8 218
+#define KY_A_9 219
+#define KY_A_0 210
+#define KY_A_MINUS 234
+#define KY_A_EQUAL 235
 
 #define KY_C_F1 221
 #define KY_C_F2 222

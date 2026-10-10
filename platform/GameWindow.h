@@ -42,10 +42,12 @@ class GameWindow {
     void showFrame();
     void requestFrame();
     void gameEnded();
+    bool translate(const MSG& message);
 
   private:
     static LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
     LRESULT handle(UINT message, WPARAM wParam, LPARAM lParam);
+    bool route(const KeyRoute& route);
     int32_t openingScale() const;
     SIZE frameSize(int32_t clientWidth, int32_t clientHeight) const;
     void setClientSize(int32_t clientWidth, int32_t clientHeight);

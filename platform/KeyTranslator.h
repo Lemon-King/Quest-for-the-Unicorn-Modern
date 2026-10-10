@@ -15,14 +15,17 @@
 #include <cstdint>
 #include <optional>
 
+#include "KeyRoute.h"
+
 namespace platform {
 
-/* Window key messages to the game's key codes, as the GDI build mapped them: Shift and Caps Lock for letters, US
-   punctuation, Ctrl+letter as control codes, arrows and keypad digits as directions, F1-F10 */
+/* Window key messages to the game's key codes. Characters come from WM_CHAR, so the keyboard layout, Shift and Caps
+   Lock are Windows' business; key-downs only cover keys that carry no character. */
 class KeyTranslator {
   public:
-    std::optional<int32_t> keyDown(WPARAM virtualKey, bool capsLock);
+    KeyRoute keyDown(UINT message, WPARAM virtualKey, LPARAM flags);
     void keyUp(WPARAM virtualKey);
+    std::optional<int32_t> character(WPARAM code) const;
     void reset();
 
   private:

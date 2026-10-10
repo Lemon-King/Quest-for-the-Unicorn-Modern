@@ -34,6 +34,7 @@ class InlineHost final : public GameHost {
 
   private:
     void pump(bool wait);
+    void dispatch(const MSG& message);
 
     FrameMailbox& frames_;
     InputQueue&   input_;

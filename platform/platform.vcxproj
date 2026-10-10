@@ -62,6 +62,7 @@
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="InlineHost.cpp" />
     <ClCompile Include="InputQueue.cpp" />
+    <ClCompile Include="KeyRoute.cpp" />
     <ClCompile Include="KeyTranslator.cpp" />
     <ClCompile Include="Presenter.cpp" />
     <ClCompile Include="ScalePass.cpp" />
@@ -86,6 +87,7 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="InlineHost.h" />
     <ClInclude Include="InputQueue.h" />
+    <ClInclude Include="KeyRoute.h" />
     <ClInclude Include="KeyTranslator.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="Presenter.h" />

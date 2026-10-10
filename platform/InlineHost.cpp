@@ -57,14 +57,15 @@ bool InlineHost::closed() const {
 /* Handles every waiting window message; with wait, blocks until at least one arrives */
 void InlineHost::pump(bool wait) {
   MSG message;
-  if (wait && GetMessageW(&message, nullptr, 0, 0) > 0) {
-    TranslateMessage(&message);
-    DispatchMessageW(&message);
-    }
-  while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
-    TranslateMessage(&message);
-    DispatchMessageW(&message);
-    }
+  if (wait && GetMessageW(&message, nullptr, 0, 0) > 0) dispatch(message);
+  while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) dispatch(message);
+  }
+
+/* Special keys go to the window before TranslateMessage could turn them into characters */
+void InlineHost::dispatch(const MSG& message) {
+  if (window_.translate(message)) return;
+  TranslateMessage(&message);
+  DispatchMessageW(&message);
   }
 
 }
