@@ -13,7 +13,7 @@
 byte dbuffer[1024];
 Int32  dbuffer_pos;
 Int32  dbuffer_count;
-Int32  save_file;
+FILE*  save_file;
 byte eosf;
 byte encrypted;
 byte offset;
@@ -33,7 +33,7 @@ UInt32 atoui(char* buffer) {
 
 byte read_byte() {
   if (dbuffer_pos < dbuffer_count) return dbuffer[dbuffer_pos++];
-  dbuffer_count = read(save_file, dbuffer, 1024);
+  dbuffer_count = (Int32)fread(dbuffer, 1, sizeof(dbuffer), save_file);
   dbuffer_pos = 0;
   if (dbuffer_pos < dbuffer_count) return dbuffer[dbuffer_pos++];
   eosf = 0xff;
@@ -69,7 +69,7 @@ char* next_word(char* buffer) {
   }
 
 byte match(char* buffer, char* test) {
-  if (strncasecmp(buffer, test, strlen(test)) == 0) return 0xff;
+  if (_strnicmp(buffer, test, strlen(test)) == 0) return 0xff;
   return 0;
   }
 
@@ -84,7 +84,7 @@ OBJECT_REC load_object() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Link ")) { next = next_word(line); ret.link = atoi(next); }
       if (match(line, "OType ")) { next = next_word(line); ret.otype = atoi(next); }
@@ -135,7 +135,7 @@ NPC_REC load_npc() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Speed ")) { next = next_word(line); ret.speed = atoi(next); }
       if (match(line, "Number ")) { next = next_word(line); ret.number = atoi(next); }
@@ -179,7 +179,7 @@ void load_known() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       for (i=0; i<strlen(line); i++) {
         if (line[i] == '1') if (x<101 && y<101) known[x++][y] = 1;
@@ -207,7 +207,7 @@ void load_map() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       next = line;
       while (*next != 0) {
@@ -235,7 +235,7 @@ HOUSE load_house() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Region ")) { next = next_word(line); ret.region = atoi(next); }
       if (match(line, "RegionX ")) { next = next_word(line); ret.rx = atoi(next); }
@@ -264,7 +264,7 @@ void load_inventory() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Slot ")) {
         next = next_word(line);
@@ -284,7 +284,7 @@ void load_pack() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Slot ")) {
         next = next_word(line);
@@ -304,7 +304,7 @@ void load_portable_hole() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Slot ")) {
         next = next_word(line);
@@ -324,7 +324,7 @@ void load_party() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Slot ")) {
         next = next_word(line);
@@ -344,7 +344,7 @@ void load_completed_quests() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Quest ")) {
         next = next_word(line);
@@ -364,7 +364,7 @@ void load_fkey_spells() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Spell")) {
         i = atoi(line+5);
@@ -383,7 +383,7 @@ void load_options() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       next = next_word(line);
       if (match(line, "DungeonScaling ")) dungeon_scaling = *next;
@@ -411,7 +411,7 @@ void load_stats() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Count")) {
         i = atoi(line+5);
@@ -438,7 +438,7 @@ void load_spellbook() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Spell ")) {
         next = next_word(line);
@@ -458,7 +458,7 @@ void load_pawn_shop(Int32 shop) {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Slot ")) {
         next = next_word(line);
@@ -482,7 +482,7 @@ void load_current_level() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Group ")) {
         next = next_word(line);
@@ -491,7 +491,7 @@ void load_current_level() {
         while (gflag) {
           read_line(line);
           if (eosf) { flag = 0; gflag = 0; }
-          if (strncasecmp(line, "}",1) == 0) gflag = 0;
+          if (_strnicmp(line, "}",1) == 0) gflag = 0;
           if (gflag) {
             if (match(line, "Monster ")) {
               next = next_word(line);
@@ -532,7 +532,7 @@ DUNGEON_LEVEL load_dungeon_level() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}", 1) == 0) flag = 0;
+    if (_strnicmp(line, "}", 1) == 0) flag = 0;
     if (flag) {
       if (match(line, "UpX")) { next = next_word(line); ret.upx = atoi(next); }
       if (match(line, "UpY")) { next = next_word(line); ret.upy = atoi(next); }
@@ -554,7 +554,7 @@ DUNGEON_LEVEL load_dungeon_level() {
         while (gflag) {
           read_line(line);
           if (eosf) { flag = 0; gflag = 0; }
-          if (strncasecmp(line, "}", 1) == 0) gflag = 0;
+          if (_strnicmp(line, "}", 1) == 0) gflag = 0;
           if (gflag) {
             if (match(line, "Monster ")) {
               next = next_word(line);
@@ -584,7 +584,7 @@ void load_current_dungeon() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "NumLevels ")) {
         next = next_word(line);
@@ -624,7 +624,7 @@ void load_known_maps() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Map ")) {
         next = next_word(line);
@@ -633,7 +633,7 @@ void load_known_maps() {
         while (gflag) {
           read_line(line);
           if (eosf) { flag = 0; gflag = 0; }
-          if (strncasecmp(line, "}",1) == 0) gflag = 0;
+          if (_strnicmp(line, "}",1) == 0) gflag = 0;
           if (gflag) {
             if (match(line, "Known ")) {
               load_known();
@@ -656,7 +656,7 @@ void load_gear_manager() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}", 1) == 0) flag = 0;
+    if (_strnicmp(line, "}", 1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Set ")) {
         next = next_word(line);
@@ -665,7 +665,7 @@ void load_gear_manager() {
         while (flag2) {
           read_line(line);
           if (eosf) { flag = 0; flag2 = 0; }
-          if (strncasecmp(line, "}", 1) == 0) flag2 = 0;
+          if (_strnicmp(line, "}", 1) == 0) flag2 = 0;
           if (flag2) {
             if (match(line, "MainHand ")) strcpy(gear_manager[set].main_hand, next_word(line));
             if (match(line, "OffHand ")) strcpy(gear_manager[set].off_hand, next_word(line));
@@ -696,7 +696,7 @@ void load_player() {
   while (flag) {
     read_line(line);
     if (eosf) flag = 0;
-    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       if (match(line, "Name ")) { next = next_word(line); strcpy(player.name, next); }
       if (match(line, "Age ")) { next = next_word(line); player.age = atoi(next); }
@@ -790,12 +790,8 @@ void load() {
   strcat(filename,".sav");
   strcpy(backupname,loadname);
   strcat(backupname,".bak");
-#ifdef MINGW
-  save_file = open(filename,O_RDONLY | O_BINARY);
-#else
-  save_file = open(filename,O_RDONLY);
-#endif
-  if (save_file < 0) {
+  save_file = fopen(filename,"rb");
+  if (save_file == NULL) {
     printf("Fatal Error: Could not open %s\n",filename);
     exit(1);
     }
@@ -806,14 +802,14 @@ void load() {
   read_line(buffer);
   if (buffer[1] == '6' || buffer[1] == '5') {
     printf("Save file version %s is no longer supported by the native loader\n",buffer);
-    close(save_file);
+    fclose(save_file);
     exit(1);
     }
   if (buffer[1] == '4' || buffer[1] == '3' || buffer[1] == '2' || buffer[1] == '1') {
     printf("save file version: %s\n",buffer);
     printf("Where did you get such an ancient save file?  I am sorry but there is\n");
     printf("no support for save versions older than 5.2\n");
-    close(save_file);
+    fclose(save_file);
     exit(1);
     }
   change_set = -1;
@@ -821,7 +817,7 @@ void load() {
   if (strcmp(buffer, "v7.0.0e") == 0) { change_set = 0; encrypted = -1; }
   if (change_set < 0) {
     printf("Save file does not appear to be correct.  Cannot load\n");
-    close(save_file);
+    fclose(save_file);
     exit(1);
     }
   offset = 1;
@@ -844,11 +840,11 @@ void load() {
     if (match(line, "Spellbook {")) load_spellbook();
     if (match(line, "GearManager {")) load_gear_manager();
     }
-  close(save_file);
+  fclose(save_file);
   read_character_rules();
 #ifdef HC
   if (player.effect[PE_HEROIC] >= 0) {
-    unlink(backupname);
+    remove(backupname);
     rename(filename, backupname);
     }
 #endif

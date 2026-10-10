@@ -63,15 +63,13 @@ static void play_game() {
   }
 
 static void end_game() {
-  struct timeval tim;
-  gettimeofday(&tim,NULL);
-  end_time = tim.tv_sec;
+  end_time = (Int32)time(NULL);
   player.time_played += (end_time - start_time);
   if (exit_flag == 'S') {
     save_new();
     }
   textmode(3);
-  unlink(backupname);
+  remove(backupname);
   score_position = 0;
   if (exit_flag == '*') {
     textcolor(12);
@@ -108,7 +106,6 @@ static void end_game() {
 Int32 main2(Int32 argc,char** argv) {
   Int32 i;
   Int32 loadgame;
-  struct timeval tim;
   time_t         date_time;
   Int32 loot_commons;
   Int32 loot_uncommons;
@@ -169,8 +166,7 @@ Int32 main2(Int32 argc,char** argv) {
   delay_hit = 200;
   delay_trap = 100;
   encrypt_save_file = 'Y';
-  gettimeofday(&tim,NULL);
-  start_time = tim.tv_sec;
+  start_time = (Int32)time(NULL);
   process_config("unicorn");
   for (i=1; i<argc; i++) {
     if (process_option(argv[i]) == 0) {

@@ -11,21 +11,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef UNIX
-#include <unistd.h>
-#include <strings.h>
-#endif
+#include <stdint.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <time.h>
-#include <sys/time.h>
-#include <sys/timeb.h>
-#include <fcntl.h>
-
-#ifdef WIN32
-#include <windows.h>
-#endif
 
 #ifdef LINK
 #undef LINK
@@ -37,10 +25,6 @@
 #define LINK extern
 #endif
 
-#ifdef MINGW
-typedef uint32_t u_int32_t;
-#endif
-
 #ifndef _BYTE_
 typedef unsigned char byte;
 #endif
@@ -49,7 +33,7 @@ typedef unsigned char byte;
 typedef unsigned short word;
 #endif
 
-typedef u_int32_t UInt32;
+typedef uint32_t  UInt32;
 typedef int32_t   Int32;
 
 #include "terminal.h"
@@ -58,7 +42,7 @@ typedef int32_t   Int32;
 #define NUM_CLASSES          13
 #define NO_OF_MAPS           50
 #define NO_OF_SPRITES       200
-int     NO_OF_MONSTERS;
+LINK Int32 NO_OF_MONSTERS;
 #define ARENA_SIZE_X          15
 #define ARENA_SIZE_Y          15
 #define MESSAGE_HEIGHT        12
@@ -1169,9 +1153,9 @@ extern void special42(Int32 mon);
 extern void special43();
 extern void special53();
 extern void special55();
-extern void special61();
-extern void special62();
-extern void special63();
+extern void special61(OBJECT_REC* item);
+extern void special62(OBJECT_REC* item);
+extern void special63(OBJECT_REC* item);
 extern void special68();
 extern void special69();
 extern void special70();
@@ -1549,7 +1533,7 @@ extern void help_item(char* msg,Int32 col_width,Int32 num_rows,Int32 indent);
 extern void convert_recipe(OBJECT_REC* item);
 extern void sort_shop_items();
 extern void get_shop_recipes();
-extern Int32 check_level_cleared();
+extern Int32 check_level_cleared(Int32 lvl);
 extern void pit_trap();
 extern void fkey_pressed(Int32 n);
 extern void shift_fkey_pressed(Int32 n);

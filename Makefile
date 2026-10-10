@@ -20,7 +20,7 @@ endif
 .PHONY: all clean
 
 # Win32 GDI build (MinGW-w64)
-DEFS = -DUNIX -O3 -Wall -DWIN32 -DMINGW -DHC
+DEFS = -O3 -Wall -DHC -DWIN32_LEAN_AND_MEAN -DNOMINMAX
 LIBDIR =
 LIBS = -s -lgdi32 -lcomctl32 -lwinmm -Wl,--subsystem,windows
 

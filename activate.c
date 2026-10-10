@@ -35,9 +35,9 @@ void activate(Int32 x,Int32 y) {
       msg("You feel more skillful",15);
       }
     else if (effect < 55) {
-      special61();
-      special62();
-      special63();
+      special61(NULL);
+      special62(NULL);
+      special63(NULL);
       }
     else if (effect < 60) special77();
     else if (effect < 65) special80();
