@@ -1,0 +1,22 @@
+/*
+ *******************************************************************
+ *** This software is copyright 1985-2014 by Michael H Riley     ***
+ *** You have permission to use, modify, copy, and distribute    ***
+ *** this software so long as this copyright notice is retained. ***
+ *** This software may not be used in commercial applications    ***
+ *** without express written permission from the author.         ***
+ *******************************************************************
+*/
+
+#include "header.h"
+
+char in_sight(Int32 x,Int32 y) {
+  char flag;
+  flag = '*';
+  if (x<player.map_x) flag = ' ';
+  if (y<player.map_y) flag = ' ';
+  if (x>player.map_x+TILES_X) flag = ' ';
+  if (y>player.map_y+TILES_Y) flag = ' ';
+  return flag;
+  }
+

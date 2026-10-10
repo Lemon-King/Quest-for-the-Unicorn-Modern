@@ -1,0 +1,68 @@
+/*
+ *******************************************************************
+ *** This software is copyright 1985-2014 by Michael H Riley     ***
+ *** You have permission to use, modify, copy, and distribute    ***
+ *** this software so long as this copyright notice is retained. ***
+ *** This software may not be used in commercial applications    ***
+ *** without express written permission from the author.         ***
+ *******************************************************************
+*/
+
+#include "header.h"
+
+void blind() {
+  char mflag;
+  Int32  x,y;
+  Int32  xdir,ydir;
+  Int32  mon;
+  Int32  i;
+  get_dir(&xdir,&ydir);
+  x = player.x;
+  y = player.y;
+  mflag = ' ';
+  while (mflag == ' ') {
+    x += xdir;
+    y += ydir;
+    if (player.map[x][y] == 3) mflag = '*';
+    if (player.map[x][y] == 38) mflag = '*';
+    if (player.map[x][y] == 39) mflag = '*';
+    if (player.map[x][y] == 21) mflag = '*';
+    if (player.map[x][y] < 0) mflag = '*';
+    if (player.map[x][y]>400 && player.map[x][y]<500) mflag = '*';
+    if (in_sight(x,y) == '*') {
+      show_sprite(x-player.map_x,y-player.map_y,80);
+      delay(delay_ranged);
+      show_spot(x,y);
+      }
+    }
+  if (player.map[x][y] < 0 || (player.map[x][y]>400 && player.map[x][y]<500)) {
+    if (in_arena == 'Y') mon = player.map[x][y] - 400;
+      else mon = player.map[x][y];
+    if (in_arena == 'Y') i=50+5*(player.level-player.monster[mon][a_mon].level);
+      else i=50+5*(player.level-player.monster[1][mon].level);
+    if (in_arena == 'Y' && (player.monster[mon][a_mon].special & MS_AMAGIC) == MS_AMAGIC) i=0;
+    if (in_arena != 'Y' && (player.monster[1][mon].special & MS_AMAGIC) == MS_AMAGIC) i=0;
+    if (u_random(100) < i) {
+      clear_prompt();
+      prompt("Blinded !!!");
+      if (in_sight(x,y) == '*') {
+        show_sprite(x-player.map_x,y-player.map_y,80);
+        delay(delay_hit);
+        show_spot(x,y);
+        }
+      if (in_arena != 'Y') {
+        player.monster[1][mon].attack /= 2;
+        player.monster[1][mon].defense /= 2;
+        }
+      if (in_arena == 'Y') {
+        player.monster[mon][a_mon].attack /= 2;
+        player.monster[mon][a_mon].defense /= 2;
+        }
+      }
+    else {
+      clear_prompt();
+      prompt("Fizzle. . . ");
+      }
+    }
+  }
+
