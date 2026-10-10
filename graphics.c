@@ -58,6 +58,324 @@ void rcs_buildColorMapping(rcs_Display* display) {
 #endif
   }
 
+/* ******************** */
+/* ***** Viewport ***** */
+/* ******************** */
+struct _rcs_Viewport {
+  rcs_Display* display;
+  rcs_Window   window;
+  rcs_Pixmap   buffer;
+  Int32        width;
+  Int32        height;
+  Int32        windowWidth;
+  Int32        windowHeight;
+  Int32        scale;
+  Int32        left;
+  Int32        top;
+  Int32        dirtyLeft;
+  Int32        dirtyTop;
+  Int32        dirtyRight;
+  Int32        dirtyBottom;
+#ifdef X
+  GC           gc;
+#endif
+  };
+
+/* What the window is painted through: the window itself on X11, a device context on Win32 */
+#ifdef X
+typedef Drawable _rcs_Surface;
+static XContext  _rcs_viewports;
+#endif
+#ifdef WIN32
+typedef HDC _rcs_Surface;
+#endif
+
+static void _rcs_clearDirty(rcs_Viewport v) {
+  v->dirtyLeft = 0;
+  v->dirtyTop = 0;
+  v->dirtyRight = 0;
+  v->dirtyBottom = 0;
+  }
+
+static void _rcs_layoutViewport(rcs_Viewport v,Int32 windowWidth,Int32 windowHeight) {
+  Int32 scaleX;
+  Int32 scaleY;
+  scaleX = windowWidth / v->width;
+  scaleY = windowHeight / v->height;
+  v->scale = (scaleX < scaleY) ? scaleX : scaleY;
+  if (v->scale < 1) v->scale = 1;
+
+  v->windowWidth = windowWidth;
+  v->windowHeight = windowHeight;
+  v->left = (windowWidth - v->width * v->scale) / 2;
+  v->top = (windowHeight - v->height * v->scale) / 2;
+  }
+
+static void _rcs_fillBlack(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
+#ifdef WIN32
+  RECT rect;
+#endif
+  if (w <= 0 || h <= 0) return;
+
+#ifdef X
+  XFillRectangle(v->display,surface,v->gc,x,y,w,h);
+#endif
+#ifdef WIN32
+  rect.left = x;
+  rect.top = y;
+  rect.right = x + w;
+  rect.bottom = y + h;
+  FillRect(surface,&rect,(HBRUSH)GetStockObject(BLACK_BRUSH));
+#endif
+  }
+
+#ifdef X
+/* Core X cannot scale a copy, so the area is enlarged on the client by repeating pixels. */
+static void _rcs_stretchToWindow(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
+  XImage*       source;
+  XImage*       scaled;
+  char*         row;
+  unsigned long pixel;
+  Int32         scale;
+  Int32         sx,sy,i;
+  scale = v->scale;
+  source = XGetImage(v->display,v->buffer,x,y,w,h,AllPlanes,ZPixmap);
+  if (source == NULL) return;
+
+  scaled = XCreateImage(v->display,DefaultVisual(v->display,DefaultScreen(v->display)),
+                        source->depth,ZPixmap,0,NULL,w * scale,h * scale,32,0);
+  if (scaled == NULL) {
+    XDestroyImage(source);
+    return;
+    }
+
+  scaled->data = (char*)malloc(scaled->bytes_per_line * scaled->height);
+  if (scaled->data == NULL) {
+    XDestroyImage(scaled);
+    XDestroyImage(source);
+    return;
+    }
+
+  for (sy=0; sy<h; sy++) {
+    for (sx=0; sx<w; sx++) {
+      pixel = XGetPixel(source,sx,sy);
+      for (i=0; i<scale; i++) XPutPixel(scaled,sx * scale + i,sy * scale,pixel);
+      }
+    row = scaled->data + sy * scale * scaled->bytes_per_line;
+    for (i=1; i<scale; i++) memcpy(row + i * scaled->bytes_per_line,row,scaled->bytes_per_line);
+    }
+
+  XPutImage(v->display,surface,v->gc,scaled,0,0,v->left + x * scale,v->top + y * scale,
+            w * scale,h * scale);
+  XDestroyImage(scaled);
+  XDestroyImage(source);
+  }
+#endif
+
+/* Copies a buffer area to its scaled place in the window. */
+static void _rcs_copyToWindow(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
+#ifdef X
+  if (v->scale == 1)
+    XCopyArea(v->display,v->buffer,surface,v->gc,x,y,w,h,v->left + x,v->top + y);
+  else
+    _rcs_stretchToWindow(v,surface,x,y,w,h);
+#endif
+#ifdef WIN32
+  HDC     source;
+  HGDIOBJ previous;
+  source = CreateCompatibleDC(surface);
+  previous = SelectObject(source,v->buffer);
+
+  /* COLORONCOLOR repeats whole pixels, so a whole-number scale stays sharp */
+  SetStretchBltMode(surface,COLORONCOLOR);
+  StretchBlt(surface,v->left + x * v->scale,v->top + y * v->scale,w * v->scale,h * v->scale,
+             source,x,y,w,h,SRCCOPY);
+
+  SelectObject(source,previous);
+  DeleteDC(source);
+#endif
+  }
+
+/* Repaints the whole window: the scaled buffer framed by black borders. */
+static void _rcs_paintViewport(rcs_Viewport v,_rcs_Surface surface) {
+  Int32 right;
+  Int32 bottom;
+  Int32 height;
+  right = v->left + v->width * v->scale;
+  bottom = v->top + v->height * v->scale;
+  height = v->height * v->scale;
+
+  _rcs_fillBlack(v,surface,0,0,v->windowWidth,v->top);
+  _rcs_fillBlack(v,surface,0,bottom,v->windowWidth,v->windowHeight - bottom);
+  _rcs_fillBlack(v,surface,0,v->top,v->left,height);
+  _rcs_fillBlack(v,surface,right,v->top,v->windowWidth - right,height);
+
+  _rcs_copyToWindow(v,surface,0,0,v->width,v->height);
+  _rcs_clearDirty(v);
+  }
+
+#ifdef X
+/* Refits and repaints a viewport's window when X resizes or exposes it. */
+static void _rcs_viewportEvent(rcs_Display* d,XEvent* event) {
+  rcs_Viewport v;
+  XPointer     data;
+  if (XFindContext(d,event->xany.window,_rcs_viewports,&data) != 0) return;
+  v = (rcs_Viewport)data;
+
+  if (event->type == ConfigureNotify &&
+      (event->xconfigure.width != v->windowWidth || event->xconfigure.height != v->windowHeight)) {
+    _rcs_layoutViewport(v,event->xconfigure.width,event->xconfigure.height);
+    _rcs_paintViewport(v,v->window);
+    }
+
+  if (event->type == Expose && event->xexpose.count == 0) _rcs_paintViewport(v,v->window);
+  }
+#endif
+
+#ifdef WIN32
+/* Outer window size for a client area of width x height, with the frame at the window's DPI. */
+static void _rcs_frameSize(HWND win,Int32 width,Int32 height,Int32* outerWidth,Int32* outerHeight) {
+  RECT frame;
+  frame.left = 0;
+  frame.top = 0;
+  frame.right = width;
+  frame.bottom = height;
+  AdjustWindowRectExForDpi(&frame,GetWindowLong(win,GWL_STYLE),FALSE,GetWindowLong(win,GWL_EXSTYLE),
+                           GetDpiForWindow(win));
+  *outerWidth = frame.right - frame.left;
+  *outerHeight = frame.bottom - frame.top;
+  }
+
+static void _rcs_setClientSize(HWND win,Int32 width,Int32 height) {
+  Int32 outerWidth,outerHeight;
+  _rcs_frameSize(win,width,height,&outerWidth,&outerHeight);
+  SetWindowPos(win,NULL,0,0,outerWidth,outerHeight,SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+  }
+
+/* The whole-number scale nearest the monitor's DPI at which the window still fits its work area. */
+static Int32 _rcs_dpiScale(rcs_Viewport v) {
+  MONITORINFO monitor;
+  Int32       scale;
+  Int32       outerWidth,outerHeight;
+  monitor.cbSize = sizeof(monitor);
+  GetMonitorInfo(MonitorFromWindow(v->window,MONITOR_DEFAULTTOPRIMARY),&monitor);
+  scale = (GetDpiForWindow(v->window) + USER_DEFAULT_SCREEN_DPI / 2) / USER_DEFAULT_SCREEN_DPI;
+
+  while (scale > 1) {
+    _rcs_frameSize(v->window,v->width * scale,v->height * scale,&outerWidth,&outerHeight);
+    if (outerWidth <= monitor.rcWork.right - monitor.rcWork.left &&
+        outerHeight <= monitor.rcWork.bottom - monitor.rcWork.top) break;
+    scale--;
+    }
+  return (scale < 1) ? 1 : scale;
+  }
+
+/* Keeps the client area from shrinking below the buffer. */
+static void _rcs_limitWindowSize(rcs_Viewport v,MINMAXINFO* limits) {
+  Int32 outerWidth,outerHeight;
+  _rcs_frameSize(v->window,v->width,v->height,&outerWidth,&outerHeight);
+  limits->ptMinTrackSize.x = outerWidth;
+  limits->ptMinTrackSize.y = outerHeight;
+  }
+#endif
+
+rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,Int32 width,Int32 height) {
+  rcs_Viewport      v;
+#ifdef X
+  XWindowAttributes attr;
+  XSizeHints*       hints;
+#endif
+#ifdef WIN32
+  RECT              client;
+  Int32             scale;
+#endif
+  if (width < 1 || height < 1) return NULL;
+  v = (rcs_Viewport)malloc(sizeof(struct _rcs_Viewport));
+  if (v == NULL) return NULL;
+
+  v->display = d;
+  v->window = win;
+  v->buffer = buffer;
+  v->width = width;
+  v->height = height;
+  _rcs_clearDirty(v);
+
+#ifdef X
+  v->gc = XCreateGC(d,win,0,NULL);
+  XSetForeground(d,v->gc,BlackPixel(d,DefaultScreen(d)));
+  XGetWindowAttributes(d,win,&attr);
+  _rcs_layoutViewport(v,attr.width,attr.height);
+
+  hints = XAllocSizeHints();
+  if (hints != NULL) {
+    hints->flags = PMinSize;
+    hints->min_width = width;
+    hints->min_height = height;
+    XSetWMNormalHints(d,win,hints);
+    XFree(hints);
+    }
+
+  if (_rcs_viewports == 0) _rcs_viewports = XUniqueContext();
+  XSaveContext(d,win,_rcs_viewports,(XPointer)v);
+#endif
+#ifdef WIN32
+  SetWindowLongPtr(win,GWLP_USERDATA,(LONG_PTR)v);
+  scale = _rcs_dpiScale(v);
+  _rcs_setClientSize(win,width * scale,height * scale);
+  GetClientRect(win,&client);
+  _rcs_layoutViewport(v,client.right,client.bottom);
+#endif
+  return v;
+  }
+
+/* Marks a buffer area as changed; it reaches the window at the next rcs_presentViewport(). */
+void rcs_invalidateViewport(rcs_Viewport v,Int32 x,Int32 y,Int32 w,Int32 h) {
+  Int32 right;
+  Int32 bottom;
+  right = x + w;
+  bottom = y + h;
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  if (right > v->width) right = v->width;
+  if (bottom > v->height) bottom = v->height;
+  if (right <= x || bottom <= y) return;
+
+  if (v->dirtyRight <= v->dirtyLeft) {
+    v->dirtyLeft = x;
+    v->dirtyTop = y;
+    v->dirtyRight = right;
+    v->dirtyBottom = bottom;
+    return;
+    }
+
+  if (x < v->dirtyLeft) v->dirtyLeft = x;
+  if (y < v->dirtyTop) v->dirtyTop = y;
+  if (right > v->dirtyRight) v->dirtyRight = right;
+  if (bottom > v->dirtyBottom) v->dirtyBottom = bottom;
+  }
+
+void rcs_presentViewport(rcs_Viewport v) {
+  Int32 w;
+  Int32 h;
+#ifdef WIN32
+  HDC   dc;
+#endif
+  if (v->dirtyRight <= v->dirtyLeft) return;
+  w = v->dirtyRight - v->dirtyLeft;
+  h = v->dirtyBottom - v->dirtyTop;
+
+#ifdef X
+  _rcs_copyToWindow(v,v->window,v->dirtyLeft,v->dirtyTop,w,h);
+  XFlush(v->display);
+#endif
+#ifdef WIN32
+  dc = GetDC(v->window);
+  _rcs_copyToWindow(v,dc,v->dirtyLeft,v->dirtyTop,w,h);
+  ReleaseDC(v->window,dc);
+#endif
+  _rcs_clearDirty(v);
+  }
+
 #ifdef WIN32
 rcs_Display disp;
 Int32 _shiftState;
@@ -148,17 +466,56 @@ Int32 _rcs_isBitmap(rcs_Window w) {
   }
 
 LRESULT CALLBACK rcs_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+  rcs_Viewport viewport;
+  PAINTSTRUCT  paint;
+  HDC          dc;
+  RECT*        suggested;
+  viewport = (rcs_Viewport)GetWindowLongPtr(hWnd,GWLP_USERDATA);
+
+  /* Painting happens here so the window also redraws inside Windows' own resize loop */
   switch (message) {
-                case WM_DESTROY:PostQuitMessage(0);
-                                      break;
-          default:return DefWindowProc(hWnd, message, wParam, lParam);
+    case WM_DESTROY:
+      PostQuitMessage(0);
+      break;
+
+    case WM_DPICHANGED:
+      suggested = (RECT*)lParam;
+      SetWindowPos(hWnd,NULL,suggested->left,suggested->top,suggested->right - suggested->left,
+                   suggested->bottom - suggested->top,SWP_NOZORDER | SWP_NOACTIVATE);
+      return 0;
+
+    case WM_GETMINMAXINFO:
+      if (viewport == NULL) break;
+      _rcs_limitWindowSize(viewport,(MINMAXINFO*)lParam);
+      return 0;
+
+    case WM_SIZE:
+      if (viewport != NULL) _rcs_layoutViewport(viewport,LOWORD(lParam),HIWORD(lParam));
+      break;
+
+    case WM_ERASEBKGND:
+      if (viewport != NULL) return 1;
+      break;
+
+    case WM_PAINT:
+      if (viewport == NULL) break;
+      dc = BeginPaint(hWnd,&paint);
+      _rcs_paintViewport(viewport,dc);
+      EndPaint(hWnd,&paint);
+      return 0;
     }
   return DefWindowProc(hWnd, message, wParam, lParam);
-  return 0;
   }
 
 void rcs_initWin32(HINSTANCE hInstance) {
         WNDCLASSEX wcex;
+  HDC        dc;
+  HGDIOBJ    previous;
+  TEXTMETRIC metrics;
+
+  /* Without this, Windows stretches the window on scaled displays and blurs every pixel */
+  SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
   disp.hInstance=hInstance;
   strcpy(disp.className,"rcsawlib");
   disp.numPixmaps=0;
@@ -166,6 +523,15 @@ void rcs_initWin32(HINSTANCE hInstance) {
   disp.font=CreateFont(FONT_HEIGHT,FONT_WIDTH,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
                        OEM_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
                        NONANTIALIASED_QUALITY,FIXED_PITCH | FF_MODERN,"Terminal");
+
+  dc = GetDC(NULL);
+  previous = SelectObject(dc,disp.font);
+  GetTextMetrics(dc,&metrics);
+  SelectObject(dc,previous);
+  ReleaseDC(NULL,dc);
+  disp.fontAscent = metrics.tmAscent;
+  disp.fontHeight = metrics.tmHeight;
+  disp.fontOverhang = (metrics.tmMaxCharWidth > FONT_WIDTH) ? metrics.tmMaxCharWidth - FONT_WIDTH : 0;
 
         wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -176,7 +542,7 @@ void rcs_initWin32(HINSTANCE hInstance) {
         wcex.hInstance          = hInstance;
         wcex.hIcon                      = NULL;
         wcex.hCursor            = LoadCursor(NULL, IDC_ARROW);
-        wcex.hbrBackground      = (HBRUSH)(COLOR_WINDOW+1);
+        wcex.hbrBackground      = (HBRUSH)GetStockObject(BLACK_BRUSH);
         wcex.lpszMenuName       = NULL;
         wcex.lpszClassName      = disp.className;
         wcex.hIconSm            = NULL;
@@ -363,12 +729,11 @@ rcs_Window  rcs_createWindow(rcs_Display* d,rcs_Window parent,Int32 x,Int32 y,In
   AltState = 0;
 #endif
 #ifdef WIN32
-  
+
   if (parent == GetDesktopWindow()) {
-    width += 3;
-    height += 20;
     ret = CreateWindow(d->className, "rcsawlib", WS_OVERLAPPEDWINDOW,
        x, y, width, height, NULL, NULL, d->hInstance, NULL);
+    if (ret) _rcs_setClientSize(ret,width,height);
     }
   else {
     ret = CreateWindow(d->className, "rcsawlib", WS_CHILD,
@@ -546,6 +911,51 @@ void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char
 #endif
   }
 
+/* ************************* */
+/* ***** String Bounds ***** */
+/* ************************* */
+/* The rectangle rcs_drawString() may touch for the same arguments, with or without clr. */
+void rcs_stringBounds(rcs_Display* d,rcs_GC gc,Int32 x,Int32 y,char* buffer,
+                      Int32* left,Int32* top,Int32* width,Int32* height) {
+  Int32 length;
+#ifdef X
+  /* No GC is ever given its own font, so they all share the server default */
+  static XFontStruct* font = NULL;
+  XCharStruct overall;
+  Int32       direction,ascent,descent;
+  Int32       inkLeft,inkRight,above,below;
+#endif
+  length = strlen(buffer);
+
+#ifdef X
+  if (font == NULL) font = XQueryFont(d,XGContextFromGC(gc));
+  if (font == NULL) {
+    *left = x;
+    *top = y;
+    *width = 0;
+    *height = 0;
+    return;
+    }
+
+  XTextExtents(font,buffer,length,&direction,&ascent,&descent,&overall);
+  inkLeft = (overall.lbearing < 0) ? overall.lbearing : 0;
+  inkRight = (overall.rbearing > overall.width) ? overall.rbearing : overall.width;
+  above = (overall.ascent > ascent) ? overall.ascent : ascent;
+  below = (overall.descent > descent) ? overall.descent : descent;
+
+  *left = x + inkLeft;
+  *top = y - above;
+  *width = inkRight - inkLeft;
+  *height = above + below;
+#endif
+#ifdef WIN32
+  *left = x;
+  *top = y - d->fontAscent;
+  *width = (length > 0) ? length * FONT_WIDTH + d->fontOverhang : 0;
+  *height = d->fontHeight;
+#endif
+  }
+
 /* ***************** */
 /* ***** Flush ***** */
 /* ***************** */
@@ -683,6 +1093,7 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
                   if (CtrlState && ret.d1 >= XK_A && ret.d1 <= XK_Z) ret.d1 -= XK_A - 1;
                   break;
     }
+  _rcs_viewportEvent(d,&event);
 #endif
 #ifdef WIN32
   MSG msg;

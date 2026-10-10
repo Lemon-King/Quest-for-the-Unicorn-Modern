@@ -27,11 +27,14 @@ struct termios original;
 #else  // ASCII
 
 #include "graphics.h"
+
+/* Drawing goes to xscreen only; the viewport shows it in the window when the game flushes or waits */
 rcs_Event key_event;
 rcs_Window         window;
 rcs_Display*       display;
 rcs_Pixmap         xscreen;
 rcs_Pixmap         screenSave;
+rcs_Viewport       viewport;
 rcs_GC             colors[16];
 rcs_GC             gc;
 #endif // ASCII
@@ -50,6 +53,23 @@ Int32 cursor_x;
 Int32 cursor_y;
 Int32 text_color;
 Int32 g_color;
+
+#ifndef ASCII
+static void clear_buffer() {
+  rcs_GC gc;
+  gc = rcs_openGC(display,window);
+  rcs_namedForeground(display,gc,"black");
+  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
+  rcs_closeGC(display,gc);
+  rcs_invalidateViewport(viewport,0,0,screen_width,screen_height);
+  }
+
+static void invalidate_string(rcs_GC gc,Int32 x,Int32 y,char* buffer) {
+  Int32 left,top,width,height;
+  rcs_stringBounds(display,gc,x,y,buffer,&left,&top,&width,&height);
+  rcs_invalidateViewport(viewport,left,top,width,height);
+  }
+#endif
 
 void hide_cursor() {
 #ifdef MINGW
@@ -107,12 +127,7 @@ void clrscr() {
   fflush(stdout);
 #endif
 #else
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  rcs_drawFilledBox(display,window,gc,0,0,screen_width,screen_height);
-  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
-  rcs_closeGC(display,gc);
+  clear_buffer();
 #endif
   }
 
@@ -230,19 +245,15 @@ void init_graph() {
 #else
 void init_graph() {
   Int32 i;
-  rcs_GC gc;
   display = rcs_openDisplay(":0.0");
   rcs_buildColorMapping(display);
   window = rcs_createWindow(display,rcs_rootWindow(display),0,0,screen_width,screen_height);
-  rcs_showWindow(display,window);
   rcs_setWindowName(display,window,"Quest for the Unicorn");
   xscreen = rcs_createPixmap(display,window,screen_width,screen_height);
   screenSave = rcs_createPixmap(display,window,screen_width,screen_height);
-  gc = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  rcs_drawFilledBox(display,window,gc,0,0,screen_width,screen_height);
-  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
-  rcs_closeGC(display,gc);
+  viewport = rcs_createViewport(display,window,xscreen,screen_width,screen_height);
+  clear_buffer();
+  rcs_showWindow(display,window);
   for (i=0; i<16; i++) {
     colors[i] = rcs_openGC(display,window);
     gc_color(&(colors[i]),i);
@@ -291,8 +302,8 @@ void restoreScreen() {
   rcs_GC gc;
   gc = rcs_openGC(display,window);
   rcs_copyArea(display,screenSave,xscreen,gc,0,0,screen_width,screen_height,0,0);
-  rcs_copyArea(display,screenSave,window,gc,0,0,screen_width,screen_height,0,0);
   rcs_closeGC(display,gc);
+  rcs_invalidateViewport(viewport,0,0,screen_width,screen_height);
   }
 #endif
 
@@ -338,8 +349,11 @@ void screenshot() {
 
 void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr) {
 #ifndef ASCII
-  rcs_drawLine(display,window,colors[clr],x1,y1,x2,y2);
+  Int32 left,top;
+  left = (x1 < x2) ? x1 : x2;
+  top = (y1 < y2) ? y1 : y2;
   rcs_drawLine(display,xscreen,colors[clr],x1,y1,x2,y2);
+  rcs_invalidateViewport(viewport,left,top,abs(x2 - x1) + 1,abs(y2 - y1) + 1);
 #endif
   }
 
@@ -347,12 +361,7 @@ void graphmode() {
 #ifdef ASCII
   clrscr();
 #else
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  rcs_drawFilledBox(display,window,gc,0,0,screen_width,screen_height);
-  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
-  rcs_closeGC(display,gc);
+  clear_buffer();
 #endif
   }
 
@@ -360,12 +369,7 @@ void textmode(Int32 mode) {
 #ifdef ASCII
   clrscr();
 #else
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  rcs_drawFilledBox(display,window,gc,0,0,screen_width,screen_height);
-  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
-  rcs_closeGC(display,gc);
+  clear_buffer();
 #endif
   }
 
@@ -417,10 +421,10 @@ void txt_write(char* buffer) {
 //    rcs_drawFilledBox(display,xscreen,black,cursor_x*8,cursor_y*19,8,19);
 //    rcs_drawString(display,window,gc,cursor_x * 8,10+cursor_y * 19,b2,0);
 //    rcs_drawString(display,xscreen,gc,cursor_x * 8,10+cursor_y * 19,b2,0);
-    rcs_drawFilledBox(display,window,black,x*8,y*19,8,19);
     rcs_drawFilledBox(display,xscreen,black,x*8,y*19,8,19);
-    rcs_drawString(display,window,gc,x * 8,10+y * 19,b2,0);
     rcs_drawString(display,xscreen,gc,x * 8,10+y * 19,b2,0);
+    rcs_invalidateViewport(viewport,x*8,y*19,8,19);
+    invalidate_string(gc,x * 8,10+y * 19,b2);
     cursor_x++;
     if (cursor_x == 80) {
       cursor_x = 0;
@@ -469,16 +473,10 @@ Int32 keypressed() {
 #endif
 
 #ifndef ASCII
-  rcs_GC    gc;
   rcs_Event event;
 
+  rcs_presentViewport(viewport);
   event = rcs_pollEvent(display);
-  if (event.type == EVENT_EXPOSE) {
-    gc = rcs_openGC(display,window);
-    rcs_copyArea(display,xscreen,window,gc,event.d1,event.d2,event.d3,event.d4,
-                                          event.d1,event.d2);
-    rcs_closeGC(display,gc);
-    }
   if (event.type == EVENT_KEY_PRESS && !is_modifier(event.d1)) {
     if (event.d1 == KY_SCREENSHOT) {
       screenshot();
@@ -744,22 +742,16 @@ static Int32 next_key() {
 #endif
 
 #ifndef ASCII
-  rcs_GC    gc;
   rcs_Event event;
   char      flag;
   flag = ' ';
+  rcs_presentViewport(viewport);
   if (key_event.type == EVENT_KEY_PRESS) {
     key_event.type = EVENT_NONE;
     return keytrans(key_event.d1);
     }
   while (flag == ' ') {
     event = rcs_getEvent(display);
-    if (event.type == EVENT_EXPOSE) {
-      gc = rcs_openGC(display,window);
-      rcs_copyArea(display,xscreen,window,gc,event.d1,event.d2,event.d3,event.d4,
-                                            event.d1,event.d2);
-      rcs_closeGC(display,gc);
-      }
     if (event.type == EVENT_KEY_PRESS) {
       if (!is_modifier(event.d1))
         return keytrans(event.d1);
@@ -795,8 +787,8 @@ void putpixel(Int32 x,Int32 y,Int32 clr) {
 */
 
 void flush() {
-#ifdef X
-  XFlush(display);
+#ifndef ASCII
+  rcs_presentViewport(viewport);
 #endif
   }
 
@@ -807,10 +799,8 @@ void open_display() {
   }
 
 void close_display() {
-#ifdef X
-  XFlush(display);
-#endif
 #ifndef ASCII
+  rcs_presentViewport(viewport);
   rcs_closeGC(display,gc);
 #endif
   }
@@ -818,8 +808,8 @@ void close_display() {
 void plot(Int32 x,Int32 y,Int32 clr) {
 #ifndef ASCII
 //  gc_color(&gc,clr);
-  rcs_drawPoint(display,window,colors[clr],x,y);
   rcs_drawPoint(display,xscreen,colors[clr],x,y);
+  rcs_invalidateViewport(viewport,x,y,1,1);
 #endif
   }
 
@@ -832,9 +822,9 @@ void bar(Int32 x1,Int32 y1,Int32 x2,Int32 y2) {
   rcs_GC gc;
   gc = rcs_openGC(display,window);
   gc_color(&gc,g_color);
-  rcs_drawFilledBox(display,window,gc,x1,y1,x2-x1,y2-y1);
   rcs_drawFilledBox(display,xscreen,gc,x1,y1,x2-x1,y2-y1);
   rcs_closeGC(display,gc);
+  rcs_invalidateViewport(viewport,x1,y1,x2-x1,y2-y1);
 #endif
   }
 
@@ -861,8 +851,8 @@ void outtext_xy(Int32 x,Int32 y,char* buffer) {
   rcs_GC gc;
   gc = rcs_openGC(display,window);
   gc_color(&gc,g_color);
-  rcs_drawString(display,window,gc,x*8,y*11,buffer,0);
   rcs_drawString(display,xscreen,gc,x*8,y*11,buffer,0);
+  invalidate_string(gc,x*8,y*11,buffer);
   rcs_closeGC(display,gc);
 #endif
   }
@@ -880,8 +870,8 @@ void outtextxy(Int32 x,Int32 y,char* buffer) {
   rcs_GC gc;
   gc = rcs_openGC(display,window);
   gc_color(&gc,g_color);
-  rcs_drawString(display,window,gc,x,y,buffer,0);
   rcs_drawString(display,xscreen,gc,x,y,buffer,0);
+  invalidate_string(gc,x,y,buffer);
   rcs_closeGC(display,gc);
 #endif
   }
@@ -899,8 +889,8 @@ void outtextxyclr(Int32 x,Int32 y,char* buffer) {
   rcs_GC gc;
   gc = rcs_openGC(display,window);
   gc_color(&gc,g_color);
-  rcs_drawString(display,window,gc,x,y,buffer,-1);
   rcs_drawString(display,xscreen,gc,x,y,buffer,-1);
+  invalidate_string(gc,x,y,buffer);
   rcs_closeGC(display,gc);
 #endif
   }
@@ -932,14 +922,19 @@ void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
   text_color = oldClr;
 #else
   rcs_GC gc;
+  Int32  width,height;
   gc = rcs_openGC(display,window);
-  rcs_drawPixmap(display,window,gc,x,y,(const char**)img);
   rcs_drawPixmap(display,xscreen,gc,x,y,(const char**)img);
   rcs_closeGC(display,gc);
+  sscanf(img[0],"%d %d",&width,&height);
+  rcs_invalidateViewport(viewport,x,y,width,height);
 #endif
   }
 
 void delay(Int32 tm) {
+#ifndef ASCII
+  rcs_presentViewport(viewport);
+#endif
   usleep(tm * 1000);
 /*
   Int32 sec;

@@ -155,8 +155,8 @@
          -dr=ms    - Delay for ranged combat visual effects
          -dh=ms    - Delay for successful hit visual effects
          -dt=ms    - Delay fro trap visual effects
-         -w=width  - Width of window (Graphics version only)
-         -h=height - Height of window (Graphics version only)
+         -w=width  - Width of game screen (Graphics version only)
+         -h=height - Height of game screen (Graphics version only)
          -m        - Monochrome mode (Text version only)
          -clr      - Color mode (Text version only)
          -s        - Show stats/settings and exit
@@ -389,6 +389,15 @@
          Ctrl+P - Save a picture of the screen.  Works on every screen.
                   Graphics versions write screenshotNNNN.bmp and the text
                   version writes screenshotNNNN.txt, in the game directory.
+
+     Window size
+     ===========
+         The graphics versions can be resized or maximized.  The game
+         screen grows in whole steps (2x, 3x, ...) so every pixel stays
+         sharp, and it is centred with black borders.  The window cannot
+         be made smaller than the game screen set by -w and -h.  On
+         Windows the window opens at the step that best matches the
+         display scaling.
 
      F-key usage
      ===========
