@@ -8,8 +8,11 @@
  *******************************************************************
 */
 
-#include "header.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
+typedef int32_t Int32;
 
 void process(char* fname) {
   FILE*    in_file;
