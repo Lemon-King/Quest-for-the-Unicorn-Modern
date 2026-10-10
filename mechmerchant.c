@@ -10,6 +10,51 @@
 
 #include "header.h"
 
+static void show_top(OBJECT_REC* items) {
+  Int32 i;
+  Int32 pos;
+  char buffer[80];
+  char buffer2[80];
+  textmode(3); gotoxy(33,1); textcolor(11);
+  sprintf(buffer,"Mech-Merchant");
+  txt_write(buffer);
+  textcolor(14);
+  pos = 1;
+  for (i=0; i<10; i++) {
+    if (items[i].otype != O_NONE) {
+      gotoxy(22,pos+2);
+      strcpy(buffer2, get_name(&(items[i])));
+      sprintf(buffer,"%2d  %s",pos,buffer2);
+      txt_write(buffer);
+      gotoxy(50,pos+2);
+      sprintf(buffer,"%6.0f",item_cost(&(items[i])) * 1.50);
+      txt_write(buffer);
+      pos++;
+      }
+    }
+  gotoxy(22,14); txt_write("11  Sell an item");
+  gotoxy(22,15); txt_write("12  Identify an item");
+  gotoxy(22,16); txt_write("13  Sell from Pack");
+  gotoxy(22,17); txt_write("14  Identify from Pack");
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
+static double sell_price(OBJECT_REC* item) {
+  double price;
+  price = item_cost(item);
+  if (item->otype == O_JEWL) {
+    price *= 0.95;
+    price *= 0.70;
+    return price;
+    }
+  price *= 0.08;
+  if ((item->flags & OF_IDENT) == 0) price /= 2.0;
+  price *= 0.70;
+  return price;
+  }
+
 void mech_merchant() {
   Int32 option;
   double price;
@@ -20,55 +65,12 @@ void mech_merchant() {
   char key;
   OBJECT_REC items[10];
 
-  void show_top() {
-    Int32 pos;
-    char buffer2[80];
-    textmode(3); gotoxy(33,1); textcolor(11);
-    sprintf(buffer,"Mech-Merchant");
-    txt_write(buffer);
-    textcolor(14);
-    pos = 1;
-    for (i=0; i<10; i++) {
-      if (items[i].otype != O_NONE) {
-        gotoxy(22,pos+2);
-        strcpy(buffer2, get_name(&(items[i])));
-        sprintf(buffer,"%2d  %s",pos,buffer2);
-        txt_write(buffer);
-        gotoxy(50,pos+2);
-        sprintf(buffer,"%6.0f",item_cost(&(items[i])) * 1.50);
-        txt_write(buffer);
-        pos++;
-        }
-      }
-    gotoxy(22,14); txt_write("11  Sell an item");
-    gotoxy(22,15); txt_write("12  Identify an item");
-    gotoxy(22,16); txt_write("13  Sell from Pack");
-    gotoxy(22,17); txt_write("14  Identify from Pack");
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-  }
-
-  double sell_price(OBJECT_REC* item) {
-    double price;
-    price = item_cost(item);
-    if (item->otype == O_JEWL) {
-      price *= 0.95;
-      price *= 0.70;
-      return price;
-      }
-    price *= 0.08;
-    if ((item->flags & OF_IDENT) == 0) price /= 2.0;
-    price *= 0.70;
-    return price;
-    }
-
   i = 0;
   pItem = find_linked_item(40); if (pItem != NULL) items[i++] = *pItem;
   pItem = find_linked_item(499); if (pItem != NULL) items[i++] = *pItem;
   while (i < 10) items[i++].otype = O_NONE;
   pItem = &item;
-  show_top();
+  show_top(items);
   option = 1;
   while (option != 0) {
     gotoxy(15,19); textcolor(10);
@@ -96,11 +98,11 @@ void mech_merchant() {
         txt_write("You do not have that much!! (press a key)");
         key = inkey();
         }
-      show_top();
+      show_top(items);
       }
     if (option == 12) {
       pItem = inventory(0);
-      show_top();
+      show_top(items);
       if (pItem != NULL && pItem->otype != O_NONE) {
         gotoxy(15,19); textcolor(12);
         price = rcs_trunc(item_cost(pItem) * 0.25);
@@ -129,7 +131,7 @@ void mech_merchant() {
             }
           }
         }
-      show_top();
+      show_top(items);
       }
     if (option == 13)
       for (i=1; i<=32; i++)
@@ -205,7 +207,7 @@ void mech_merchant() {
         }
     if (option == 11) {
       pItem = inventory(0);
-      show_top();
+      show_top(items);
       if (pItem != NULL && pItem->otype != O_NONE) {
         price = sell_price(pItem);
 	if (price < 1) price = 1;
@@ -237,7 +239,7 @@ void mech_merchant() {
           if (price > stats.counts[STAT_LARGEST_SALE]) stats.counts[STAT_LARGEST_SALE] = price;
           }
         }
-      show_top();
+      show_top(items);
       }
     }
   } /* void pawn(char* name, byte city) */

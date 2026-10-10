@@ -10,6 +10,65 @@
 
 #include "header.h"
 
+static void show_top(char* name,byte city) {
+  Int32 i;
+  Int32 j;
+  Int32 pos;
+  char buffer[80];
+  char buffer2[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14);
+  pos = 1;
+  for (i=1; i<=10; i++) {
+    if (player.pawn[city][i].otype != O_NONE) {
+      gotoxy(22,pos+2);
+      strcpy(buffer2,player.pawn[city][i].name);
+      for (j=0; j<strlen(buffer2); j++)
+        if (buffer2[j] == '_') buffer2[j] = ' ';
+      sprintf(buffer,"%2d  %s",pos,buffer2);
+      txt_write(buffer);
+      gotoxy(50,i+2);
+      sprintf(buffer,"%6.0f",buy_price(item_cost(&(player.pawn[city][i]))));
+      txt_write(buffer);
+      pos++;
+      }
+    }
+  gotoxy(22,14); txt_write("11  Sell an item");
+  gotoxy(22,15); txt_write("12  Identify an item");
+  gotoxy(22,16); txt_write("13  Sell from Pack");
+  gotoxy(22,17); txt_write("14  Identify from Pack");
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
+static double sell_price(OBJECT_REC* item) {
+  double price;
+  double discount;
+  price = item_cost(item);
+  if (item->otype == O_JEWL) {
+    price *= 0.95;
+    return price;
+    }
+  price *= 0.08;
+  if ((item->flags & OF_IDENT) == 0) price /= 2.0;
+  discount = 30.0 * (get_skill(SK_CHARM)/100.0);
+  discount = 1.0 + (discount / 100.0);
+  if (player.sex == 'F') discount += 0.02;
+  if (player.stat[6] >= 0 && player.stat[6] <= 7) discount -= .16;
+  if (player.stat[6] >= 8 && player.stat[6] <= 11) discount -= .10;
+  if (player.stat[6] >= 12 && player.stat[6] <= 14) discount -= .06;
+  if (player.stat[6] >= 17 && player.stat[6] <= 18) discount += .02;
+  if (player.stat[6] >= 19 && player.stat[6] <= 20) discount += .04;
+  if (player.stat[6] >= 21 && player.stat[6] <= 23) discount += .06;
+  if (player.stat[6] >= 24 && player.stat[6] <= 99) discount += .10;
+  if (classes[player.class-1].flags & CF_NOBLE) discount += 0.15;
+  price = price * discount;
+  return price;
+  }
+
 void pawn(char* name, byte city) {
   Int32 option;
   double price;
@@ -19,65 +78,8 @@ void pawn(char* name, byte city) {
   char buffer[80];
   char key;
 
-  void show_top() {
-    Int32 j;
-    Int32 pos;
-    char buffer2[80];
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    textcolor(14);
-    pos = 1;
-    for (i=1; i<=10; i++) {
-      if (player.pawn[city][i].otype != O_NONE) {
-        gotoxy(22,pos+2);
-        strcpy(buffer2,player.pawn[city][i].name);
-        for (j=0; j<strlen(buffer2); j++)
-          if (buffer2[j] == '_') buffer2[j] = ' ';
-        sprintf(buffer,"%2d  %s",pos,buffer2);
-        txt_write(buffer);
-        gotoxy(50,i+2);
-        sprintf(buffer,"%6.0f",buy_price(item_cost(&(player.pawn[city][i]))));
-        txt_write(buffer);
-        pos++;
-        }
-      }
-    gotoxy(22,14); txt_write("11  Sell an item");
-    gotoxy(22,15); txt_write("12  Identify an item");
-    gotoxy(22,16); txt_write("13  Sell from Pack");
-    gotoxy(22,17); txt_write("14  Identify from Pack");
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-  }
-
-  double sell_price(OBJECT_REC* item) {
-    double price;
-    double discount;
-    price = item_cost(item);
-    if (item->otype == O_JEWL) {
-      price *= 0.95;
-      return price;
-      }
-    price *= 0.08;
-    if ((item->flags & OF_IDENT) == 0) price /= 2.0;
-    discount = 30.0 * (get_skill(SK_CHARM)/100.0);
-    discount = 1.0 + (discount / 100.0);
-    if (player.sex == 'F') discount += 0.02;
-    if (player.stat[6] >= 0 && player.stat[6] <= 7) discount -= .16;
-    if (player.stat[6] >= 8 && player.stat[6] <= 11) discount -= .10;
-    if (player.stat[6] >= 12 && player.stat[6] <= 14) discount -= .06;
-    if (player.stat[6] >= 17 && player.stat[6] <= 18) discount += .02;
-    if (player.stat[6] >= 19 && player.stat[6] <= 20) discount += .04;
-    if (player.stat[6] >= 21 && player.stat[6] <= 23) discount += .06;
-    if (player.stat[6] >= 24 && player.stat[6] <= 99) discount += .10;
-    if (classes[player.class-1].flags & CF_NOBLE) discount += 0.15;
-    price = price * discount;
-    return price;
-    }
-
   pItem = &item;
-  show_top();
+  show_top(name,city);
   option = 1;
   while (option != 0) {
     gotoxy(15,19); textcolor(10);
@@ -100,11 +102,11 @@ void pawn(char* name, byte city) {
         for (i=option; i<10; i++) player.pawn[city][i] = player.pawn[city][i+1];
         player.pawn[city][10].otype = O_NONE;
         }
-      show_top();
+      show_top(name,city);
       }
     if (option == 12) {
       pItem = inventory(0);
-      show_top();
+      show_top(name,city);
       if (pItem != NULL && pItem->otype != O_NONE) {
         gotoxy(15,19); textcolor(12);
         price = rcs_trunc(item_cost(pItem) * 0.08);
@@ -133,7 +135,7 @@ void pawn(char* name, byte city) {
             }
           }
         }
-      show_top();
+      show_top(name,city);
       }
     if (option == 13)
       for (i=1; i<=32; i++)
@@ -209,7 +211,7 @@ void pawn(char* name, byte city) {
         }
     if (option == 11) {
       pItem = inventory(0);
-      show_top();
+      show_top(name,city);
       if (pItem != NULL && pItem->otype != O_NONE) {
         price = sell_price(pItem);
 	if (price < 1) price = 1;
@@ -241,7 +243,7 @@ void pawn(char* name, byte city) {
           if (price > stats.counts[STAT_LARGEST_SALE]) stats.counts[STAT_LARGEST_SALE] = price;
           }
         }
-      show_top();
+      show_top(name,city);
       }
     }
   } /* void pawn(char* name, byte city) */

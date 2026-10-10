@@ -35,52 +35,52 @@ void say_word() {
       promptNS(buffer);
       }
     }
-  if (strcasecmp(invoke,"mintaal") == 0) {
+  if (_stricmp(invoke,"mintaal") == 0) {
     if (u_random(100) < 95) special(15,NULL);
       else go_bottom();
     }
-  if (strcasecmp(invoke,"laatnim") == 0) {
+  if (_stricmp(invoke,"laatnim") == 0) {
     if (u_random(100) < 95) special(15,NULL);
       else go_bottom();
     }
-  if (strcasecmp(invoke,"ilital") == 0) {
+  if (_stricmp(invoke,"ilital") == 0) {
     if (u_random(100) < 95) go_up();
       else go_down();
     }
-  if (strcasecmp(invoke,"latili") == 0) {
+  if (_stricmp(invoke,"latili") == 0) {
     if (u_random(100) < 95) go_down();
       else go_up();
     }
-  if (strcasecmp(invoke,"indral") == 0) {
+  if (_stricmp(invoke,"indral") == 0) {
     if (u_random(100) < 95) player.effect[PE_POISON] = 0;
       else player.effect[PE_POISON] *= 2;
     }
-  if (strcasecmp(invoke,"oraclal") == 0) {
+  if (_stricmp(invoke,"oraclal") == 0) {
     if (u_random(100) < 90) special(1,NULL);
     }
-  if (strcasecmp(invoke,"illumina") == 0) {
+  if (_stricmp(invoke,"illumina") == 0) {
     if (u_random(100) < 95) special(6,NULL);
       else player.effect[PE_LIGHT] = 0;
     }
-  if (strcasecmp(invoke,"auraral") == 0) {
+  if (_stricmp(invoke,"auraral") == 0) {
     if (u_random(100) < 75) special(42,NULL);
     }
-  if (strcasecmp(invoke,"manatal") == 0) {
+  if (_stricmp(invoke,"manatal") == 0) {
     if (u_random(100) < 75) special(19,NULL);
       else player.cmana = 0;
     }
-  if (strcasecmp(invoke,"hurar") == 0) {
+  if (_stricmp(invoke,"hurar") == 0) {
     if (u_random(100) < 75) special(3,NULL);
       else player.effect[PE_SLEEP] += 10;
     }
-  if (strcasecmp(invoke,"fearaway") == 0) {
+  if (_stricmp(invoke,"fearaway") == 0) {
     if (u_random(100) < 75) special(36,NULL);
       else player.effect[PE_FEAR] *= 2;
     }
-  if (strcasecmp(invoke,"blinkahl") == 0) {
+  if (_stricmp(invoke,"blinkahl") == 0) {
     if (u_random(100) < 75) do_blink();
     }
-  if (strcasecmp(invoke,"visorae") == 0) {
+  if (_stricmp(invoke,"visorae") == 0) {
     if (u_random(100) < 50) {
       special(14,NULL);
       show_screen();

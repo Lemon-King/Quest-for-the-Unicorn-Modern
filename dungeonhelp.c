@@ -52,9 +52,6 @@ void dungeon_help() {
   help_item("l - Light torch",26,23,4);
   help_item("L - Message log",26,23,4);
   help_item("m - Cast magic spell",26,23,4);
-#ifdef ASCII
-  help_item("M - Mini map",26,23,4);
-#endif
   help_item("n - Nap",26,23,4);
   help_item("o - Open door",26,23,4);
   help_item("O - Options",26,23,4);

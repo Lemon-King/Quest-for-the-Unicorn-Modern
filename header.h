@@ -11,21 +11,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef UNIX
-#include <unistd.h>
-#include <strings.h>
-#endif
+#include <stdint.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <time.h>
-#include <sys/time.h>
-#include <sys/timeb.h>
-#include <fcntl.h>
-
-#ifdef WIN32
-#include <windows.h>
-#endif
+#include "platform.h"
 
 #ifdef LINK
 #undef LINK
@@ -37,10 +26,6 @@
 #define LINK extern
 #endif
 
-#ifdef MINGW
-typedef uint32_t u_int32_t;
-#endif
-
 #ifndef _BYTE_
 typedef unsigned char byte;
 #endif
@@ -49,7 +34,7 @@ typedef unsigned char byte;
 typedef unsigned short word;
 #endif
 
-typedef u_int32_t UInt32;
+typedef uint32_t  UInt32;
 typedef int32_t   Int32;
 
 #include "terminal.h"
@@ -58,7 +43,7 @@ typedef int32_t   Int32;
 #define NUM_CLASSES          13
 #define NO_OF_MAPS           50
 #define NO_OF_SPRITES       200
-int     NO_OF_MONSTERS;
+LINK Int32 NO_OF_MONSTERS;
 #define ARENA_SIZE_X          15
 #define ARENA_SIZE_Y          15
 #define MESSAGE_HEIGHT        12
@@ -1029,8 +1014,9 @@ LINK Int32                num_final_scores;
 LINK char               debugMSG[256];
 LINK Int32                hall_position;
 LINK Int32                death_position;
-LINK char               no_color;
 LINK char               music;
+LINK char               game_thread;
+LINK char               integer_scaling;
 LINK Int32                target_x;
 LINK Int32                target_y;
 LINK double             dir_x;
@@ -1110,13 +1096,6 @@ LINK Int32                debug_tab;
 /* advance.c */
 extern void advancement();
 extern void advance_stat();
-extern void skills1();
-extern void skills2();
-extern void skills3();
-extern void skills4();
-extern void skills5();
-extern void skills6();
-extern void skills7();
 
 /* cave.c */
 extern void cave();
@@ -1170,9 +1149,9 @@ extern void special42(Int32 mon);
 extern void special43();
 extern void special53();
 extern void special55();
-extern void special61();
-extern void special62();
-extern void special63();
+extern void special61(OBJECT_REC* item);
+extern void special62(OBJECT_REC* item);
+extern void special63(OBJECT_REC* item);
 extern void special68();
 extern void special69();
 extern void special70();
@@ -1188,13 +1167,12 @@ extern void delay(Int32 time);
 extern void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr);
 extern void gotoxy(Int32 x,Int32 y);
 extern void graphmode();
-extern void init_graph();
+extern void init_graph(GAME_HOST* host);
 extern Int32 keypressed();
 extern void outtextxy(Int32 x,Int32 y,char* buffer);
 extern void outtextxyclr(Int32 x,Int32 y,char* buffer);
 extern void outtext_xy(Int32 x,Int32 y,char* buffer);
 extern void putimage(Int32 x,Int32 y,char** img,Int32 typ);
-extern void putpixel(Int32 x,Int32 y,Int32 clr);
 extern Int32 readkey();
 extern void readln(char* buffer);
 extern Int32 p_read(char* buffer);
@@ -1208,8 +1186,6 @@ extern void textmode(Int32 mode);
 extern void textcolor(Int32 color);
 extern void txt_write(char* buffer);
 extern void txt_writeln(char* buffer);
-extern Int32 restoreTerm();
-extern void open_display();
 extern void close_display();
 extern void plot(Int32 x,Int32 y,Int32 clr);
 extern void flush();
@@ -1552,14 +1528,12 @@ extern void help_item(char* msg,Int32 col_width,Int32 num_rows,Int32 indent);
 extern void convert_recipe(OBJECT_REC* item);
 extern void sort_shop_items();
 extern void get_shop_recipes();
-extern Int32 check_level_cleared();
+extern Int32 check_level_cleared(Int32 lvl);
 extern void pit_trap();
-extern void miniMap();
 extern void fkey_pressed(Int32 n);
 extern void shift_fkey_pressed(Int32 n);
-extern void alt_fkey_pressed(Int32 n);
+extern void alt_key_pressed(Int32 n);
 extern void ctrl_fkey_pressed(Int32 n);
-extern Int32 unbuffer();
 extern Int32 find_empty(Int32 cx,Int32 cy,Int32 range,Int32 floor,Int32* dx,Int32 * dy);
 extern void move_summoned();
 extern Int32 find_target(Int32 x,Int32 y,Int32* tx,Int32* ty);

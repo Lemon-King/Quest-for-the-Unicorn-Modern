@@ -12,6 +12,9 @@
 
 #include "header.h"
 
+/* 1 when the game starts from a save: one named on the command line, or one picked from the title screen */
+static Int32 loadgame;
+
 /* A game picked from the title screen gets its <name>.cfg, as one named on the command line does. The window is
    already open, so the screen size stays. */
 static void apply_character_config() {
@@ -63,15 +66,13 @@ static void play_game() {
   }
 
 static void end_game() {
-  struct timeval tim;
-  gettimeofday(&tim,NULL);
-  end_time = tim.tv_sec;
+  end_time = (Int32)time(NULL);
   player.time_played += (end_time - start_time);
   if (exit_flag == 'S') {
     save_new();
     }
   textmode(3);
-  unlink(backupname);
+  remove(backupname);
   score_position = 0;
   if (exit_flag == '*') {
     textcolor(12);
@@ -105,36 +106,16 @@ static void end_game() {
   textmode(3);
   }
 
-Int32 main2(Int32 argc,char** argv) {
+/* Defaults, unicorn.cfg, the command line and <save>.cfg; the table counts and the -s report. Returns 0 when the
+   game should end without opening its window. */
+Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   Int32 i;
-  Int32 loadgame;
-  struct timeval tim;
   time_t         date_time;
   Int32 loot_commons;
   Int32 loot_uncommons;
   Int32 loot_rares;
   Int32 loot_very_rares;
   Int32 loot_ultra_rares;
-
-#ifdef ASCII
-  char k;
-  Int32  tw,th;
-  tw = 0;
-  th = 0;
-  unbuffer();
-  printf("\e[18t\n");
-  delay(100);
-  i = 0;
-  while (keypressed() && i < 20) {
-    read(0, &k, 1);
-    buffer[i++] = k;
-    }
-  if (buffer[strlen(buffer)-1] == 't') {
-    sscanf(buffer+3,";%d;%d",&th,&tw);
-    }
-  restoreTerm();
-#endif
-
 
 #ifdef DEBUG
   debug_tab = 0;
@@ -154,13 +135,8 @@ Int32 main2(Int32 argc,char** argv) {
   TEXT_GRID_HEIGHT = 25;
   NUM_MSG = 10;
   for (i=0; i<12; i++) strcpy(macros[i],"");
-#ifdef ASCII
-  TILES_X = 55;
-  TILES_Y = 23;
-#else
   TILES_X = 16;
   TILES_Y = 16;
-#endif
   fkey_mode = 'S';
   loot_commons = 0;
   loot_uncommons = 0;
@@ -170,13 +146,13 @@ Int32 main2(Int32 argc,char** argv) {
   showStats = 0;
   auto_target = 'Y';
   combat_mode = 's';
-  u_randomize();
   soundon = 'Y';
   restock = 'N';
   loadgame = 0;
   bottom = 5;
-  no_color = 'N';
   music = 'Y';
+  game_thread = 'Y';
+  integer_scaling = 'N';
   heroicMode = 0;
   skipcheck = 'N';
   in_upland = 'N';
@@ -195,8 +171,7 @@ Int32 main2(Int32 argc,char** argv) {
   delay_hit = 200;
   delay_trap = 100;
   encrypt_save_file = 'Y';
-  gettimeofday(&tim,NULL);
-  start_time = tim.tv_sec;
+  start_time = (Int32)time(NULL);
   process_config("unicorn");
   for (i=1; i<argc; i++) {
     if (process_option(argv[i]) == 0) {
@@ -212,34 +187,17 @@ Int32 main2(Int32 argc,char** argv) {
   remember_option_defaults();
   if (screen_width < 640) screen_width = 640;
   if (screen_height < 480) screen_height = 480;
-#ifndef ASCII
   TILES_X = (screen_width - 240) / tile_width;
   TILES_Y = (screen_height - 48) / tile_height;
   screen_width = (TILES_X * tile_width) + 240;
   screen_height = (TILES_Y * tile_height) + 48;
-#endif
   TEXT_GRID_WIDTH = screen_width / 8;
   TEXT_GRID_HEIGHT = screen_height / 19;
   smap_offset_x = screen_width - 219;
   smap_offset_y = screen_height - 239;
-#ifndef ASCII
   NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
-#endif
-#ifdef ASCII
-  text_offset_x = 0;
-  text_offset_y = 0;
-  TEXT_GRID_WIDTH = 80;
-  TEXT_GRID_HEIGHT = 25;
-//  if (tw > 80 && th > 24) {
-//    TEXT_GRID_WIDTH = tw;
-//    TEXT_GRID_HEIGHT = th;
-//    TILES_X = TEXT_GRID_WIDTH - 25;
-//    TILES_Y = TEXT_GRID_HEIGHT - 2;
-//    }
-#else
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;
-#endif
   trophy_count = 0;
   while (trophies[trophy_count].criteria_type < 999) trophy_count++;
   if (showStats) printf("Trophy Count: %d\n",trophy_count);
@@ -311,16 +269,27 @@ Int32 main2(Int32 argc,char** argv) {
     if (fkey_mode == 'G') printf("  Fkeys: Gear\n");
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
     printf("  Music: %c\n", music);
+    printf("  Game Thread: %c\n", game_thread);
+    printf("  Integer Scaling: %c\n", integer_scaling);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);
     }
   if (showStats != 0) return(0);
+  setup->width = screen_width;
+  setup->height = screen_height;
+  setup->gameThread = (game_thread == 'Y') ? 1 : 0;
+  setup->integerScaling = (integer_scaling == 'Y') ? 1 : 0;
+  return 1;
+  }
+
+/* The game in its window: title screen, play, scores, until the player saves and leaves */
+void run_game(GAME_HOST* host) {
+  /* rand() keeps its seed per thread, and with GameThread the game does not run on configure_game()'s thread */
+  u_randomize();
   graphics = ' ';
   read_sprites();
-  unbuffer();
-  init_graph();
-//MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
+  init_graph(host);
   hall_position = -1;
   death_position = -1;
   num_hall_of_fame = 0;
@@ -345,65 +314,4 @@ Int32 main2(Int32 argc,char** argv) {
     end_game();
     } while (exit_flag != 'S');
   stop_music();
-
-#ifdef ASCII
-  if (no_color != 'Y') printf("\e[0;30m");
-  clrscr();
-  restoreTerm();
-#endif
-  return 0;
   }
-
-#ifndef WIN32
-int main(int argc,char** argv) {
-  return main2(argc, argv);
-  }
-#endif
-
-#ifdef WIN32
-#include <windows.h>
-
-extern void rcs_initWin32(HINSTANCE hInstance);
-
-int APIENTRY WinMain(HINSTANCE hInstance,
-                                         HINSTANCE hPrevInstance,
-                                         LPSTR     lpCmdLine,
-                                         Int32     nCmdShow) {
-        Int32 argc;
-                char **argv;
-                char buffer[1024];
-                char *pBuffer;
-        rcs_initWin32(hInstance);
-                strcpy(buffer,"unicorn");
-                argv=(char**)malloc(sizeof(char*));
-                argv[0] = (char*)malloc(strlen(buffer) + 1);
-                strcpy(argv[0],buffer);
-                argc = 1;
-                pBuffer = buffer;
-                while (*lpCmdLine != 0) {
-                        if (*lpCmdLine <= ' ') {
-                                if (pBuffer != buffer) {
-                                        argc += 1;
-                                        argv=(char**)realloc(argv,sizeof(char*) * argc);
-                                        argv[argc-1] = (char*)malloc(strlen(buffer) + 1);
-                                        strcpy(argv[argc-1],buffer);
-                                        pBuffer = buffer;
-                                }
-                                lpCmdLine++;
-                        } else {
-                                *pBuffer++ = *lpCmdLine++;
-                                *pBuffer = 0;
-                        }
-                }
-                if (pBuffer != buffer) {
-                        argc += 1;
-                        argv=(char**)realloc(argv,sizeof(char*) * argc);
-                        argv[argc-1] = (char*)malloc(strlen(buffer) + 1);
-                        strcpy(argv[argc-1],buffer);
-                        pBuffer = buffer;
-                }
-        main2(argc,argv);
-        return 0;
-}
-#endif
-

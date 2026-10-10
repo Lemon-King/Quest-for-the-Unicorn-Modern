@@ -10,6 +10,511 @@
 
 #include "header.h"
 
+static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
+  char flag;
+  Int32  ex = 0,ey = 0;
+  Int32  i,j;
+  Int32  mon;
+  Int32  target;
+  Int32  hit;
+  flag = ' ';
+  for (i=x-1; i<=x+1; i++)
+    for (j=y-1; j<=y+1; j++)
+      if (flag == ' ') {
+        if (player.map[i][j]>=300 && player.map[i][j]<400) {
+          flag = '*';
+          ex = i;
+          ey = j;
+          }
+        if (player.x == i && player.y == j) {
+          flag = '#';
+          ex = i;
+          ey = j;
+          }
+        }
+  if (flag == '#') enemy_hit(x,y);
+  if (flag == '*') {
+    mon = player.map[x][y] - 400;
+    target = player.map[ex][ey] - 300;
+    i = 50 + player.monster[mon][a_mon].level * 2 +
+             player.monster[mon][a_mon].defense * 2;
+    if (player.party[target].sleep > 0) i += 50;
+    if (player.party[target].fear > 0) i += 25;
+    i -= player.party[target].level * 2;
+    i -= player.party[target].defense * 2;
+    if (i < 20) i = 20;
+    if (i > 80) i = 80;
+    if (u_random(100) < i) {
+      clear_prompt();
+      prompt("HIT !!!");
+      noise(1000,100);
+      if (in_sight(ex,ey) == '*') {
+        show_sprite(ex-player.map_x,ey-player.map_y,100);
+        delay(delay_hit);
+        show_spot(ex,ey);
+        }
+      i = u_random(player.monster[mon][a_mon].attack);
+      if (party_combat_mode != 'F') i /= NPC_DIV;
+      if (i < 1) i = 1;
+      player.party[target].hp -= i;
+      if ((player.monster[mon][a_mon].special & MS_SLEEP) == MS_SLEEP) {
+        hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
+               if (u_random(100) < hit && player.party[target].sleep == 0) {
+                 clear_prompt();
+                 prompt("Party slept!!!");
+                 player.party[target].sleep = u_random(player.monster[mon][a_mon].level);
+                 show_spot(ex,ey);
+                 }
+          }
+      if ((player.monster[mon][a_mon].special & MS_FEAR) == MS_FEAR) {
+        hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
+               if (u_random(100) < hit && player.party[target].fear == 0) {
+                 clear_prompt();
+                 prompt("Party scared!!!");
+                 player.party[target].fear = 5 + u_random(player.monster[mon][a_mon].level);
+                 }
+        }
+      if (player.party[target].hp <= 0) {
+        player.map[ex][ey] = floor;
+        player.party[target].hp = 0;
+        show_spot(ex,ey);
+        }
+      }
+    }
+  }
+
+static void party_attack(Int32 floor,Int32 x,Int32 y) {
+  char flag;
+  Int32  ex = 0,ey = 0;
+  Int32  i,j;
+  Int32  mon;
+  Int32  target;
+  flag = ' ';
+  for (i=x-1; i<=x+1; i++)
+    for (j=y-1; j<=y+1; j++)
+      if (flag == ' ')
+        if (player.map[i][j]>400 && player.map[i][j]<500) {
+          flag = '*';
+          ex = i;
+          ey = j;
+          }
+  if (flag != ' ') {
+    mon = player.map[x][y] - 300;
+    target = player.map[ex][ey] - 400;
+    i = 50 + player.party[mon].level * 2 + player.party[mon].defense * 2;
+    if (player.monster[target][a_mon].sleep > 0) i += 50;
+    if (player.monster[target][a_mon].fear > 0) i += 25;
+    i -= player.monster[target][a_mon].level * 2;
+    i -= player.monster[target][a_mon].defense * 2;
+    if (i < 20) i = 20;
+    if (i > 80) i = 80;
+    if (u_random(100) < i) {
+      clear_prompt();
+      prompt("HIT !!!");
+      noise(1000,100);
+      if (in_sight(ex,ey) == '*') {
+        show_sprite(ex-player.map_x,ey-player.map_y,100);
+        delay(delay_hit);
+        show_spot(ex,ey);
+        }
+      i = u_random(player.party[mon].attack);
+      if (party_combat_mode != 'F') i /= NPC_DIV;
+      if (i < 1) i = 1;
+      player.monster[target][a_mon].hp -= i;
+      dead_monster(&(player.monster[target][a_mon]),'Y',ex,ey);
+/*
+      if (player.monster[target][a_mon].hp <= 0) {
+        player.map[ex][ey] = floor;
+        player.monster[target][a_mon].hp = 0;
+        show_spot(ex,ey);
+        gain_exp(player.monster[target][a_mon].exp,mon);
+        }
+*/
+      }
+    }
+  }
+
+static void party_missile_target(Int32 ex,Int32 ey,Int32* targetx,Int32* targety,Int32* dist) {
+  Int32 x1,y1;
+  *dist = 32000;
+  *targetx = player.x;
+  *targety = player.y;
+  for (x1 = offset_x; x1<=offset_x+16; x1++)
+    for (y1= offset_y; y1<=offset_y+16; y1++)
+      if (player.map[x1][y1]>400 && player.map[x1][y1]<500)
+        if (sqr(x1-ex) + sqr(y1-ey) < *dist) {
+          *targetx = x1;
+          *targety = y1;
+          *dist = (sqr(x1-ex) + sqr(y1-ey));
+          }
+  }
+
+static void arena_party_missile(Int32 floor,Int32 ex,Int32 ey) {
+  char flag;
+  Int32  x,y;
+  Int32  mon;
+  Int32  dist;
+  Int32  targetx;
+  Int32  targety;
+  Int32  target;
+  Int32  i;
+  double fx,fy;
+  double xdir,ydir;
+
+  mon = player.map[ex][ey] - 300;
+  party_missile_target(ex,ey,&targetx,&targety,&dist);
+  xdir = targetx - ex;
+  ydir = targety - ey;
+  if (abs(targetx - ex) >= abs(targety - ey)) {
+    ydir = ydir / abs(xdir);
+    if (xdir > 0) xdir = 1;
+    if (xdir < 0) xdir = -1;
+    } else {
+    xdir = xdir / abs(ydir);
+    if (ydir > 0) ydir = 1;
+    if (ydir < 0) ydir = -1;
+    }
+  fx = ex + 0.5;
+  fy = ey + 0.5;
+  x = ex;
+  y = ey;
+  flag = ' ';
+  if (dist > 30000) flag = '&';
+  while (flag == ' ') {
+    fx += xdir;
+    fy += ydir;
+    x = fx;
+    y = fy;
+    if (in_sight(x,y) == '*') {
+      show_sprite(x-player.map_x,y-player.map_y,100);
+      delay(delay_ranged);
+      show_spot(x,y);
+      if (x == player.x && y == player.y) show_player();
+      }
+    if (player.map[x][y] < 255) {
+      if (player.map[x][y] == 21 ||
+          player.map[x][y] == 22 ||
+          player.map[x][y] == 16 ||
+          player.map[x][y] == 18 ||
+          player.map[x][y] == 20 ||
+          player.map[x][y] == 176 ||
+          player.map[x][y] == 3 ||
+          player.map[x][y] == 178) flag = '*';
+      }
+    if (player.map[x][y] > 400 && player.map[x][y] < 500) flag = '#';
+    if (player.map[x][y] >= 600 && player.map[x][y] < 700) flag = '*';
+    }
+  if (player.map[x][y]>400 && player.map[x][y]<500 && dist<30000) {
+    target = player.map[x][y] - 400;
+    i = 90;
+    if (u_random(100) < i) {
+      clear_prompt();
+      prompt("HIT !!!");
+      noise(1000,100);
+      if (in_sight(x,y) == '*') {
+        show_sprite(x-player.map_x,y-player.map_y,100);
+        delay(delay_hit);
+        show_spot(x,y);
+        }
+      i = u_random(player.party[mon].mana / 8 + 1);
+      if (party_combat_mode != 'F') i /= NPC_DIV;
+      if (i < 1) i = 1;
+      player.monster[target][a_mon].hp -= i;
+      dead_monster(&(player.monster[target][a_mon]),'Y',x,y);
+/*
+      if (player.monster[target][a_mon].hp <= 0) {
+        player.map[x][y] = floor;
+        player.monster[target][a_mon].hp = 0;
+        show_spot(x,y);
+        gain_exp(player.monster[target][a_mon].exp,mon);
+        }
+*/
+      }
+    else {
+      clear_prompt();
+      prompt("Fizzle. . .");
+      }
+    }
+  }
+
+static void enemy_missile_target(Int32 ex,Int32 ey,Int32* targetx,Int32* targety,Int32* dist) {
+  Int32 x1,y1;
+  *dist = (sqr(player.x-ex) + sqr(player.y-ey));
+  *targetx = player.x; *targety = player.y;
+  for (x1=offset_x; x1<=offset_x+16; x1++)
+    for (y1=offset_y; y1<=offset_y+16; y1++)
+      if (player.map[x1][y1]>=300 && player.map[x1][y1]<400)
+        if ((sqr(x1-ex) + sqr(y1-ey)) < *dist) {
+          *targetx = x1;
+          *targety = y1;
+          *dist = sqr(x1-ex) + sqr(y1-ey);
+          }
+  }
+
+static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
+  char flag = ' ';
+  Int32  x,y;
+  Int32  mon;
+  Int32  dist;
+  Int32  targetx;
+  Int32  targety;
+  Int32  target;
+  Int32  i,j;
+  Int32  ring;
+  double  fx,fy;
+  double  xdir,ydir;
+  char elem[20];
+  char buffer[60];
+
+  mon = player.map[ex][ey] - 400;
+  enemy_missile_target(ex,ey,&targetx,&targety,&dist);
+  xdir = targetx - ex;
+  ydir = targety - ey;
+  if (abs(targetx - ex) >= abs(targety - ey)) {
+    ydir = ydir / abs(xdir);
+    if (xdir > 0) xdir = 1;
+    if (xdir < 0) xdir = -1;
+    } else {
+    xdir = xdir / abs(ydir);
+    if (ydir > 0) ydir = 1;
+    if (ydir < 0) ydir = -1;
+    }
+  x = ex;
+  y = ey;
+  fx = ex + 0.5;
+  fy = ey + 0.5;
+  while (flag == ' ') {
+    fx += xdir;
+    fy += ydir;
+    x = fx;
+    y = fy;
+    if (in_sight(x,y) == '*') {
+      show_sprite(x-player.map_x,y-player.map_y,100);
+      delay(delay_ranged);
+      show_spot(x,y);
+      if (x == player.x && y == player.y) show_player();
+      }
+    if (player.map[x][y] < 255) {
+      if (player.map[x][y] == 21 ||
+          player.map[x][y] == 22 ||
+          player.map[x][y] == 16 ||
+          player.map[x][y] == 18 ||
+          player.map[x][y] == 20 ||
+          player.map[x][y] == 176 ||
+          player.map[x][y] == 3 ||
+          player.map[x][y] == 178) flag = '*';
+      }
+    if (player.map[x][y] >= 600 && player.map[x][y] < 700) flag = '*';
+    if (player.map[x][y] >= 300 && player.map[x][y] < 400) flag = '#';
+    if (x == player.x && y == player.y) flag = '*';
+    }
+  if (x == player.x && y == player.y) {
+    i = 50;
+    i += 2 * (player.monster[mon][a_mon].level - (player.level / 2));
+    if (i > 90) i = 90;
+    if (i < 10) i = 10;
+    i -= get_bonus(S_DDG) * 2;
+    if (i > 90) i = 90;
+    if (i < 10) i = 10;
+    if (u_random(100) < get_dodge()) {
+      i = 0;
+      msg("Dodged",7);
+      }
+    if (u_random(100) < i) {
+      strcpy(elem,"");
+      clear_prompt();
+      noise(1000,100);
+      if (in_sight(x,y) == '*') {
+        show_sprite(x-player.map_x,y-player.map_y,100);
+        delay(delay_hit);
+        show_spot(x,y);
+        }
+      ring = 0;
+      for (j=1; j<=19; j++) {
+        if (player.invent[j].otype != O_NONE &&
+            player.invent[j].effect == E_INTR &&
+            player.invent[j].control == A_REFL) { ring = j; j=99; }
+        }
+      if (ring == 0) {
+        i = u_random(player.monster[mon][a_mon].mana / 4 + 1);
+        if ((player.monster[mon][a_mon].special & MS_FIRE_ATK) == MS_FIRE_ATK) {
+          if (has_intrinsic(A_RFIR) || has_intrinsic(A_RELE) || player.effect[PE_FIRE] > 0) i /= 2;
+          i = reduce_damage(i,S_FIR);
+          strcpy(elem," fire ");
+          }
+        if ((player.monster[mon][a_mon].special & MS_COLD_ATK) == MS_COLD_ATK) {
+          if (has_intrinsic(A_RCLD) || has_intrinsic(A_RELE) || player.effect[PE_COLD] > 0) i /= 2;
+          i = reduce_damage(i,S_CLD);
+          strcpy(elem," cold ");
+          }
+        if ((player.monster[mon][a_mon].special & MS_ELEC_ATK) == MS_ELEC_ATK) {
+          if (has_intrinsic(A_RELC) || has_intrinsic(A_RELE) || player.effect[PE_ELEC] > 0) i /= 2;
+          i = reduce_damage(i,S_ELC);
+          strcpy(elem," electric ");
+          }
+        if ((player.monster[mon][a_mon].special & MS_ARCN_ATK) == MS_ARCN_ATK) {
+          if (has_intrinsic(A_RDRK) || player.effect[PE_ARCN] > 0) i /= 2;
+          i = reduce_damage(i,S_ARC);
+          strcpy(elem," arcane ");
+          }
+        if ((player.monster[mon][a_mon].special & MS_PSIONIC) == MS_PSIONIC) {
+          if (has_intrinsic(A_RPSI) || player.effect[PE_MIND]) i /= 4;
+          strcpy(elem," psionic ");
+          }
+        i = magic_adjust(i);
+        if (u_random(100) < (20+player.ability[5] * 20)) i /= 2;
+        sprintf(buffer,"ZAP for %d%s",i,elem);
+        msg(buffer,12);
+        stats_take_damage(i);
+        player.chp -= i;
+        if (player.chp < 0) player.chp = 0;
+        show_player();
+        }
+      if (ring != 0) {
+        r_missile(player.monster[mon][a_mon].mana / 4 + 1);
+        i = get_skill(8) + (player.level - player.monster[mon][a_mon].level);
+        i += player.ability[10] * 5;
+        if (i>0) i += 75;
+        if (i > 98) i = 98;
+        if (i < 0) {
+          player.invent[ring].otype = O_NONE;
+          clear_prompt();
+          prompt("Ring Melted!!");
+          }
+        if (u_random(101) > i) {
+          player.invent[ring].otype = O_NONE;
+          clear_prompt();
+          prompt("Ring Melted!!");
+          }
+        }
+      show_side();
+      show_player();
+      }
+    else {
+      clear_prompt();
+      prompt("Fizzle. . .");
+      show_player();
+      }
+    }
+  if (player.map[x][y] >= 300 && player.map[x][y] < 400) {
+    target = player.map[x][y] - 300;
+    i = 90;
+    if (u_random(100) < i) {
+      clear_prompt();
+      prompt("HIT !!!");
+      noise(1000,100);
+      if (in_sight(x,y) == '*') {
+        show_sprite(x-player.map_x,y-player.map_y,100);
+        delay(delay_hit);
+        show_spot(x,y);
+        }
+      i = u_random(player.monster[mon][a_mon].mana / 8 + 1);
+      if (party_combat_mode != 'F') i /= NPC_DIV;
+      if (i < 1) i = 1;
+      player.party[target].hp -= i;
+      if (player.party[target].hp <= 0) {
+        player.map[x][y] = floor;
+        player.party[target].hp = 0;
+        show_spot(x,y);
+        }
+      }
+    else {
+      clear_prompt();
+      prompt("Fizzle. . .");
+      }
+    }
+  }
+
+static void hit_enemy(void) {
+  NPC_REC* monster;
+  monster = get_monster(player.x,player.y);
+  if (monster == NULL) return;
+  if (is_weapon(&(player.invent[I_RHND]))) meleehit(0,&(player.invent[I_RHND]),get_weapon(),monster,'R');
+    else meleehit(0,NULL,get_weapon(),monster,'R');
+  if (is_weapon(&(player.invent[I_LHND])) && monster->hp > 0)
+    meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
+  }
+
+static void move(Int32 xdir,Int32 ydir) {
+  Int32 x,y;
+  last_target_x = 0;
+  last_target_y = 0;
+  remove_player();
+  x = player.x;
+  y = player.y;
+  player.x += xdir;
+  player.y += ydir;
+
+  if (player.effect[PE_FEAR] > 0 &&
+      (player.x <= offset_x || player.y <= offset_y ||
+       player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y)
+      ) {
+    player.x -= xdir;
+    player.y -= ydir;
+    }
+  if (valid_move(player.x,player.y) != '*') {
+    player.x -= xdir;
+    player.y -= ydir;
+    }
+  if (player.map[player.x][player.y]>400 &&
+      player.map[player.x][player.y]<500) {
+    player.x -= xdir;
+    player.y -= ydir;
+    show_player();
+    player.x += xdir;
+    player.y += ydir;
+    hit_enemy();
+    player.x -= xdir;
+    player.y -= ydir;
+    }
+  if (player.map[player.x][player.y]>=300 &&
+      player.map[player.x][player.y]<400) {
+    player.x -= xdir;
+    player.y -= ydir;
+    }
+  if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
+  if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }
+  show_player();
+  stats.counts[STAT_STEPS_TAKEN]++;
+  check_autos();
+  }
+
+static void do_inventory(void) {
+  saveScreen();
+  inventory(0);
+  restoreScreen();
+  }
+
+static void pick_spot(Int32* x,Int32* y,Int32 what) {
+  *x = u_random(ARENA_SIZE_X) + offset_x;
+  *y = u_random(ARENA_SIZE_Y) + offset_y;
+  if (player.map[*x][*y] != what) {
+    *x = u_random(ARENA_SIZE_X) + offset_x;
+    *y = u_random(ARENA_SIZE_Y) + offset_y;
+    }
+  }
+
+static void find_closest_mob(Int32* x,Int32* y) {
+  Int32 dist;
+  Int32 closestX;
+  Int32 closestY;
+  dist = 50000;
+  closestX = 0;
+  closestY = 0;
+  for (*x=1; *x<100; (*x)++)
+    for (*y=1; *y<100; (*y)++) {
+      if (player.map[*x][*y] > 400 && player.map[*x][*y] < 500) {
+        if (sqr(*x-player.x) + sqr(*y-player.y) < dist) {
+          dist = sqr(*x-player.x) + sqr(*y-player.y);
+          closestX = *x;
+          closestY = *y;
+          }
+        }
+      }
+  target_x = closestX;
+  target_y = closestY;
+  }
+
 void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   KNOW_TYPE tmp_known;
   MAP_TYPE  tmp_map;
@@ -29,512 +534,6 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   Int32 all_dead;
   Int32 arena_x;
   Int32 arena_y;
-
-
-  void enemy_attack(Int32 x,Int32 y) {
-    char flag;
-    Int32  ex = 0,ey = 0;
-    Int32  i,j;
-    Int32  mon;
-    Int32  target;
-    Int32  hit;
-    flag = ' ';
-    for (i=x-1; i<=x+1; i++)
-      for (j=y-1; j<=y+1; j++)
-        if (flag == ' ') {
-          if (player.map[i][j]>=300 && player.map[i][j]<400) {
-            flag = '*';
-            ex = i;
-            ey = j;
-            }
-          if (player.x == i && player.y == j) {
-            flag = '#';
-            ex = i;
-            ey = j;
-            }
-          }
-    if (flag == '#') enemy_hit(x,y);
-    if (flag == '*') {
-      mon = player.map[x][y] - 400;
-      target = player.map[ex][ey] - 300;
-      i = 50 + player.monster[mon][a_mon].level * 2 +
-               player.monster[mon][a_mon].defense * 2;
-      if (player.party[target].sleep > 0) i += 50;
-      if (player.party[target].fear > 0) i += 25;
-      i -= player.party[target].level * 2;
-      i -= player.party[target].defense * 2;
-      if (i < 20) i = 20;
-      if (i > 80) i = 80;
-      if (u_random(100) < i) {
-        clear_prompt();
-        prompt("HIT !!!");
-        noise(1000,100);
-        if (in_sight(ex,ey) == '*') {
-          show_sprite(ex-player.map_x,ey-player.map_y,100);
-          delay(delay_hit);
-          show_spot(ex,ey);
-          }
-        i = u_random(player.monster[mon][a_mon].attack);
-        if (party_combat_mode != 'F') i /= NPC_DIV;
-        if (i < 1) i = 1;
-        player.party[target].hp -= i;
-        if ((player.monster[mon][a_mon].special & MS_SLEEP) == MS_SLEEP) {
-          hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
-                 if (u_random(100) < hit && player.party[target].sleep == 0) {
-                   clear_prompt();
-                   prompt("Party slept!!!");
-                   player.party[target].sleep = u_random(player.monster[mon][a_mon].level);
-                   show_spot(ex,ey);
-                   }
-            }
-        if ((player.monster[mon][a_mon].special & MS_FEAR) == MS_FEAR) {
-          hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
-                 if (u_random(100) < hit && player.party[target].fear == 0) {
-                   clear_prompt();
-                   prompt("Party scared!!!");
-                   player.party[target].fear = 5 + u_random(player.monster[mon][a_mon].level);
-                   }
-          }
-        if (player.party[target].hp <= 0) {
-          player.map[ex][ey] = floor;
-          player.party[target].hp = 0;
-          show_spot(ex,ey);
-          }
-        }
-      }
-    }
-
-  void party_attack(Int32 x,Int32 y) {
-    char flag;
-    Int32  ex = 0,ey = 0;
-    Int32  i,j;
-    Int32  mon;
-    Int32  target;
-    flag = ' ';
-    for (i=x-1; i<=x+1; i++)
-      for (j=y-1; j<=y+1; j++)
-        if (flag == ' ')
-          if (player.map[i][j]>400 && player.map[i][j]<500) {
-            flag = '*';
-            ex = i;
-            ey = j;
-            }
-    if (flag != ' ') {
-      mon = player.map[x][y] - 300;
-      target = player.map[ex][ey] - 400;
-      i = 50 + player.party[mon].level * 2 + player.party[mon].defense * 2;
-      if (player.monster[target][a_mon].sleep > 0) i += 50;
-      if (player.monster[target][a_mon].fear > 0) i += 25;
-      i -= player.monster[target][a_mon].level * 2;
-      i -= player.monster[target][a_mon].defense * 2;
-      if (i < 20) i = 20;
-      if (i > 80) i = 80;
-      if (u_random(100) < i) {
-        clear_prompt();
-        prompt("HIT !!!");
-        noise(1000,100);
-        if (in_sight(ex,ey) == '*') {
-          show_sprite(ex-player.map_x,ey-player.map_y,100);
-          delay(delay_hit);
-          show_spot(ex,ey);
-          }
-        i = u_random(player.party[mon].attack);
-        if (party_combat_mode != 'F') i /= NPC_DIV;
-        if (i < 1) i = 1;
-        player.monster[target][a_mon].hp -= i;
-        dead_monster(&(player.monster[target][a_mon]),'Y',ex,ey);
-/*
-        if (player.monster[target][a_mon].hp <= 0) {
-          player.map[ex][ey] = floor;
-          player.monster[target][a_mon].hp = 0;
-          show_spot(ex,ey);
-          gain_exp(player.monster[target][a_mon].exp,mon);
-          }
-*/
-        }
-      }
-    }
-
-  void arena_party_missile(Int32 ex,Int32 ey) {
-    char flag;
-    Int32  x,y;
-    Int32  mon;
-    Int32  dist;
-    Int32  targetx;
-    Int32  targety;
-    Int32  target;
-    Int32  i;
-    double fx,fy;
-    double xdir,ydir;
-
-    void find_target() {
-      Int32 x1,y1;
-      dist = 32000;
-      targetx = player.x;
-      targety = player.y;
-      for (x1 = offset_x; x1<=offset_x+16; x1++)
-        for (y1= offset_y; y1<=offset_y+16; y1++)
-          if (player.map[x1][y1]>400 && player.map[x1][y1]<500)
-            if (sqr(x1-ex) + sqr(y1-ey) < dist) {
-              targetx = x1;
-              targety = y1;
-              dist = (sqr(x1-ex) + sqr(y1-ey));
-              }
-      }
-
-    mon = player.map[ex][ey] - 300;
-    find_target();
-    xdir = targetx - ex;
-    ydir = targety - ey;
-    if (abs(targetx - ex) >= abs(targety - ey)) {
-      ydir = ydir / abs(xdir);
-      if (xdir > 0) xdir = 1;
-      if (xdir < 0) xdir = -1;
-      } else {
-      xdir = xdir / abs(ydir);
-      if (ydir > 0) ydir = 1;
-      if (ydir < 0) ydir = -1;
-      }
-    fx = ex + 0.5;
-    fy = ey + 0.5;
-    x = ex;
-    y = ey;
-    flag = ' ';
-    if (dist > 30000) flag = '&';
-    while (flag == ' ') {
-      fx += xdir;
-      fy += ydir;
-      x = fx;
-      y = fy;
-      if (in_sight(x,y) == '*') {
-        show_sprite(x-player.map_x,y-player.map_y,100);
-        delay(delay_ranged);
-        show_spot(x,y);
-        if (x == player.x && y == player.y) show_player();
-        }
-      if (player.map[x][y] < 255) {
-        if (player.map[x][y] == 21 ||
-            player.map[x][y] == 22 ||
-            player.map[x][y] == 16 ||
-            player.map[x][y] == 18 ||
-            player.map[x][y] == 20 ||
-            player.map[x][y] == 176 ||
-            player.map[x][y] == 3 ||
-            player.map[x][y] == 178) flag = '*';
-        }
-      if (player.map[x][y] > 400 && player.map[x][y] < 500) flag = '#';
-      if (player.map[x][y] >= 600 && player.map[x][y] < 700) flag = '*';
-      }
-    if (player.map[x][y]>400 && player.map[x][y]<500 && dist<30000) {
-      target = player.map[x][y] - 400;
-      i = 90;
-      if (u_random(100) < i) {
-        clear_prompt();
-        prompt("HIT !!!");
-        noise(1000,100);
-        if (in_sight(x,y) == '*') {
-          show_sprite(x-player.map_x,y-player.map_y,100);
-          delay(delay_hit);
-          show_spot(x,y);
-          }
-        i = u_random(player.party[mon].mana / 8 + 1);
-        if (party_combat_mode != 'F') i /= NPC_DIV;
-        if (i < 1) i = 1;
-        player.monster[target][a_mon].hp -= i;
-        dead_monster(&(player.monster[target][a_mon]),'Y',x,y);
-/*
-        if (player.monster[target][a_mon].hp <= 0) {
-          player.map[x][y] = floor;
-          player.monster[target][a_mon].hp = 0;
-          show_spot(x,y);
-          gain_exp(player.monster[target][a_mon].exp,mon);
-          }
-*/
-        }
-      else {
-        clear_prompt();
-        prompt("Fizzle. . .");
-        }
-      }
-    }
-
-  void arena_enemy_missile(Int32 ex,Int32 ey) {
-    char flag = ' ';
-    Int32  x,y;
-    Int32  mon;
-    Int32  dist;
-    Int32  targetx;
-    Int32  targety;
-    Int32  target;
-    Int32  i,j;
-    Int32  ring;
-    double  fx,fy;
-    double  xdir,ydir;
-    char elem[20];
-    char buffer[60];
-
-    void find_target() {
-      Int32 x1,y1;
-      dist = (sqr(player.x-ex) + sqr(player.y-ey));
-      targetx = player.x; targety = player.y;
-      for (x1=offset_x; x1<=offset_x+16; x1++)
-        for (y1=offset_y; y1<=offset_y+16; y1++)
-          if (player.map[x1][y1]>=300 && player.map[x1][y1]<400)
-            if ((sqr(x1-ex) + sqr(y1-ey)) < dist) {
-              targetx = x1;
-              targety = y1;
-              dist = sqr(x1-ex) + sqr(y1-ey);
-              }
-      }
-
-    mon = player.map[ex][ey] - 400;
-    find_target();
-    xdir = targetx - ex;
-    ydir = targety - ey;
-    if (abs(targetx - ex) >= abs(targety - ey)) {
-      ydir = ydir / abs(xdir);
-      if (xdir > 0) xdir = 1;
-      if (xdir < 0) xdir = -1;
-      } else {
-      xdir = xdir / abs(ydir);
-      if (ydir > 0) ydir = 1;
-      if (ydir < 0) ydir = -1;
-      }
-    x = ex;
-    y = ey;
-    fx = ex + 0.5;
-    fy = ey + 0.5;
-    while (flag == ' ') {
-      fx += xdir;
-      fy += ydir;
-      x = fx;
-      y = fy;
-      if (in_sight(x,y) == '*') {
-        show_sprite(x-player.map_x,y-player.map_y,100);
-        delay(delay_ranged);
-        show_spot(x,y);
-        if (x == player.x && y == player.y) show_player();
-        }
-      if (player.map[x][y] < 255) {
-        if (player.map[x][y] == 21 ||
-            player.map[x][y] == 22 ||
-            player.map[x][y] == 16 ||
-            player.map[x][y] == 18 ||
-            player.map[x][y] == 20 ||
-            player.map[x][y] == 176 ||
-            player.map[x][y] == 3 ||
-            player.map[x][y] == 178) flag = '*';
-        }
-      if (player.map[x][y] >= 600 && player.map[x][y] < 700) flag = '*';
-      if (player.map[x][y] >= 300 && player.map[x][y] < 400) flag = '#';
-      if (x == player.x && y == player.y) flag = '*'; 
-      }
-    if (x == player.x && y == player.y) {
-      i = 50;
-      i += 2 * (player.monster[mon][a_mon].level - (player.level / 2));
-      if (i > 90) i = 90;
-      if (i < 10) i = 10;
-      i -= get_bonus(S_DDG) * 2;
-      if (i > 90) i = 90;
-      if (i < 10) i = 10;
-      if (u_random(100) < get_dodge()) {
-        i = 0;
-        msg("Dodged",7);
-        }
-      if (u_random(100) < i) {
-        strcpy(elem,"");
-        clear_prompt();
-        noise(1000,100);
-        if (in_sight(x,y) == '*') {
-          show_sprite(x-player.map_x,y-player.map_y,100);
-          delay(delay_hit);
-          show_spot(x,y);
-          }
-        ring = 0;
-        for (j=1; j<=19; j++) {
-          if (player.invent[j].otype != O_NONE &&
-              player.invent[j].effect == E_INTR &&
-              player.invent[j].control == A_REFL) { ring = j; j=99; }
-          }
-        if (ring == 0) {
-          i = u_random(player.monster[mon][a_mon].mana / 4 + 1);
-          if ((player.monster[mon][a_mon].special & MS_FIRE_ATK) == MS_FIRE_ATK) {
-            if (has_intrinsic(A_RFIR) || has_intrinsic(A_RELE) || player.effect[PE_FIRE] > 0) i /= 2;
-            i = reduce_damage(i,S_FIR);
-            strcpy(elem," fire ");
-            }
-          if ((player.monster[mon][a_mon].special & MS_COLD_ATK) == MS_COLD_ATK) {
-            if (has_intrinsic(A_RCLD) || has_intrinsic(A_RELE) || player.effect[PE_COLD] > 0) i /= 2;
-            i = reduce_damage(i,S_CLD);
-            strcpy(elem," cold ");
-            }
-          if ((player.monster[mon][a_mon].special & MS_ELEC_ATK) == MS_ELEC_ATK) {
-            if (has_intrinsic(A_RELC) || has_intrinsic(A_RELE) || player.effect[PE_ELEC] > 0) i /= 2;
-            i = reduce_damage(i,S_ELC);
-            strcpy(elem," electric ");
-            }
-          if ((player.monster[mon][a_mon].special & MS_ARCN_ATK) == MS_ARCN_ATK) {
-            if (has_intrinsic(A_RDRK) || player.effect[PE_ARCN] > 0) i /= 2;
-            i = reduce_damage(i,S_ARC);
-            strcpy(elem," arcane ");
-            }
-          if ((player.monster[mon][a_mon].special & MS_PSIONIC) == MS_PSIONIC) {
-            if (has_intrinsic(A_RPSI) || player.effect[PE_MIND]) i /= 4;
-            strcpy(elem," psionic ");
-            }
-          i = magic_adjust(i);
-          if (u_random(100) < (20+player.ability[5] * 20)) i /= 2;
-          sprintf(buffer,"ZAP for %d%s",i,elem);
-          msg(buffer,12);
-          stats_take_damage(i);
-          player.chp -= i;
-          if (player.chp < 0) player.chp = 0;
-          show_player();
-          }
-        if (ring != 0) {
-          r_missile(player.monster[mon][a_mon].mana / 4 + 1);
-          i = get_skill(8) + (player.level - player.monster[mon][a_mon].level);
-          i += player.ability[10] * 5;
-          if (i>0) i += 75;
-          if (i > 98) i = 98;
-          if (i < 0) {
-            player.invent[ring].otype = O_NONE;
-            clear_prompt();
-            prompt("Ring Melted!!");
-            }
-          if (u_random(101) > i) {
-            player.invent[ring].otype = O_NONE;
-            clear_prompt();
-            prompt("Ring Melted!!");
-            }
-          }
-        show_side();
-        show_player();
-        }
-      else {
-        clear_prompt();
-        prompt("Fizzle. . .");
-        show_player();
-        }
-      }
-    if (player.map[x][y] >= 300 && player.map[x][y] < 400) {
-      target = player.map[x][y] - 300;
-      i = 90;
-      if (u_random(100) < i) {
-        clear_prompt();
-        prompt("HIT !!!");
-        noise(1000,100);
-        if (in_sight(x,y) == '*') {
-          show_sprite(x-player.map_x,y-player.map_y,100);
-          delay(delay_hit);
-          show_spot(x,y);
-          }
-        i = u_random(player.monster[mon][a_mon].mana / 8 + 1);
-        if (party_combat_mode != 'F') i /= NPC_DIV;
-        if (i < 1) i = 1;
-        player.party[target].hp -= i;
-        if (player.party[target].hp <= 0) {
-          player.map[x][y] = floor;
-          player.party[target].hp = 0;
-          show_spot(x,y);
-          }
-        }
-      else {
-        clear_prompt();
-        prompt("Fizzle. . .");
-        }
-      }
-    }
-
-  void hit_enemy() {
-    NPC_REC* monster;
-    monster = get_monster(player.x,player.y);
-    if (monster == NULL) return;
-    if (is_weapon(&(player.invent[I_RHND]))) meleehit(0,&(player.invent[I_RHND]),get_weapon(),monster,'R');
-      else meleehit(0,NULL,get_weapon(),monster,'R');
-    if (is_weapon(&(player.invent[I_LHND])) && monster->hp > 0)
-      meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
-    }
-
-  void move(Int32 xdir,Int32 ydir) {
-    Int32 x,y;
-    last_target_x = 0;
-    last_target_y = 0;
-    remove_player();
-    x = player.x;
-    y = player.y;
-    player.x += xdir;
-    player.y += ydir;
-
-    if (player.effect[PE_FEAR] > 0 && 
-        (player.x <= offset_x || player.y <= offset_y ||
-         player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y) 
-        ) {
-      player.x -= xdir;
-      player.y -= ydir;
-      }
-    if (valid_move(player.x,player.y) != '*') {
-      player.x -= xdir;
-      player.y -= ydir;
-      }
-    if (player.map[player.x][player.y]>400 &&
-        player.map[player.x][player.y]<500) {
-      player.x -= xdir;
-      player.y -= ydir;
-      show_player();
-      player.x += xdir;
-      player.y += ydir;
-      hit_enemy();
-      player.x -= xdir;
-      player.y -= ydir;
-      }
-    if (player.map[player.x][player.y]>=300 &&
-        player.map[player.x][player.y]<400) {
-      player.x -= xdir;
-      player.y -= ydir;
-      }
-    if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
-    if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }
-    show_player();
-    stats.counts[STAT_STEPS_TAKEN]++;
-    check_autos();
-    }
-
-  void do_inventory() {
-    saveScreen();
-    inventory(0);
-    restoreScreen();
-    }
-
-  void pick_spot(Int32* x,Int32* y,Int32 what) {
-    *x = u_random(ARENA_SIZE_X) + offset_x;
-    *y = u_random(ARENA_SIZE_Y) + offset_y;
-    if (player.map[*x][*y] != what) {
-      *x = u_random(ARENA_SIZE_X) + offset_x;
-      *y = u_random(ARENA_SIZE_Y) + offset_y;
-      }
-    }
-
-  void find_closest_mob() {
-    Int32 dist;
-    Int32 closestX;
-    Int32 closestY;
-    dist = 50000;
-    closestX = 0;
-    closestY = 0;
-    for (x=1; x<100; x++)
-      for (y=1; y<100; y++) {
-        if (player.map[x][y] > 400 && player.map[x][y] < 500) {
-          if (sqr(x-player.x) + sqr(y-player.y) < dist) {
-            dist = sqr(x-player.x) + sqr(y-player.y);
-            closestX = x;
-            closestY = y;
-            }
-          }
-        }
-    target_x = closestX;
-    target_y = closestY;
-    }
 
   /* ************************************** */
   /* ***** Actual start of Arena code ***** */
@@ -699,7 +698,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       else key = inkey();
       if (player.effect[PE_FEAR] > 0 &&
           ((key >= '1' && key <= '9') || key == 'f')) {
-        find_closest_mob();
+        find_closest_mob(&x,&y);
         key = fear_dir(player.x,player.y,target_x,target_y);
         }
       if (player.effect[PE_CONFUSED] > 0) {
@@ -761,18 +760,18 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       case KY_S_F10:shift_fkey_pressed(10); break;
       case KY_S_F11:shift_fkey_pressed(11); break;
       case KY_S_F12:shift_fkey_pressed(12); break;
-      case KY_A_F1:alt_fkey_pressed(1); break;
-      case KY_A_F2:alt_fkey_pressed(2); break;
-      case KY_A_F3:alt_fkey_pressed(3); break;
-      case KY_A_F4:alt_fkey_pressed(4); break;
-      case KY_A_F5:alt_fkey_pressed(5); break;
-      case KY_A_F6:alt_fkey_pressed(6); break;
-      case KY_A_F7:alt_fkey_pressed(7); break;
-      case KY_A_F8:alt_fkey_pressed(8); break;
-      case KY_A_F9:alt_fkey_pressed(9); break;
-      case KY_A_F10:alt_fkey_pressed(10); break;
-      case KY_A_F11:alt_fkey_pressed(11); break;
-      case KY_A_F12:alt_fkey_pressed(12); break;
+      case KY_A_1:alt_key_pressed(1); break;
+      case KY_A_2:alt_key_pressed(2); break;
+      case KY_A_3:alt_key_pressed(3); break;
+      case KY_A_4:alt_key_pressed(4); break;
+      case KY_A_5:alt_key_pressed(5); break;
+      case KY_A_6:alt_key_pressed(6); break;
+      case KY_A_7:alt_key_pressed(7); break;
+      case KY_A_8:alt_key_pressed(8); break;
+      case KY_A_9:alt_key_pressed(9); break;
+      case KY_A_0:alt_key_pressed(10); break;
+      case KY_A_MINUS:alt_key_pressed(11); break;
+      case KY_A_EQUAL:alt_key_pressed(12); break;
       case KY_C_F1:ctrl_fkey_pressed(1); break;
       case KY_C_F2:ctrl_fkey_pressed(2); break;
       case KY_C_F3:ctrl_fkey_pressed(3); break;
@@ -835,7 +834,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             if (x>0 && x<100 && y>0 && y<100 &&
                 player.map[x][y]>400 && player.map[x][y]<500 &&
                 player.monster[player.map[x][y]-400][a_mon].sleep == 0)
-              enemy_attack(x,y);
+              enemy_attack(floor,x,y);
   
         for (x=player.x-15; x<=player.x+15; x++)
           for (y=player.y-15; y<=player.y+15; y++)
@@ -845,7 +844,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
                 player.monster[player.map[x][y]-400][a_mon].sleep == 0) {
               if (player.monster[player.map[x][y]-400][a_mon].mana != 0 &&
                   (player.monster[player.map[x][y]-400][a_mon].special & MS_FRIENDLY) == 0 &&
-                  u_random(100) < 40) arena_enemy_missile(x,y);
+                  u_random(100) < 40) arena_enemy_missile(floor,x,y);
                   arena_move_enemy(x,y);
               }
   
@@ -853,7 +852,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
           for (y=player.y-15; y<=player.y+15; y++)
             if (x>0 && x<100 && y>0 && y<100 &&
                 player.map[x][y]>=300 && player.map[x][y]<400 &&
-                player.party[player.map[x][y]-300].sleep == 0) party_attack(x,y);
+                player.party[player.map[x][y]-300].sleep == 0) party_attack(floor,x,y);
   
         for (x=player.x-15; x<=player.x+15; x++)
           for (y=player.y-15; y<=player.y+15; y++)
@@ -863,7 +862,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
                 player.party[player.map[x][y]-300].sleep == 0) {
               if (player.party[player.map[x][y]-300].mana != 0 &&
                   (player.party[player.map[x][y]-300].special & MS_EVADE) == 0  &&
-                  u_random(100) < 40) arena_party_missile(x,y);
+                  u_random(100) < 40) arena_party_missile(floor,x,y);
               if (player.party[player.map[x][y]-300].mana != 0 &&
                   (player.party[player.map[x][y]-300].special & MS_HEALER) == MS_HEALER  &&
                   u_random(100) < 25) arena_party_heal(player.map[x][y]-300);

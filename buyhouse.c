@@ -11,6 +11,32 @@
 #include "header.h"
 #include "math.h"
 
+static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost) {
+  textmode(3); gotoxy(33,1); textcolor(11);
+  txt_write("Purchase House");
+  textcolor(14);
+  sprintf(buffer,"%.0f",forsale[hnum].price);
+  gotoxy(24,3); txt_write("Price"); gotoxy(51,3); txt_write(buffer);
+  sprintf(buffer,"%.0f",down);
+  gotoxy(24,4); txt_write("Down Payment");  gotoxy(51,4); txt_write(buffer);
+  sprintf(buffer,"%.0f",forsale[hnum].price-down);
+  gotoxy(24,5); txt_write("Financed Amount");  gotoxy(51,5); txt_write(buffer);
+  sprintf(buffer,"%.0f",a);
+  gotoxy(24,6); txt_write("Monthly Payment");  gotoxy(51,6); txt_write(buffer);
+  sprintf(buffer,"%.0f",ccost);
+  gotoxy(24,7); txt_write("Closing Costs");  gotoxy(51,7); txt_write(buffer);
+  sprintf(buffer,"%.0f",ccost+down);
+  gotoxy(24,8); txt_write("Due at Closing");  gotoxy(51,8); txt_write(buffer);
+
+  gotoxy(27,10); txt_write("1> Change Down Payment");
+  gotoxy(27,11); txt_write("2> Purchase House");
+  gotoxy(27,12); txt_write("<ESC> Leave");
+  gotoxy(30,13); txt_write("Option ?");
+  textcolor(15); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
 void buy_house(Int32 hnum) {
   double down;
   double ccost;
@@ -22,38 +48,12 @@ void buy_house(Int32 hnum) {
   Int32    flag;
   Int32    j;
 
-  void show_top() {
-    textmode(3); gotoxy(33,1); textcolor(11);
-    txt_write("Purchase House");
-    textcolor(14);
-    sprintf(buffer,"%.0f",forsale[hnum].price);
-    gotoxy(24,3); txt_write("Price"); gotoxy(51,3); txt_write(buffer);
-    sprintf(buffer,"%.0f",down);
-    gotoxy(24,4); txt_write("Down Payment");  gotoxy(51,4); txt_write(buffer);
-    sprintf(buffer,"%.0f",forsale[hnum].price-down);
-    gotoxy(24,5); txt_write("Financed Amount");  gotoxy(51,5); txt_write(buffer);
-    sprintf(buffer,"%.0f",a);
-    gotoxy(24,6); txt_write("Monthly Payment");  gotoxy(51,6); txt_write(buffer);
-    sprintf(buffer,"%.0f",ccost);
-    gotoxy(24,7); txt_write("Closing Costs");  gotoxy(51,7); txt_write(buffer);
-    sprintf(buffer,"%.0f",ccost+down);
-    gotoxy(24,8); txt_write("Due at Closing");  gotoxy(51,8); txt_write(buffer);
-
-    gotoxy(27,10); txt_write("1> Change Down Payment");
-    gotoxy(27,11); txt_write("2> Purchase House");
-    gotoxy(27,12); txt_write("<ESC> Leave");
-    gotoxy(30,13); txt_write("Option ?");
-    textcolor(15); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-    }
-
   p = forsale[hnum].price;
   i = .005;
   a = p*((i*pow(1+i,360))/(pow(1+i,360)-1));
   ccost = forsale[hnum].price * 0.023;
   down = 0;
-  show_top();
+  show_top(buffer,hnum,down,a,ccost);
   key = ' ';
   while (key != '0') {
     key = inkey();
@@ -98,6 +98,6 @@ void buy_house(Int32 hnum) {
           }
         }
       }
-    show_top();
+    show_top(buffer,hnum,down,a,ccost);
     }
   } /* void temple(char* name) */

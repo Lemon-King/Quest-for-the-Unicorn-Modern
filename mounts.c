@@ -10,33 +10,33 @@
 
 #include "header.h"
 
+static void show_top(char* name) {
+  char buffer[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14);
+  gotoxy(27,3); txt_write("1> Horse"); gotoxy(51,3); txt_write("  1000");
+  gotoxy(27,4); txt_write("2> Centaur"); gotoxy(51,4); txt_write(" 75000");
+  gotoxy(27,5); txt_write("3> Pegasus"); gotoxy(51,5); txt_write("125000");
+  gotoxy(27,6); txt_write("4> Nightmare"); gotoxy(51,6); txt_write("160000");
+  gotoxy(27,7); txt_write("5> Green Dragon"); gotoxy(51,7); txt_write("450000");
+  gotoxy(27,8); txt_write("6> Platinum Dragon"); gotoxy(51,8); txt_write("750000");
+  gotoxy(27,10); txt_write("0> Leave");
+  gotoxy(30,12); txt_write("Option ?");
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
 void mounts(char* name) {
   double cost = 0;
   Int32 item = 0;
   Int32 slot;
   Int32 i,j;
   char key =' ';
-  char buffer[80];
 
-  void show_top() {
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    textcolor(14);
-    gotoxy(27,3); txt_write("1> Horse"); gotoxy(51,3); txt_write("  1000");
-    gotoxy(27,4); txt_write("2> Centaur"); gotoxy(51,4); txt_write(" 75000");
-    gotoxy(27,5); txt_write("3> Pegasus"); gotoxy(51,5); txt_write("125000");
-    gotoxy(27,6); txt_write("4> Nightmare"); gotoxy(51,6); txt_write("160000");
-    gotoxy(27,7); txt_write("5> Green Dragon"); gotoxy(51,7); txt_write("450000");
-    gotoxy(27,8); txt_write("6> Platinum Dragon"); gotoxy(51,8); txt_write("750000");
-    gotoxy(27,10); txt_write("0> Leave");
-    gotoxy(30,12); txt_write("Option ?");
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-    }
-
-  show_top();
+  show_top(name);
   while (key != '0') {
     gotoxy(30,12); textcolor(14); txt_write("Option ?");
     key = inkey();
@@ -76,7 +76,7 @@ void mounts(char* name) {
          }
        }
       }
-      show_top();
+      show_top(name);
     }
   check_mount();
   }

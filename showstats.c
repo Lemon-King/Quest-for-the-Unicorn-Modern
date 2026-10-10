@@ -15,9 +15,7 @@ void show_stats() {
   Int32 key;
   char buffer[80];
   double d1,d2;
-  struct timeval tim;
-  gettimeofday(&tim,NULL);
-  end_time = tim.tv_sec;
+  end_time = (Int32)time(NULL);
   textmode(3);
   textcolor(10); gotoxy(31,1); txt_write("Player Statistics:");
 

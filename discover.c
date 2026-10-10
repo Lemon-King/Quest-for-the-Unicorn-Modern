@@ -33,7 +33,6 @@ void discover() {
   if (xmin < player.map_x) xmin = player.map_x;
   if (ymax > player.map_y+TILES_Y) ymax = player.map_y+TILES_Y;
   if (ymin < player.map_y) ymin = player.map_y;
-  open_display();
   for (i=xmin; i<=xmax; i++)
     for (j=ymin; j<=ymax; j++)
       if (i>0 && i<100 && j>0 && j<100 && player.known[i][j] == 0 &&

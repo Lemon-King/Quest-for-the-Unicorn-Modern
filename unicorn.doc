@@ -155,11 +155,9 @@
          -dr=ms    - Delay for ranged combat visual effects
          -dh=ms    - Delay for successful hit visual effects
          -dt=ms    - Delay fro trap visual effects
-         -w=width  - Width of game screen (Graphics version only)
-         -h=height - Height of game screen (Graphics version only)
-         -m        - Monochrome mode (Text version only)
-         -clr      - Color mode (Text version only)
-         -mu       - Play background music (Windows graphics version)
+         -w=width  - Width of game screen
+         -h=height - Height of game screen
+         -mu       - Play background music
          -nmu      - Turn off background music
          -s        - Show stats/settings and exit
 
@@ -174,12 +172,10 @@
          AutoSearchWalls      -asw
          AutoTarget           -at
          Casual               -c
-         Color                -clr
          DungeonScaling       -eds
          Epic                 -e
          FullPartyCombat      -fcd
          Heroic               -h
-         Monochrome           -m
          Music                -mu
          NoArenaComabe        -nac
          NoAutoOpenDoors      -naod
@@ -208,6 +204,14 @@
          FKeySpells           Unshifted F keys select spells
          FKeyWeapons          Unshifted F keys select weapons
          Fn=macro             Assigne Fn macro (Ex. F1=Rs)
+         GameThread           The game runs on its own thread; the window
+                              always stays responsive.  The default
+         NoGameThread         The game and the window share one thread, as
+                              in older versions
+         IntegerScaling       Scale the game screen by whole numbers only
+                              (2x, 3x, ...), with black borders
+         NoIntegerScaling     Fill the window, blending only the edges
+                              between pixels.  The default
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -387,7 +391,6 @@
          E - Enter/Exit a ship
          f - Fire weapon in right hand
          m - Cast a magic spell
-         M - Show mini map (Text version only)
          n - Take a Nap
          t - Talk to an adjacent character
          T - Throw an item
@@ -438,15 +441,21 @@
          ] - Recall gear set
          ? - Show commands
 
+     Keys
+     ====
+         The keypad moves the same with or without NumLock: the arrows,
+         Home, End, PgUp and PgDn give 8, 2, 4, 6, 7, 1, 9 and 3, and the
+         keypad's centre key gives 5.  F1 .. F12 work alone, with Shift
+         and with Ctrl (Ctrl wins when both are held); see "F-key usage".
+
      Screenshots
      ===========
          Ctrl+P - Save a picture of the screen.  Works on every screen.
-                  Graphics versions write screenshotNNNN.bmp and the text
-                  version writes screenshotNNNN.txt, in the game directory.
+                  Writes screenshotNNNN.bmp in the game directory.
 
      Window size
      ===========
-         The graphics versions can be resized or maximized.  The game
+         The window can be resized or maximized.  The game
          screen grows to fill the window while keeping its shape, and it
          is centred with black borders.  At whole steps (2x, 3x, ...)
          every pixel stays sharp; in between, only the edges of pixels
@@ -454,10 +463,13 @@
          be made smaller than the game screen set by -w and -h.  On
          Windows the window opens at the whole step that best matches
          the display scaling.
+         Alt+Enter switches between the window and fullscreen on the
+         monitor the window is on.  IntegerScaling keeps every pixel
+         the same whole-number size in both, with black borders.
 
      Music
      =====
-         The Windows graphics version plays the background music of
+         The game plays the background music of
          the MS-DOS release.  The intro theme plays from the title
          screen until play begins.  After that the upland theme plays
          in the wilderness, the town theme in towns and the dungeon
@@ -470,12 +482,16 @@
      F-key usage
      ===========
 
-         Mode        Fkey         Shifted      Ctrl   Alt
+         Mode        Fkey         Shifted      Ctrl   Alt+1..=
          ----------- ------------ ------------ ------ ------------
          FKeySpells  Spells       Save Weapons Macros Load Weapons
          FKeyWeapons Load Weapons Save Weapons Macros Spells
          FKeyGear    Load Gear    Save Gear    Macros Spells
          FKeyMacros  Macros       Save Weapons Spells Load Weapons
+
+         The Alt column uses Alt with the number row: Alt+1 .. Alt+9,
+         Alt+0, Alt+- and Alt+= stand for F1 .. F12.  Alt+F4 closes the
+         window without saving.
 
      Status Indicators
      =================

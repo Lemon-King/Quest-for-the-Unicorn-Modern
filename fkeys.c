@@ -42,7 +42,7 @@ void shift_fkey_pressed(Int32 n) {
     }
   }
 
-void alt_fkey_pressed(Int32 n) {
+void alt_key_pressed(Int32 n) {
   if (fkey_mode == 'W' || fkey_mode == 'G') cast_spell(n);
   if (fkey_mode == 'S') {
     if (n == 10) n = 0;

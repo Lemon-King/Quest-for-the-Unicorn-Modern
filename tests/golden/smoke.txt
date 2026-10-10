@@ -1,0 +1,49 @@
+Trophy Count: 103
+Object Count: 1200
+  Common     : 116
+  Uncommon   : 232
+  Rare       : 262
+  Very Rare  : 276
+  Ultra Rare : 57
+  Non Drop   : 257
+Message Count: 162
+Lore Count: 91
+Recipe Count: 248
+Spell Count: 284
+Monster Count: 220
+Options:
+
+  Auto Pickup Gold: Y
+
+  Auto Pickup Torches: Y
+
+  Auto Open Doors: N
+
+  Auto Search Walls: N
+
+  Dungeon Depth: 5
+  Dungeon Scaling: N
+  Monster Count: 60
+  Party Combat Mode: R
+  Delay (traps): 100
+  Delay (ranged): 50
+  Delay (hit): 200
+  Game Mode: Normal
+  Fkeys: Spells
+  Screen Size: 640 x 480
+  Music: Y
+  Game Thread: Y
+  Integer Scaling: N
+Macros:
+  F1 = 
+  F2 = 
+  F3 = 
+  F4 = 
+  F5 = 
+  F6 = 
+  F7 = 
+  F8 = 
+  F9 = 
+  F10 = 
+  F11 = 
+  F12 = 

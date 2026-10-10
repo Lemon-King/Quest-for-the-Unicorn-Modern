@@ -144,15 +144,12 @@ void convert_600_to_new() {
 
 void load_old_scores() {
   Int32 i;
-  Int32 sc_file;
+  FILE* sc_file;
   SCORE_REC_OLD scores_old;
   SCORE_ENTRY_OLD score_entry_old;
-#ifdef MINGW
-  sc_file = open("unicorn.sco",O_RDONLY | O_BINARY);
-#else
-  sc_file = open("unicorn.sco",O_RDONLY);
-#endif
-  read(sc_file,&scores_old,sizeof(SCORE_REC_OLD));
+  sc_file = fopen("unicorn.sco","rb");
+  if (sc_file == NULL) return;
+  fread(&scores_old,sizeof(SCORE_REC_OLD),1,sc_file);
   scores_600.version[0] = '6'; scores_600.version[1] = '0'; scores_600.version[2] = '0';
   for (i=0; i<NUM_CLASSES-1; i++) {
     strcpy(scores_600.legend_name[i+1], scores_old.legend_name[i+1]);
@@ -167,10 +164,10 @@ void load_old_scores() {
     scores_600.high_mode[i] = 'N';
     }
   convert_600_to_new();
-  read(sc_file,&num_hall_of_fame,sizeof(num_hall_of_fame));
-  read(sc_file,&num_final_scores,sizeof(num_final_scores));
+  fread(&num_hall_of_fame,sizeof(num_hall_of_fame),1,sc_file);
+  fread(&num_final_scores,sizeof(num_final_scores),1,sc_file);
   for (i=0; i<num_hall_of_fame; i++) {
-    read(sc_file,&score_entry_old,sizeof(SCORE_ENTRY_OLD));
+    fread(&score_entry_old,sizeof(SCORE_ENTRY_OLD),1,sc_file);
     strcpy(hall_of_fame[i].name,score_entry_old.name);
     hall_of_fame[i].exp = score_entry_old.exp;
     hall_of_fame[i].level = score_entry_old.level;
@@ -180,7 +177,7 @@ void load_old_scores() {
     hall_of_fame[i].mode = 'N';
     }
   for (i=0; i<num_final_scores; i++) {
-    read(sc_file,&score_entry_old,sizeof(SCORE_ENTRY_OLD));
+    fread(&score_entry_old,sizeof(SCORE_ENTRY_OLD),1,sc_file);
     strcpy(final_scores[i].name,score_entry_old.name);
     final_scores[i].exp = score_entry_old.exp;
     final_scores[i].level = score_entry_old.level;
@@ -189,49 +186,46 @@ void load_old_scores() {
     final_scores[i].time_played = score_entry_old.time_played;
     final_scores[i].mode = 'N';
     }
-      close(sc_file);
+  fclose(sc_file);
   }
 
 void load_scores_600() {
   Int32 i;
   Int32 count;
-  Int32 sc_file;
+  FILE* sc_file;
   clear_scores();
   if (exist("unicorn.sco")) {
-#ifdef MINGW
-    sc_file = open("unicorn.sco",O_RDONLY | O_BINARY);
-#else
-    sc_file = open("unicorn.sco",O_RDONLY);
-#endif
-    read(sc_file,&score_version,sizeof(SCORE_VER));
+    sc_file = fopen("unicorn.sco","rb");
+    if (sc_file == NULL) return;
+    fread(&score_version,sizeof(SCORE_VER),1,sc_file);
     if (score_version.version[0] == '6' && score_version.version[1] == '0' && score_version.version[2] == '0') {
-      lseek(sc_file,0,SEEK_SET);
-      read(sc_file,&scores_600,sizeof(SCORE_REC_600));
+      fseek(sc_file,0,SEEK_SET);
+      fread(&scores_600,sizeof(SCORE_REC_600),1,sc_file);
       convert_600_to_new();
-      read(sc_file,&num_hall_of_fame,sizeof(num_hall_of_fame));
-      read(sc_file,&num_final_scores,sizeof(num_final_scores));
+      fread(&num_hall_of_fame,sizeof(num_hall_of_fame),1,sc_file);
+      fread(&num_final_scores,sizeof(num_final_scores),1,sc_file);
       for (i=0; i<num_hall_of_fame; i++)
-        read(sc_file,&(hall_of_fame[i]),sizeof(SCORE_ENTRY));
+        fread(&(hall_of_fame[i]),sizeof(SCORE_ENTRY),1,sc_file);
       for (i=0; i<num_final_scores; i++)
-        read(sc_file,&(final_scores[i]),sizeof(SCORE_ENTRY));
-      close(sc_file);
+        fread(&(final_scores[i]),sizeof(SCORE_ENTRY),1,sc_file);
+      fclose(sc_file);
       }
     else if (score_version.version[0] == '6' && score_version.version[1] == '0' && score_version.version[2] == '1') {
-      read(sc_file,&count,sizeof(count));
+      fread(&count,sizeof(count),1,sc_file);
       for (i=0; i<count; i++) {
-        read(sc_file,&(high_scores[i]),sizeof(SCORE_RECORD));
-        read(sc_file,&(legend_scores[i]),sizeof(SCORE_RECORD));
+        fread(&(high_scores[i]),sizeof(SCORE_RECORD),1,sc_file);
+        fread(&(legend_scores[i]),sizeof(SCORE_RECORD),1,sc_file);
         }
-      read(sc_file,&num_hall_of_fame,sizeof(num_hall_of_fame));
-      read(sc_file,&num_final_scores,sizeof(num_final_scores));
+      fread(&num_hall_of_fame,sizeof(num_hall_of_fame),1,sc_file);
+      fread(&num_final_scores,sizeof(num_final_scores),1,sc_file);
       for (i=0; i<num_hall_of_fame; i++)
-        read(sc_file,&(hall_of_fame[i]),sizeof(SCORE_ENTRY));
+        fread(&(hall_of_fame[i]),sizeof(SCORE_ENTRY),1,sc_file);
       for (i=0; i<num_final_scores; i++)
-        read(sc_file,&(final_scores[i]),sizeof(SCORE_ENTRY));
-      close(sc_file);
+        fread(&(final_scores[i]),sizeof(SCORE_ENTRY),1,sc_file);
+      fclose(sc_file);
       }
     else {
-      close(sc_file);
+      fclose(sc_file);
       load_old_scores();
       }
     }
@@ -289,13 +283,14 @@ void load_scores() {
   FILE* file;
   if (exist("unicorn.sco")) {
     file = fopen("unicorn.sco","r");
+    if (file == NULL) return;
     ver = fgetc(file);
     if (ver != 'v' && ver != 'V') {
+      fclose(file);
       load_scores_600();
       return;
       }
-    fclose(file);
-    fopen("unicorn.sco","r");
+    rewind(file);
     change_set = -1;
     read_save_file(file, line);
     if (strcmp(line, "v7.0.0") == 0) change_set = 0;

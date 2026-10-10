@@ -31,7 +31,6 @@ void remove_land_player() {
     case 17:color = 4; break;
     case 19:color = 6; break;
     }
-  open_display();
   plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
   plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
   plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);

@@ -8,15 +8,11 @@
  *******************************************************************
 */
 
-#include <sys/time.h>
-#include <sys/timeb.h>
 #include "header.h"
 
 void winner() {
   Int32  i;
-  struct timeval tim;
-  gettimeofday(&tim,NULL);
-  end_time = tim.tv_sec;
+  end_time = (Int32)time(NULL);
   player.time_played += (end_time - start_time);
   start_time = end_time;
   saveScreen();

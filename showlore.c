@@ -19,10 +19,6 @@ void show_message(char* message) {
   char last;
   x = 120; y = 100; size = 30;
 //  space = 25;
-#ifdef ASCII
-  y += 62;
-  x += 90;
-#endif
   while (strlen(message) != 0) {
     cr = strchr(message,'\n');
     if (cr != NULL && cr-message < size) {

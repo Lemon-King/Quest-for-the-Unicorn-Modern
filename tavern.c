@@ -10,123 +10,124 @@
 
 #include "header.h"
 
+static void move_player(void) {
+  switch (player.city) {
+    case 14:
+         if (player.x>51 && player.x<55 && player.y>15 && player.y<19)
+           switch (u_random(5)) {
+             case 0:
+                 player.x = 40;
+                 player.y = 17+2*u_random(4);
+                 break;
+             case 1:
+                 player.x = 61;
+                 player.y = 17+2*u_random(4);
+                 break;
+             case 2:
+                 player.y = 33;
+                 player.x = 41+2*u_random(11);
+                 break;
+             case 3:
+                 player.y = 25;
+                 player.x = 40+2*u_random(5);
+                 break;
+             case 4:
+                 player.y = 25;
+                 player.x = 53+2*u_random(5);
+                 break;
+             }
+         break;
+    case 13:
+         if (player.x>57 && player.x<61 && player.y>11 && player.y<15)
+           switch (u_random(3)) {
+             case 0:
+                 player.y = 18;
+                 player.x = 52+3*u_random(5);
+               break;
+             case 1:
+                 player.y = 24;
+                 player.x = 52+3*u_random(5);
+               break;
+             case 2:
+                 player.y = 26;
+                 player.x = 52+3*u_random(5);
+               break;
+             }
+         break;
+    case 17:
+         if (player.x>41 && player.x<45 && player.y>20 && player.y<24) {
+           player.y = 22;
+           player.x = 12+2*u_random(12);
+           }
+         break;
+    case 16:
+         if (player.x>26 && player.x<30 && player.y>52 && player.y<56)
+           switch (u_random(2)) {
+             case 0:
+                 player.y = 62;
+                 player.x = 9+2*u_random(8);
+               break;
+             case 1:
+                 player.y = 70;
+                 player.x = 9+2*u_random(10);
+               break;
+             }
+         if (player.x>18 && player.x<22 && player.y>82 && player.y<86)
+           switch (u_random(4)) {
+             case 0:
+                 player.y = 74;
+                 player.x = 18+2*u_random(7);
+               break;
+             case 1:
+                 player.y = 82;
+                 player.x = 22+2*u_random(5);
+               break;
+             case 2:
+                 player.x = 9;
+                 player.y = 74+2*u_random(10);
+               break;
+             case 3:
+                 player.x = 17;
+                 player.y = 86+2*u_random(4);
+               break;
+             }
+         break;
+       }
+  player.map_x = player.x-8;
+  player.map_y = player.y-8;
+  if (player.map_x<1) player.map_x = 1;
+  if (player.map_y<1) player.map_y = 1;
+  if (player.map_x>84) player.map_x = 84;
+  if (player.map_y>84) player.map_y = 84;
+  restoreScreen();
+  show_screen();
+  saveScreen();
+  }
+
+static void show_top(char* name) {
+  char buffer[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  gotoxy(5,3); textcolor(14);
+  txt_writeln("1> Merchants Meal            4   7> Room, 1 night                 20");
+  txt_writeln("    2> Rich Meal                 6   8> Room, 1 Week                 120");
+  txt_writeln("    3> Beer                      2   9> Room, 1 Month                500");
+  txt_writeln("    4> Ale                       2  10> Gamble                          ");
+  txt_writeln("    5> Mead                      2                                      ");
+  txt_writeln("    6> Wine                      2                                      ");
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
 void tavern(char* name) {
   Int32 option;
   double price;
   Int32  i;
   char buffer[80];
 
-  void move_player() {
-    switch (player.city) {
-      case 14:
-           if (player.x>51 && player.x<55 && player.y>15 && player.y<19)
-             switch (u_random(5)) {
-               case 0:
-                   player.x = 40;
-                   player.y = 17+2*u_random(4);
-                   break;
-               case 1:
-                   player.x = 61;
-                   player.y = 17+2*u_random(4);
-                   break;
-               case 2:
-                   player.y = 33;
-                   player.x = 41+2*u_random(11);
-                   break;
-               case 3:
-                   player.y = 25;
-                   player.x = 40+2*u_random(5);
-                   break;
-               case 4:
-                   player.y = 25;
-                   player.x = 53+2*u_random(5);
-                   break;
-               }
-           break;
-      case 13:
-           if (player.x>57 && player.x<61 && player.y>11 && player.y<15)
-             switch (u_random(3)) {
-               case 0:
-                   player.y = 18;
-                   player.x = 52+3*u_random(5);
-                 break;
-               case 1:
-                   player.y = 24;
-                   player.x = 52+3*u_random(5);
-                 break;
-               case 2:
-                   player.y = 26;
-                   player.x = 52+3*u_random(5);
-                 break;
-               }
-           break;
-      case 17:
-           if (player.x>41 && player.x<45 && player.y>20 && player.y<24) {
-             player.y = 22;
-             player.x = 12+2*u_random(12);
-             }
-           break;
-      case 16:
-           if (player.x>26 && player.x<30 && player.y>52 && player.y<56)
-             switch (u_random(2)) {
-               case 0:
-                   player.y = 62;
-                   player.x = 9+2*u_random(8);
-                 break;
-               case 1:
-                   player.y = 70;
-                   player.x = 9+2*u_random(10);
-                 break;
-               }
-           if (player.x>18 && player.x<22 && player.y>82 && player.y<86)
-             switch (u_random(4)) {
-               case 0:
-                   player.y = 74;
-                   player.x = 18+2*u_random(7);
-                 break;
-               case 1:
-                   player.y = 82;
-                   player.x = 22+2*u_random(5);
-                 break;
-               case 2:
-                   player.x = 9;
-                   player.y = 74+2*u_random(10);
-                 break;
-               case 3:
-                   player.x = 17;
-                   player.y = 86+2*u_random(4);
-                 break;
-               }
-           break;
-         }
-    player.map_x = player.x-8;
-    player.map_y = player.y-8;
-    if (player.map_x<1) player.map_x = 1;
-    if (player.map_y<1) player.map_y = 1;
-    if (player.map_x>84) player.map_x = 84;
-    if (player.map_y>84) player.map_y = 84;
-    restoreScreen();
-    show_screen();
-    saveScreen();
-    }
-
-  void show_top() {
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    gotoxy(5,3); textcolor(14);
-    txt_writeln("1> Merchants Meal            4   7> Room, 1 night                 20");
-    txt_writeln("    2> Rich Meal                 6   8> Room, 1 Week                 120");
-    txt_writeln("    3> Beer                      2   9> Room, 1 Month                500");
-    txt_writeln("    4> Ale                       2  10> Gamble                          ");
-    txt_writeln("    5> Mead                      2                                      ");
-    txt_writeln("    6> Wine                      2                                      ");
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-  }
-
-  show_top();
+  show_top(name);
   option = 1;
   price = 4;
   while (option != 0) {
@@ -142,7 +143,7 @@ void tavern(char* name) {
       }
     if (option == 10) { 
       gamble(); 
-      show_top(); 
+      show_top(name);
       }
     if (option>0 && option<10) {
       switch (option) {
@@ -254,7 +255,7 @@ void tavern(char* name) {
                  option = 0;
                  break;
           }
-        show_top();
+        show_top(name);
         }
       }
     }

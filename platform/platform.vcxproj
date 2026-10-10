@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <ProjectGuid>{9E4BFC1F-414C-464D-8847-9875EA6A7B04}</ProjectGuid>
+    <RootNamespace>platform</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\build\Unicorn.props" />
+  </ImportGroup>
+
+  <!-- C++ builds at a higher bar than the game's C -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory);$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="BmpWriter.cpp" />
+    <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="CanvasApi.cpp" />
+    <ClCompile Include="Direct3DError.cpp" />
+    <ClCompile Include="ErrorReport.cpp" />
+    <ClCompile Include="FrameMailbox.cpp" />
+    <ClCompile Include="GameThread.cpp" />
+    <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="GlyphFont.cpp" />
+    <ClCompile Include="HostApi.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="InlineHost.cpp" />
+    <ClCompile Include="InputQueue.cpp" />
+    <ClCompile Include="KeyRoute.cpp" />
+    <ClCompile Include="KeyTranslator.cpp" />
+    <ClCompile Include="Presenter.cpp" />
+    <ClCompile Include="ScalePass.cpp" />
+    <ClCompile Include="SpriteCache.cpp" />
+    <ClCompile Include="ThreadedHost.cpp" />
+    <ClCompile Include="ViewportLayout.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="XpmDecoder.cpp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="ApiTypes.h" />
+    <ClInclude Include="BmpWriter.h" />
+    <ClInclude Include="Canvas.h" />
+    <ClInclude Include="Direct3DError.h" />
+    <ClInclude Include="ErrorReport.h" />
+    <ClInclude Include="FrameMailbox.h" />
+    <ClInclude Include="GameHost.h" />
+    <ClInclude Include="GameThread.h" />
+    <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="GlyphFont.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="InlineHost.h" />
+    <ClInclude Include="InputQueue.h" />
+    <ClInclude Include="KeyRoute.h" />
+    <ClInclude Include="KeyTranslator.h" />
+    <ClInclude Include="platform.h" />
+    <ClInclude Include="Presenter.h" />
+    <ClInclude Include="Rect.h" />
+    <ClInclude Include="ScalePass.h" />
+    <ClInclude Include="SpriteCache.h" />
+    <ClInclude Include="TerminalFont.h" />
+    <ClInclude Include="ThreadedHost.h" />
+    <ClInclude Include="ViewportLayout.h" />
+    <ClInclude Include="XpmDecoder.h" />
+  </ItemGroup>
+
+  <!-- Shader Model 4.0, which feature level 10.0 hardware and WARP run, compiled to headers ScalePass.cpp includes -->
+  <ItemGroup>
+    <FxCompile Include="shaders\ScaleVertex.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>SCALE_VERTEX_SHADER</VariableName>
+      <HeaderFileOutput>$(IntDir)ScaleVertex.h</HeaderFileOutput>
+      <ObjectFileOutput></ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="shaders\ScalePixel.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>SCALE_PIXEL_SHADER</VariableName>
+      <HeaderFileOutput>$(IntDir)ScalePixel.h</HeaderFileOutput>
+      <ObjectFileOutput></ObjectFileOutput>
+    </FxCompile>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

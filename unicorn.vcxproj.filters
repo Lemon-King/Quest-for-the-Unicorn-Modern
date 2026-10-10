@@ -1,0 +1,904 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Game">
+      <UniqueIdentifier>{A1958962-B0E1-42A9-8877-5A7323E02ECE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Display">
+      <UniqueIdentifier>{D9CF96C6-ACB1-4823-9583-6ABCC7CB66F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{113C5739-1F3C-4396-B2C3-F91F44C6CE36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{407CF46F-FD60-448F-9347-55069F3A0F96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{7E9C87E6-1FA8-4579-8BF2-12D5D219611A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="activate.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="addskill.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="adjustabilities.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="adjustmap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="advancement.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="advancestat.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="aoe.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="area9.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="area25.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="area49.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="arena.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="arenaheal.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="arenamoveenemy.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="arenamoveparty.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="arenamovesnake.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="autodetect.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="bank.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="blind.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="blindtrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="builddungeon.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="buyhouse.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="buyprice.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="cansee.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="castspell.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="cast_spell.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="cavalier.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="cave.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="charattributes.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="charmmonster.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkautos.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkclasschange.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkencounter.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkintrinsic.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checklevelclear.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkmonkweapon.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkmount.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checknoble.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkscores.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkspell1.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="cleargamedata.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="clearprompt.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="closedoor.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="combathelp.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="compass.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="convertrecipe.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="converttime.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="copymap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="crafting.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="darttrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="datacard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="deadmonster.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="decode.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="discover.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="dispchar.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="displayabilities.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="dmgreduction.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="doblink.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="doexchange.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="doget.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="doheal.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="dosleep.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="drain.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="dragondice.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="dungeonhelp.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="effect.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="enemyhit.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="enemymissile.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="exist.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fear.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="feardir.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="figuredamage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findempty.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findgen.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="finditemslot.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findlinkeditem.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findlore.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findpath.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="findtarget.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fire.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="firetrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="firewand.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fireweapon.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fixability.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fixname.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="fkeys.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gainexp.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gamble.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gameoptions.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getalign.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getcity.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getclass.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getdir.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getdungeon.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gethealth.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getitem.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getlinkedmonst.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getlinkedmsg.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getmonster.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getname.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getrace.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getsex.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getskill.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getshopitems.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getshoprecipes.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getshopspells.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="getspellname.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gobottom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="godown.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gold.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gothicfont.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="goship.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="goup.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="haggle.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="hasintrinsic.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="hassocket.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="hasspell.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="healing.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="holeinventory.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="houseinventory.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="inkey.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="inroom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="insight.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="inventory.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="invvalid.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="intrinsiccount.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="isweapon.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="itemcolor.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="itemcost.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="itemdir.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="levellegacy.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="library.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="lightroom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="load.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="loadgear.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="loadlevel.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="loadmenu.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="log.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="lockdoor.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="los.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="magicadjust.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="make_a.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="make_c.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="make_h.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="make_n.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="makechar.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="makemap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="makestr.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="manacost.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mapgen.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mapgenold.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="maxdamage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mechmerchant.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="meleehit.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="missile.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mounts.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="moveenemy.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="movesnake.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="movesummoned.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="msg.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="music.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mutable.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mutalegend.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="mval.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="nap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="needed.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="newgame.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="newmonth.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="newpawn.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="newspell.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="noise.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="opendoor.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="packit.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="packitem.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="party.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="passable.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="pawn.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="pittrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="placeobject.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="poisontrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="possesses.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="printrec.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="processconfig.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="processoption.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="prompt.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="r_missile.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="rcsrandom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="readsprites.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="recipestring.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="reducedmg.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="removeplayer.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="removelandplayer.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="reversebyte.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="roottrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="savenew.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="savegear.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="savelevel.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="sayword.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="scalemonster.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="school.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="selectsprite.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="settitle.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="settrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="shop.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="showalign.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showheadings.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showhealth.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showfkeys.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showflt.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showgain.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showgen.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showinventory.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showicons.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showint.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showland.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showlandplayer.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showlog.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showlore.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showmap.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showmessages.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="shownumber.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showplayer.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showquest.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showscores.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showscreen.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showside.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showsmland.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showsmmap.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showspell.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showspot.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showsprite.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showstats.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="sleeptrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="sortshopitems.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="specials.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="sqr.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="statsdodamage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="statstakedamage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="stockencounter.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="stockmonsters.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="stocktown.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="stocktreasure.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="strokefont.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="super.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="taketime.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="target.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="tavern.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="teleport.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="teleporttrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="temple.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="terminal.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="throw.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="thrownpotion.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="title.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="touch.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="transcribe.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="travel.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="triggertrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="trophies.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="trunc.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="unpack.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="upland.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="uplandhelp.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="upper.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="urandom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="urandomize.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="usecompass.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="useitem.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="validmove.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="view.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="winner.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="wizard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="writefont.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="yesno.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="terminal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="gothic.h">
+      <Filter>Display</Filter>
+    </ClInclude>
+    <ClInclude Include="maps.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="objects.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="monsters.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="spells.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="recipe.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="races.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="classes.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="trophies.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="lore.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="gen.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+    <ClInclude Include="world.h">
+      <Filter>Data</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="unicorn.xpm">
+      <Filter>Display</Filter>
+    </None>
+    <None Include="res\unicorn.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\unicorn.manifest">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\unicorn.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

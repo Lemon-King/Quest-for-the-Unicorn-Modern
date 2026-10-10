@@ -10,6 +10,41 @@
 
 #include "header.h"
 
+static char valid(Int32 monster,Int32 x,Int32 y) {
+  Int32 i;
+  char flag;
+  flag = '*';
+  if (x<1 || y<1 || x>99 || y>99) flag = ' ';
+  if (flag == '*') {
+    if (player.map[x][y] < 0) flag = ' ';
+    if (player.map[x][y] == 21) flag = ' ';
+    if (player.map[x][y] == 22 && u_random(100) < 75)
+      player.map[x][y] = 23;
+    else if (player.map[x][y] == 22) flag = ' ';
+    if (player.map[x][y] == 33 && u_random(100) < 10)
+      player.map[x][y] = 23;
+    else if (player.map[x][y] == 33) flag = ' ';
+    if (x == player.x && y == player.y) flag = ' ';
+    if (x<2 || y<2 || x>98 || y>98) flag = ' ';
+    if (player.map[x][y] == 4) flag = ' ';
+    if (player.map[x][y] == 41) flag = ' ';
+    if (player.map[x][y] == 38) flag = ' ';
+    if (player.map[x][y] == 39) flag = ' ';
+    if (player.map[x][y] == 3) flag = ' ';
+    if (player.map[x][y] == 145) flag = ' ';
+    if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
+      i = player.monster[1][0-monster].level / 4;
+      if (i < 1) i = 1;
+      player.map[x][y] -= i;
+      if (player.map[x][y] < 600) {
+        player.map[x][y] = currentFloor;
+        }
+      else flag = ' ';
+      }
+    }
+  return flag;
+  }
+
 void move_enemy(Int32 x,Int32 y) {
   Int32 i;
   Int32 ix,iy;
@@ -22,41 +57,6 @@ void move_enemy(Int32 x,Int32 y) {
   Int32 dx,dy;
   Int32 sx,sy;
   Int32 dist;
-
-  char valid(Int32 x,Int32 y) {
-    Int32 i;
-    char flag;
-    flag = '*';
-    if (x<1 || y<1 || x>99 || y>99) flag = ' ';
-    if (flag == '*') {
-      if (player.map[x][y] < 0) flag = ' ';
-      if (player.map[x][y] == 21) flag = ' ';
-      if (player.map[x][y] == 22 && u_random(100) < 75)
-        player.map[x][y] = 23;
-      else if (player.map[x][y] == 22) flag = ' ';
-      if (player.map[x][y] == 33 && u_random(100) < 10)
-        player.map[x][y] = 23;
-      else if (player.map[x][y] == 33) flag = ' ';
-      if (x == player.x && y == player.y) flag = ' ';
-      if (x<2 || y<2 || x>98 || y>98) flag = ' ';
-      if (player.map[x][y] == 4) flag = ' ';
-      if (player.map[x][y] == 41) flag = ' ';
-      if (player.map[x][y] == 38) flag = ' ';
-      if (player.map[x][y] == 39) flag = ' ';
-      if (player.map[x][y] == 3) flag = ' ';
-      if (player.map[x][y] == 145) flag = ' ';
-      if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
-        i = player.monster[1][0-monster].level / 4;
-        if (i < 1) i = 1;
-        player.map[x][y] -= i;
-        if (player.map[x][y] < 600) {
-          player.map[x][y] = currentFloor;
-          }
-        else flag = ' ';
-        }
-      }
-    return flag;
-    }
 
   monster = player.map[x][y];
   sx = 0;
@@ -163,7 +163,7 @@ void move_enemy(Int32 x,Int32 y) {
         /* ***** Else just move the mob ***** */
         /* ********************************** */
         else {
-          if (valid(x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
+          if (valid(monster,x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
           player.map[ox][oy] = player.monster[1][0-monster].prev;
           player.monster[1][0-monster].prev = player.map[x][y];
           player.map[x][y] = monster;

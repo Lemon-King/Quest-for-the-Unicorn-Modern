@@ -14,14 +14,13 @@
  *
  * Opening a song takes MCI about a second, so all MCI work happens on a music thread with its own message-only
  * window. The game only posts requests to that window and never waits. Each song is opened once and kept open, as
- * DOS kept all four in EMS; after the first song starts, the thread opens the others in the background. Other builds
- * have no music.
+ * DOS kept all four in EMS; after the first song starts, the thread opens the others in the background.
  */
 
-#include "header.h"
-
-#ifdef WIN32
+#include <windows.h>
 #include <mmsystem.h>
+
+#include "header.h"
 
 #define MUSIC_CLASS    "unicornmusic"
 #define MUSIC_COUNT    ((Int32)(sizeof(MUSIC_FILES) / sizeof(MUSIC_FILES[0])))
@@ -54,14 +53,14 @@ static Int32 playing = -1;
 static void mci_command(char* verb,Int32 song,char* options,HWND notify) {
   char command[MAX_PATH + 64];
   snprintf(command,sizeof(command),"%s %s %s",verb,MUSIC_ALIASES[song],options);
-  mciSendString(command,NULL,0,notify);
+  mciSendStringA(command,NULL,0,notify);
   }
 
 static char open_song(Int32 song) {
   char command[MAX_PATH + 64];
   if (opened[song] == 'Y') return 'Y';
   snprintf(command,sizeof(command),"open \"%s\" type sequencer alias %s",MUSIC_FILES[song],MUSIC_ALIASES[song]);
-  opened[song] = (mciSendString(command,NULL,0,NULL) == 0) ? 'Y' : 'N';
+  opened[song] = (mciSendStringA(command,NULL,0,NULL) == 0) ? 'Y' : 'N';
   return opened[song];
   }
 
@@ -95,29 +94,29 @@ static LRESULT CALLBACK music_events(HWND window,UINT message,WPARAM wParam,LPAR
     /* A song that played to its end starts over; stopping it aborts instead */
     case MM_MCINOTIFY:
       if (wParam == MCI_NOTIFY_SUCCESSFUL && playing >= 0 &&
-          (MCIDEVICEID)lParam == mciGetDeviceID(MUSIC_ALIASES[playing]))
+          (MCIDEVICEID)lParam == mciGetDeviceIDA(MUSIC_ALIASES[playing]))
         mci_command("play",playing,"from 0 notify",window);
       return 0;
     }
-  return DefWindowProc(window,message,wParam,lParam);
+  return DefWindowProcA(window,message,wParam,lParam);
   }
 
 static DWORD WINAPI music_thread(LPVOID ready) {
-  WNDCLASSEX wcex;
+  WNDCLASSEXA wcex;
   MSG        msg;
 
   memset(&wcex,0,sizeof(wcex));
-  wcex.cbSize = sizeof(WNDCLASSEX);
+  wcex.cbSize = sizeof(WNDCLASSEXA);
   wcex.lpfnWndProc = music_events;
-  wcex.hInstance = GetModuleHandle(NULL);
+  wcex.hInstance = GetModuleHandleA(NULL);
   wcex.lpszClassName = MUSIC_CLASS;
-  RegisterClassEx(&wcex);
+  RegisterClassExA(&wcex);
 
-  music_window = CreateWindowEx(0,MUSIC_CLASS,"",0,0,0,0,0,HWND_MESSAGE,NULL,wcex.hInstance,NULL);
+  music_window = CreateWindowExA(0,MUSIC_CLASS,"",0,0,0,0,0,HWND_MESSAGE,NULL,wcex.hInstance,NULL);
   SetEvent((HANDLE)ready);
   if (music_window == NULL) return 0;
 
-  while (GetMessage(&msg,NULL,0,0) > 0) DispatchMessage(&msg);
+  while (GetMessageA(&msg,NULL,0,0) > 0) DispatchMessageA(&msg);
   return 0;
   }
 
@@ -130,7 +129,7 @@ static HWND music_thread_window() {
   if (started == 'Y') return music_window;
   started = 'Y';
 
-  ready = CreateEvent(NULL,TRUE,FALSE,NULL);
+  ready = CreateEventA(NULL,TRUE,FALSE,NULL);
   if (ready == NULL) return NULL;
   thread = CreateThread(NULL,0,music_thread,ready,0,NULL);
   if (thread != NULL) {
@@ -140,10 +139,8 @@ static HWND music_thread_window() {
   CloseHandle(ready);
   return music_window;
   }
-#endif
 
 void play_music(Int32 song) {
-#ifdef WIN32
   HWND window;
 
   if (song < 0 || song >= MUSIC_COUNT) return;
@@ -151,21 +148,16 @@ void play_music(Int32 song) {
   if (music != 'Y') return;
 
   window = music_thread_window();
-  if (window != NULL) PostMessage(window,WM_MUSIC_PLAY,(WPARAM)song,0);
-#endif
+  if (window != NULL) PostMessageA(window,WM_MUSIC_PLAY,(WPARAM)song,0);
   }
 
 void stop_music() {
-#ifdef WIN32
-  if (music_window != NULL) PostMessage(music_window,WM_MUSIC_STOP,0,0);
-#endif
+  if (music_window != NULL) PostMessageA(music_window,WM_MUSIC_STOP,0,0);
   }
 
 /* Ctrl+M: silences the music, or brings back the song for where the player is */
 void toggle_music() {
   music = (music == 'Y') ? 'N' : 'Y';
-#ifdef WIN32
   if (music == 'Y' && requested >= 0) play_music(requested);
   if (music == 'N') stop_music();
-#endif
   }

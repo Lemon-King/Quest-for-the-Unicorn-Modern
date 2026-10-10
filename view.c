@@ -74,13 +74,7 @@ void view(Int32 floor) {
 
       }
     show_sprite(x,y,100);
-#ifdef ASCII
-    gotoxy(40,25);
-    txt_write("                                      ");
-    gotoxy(40,25);
-#else
     outtextxyclr(screen_width-160, screen_height-15,"                                      ");
-#endif
     if (los(player.x,player.y,x+player.map_x,y+player.map_y,'Y')) {
       setcolor(CLR_YELLOW);
       strcpy(buffer,"");
@@ -246,20 +240,10 @@ void view(Int32 floor) {
       }
       } else strcpy(buffer,"Out of sight");
     if (strlen(buffer) > 38) buffer[38] = 0;
-#ifdef ASCII
-    gotoxy(40,25);
-    txt_write(buffer);
-#else
     outtextxyclr(screen_width-160, screen_height-15,buffer);
     flush();
-#endif
     }
-#ifdef ASCII
-  gotoxy(40,25);
-  txt_write("                                      ");
-#else
   outtextxyclr(screen_width-160, screen_height-15,"                                      ");
-#endif
   show_spot(x + player.map_x,y + player.map_y);
   show_player();
   }
