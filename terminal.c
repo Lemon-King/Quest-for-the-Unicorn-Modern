@@ -8,18 +8,14 @@
  *******************************************************************
 */
 
-#include "graphics.h"
 #include "header.h"
 #include "terminal.h"
 #include "platform.h"
 
-/* The window, and the viewport that shows the canvas in it */
-static rcs_Display*      display;
-static rcs_Window        window;
-static rcs_Viewport      viewport;
-static rcs_Event         key_event;
+/* What shows the game's frames and brings its keys */
+static GAME_HOST*        host;
 
-/* Drawing goes to the canvas only; present() shows what changed when the game flushes or waits.
+/* Drawing goes to the canvas only; present() hands it to the host when the game flushes or waits.
    saved is the copy saveScreen() keeps; sprites and font draw on either. */
 static CANVAS*           screen;
 static CANVAS*           saved;
@@ -62,27 +58,23 @@ static void clear_buffer() {
 
 /* What the game drew since the last call reaches the window */
 static void present() {
-  Int32 x,y,width,height;
-  if (canvas_take_dirty(screen,&x,&y,&width,&height)) rcs_invalidateViewport(viewport,x,y,width,height);
-  rcs_presentViewport(viewport);
+  host_present(host,screen);
   }
 
 void clrscr() {
   clear_buffer();
   }
 
-void init_graph() {
-  display = rcs_openDisplay(":0.0");
-  window = rcs_createWindow(display,rcs_rootWindow(display),0,0,screen_width,screen_height);
-  rcs_setWindowName(display,window,"Quest for the Unicorn");
+/* The window is already open; the game draws its first frame black */
+void init_graph(GAME_HOST* game_host) {
+  host = game_host;
   screen = canvas_create(screen_width,screen_height);
   saved = canvas_create(screen_width,screen_height);
   sprites = sprite_cache_create();
   font = terminal_font();
   if (screen == NULL || saved == NULL || sprites == NULL) exit(1);
-  viewport = rcs_createViewport(display,window,canvas_pixels(screen),screen_width,screen_height);
   clear_buffer();
-  rcs_showWindow(display,window);
+  present();
   }
 
 void saveScreen() {
@@ -159,135 +151,50 @@ void txt_writeln(char* buffer) {
   if (cursor_y > 24) cursor_y = 24;
   }
 
-static Int32 is_modifier(Int32 key) {
-  if (key == KEY_SHIFT_L || key == KEY_SHIFT_R) return 1;
-  if (key == KEY_CTRL_L || key == KEY_CTRL_R) return 1;
-  return 0;
-  }
-
 /* The window is closing or gone; without this the process lingers, music and all */
 static void window_closed() {
   stop_music();
   exit(0);
   }
 
+/* Ctrl+P and Ctrl+M waiting at the front of the queue are handled here, so a check for keys never stops on them */
 Int32 keypressed() {
-  rcs_Event event;
+  Int32 key;
   if (strlen(currentMacro) > 0) return 1;
 
   present();
-  event = rcs_pollEvent(display);
-  if (event.type == EVENT_CLOSE || event.type == EVENT_QUIT) window_closed();
-  if (event.type == EVENT_KEY_PRESS && !is_modifier(event.d1)) {
-    if (event.d1 == KY_SCREENSHOT) {
-      screenshot();
-      return 0;
-      }
-
-    if (event.d1 == KEY_CTRL_M) {
-      toggle_music();
-      return 0;
-      }
-
-    key_event = event;
-    return -1;
+  key = host_peek_key(host);
+  while (key == KY_SCREENSHOT || key == KY_MUSIC) {
+    host_read_key(host);
+    if (key == KY_SCREENSHOT) screenshot();
+      else toggle_music();
+    key = host_peek_key(host);
     }
-  return 0;
-  }
-
-Int32 keytrans(Int32 n) {
-  char          temp[32];
-  switch (n) {
-    case KEY_UP:return '8';
-    case KEY_DOWN:return '2';
-    case KEY_LEFT:return '4';
-    case KEY_RIGHT:return '6';
-    case KEY_CTRL_M:return KY_MUSIC;
-    case KEY_KP_1:return '1';
-    case KEY_KP_2:return '2';
-    case KEY_KP_3:return '3';
-    case KEY_KP_4:return '4';
-    case KEY_KP_5:return '5';
-    case KEY_KP_6:return '6';
-    case KEY_KP_7:return '7';
-    case KEY_KP_8:return '8';
-    case KEY_KP_9:return '9';
-    case  KEY_F1: return KY_F1;
-    case  KEY_F2: return KY_F2;
-    case  KEY_F3: return KY_F3;
-    case  KEY_F4: return KY_F4;
-    case  KEY_F5: return KY_F5;
-    case  KEY_F6: return KY_F6;
-    case  KEY_F7: return KY_F7;
-    case  KEY_F8: return KY_F8;
-    case  KEY_F9: return KY_F9;
-    case KEY_F10: return KY_F10;
-    case  KEY_SHIFT_F1: return KY_S_F1;
-    case  KEY_SHIFT_F2: return KY_S_F2;
-    case  KEY_SHIFT_F3: return KY_S_F3;
-    case  KEY_SHIFT_F4: return KY_S_F4;
-    case  KEY_SHIFT_F5: return KY_S_F5;
-    case  KEY_SHIFT_F6: return KY_S_F6;
-    case  KEY_SHIFT_F7: return KY_S_F7;
-    case  KEY_SHIFT_F8: return KY_S_F8;
-    case  KEY_SHIFT_F9: return KY_S_F9;
-    case KEY_SHIFT_F10: return KY_S_F10;
-    case  KEY_ALT_F1: return KY_A_F1;
-    case  KEY_ALT_F2: return KY_A_F2;
-    case  KEY_ALT_F3: return KY_A_F3;
-    case  KEY_ALT_F4: return KY_A_F4;
-    case  KEY_ALT_F5: return KY_A_F5;
-    case  KEY_ALT_F6: return KY_A_F6;
-    case  KEY_ALT_F7: return KY_A_F7;
-    case  KEY_ALT_F8: return KY_A_F8;
-    case  KEY_ALT_F9: return KY_A_F9;
-    case KEY_ALT_F10: return KY_A_F10;
-    case  KEY_CTRL_F1: return KY_C_F1;
-    case  KEY_CTRL_F2: return KY_C_F2;
-    case  KEY_CTRL_F3: return KY_C_F3;
-    case  KEY_CTRL_F4: return KY_C_F4;
-    case  KEY_CTRL_F5: return KY_C_F5;
-    case  KEY_CTRL_F6: return KY_C_F6;
-    case  KEY_CTRL_F7: return KY_C_F7;
-    case  KEY_CTRL_F8: return KY_C_F8;
-    case  KEY_CTRL_F9: return KY_C_F9;
-    case KEY_CTRL_F10: return KY_C_F10;
-    }
-      if (show_keys == 'Y') {
-        sprintf(temp,"key=%d",n);
-        msg(temp,15);
-        }
-  return n;
+  if (key == HOST_KEY_CLOSED) window_closed();
+  return (key == HOST_KEY_NONE) ? 0 : -1;
   }
 
 static Int32 next_key() {
-  rcs_Event event;
-  char      flag;
-  flag = ' ';
+  Int32 key;
   present();
-  if (key_event.type == EVENT_KEY_PRESS) {
-    key_event.type = EVENT_NONE;
-    return keytrans(key_event.d1);
-    }
-  while (flag == ' ') {
-    event = rcs_getEvent(display);
-    if (event.type == EVENT_CLOSE || event.type == EVENT_QUIT) window_closed();
-    if (event.type == EVENT_KEY_PRESS) {
-      if (!is_modifier(event.d1))
-        return keytrans(event.d1);
-      }
-    }
-  return 0;
+  key = host_read_key(host);
+  if (key == HOST_KEY_CLOSED) window_closed();
+  return key;
   }
 
-/* Ctrl+P and Ctrl+M work on every screen, so the game never sees them */
+/* Ctrl+P and Ctrl+M work on every screen, so the game never sees them. ShowKeys prints every key it does see. */
 Int32 readkey() {
   Int32 key;
+  char  text[32];
   key = next_key();
   while (key == KY_SCREENSHOT || key == KY_MUSIC) {
     if (key == KY_SCREENSHOT) screenshot();
-    else toggle_music();
+      else toggle_music();
     key = next_key();
+    }
+  if (show_keys == 'Y') {
+    sprintf(text,"key=%d",key);
+    msg(text,15);
     }
   return key;
   }
@@ -340,7 +247,8 @@ void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
 
 void delay(Int32 tm) {
   present();
-  Sleep(tm);
+  host_sleep(host,tm);
+  if (host_closed(host)) window_closed();
   }
 
 Int32 p_read(char* buffer) {

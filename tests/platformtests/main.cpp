@@ -15,11 +15,21 @@
 void runCanvasTests(TestRunner& runner);
 void runSpriteTests(TestRunner& runner);
 void runBmpWriterTests(TestRunner& runner);
+void runViewportLayoutTests(TestRunner& runner);
+void runFrameMailboxTests(TestRunner& runner);
+void runInputQueueTests(TestRunner& runner);
+void runKeyTranslatorTests(TestRunner& runner);
+void runScalePassTests(TestRunner& runner);
 
 int main() {
   TestRunner runner;
   runCanvasTests(runner);
   runSpriteTests(runner);
   runBmpWriterTests(runner);
+  runViewportLayoutTests(runner);
+  runFrameMailboxTests(runner);
+  runInputQueueTests(runner);
+  runKeyTranslatorTests(runner);
+  runScalePassTests(runner);
   return runner.finish();
   }

@@ -12,6 +12,9 @@
 
 #include "header.h"
 
+/* 1 when the game starts from a save: one named on the command line, or one picked from the title screen */
+static Int32 loadgame;
+
 /* A game picked from the title screen gets its <name>.cfg, as one named on the command line does. The window is
    already open, so the screen size stays. */
 static void apply_character_config() {
@@ -103,9 +106,10 @@ static void end_game() {
   textmode(3);
   }
 
-Int32 main2(Int32 argc,char** argv) {
+/* Defaults, unicorn.cfg, the command line and <save>.cfg; the table counts and the -s report. Returns 0 when the
+   game should end without opening its window. */
+Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   Int32 i;
-  Int32 loadgame;
   time_t         date_time;
   Int32 loot_commons;
   Int32 loot_uncommons;
@@ -269,10 +273,16 @@ Int32 main2(Int32 argc,char** argv) {
       printf("  F%d = %s\n",i+1,macros[i]);
     }
   if (showStats != 0) return(0);
+  setup->width = screen_width;
+  setup->height = screen_height;
+  return 1;
+  }
+
+/* The game in its window: title screen, play, scores, until the player saves and leaves */
+void run_game(GAME_HOST* host) {
   graphics = ' ';
   read_sprites();
-  init_graph();
-//MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
+  init_graph(host);
   hall_position = -1;
   death_position = -1;
   num_hall_of_fame = 0;
@@ -297,52 +307,4 @@ Int32 main2(Int32 argc,char** argv) {
     end_game();
     } while (exit_flag != 'S');
   stop_music();
-
-  return 0;
   }
-
-#include <windows.h>
-
-extern void rcs_initWin32(HINSTANCE hInstance);
-
-int APIENTRY WinMain(HINSTANCE hInstance,
-                                         HINSTANCE hPrevInstance,
-                                         LPSTR     lpCmdLine,
-                                         Int32     nCmdShow) {
-        Int32 argc;
-                char **argv;
-                char buffer[1024];
-                char *pBuffer;
-        rcs_initWin32(hInstance);
-                strcpy(buffer,"unicorn");
-                argv=(char**)malloc(sizeof(char*));
-                argv[0] = (char*)malloc(strlen(buffer) + 1);
-                strcpy(argv[0],buffer);
-                argc = 1;
-                pBuffer = buffer;
-                while (*lpCmdLine != 0) {
-                        if (*lpCmdLine <= ' ') {
-                                if (pBuffer != buffer) {
-                                        argc += 1;
-                                        argv=(char**)realloc(argv,sizeof(char*) * argc);
-                                        argv[argc-1] = (char*)malloc(strlen(buffer) + 1);
-                                        strcpy(argv[argc-1],buffer);
-                                        pBuffer = buffer;
-                                }
-                                lpCmdLine++;
-                        } else {
-                                *pBuffer++ = *lpCmdLine++;
-                                *pBuffer = 0;
-                        }
-                }
-                if (pBuffer != buffer) {
-                        argc += 1;
-                        argv=(char**)realloc(argv,sizeof(char*) * argc);
-                        argv[argc-1] = (char*)malloc(strlen(buffer) + 1);
-                        strcpy(argv[argc-1],buffer);
-                        pBuffer = buffer;
-                }
-        main2(argc,argv);
-        return 0;
-}
-

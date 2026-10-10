@@ -23,7 +23,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v145</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
     <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
     <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
@@ -50,8 +50,13 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>8388608</StackReserveSize>
-      <AdditionalDependencies>gdi32.lib;user32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;user32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <!-- res\unicorn.manifest declares DPI awareness itself, so the linker adds none of its own -->
+    <Manifest>
+      <AdditionalManifestFiles>res\unicorn.manifest</AdditionalManifestFiles>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
 
   <ItemGroup>
@@ -167,7 +172,6 @@
     <ClCompile Include="gothicfont.c" />
     <ClCompile Include="goship.c" />
     <ClCompile Include="goup.c" />
-    <ClCompile Include="graphics.c" />
     <ClCompile Include="haggle.c" />
     <ClCompile Include="hasintrinsic.c" />
     <ClCompile Include="hassocket.c" />
@@ -335,7 +339,6 @@
   <ItemGroup>
     <ClInclude Include="header.h" />
     <ClInclude Include="terminal.h" />
-    <ClInclude Include="graphics.h" />
     <ClInclude Include="gothic.h" />
     <ClInclude Include="maps.h" />
     <ClInclude Include="objects.h" />
@@ -349,6 +352,7 @@
     <ClInclude Include="gen.h" />
     <ClInclude Include="world.h" />
     <None Include="unicorn.xpm" />
+    <None Include="res\unicorn.manifest" />
   </ItemGroup>
 
   <!-- The game reads these from its working folder, which is the output folder -->

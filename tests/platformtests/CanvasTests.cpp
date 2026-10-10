@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "ApiTypes.h"
 #include "Canvas.h"
 #include "Compare.h"
 #include "GdiSurface.h"
@@ -100,7 +101,7 @@ void terminalFontMatchesGdi(TestRunner& runner) {
     GdiSurface surface(32, 32);
     canvas_text(canvas, terminal_font(), 8, 16, glyph, WHITE);
     surface.text(8, 16, glyph, WHITE);
-    std::string difference = comparePixels(canvas_pixels(canvas), 32, surface, 0, 0, 32, 32);
+    std::string difference = comparePixels(canvas->canvas.pixels(), 32, surface, 0, 0, 32, 32);
     runner.check(difference.empty(), "TerminalFontMatchesGdi", "byte " + std::to_string(code) + " " + difference);
     canvas_destroy(canvas);
     }
@@ -110,7 +111,7 @@ void terminalFontMatchesGdi(TestRunner& runner) {
   GdiSurface  surface(288, 32);
   canvas_text(canvas, terminal_font(), 3, 20, line, YELLOW);
   surface.text(3, 20, line, YELLOW);
-  std::string difference = comparePixels(canvas_pixels(canvas), 288, surface, 0, 0, 288, 32);
+  std::string difference = comparePixels(canvas->canvas.pixels(), 288, surface, 0, 0, 288, 32);
   runner.check(difference.empty(), "TerminalFontMatchesGdi", std::string("text line ") + difference);
   canvas_destroy(canvas);
   }
