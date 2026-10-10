@@ -12,6 +12,7 @@
 
 #include <windows.h>
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 
@@ -22,6 +23,9 @@
 #include "ViewportLayout.h"
 
 namespace platform {
+
+constexpr UINT WM_APP_FRAME = WM_APP + 1;        /* a frame was published: present it */
+constexpr UINT WM_APP_GAME_ENDED = WM_APP + 2;   /* run_game() returned: end the message loop */
 
 /* The game's top-level window: opens at the sharpest size that fits, repaints from the newest frame whenever Windows
    asks, turns key messages into game keys, and reports a close to the game */
@@ -36,6 +40,8 @@ class GameWindow {
 
     HWND handle() const;
     void showFrame();
+    void requestFrame();
+    void gameEnded();
 
   private:
     static LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
@@ -55,6 +61,7 @@ class GameWindow {
     ViewportLayout             layout_;
     Placement                  placement_;
     std::unique_ptr<Presenter> presenter_;
+    std::atomic<bool>          framePending_ = false;
   };
 
 }

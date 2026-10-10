@@ -204,6 +204,10 @@
          FKeySpells           Unshifted F keys select spells
          FKeyWeapons          Unshifted F keys select weapons
          Fn=macro             Assigne Fn macro (Ex. F1=Rs)
+         GameThread           The game runs on its own thread; the window
+                              always stays responsive.  The default
+         NoGameThread         The game and the window share one thread, as
+                              in older versions
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,

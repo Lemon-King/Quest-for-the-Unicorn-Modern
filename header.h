@@ -1015,6 +1015,7 @@ LINK char               debugMSG[256];
 LINK Int32                hall_position;
 LINK Int32                death_position;
 LINK char               music;
+LINK char               game_thread;
 LINK Int32                target_x;
 LINK Int32                target_y;
 LINK double             dir_x;

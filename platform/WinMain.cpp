@@ -21,6 +21,7 @@
 #include "GameWindow.h"
 #include "InlineHost.h"
 #include "InputQueue.h"
+#include "ThreadedHost.h"
 #include "platform.h"
 
 int WINAPI WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
@@ -32,8 +33,15 @@ int WINAPI WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_
   try {
     platform::FrameMailbox frames(setup.width, setup.height);
     platform::InputQueue   input;
-    platform::GameWindow   window(instance, setup.width, setup.height, 0, frames, input);
-    platform::InlineHost   host(frames, input, window);
+    platform::GameWindow   window(instance, setup.width, setup.height, setup.gameThread ? 1 : 0, frames, input);
+
+    /* GameThread: the window thread presents with vsync. NoGameThread: as the GDI build, never waiting for vblank */
+    if (setup.gameThread) {
+      platform::ThreadedHost host(frames, input, window);
+      return host.run();
+      }
+
+    platform::InlineHost host(frames, input, window);
     return host.run();
     }
   catch (const std::exception& error) {

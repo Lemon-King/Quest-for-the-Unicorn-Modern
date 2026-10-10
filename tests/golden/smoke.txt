@@ -32,6 +32,7 @@ Options:
   Fkeys: Spells
   Screen Size: 640 x 480
   Music: Y
+  Game Thread: Y
 Macros:
   F1 = 
   F2 = 
