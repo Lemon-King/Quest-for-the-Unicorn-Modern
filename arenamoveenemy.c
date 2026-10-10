@@ -10,6 +10,73 @@
 
 #include "header.h"
 
+static char valid(Int32 monster,Int32 x,Int32 y) {
+  Int32 i;
+  char flag;
+#ifdef DEBUG
+  sprintf(debugbuffer,"%*sEntering: valid(%d,%d)\n",debug_tab,"",x,y);
+  debug_tab += 2;
+  debugLog(debugbuffer);
+#endif
+  flag = '*';
+  if (player.map[x][y] < 0) flag = ' ';
+  if (player.map[x][y] == 21) flag = ' ';
+  if (player.map[x][y] == 22) flag = ' ';
+  if (player.map[x][y]>300 && player.map[x][y]<500) flag = ' ';
+  if (x == player.x && y == player.y) flag = ' ';
+  if (x<offset_x || x>offset_x+ARENA_SIZE_X || y<offset_y || y>offset_y+ARENA_SIZE_Y) flag = ' ';
+  if (player.map[x][y] < 255) {
+    if (player.map[x][y] == 143) flag = ' ';
+    if (player.map[x][y] == 20) flag = ' ';
+    if (player.map[x][y] == 18) flag = ' ';
+    if (player.map[x][y] == 16) flag = ' ';
+    if (player.map[x][y] == 4) flag = ' ';
+    if (player.map[x][y] == 176) flag = ' ';
+    if (player.map[x][y] == 3) flag = ' ';
+    if (player.map[x][y] == 178) flag = ' ';
+    }
+    if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
+      i = player.monster[monster-400][a_mon].level / 4;
+      if (i < 1) i = 1;
+      player.map[x][y] -= i;
+      if (player.map[x][y] < 600) {
+        player.map[x][y] = currentFloor;
+        }
+      else flag = ' ';
+      }
+#ifdef DEBUG
+  sprintf(debugbuffer,"%*sExiting: valid()\n",debug_tab,"");
+  debug_tab -= 2;
+  debugLog(debugbuffer);
+#endif
+  return flag;
+  }
+
+static void enemy_target(Int32 x,Int32 y,Int32* targetx,Int32* targety,Int32* dist) {
+  Int32 x1,y1;
+#ifdef DEBUG
+  sprintf(debugbuffer,"%*sEntering: find_target()\n",debug_tab,"");
+  debug_tab += 2;
+  debugLog(debugbuffer);
+#endif
+  *dist = (sqr(player.x-x) + sqr(player.y-y));
+  *targetx = player.x;
+  *targety = player.y;
+  for (x1=offset_x; x1<=offset_x+16; x1++)
+    for (y1=offset_y; y1<=offset_y+16; y1++)
+      if (player.map[x1][y1]>300 && player.map[x1][y1]<400 &&
+          (sqr(x1-x)+sqr(y1-y)) < *dist) {
+        *targetx = x1;
+        *targety = y1;
+        *dist = (sqr(x1-x)+sqr(y1-y));
+        }
+#ifdef DEBUG
+  sprintf(debugbuffer,"%*sExiting: find_target()\n",debug_tab,"");
+  debug_tab -= 2;
+  debugLog(debugbuffer);
+#endif
+  }
+
 void arena_move_enemy(Int32 x,Int32 y) {
   Int32 xdir,ydir;
   Int32 ox,oy;
@@ -19,73 +86,6 @@ void arena_move_enemy(Int32 x,Int32 y) {
   Int32 dist;
   Int32 spd;
 
-  char valid(Int32 x,Int32 y) {
-    Int32 i;
-    char flag;
-#ifdef DEBUG
-  sprintf(debugbuffer,"%*sEntering: valid(%d,%d)\n",debug_tab,"",x,y);
-  debug_tab += 2;
-  debugLog(debugbuffer);
-#endif
-    flag = '*';
-    if (player.map[x][y] < 0) flag = ' ';
-    if (player.map[x][y] == 21) flag = ' ';
-    if (player.map[x][y] == 22) flag = ' ';
-    if (player.map[x][y]>300 && player.map[x][y]<500) flag = ' ';
-    if (x == player.x && y == player.y) flag = ' ';
-    if (x<offset_x || x>offset_x+ARENA_SIZE_X || y<offset_y || y>offset_y+ARENA_SIZE_Y) flag = ' ';
-    if (player.map[x][y] < 255) {
-      if (player.map[x][y] == 143) flag = ' ';
-      if (player.map[x][y] == 20) flag = ' ';
-      if (player.map[x][y] == 18) flag = ' ';
-      if (player.map[x][y] == 16) flag = ' ';
-      if (player.map[x][y] == 4) flag = ' ';
-      if (player.map[x][y] == 176) flag = ' ';
-      if (player.map[x][y] == 3) flag = ' ';
-      if (player.map[x][y] == 178) flag = ' ';
-      }
-      if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
-        i = player.monster[monster-400][a_mon].level / 4;
-        if (i < 1) i = 1;
-        player.map[x][y] -= i;
-        if (player.map[x][y] < 600) {
-          player.map[x][y] = currentFloor;
-          }
-        else flag = ' ';
-        }
-#ifdef DEBUG
-  sprintf(debugbuffer,"%*sExiting: valid()\n",debug_tab,"");
-  debug_tab -= 2;
-  debugLog(debugbuffer);
-#endif
-    return flag;
-    }
-
-  void find_target() {
-    Int32 x1,y1;
-#ifdef DEBUG
-  sprintf(debugbuffer,"%*sEntering: find_target()\n",debug_tab,"");
-  debug_tab += 2;
-  debugLog(debugbuffer);
-#endif
-    dist = (sqr(player.x-x) + sqr(player.y-y));
-    targetx = player.x;
-    targety = player.y;
-    for (x1=offset_x; x1<=offset_x+16; x1++)
-      for (y1=offset_y; y1<=offset_y+16; y1++)
-        if (player.map[x1][y1]>300 && player.map[x1][y1]<400 &&
-            (sqr(x1-x)+sqr(y1-y)) < dist) {
-          targetx = x1;
-          targety = y1;
-          dist = (sqr(x1-x)+sqr(y1-y));
-          }
-#ifdef DEBUG
-  sprintf(debugbuffer,"%*sExiting: find_target()\n",debug_tab,"");
-  debug_tab -= 2;
-  debugLog(debugbuffer);
-#endif
-    }
-
 #ifdef DEBUG
   sprintf(debugbuffer,"%*sEntering: arena_move_enemy(%d,%d)\n",debug_tab,"",x,y);
   debug_tab += 2;
@@ -93,7 +93,7 @@ void arena_move_enemy(Int32 x,Int32 y) {
 #endif
   monster = player.map[x][y];
   for (spd=1; spd<=player.monster[monster-400][a_mon].speed; spd++) {
-      find_target();
+      enemy_target(x,y,&targetx,&targety,&dist);
       xdir = 0;
       ydir = 0;
       ox = x;
@@ -121,13 +121,13 @@ void arena_move_enemy(Int32 x,Int32 y) {
           }
       if (abs(x-targetx) > 1 || abs(y-targety)>1 || player.monster[monster-400][a_mon].fear > 0) {
         if (player.monster[monster-400][a_mon].fear > 0) { xdir = -xdir; ydir = -ydir; }
-        if (valid(x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
-        else if (valid(x+xdir,y) == '*') x+=xdir;
-        else if (valid(x,y+ydir) == '*') y+=ydir;
-        else if (xdir == 0 && valid(x+1,y+ydir) == '*') { x++; y+=ydir; }
-        else if (xdir == 0 && valid(x-1,y+ydir) == '*') { x--; y+=ydir; }
-        else if (ydir == 0 && valid(x+xdir,y-1) == '*') { x+=xdir; y--; }
-        else if (ydir == 0 && valid(x+xdir,y+1) == '*') { x+=xdir; y++; }
+        if (valid(monster,x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
+        else if (valid(monster,x+xdir,y) == '*') x+=xdir;
+        else if (valid(monster,x,y+ydir) == '*') y+=ydir;
+        else if (xdir == 0 && valid(monster,x+1,y+ydir) == '*') { x++; y+=ydir; }
+        else if (xdir == 0 && valid(monster,x-1,y+ydir) == '*') { x--; y+=ydir; }
+        else if (ydir == 0 && valid(monster,x+xdir,y-1) == '*') { x+=xdir; y--; }
+        else if (ydir == 0 && valid(monster,x+xdir,y+1) == '*') { x+=xdir; y++; }
         }
       player.map[ox][oy] = player.monster[monster-400][a_mon].prev;
       player.monster[monster-400][a_mon].prev = player.map[x][y];

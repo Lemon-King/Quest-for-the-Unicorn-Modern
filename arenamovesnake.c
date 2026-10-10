@@ -10,6 +10,30 @@
 
 #include "header.h"
 
+static char valid(Int32 floor,Int32 x,Int32 y) {
+  char flag;
+  flag = '*';
+  if (player.map[x][y] != floor) flag = ' ';
+  if (x == player.x && y == player.y) flag = ' ';
+  if (player.map[x][y]>399 && player.map[x][y]<500) flag = '*';
+  return flag;
+  }
+
+static void snake_target(Int32 x,Int32 y,Int32* targetx,Int32* targety,Int32* dist) {
+  Int32 x1,y1;
+  *dist = 32767;
+  *targetx = player.x;
+  *targety = player.y;
+  for (x1=offset_x; x1<=offset_x+16; x1++)
+    for (y1=offset_y; y1<=offset_y+16; y1++)
+      if (player.map[x1][y1]>399 && player.map[x1][y1]<500 &&
+          (sqr(x1-x)+sqr(y1-y)) < *dist) {
+        *targetx = x1;
+        *targety = y1;
+        *dist = (sqr(x1-x)+sqr(y1-y));
+        }
+  }
+
 void arena_move_snake(Int32 x,Int32 y,Int32 floor) {
   Int32 xdir,ydir;
   Int32 ox,oy;
@@ -19,31 +43,7 @@ void arena_move_snake(Int32 x,Int32 y,Int32 floor) {
   Int32 i;
   Int32 target;
 
-  char valid(Int32 x,Int32 y) {
-    char flag;
-    flag = '*';
-    if (player.map[x][y] != floor) flag = ' ';
-    if (x == player.x && y == player.y) flag = ' ';
-    if (player.map[x][y]>399 && player.map[x][y]<500) flag = '*';
-    return flag;
-    }
-
-  void find_target() {
-    Int32 x1,y1;
-    dist = 32767;
-    targetx = player.x;
-    targety = player.y;
-    for (x1=offset_x; x1<=offset_x+16; x1++)
-      for (y1=offset_y; y1<=offset_y+16; y1++)
-        if (player.map[x1][y1]>399 && player.map[x1][y1]<500 &&
-            (sqr(x1-x)+sqr(y1-y)) < dist) {
-          targetx = x1;
-          targety = y1;
-          dist = (sqr(x1-x)+sqr(y1-y));
-          }
-    }
-
-  find_target();
+  snake_target(x,y,&targetx,&targety,&dist);
   xdir = 0;
   ydir = 0;
   ox = x; oy = y;
@@ -56,9 +56,9 @@ void arena_move_snake(Int32 x,Int32 y,Int32 floor) {
   if (x < targetx && y == targety) xdir = 1;
   if (x > targetx && y == targety) xdir = -1;
   if (dist == 32767) { xdir = 0; ydir = 0; }
-  if (valid(x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
-  else if (valid(x+xdir,y) == '*') x+=xdir;
-  else if (valid(x,y+ydir) == '*') y += ydir;
+  if (valid(floor,x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
+  else if (valid(floor,x+xdir,y) == '*') x+=xdir;
+  else if (valid(floor,x,y+ydir) == '*') y += ydir;
   player.map[ox][oy] = floor;
   if (in_sight(ox,oy) == '*') show_spot(ox,oy);
   if (player.map[x][y] == floor) {

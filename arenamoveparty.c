@@ -10,6 +10,53 @@
 
 #include "header.h"
 
+static char valid(Int32 monster,Int32 x,Int32 y) {
+  Int32 i;
+  char flag;
+  flag = '*';
+  if (player.map[x][y] < 0) flag = ' ';
+  if (player.map[x][y] == 21) flag = ' ';
+  if (player.map[x][y] == 22) flag = ' ';
+  if (player.map[x][y]>300 && player.map[x][y]<500) flag = ' ';
+  if (x == player.x && y == player.y) flag = ' ';
+  if (x<offset_x || x>offset_x+ARENA_SIZE_X || y<offset_y || y>offset_y+ARENA_SIZE_Y) flag = ' ';
+  if (player.map[x][y] < 255) {
+    if (player.map[x][y] == 143) flag = ' ';
+    if (player.map[x][y] == 20) flag = ' ';
+    if (player.map[x][y] == 18) flag = ' ';
+    if (player.map[x][y] == 16) flag = ' ';
+    if (player.map[x][y] == 4) flag = ' ';
+    if (player.map[x][y] == 176) flag = ' ';
+    if (player.map[x][y] == 3) flag = ' ';
+    if (player.map[x][y] == 178) flag = ' ';
+    }
+    if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
+      i = player.party[monster-300].level / 2;
+      if (i < 1) i = 1;
+      player.map[x][y] -= i;
+      if (player.map[x][y] < 600) {
+        player.map[x][y] = currentFloor;
+        }
+      else flag = ' ';
+      }
+  return flag;
+  }
+
+static void party_target(Int32 x,Int32 y,Int32* targetx,Int32* targety,Int32* dist) {
+  Int32 x1,y1;
+  *dist = 32767;
+  *targetx = player.x;
+  *targety = player.y;
+  for (x1=offset_x; x1<=offset_x+16; x1++)
+    for (y1=offset_y; y1<=offset_y+16; y1++)
+      if (player.map[x1][y1]>400 && player.map[x1][y1]<500 &&
+          (sqr(x1-x)+sqr(y1-y)) <= *dist) {
+        *targetx = x1;
+        *targety = y1;
+        *dist = (sqr(x1-x)+sqr(y1-y));
+        }
+  }
+
 void arena_move_party(Int32 x,Int32 y) {
   Int32 xdir,ydir;
   Int32 ox,oy;
@@ -19,56 +66,9 @@ void arena_move_party(Int32 x,Int32 y) {
   Int32 dist;
   Int32 spd;
 
-  char valid(Int32 x,Int32 y) {
-    Int32 i;
-    char flag;
-    flag = '*';
-    if (player.map[x][y] < 0) flag = ' ';
-    if (player.map[x][y] == 21) flag = ' ';
-    if (player.map[x][y] == 22) flag = ' ';
-    if (player.map[x][y]>300 && player.map[x][y]<500) flag = ' ';
-    if (x == player.x && y == player.y) flag = ' ';
-    if (x<offset_x || x>offset_x+ARENA_SIZE_X || y<offset_y || y>offset_y+ARENA_SIZE_Y) flag = ' ';
-    if (player.map[x][y] < 255) {
-      if (player.map[x][y] == 143) flag = ' ';
-      if (player.map[x][y] == 20) flag = ' ';
-      if (player.map[x][y] == 18) flag = ' ';
-      if (player.map[x][y] == 16) flag = ' ';
-      if (player.map[x][y] == 4) flag = ' ';
-      if (player.map[x][y] == 176) flag = ' ';
-      if (player.map[x][y] == 3) flag = ' ';
-      if (player.map[x][y] == 178) flag = ' ';
-      }
-      if (player.map[x][y] >= 600 && player.map[x][y] < 700) {
-        i = player.party[monster-300].level / 2;
-        if (i < 1) i = 1;
-        player.map[x][y] -= i;
-        if (player.map[x][y] < 600) {
-          player.map[x][y] = currentFloor;
-          }
-        else flag = ' ';
-        }
-    return flag;
-    }
-
-  void find_target() {
-    Int32 x1,y1;
-    dist = 32767;
-    targetx = player.x;
-    targety = player.y;
-    for (x1=offset_x; x1<=offset_x+16; x1++)
-      for (y1=offset_y; y1<=offset_y+16; y1++)
-        if (player.map[x1][y1]>400 && player.map[x1][y1]<500 &&
-            (sqr(x1-x)+sqr(y1-y)) <= dist) {
-          targetx = x1;
-          targety = y1;
-          dist = (sqr(x1-x)+sqr(y1-y));
-          }
-    }
-
   monster = player.map[x][y];
   for (spd=1; spd<=player.party[monster-300].speed; spd++) {
-      find_target();
+      party_target(x,y,&targetx,&targety,&dist);
       xdir = 0;
       ydir = 0;
       ox = x;
@@ -94,13 +94,13 @@ void arena_move_party(Int32 x,Int32 y) {
         if (abs(x-targetx) > 1 || abs(y-targety)>1 ||
             player.party[monster-300].fear > 0 ||
             (player.party[monster-300].special & MS_EVADE)) {
-          if (valid(x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
-          else if (valid(x+xdir,y) == '*') x+=xdir;
-          else if (valid(x,y+ydir) == '*') y+=ydir;
-          else if (xdir == 0 && valid(x+1,y+ydir) == '*') { x++; y+=ydir; }
-          else if (xdir == 0 && valid(x-1,y+ydir) == '*') { x--; y+=ydir; }
-          else if (ydir == 0 && valid(x+xdir,y-1) == '*') { x+=xdir; y--; }
-          else if (ydir == 0 && valid(x+xdir,y+1) == '*') { x+=xdir; y++; }
+          if (valid(monster,x+xdir,y+ydir) == '*') { x+=xdir; y+=ydir; }
+          else if (valid(monster,x+xdir,y) == '*') x+=xdir;
+          else if (valid(monster,x,y+ydir) == '*') y+=ydir;
+          else if (xdir == 0 && valid(monster,x+1,y+ydir) == '*') { x++; y+=ydir; }
+          else if (xdir == 0 && valid(monster,x-1,y+ydir) == '*') { x--; y+=ydir; }
+          else if (ydir == 0 && valid(monster,x+xdir,y-1) == '*') { x+=xdir; y--; }
+          else if (ydir == 0 && valid(monster,x+xdir,y+1) == '*') { x+=xdir; y++; }
           }
         }
       player.map[ox][oy] = player.party[monster-300].prev;
