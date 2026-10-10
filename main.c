@@ -152,6 +152,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   bottom = 5;
   music = 'Y';
   game_thread = 'Y';
+  integer_scaling = 'N';
   heroicMode = 0;
   skipcheck = 'N';
   in_upland = 'N';
@@ -269,6 +270,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
     printf("  Music: %c\n", music);
     printf("  Game Thread: %c\n", game_thread);
+    printf("  Integer Scaling: %c\n", integer_scaling);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);
@@ -277,6 +279,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   setup->width = screen_width;
   setup->height = screen_height;
   setup->gameThread = (game_thread == 'Y') ? 1 : 0;
+  setup->integerScaling = (integer_scaling == 'Y') ? 1 : 0;
   return 1;
   }
 

@@ -102,6 +102,7 @@ Int32 process_option(char* pChar) {
     else if (_stricmp(option,"FullPartyCombat"   ) == 0) party_combat_mode = 'F';
     else if (_stricmp(option,"GameThread"        ) == 0) game_thread = 'Y';
     else if (_stricmp(option,"Heroic"            ) == 0) heroicMode = 2;
+    else if (_stricmp(option,"IntegerScaling"    ) == 0) integer_scaling = 'Y';
     else if (_stricmp(option,"Music"             ) == 0) music = 'Y';
     else if (_stricmp(option,"NoArenaCombat"     ) == 0) no_arena = 'Y';
     else if (_stricmp(option,"NoAutoOpenDoors"   ) == 0) auto_open_doors = 'N';
@@ -112,6 +113,7 @@ Int32 process_option(char* pChar) {
     else if (_stricmp(option,"NoDungeonScaling"  ) == 0) dungeon_scaling = 'N';
     else if (_stricmp(option,"NoFullPartyCombat" ) == 0) party_combat_mode = 'R';
     else if (_stricmp(option,"NoGameThread"      ) == 0) game_thread = 'N';
+    else if (_stricmp(option,"NoIntegerScaling"  ) == 0) integer_scaling = 'N';
     else if (_stricmp(option,"NoMusic"           ) == 0) music = 'N';
     else if (_stricmp(option,"Normal"            ) == 0) heroicMode = 0;
     else if (_stricmp(option,"NoCrc"             ) == 0) skipcheck = 'Y';

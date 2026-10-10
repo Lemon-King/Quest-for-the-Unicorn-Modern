@@ -208,6 +208,10 @@
                               always stays responsive.  The default
          NoGameThread         The game and the window share one thread, as
                               in older versions
+         IntegerScaling       Scale the game screen by whole numbers only
+                              (2x, 3x, ...), with black borders
+         NoIntegerScaling     Fill the window, blending only the edges
+                              between pixels.  The default
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -459,6 +463,9 @@
          be made smaller than the game screen set by -w and -h.  On
          Windows the window opens at the whole step that best matches
          the display scaling.
+         Alt+Enter switches between the window and fullscreen on the
+         monitor the window is on.  IntegerScaling keeps every pixel
+         the same whole-number size in both, with black borders.
 
      Music
      =====
