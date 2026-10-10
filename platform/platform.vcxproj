@@ -53,6 +53,7 @@
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="CanvasApi.cpp" />
     <ClCompile Include="Direct3DError.cpp" />
+    <ClCompile Include="ErrorApi.cpp" />
     <ClCompile Include="ErrorReport.cpp" />
     <ClCompile Include="FrameMailbox.cpp" />
     <ClCompile Include="GameThread.cpp" />

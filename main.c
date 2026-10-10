@@ -106,8 +106,15 @@ static void end_game() {
   textmode(3);
   }
 
-/* Defaults, unicorn.cfg, the command line and <save>.cfg; the table counts and the -s report. Returns 0 when the
-   game should end without opening its window. */
+/* A failure the game cannot start after: the -s report prints why, and a player sees it in a message box */
+static void fatal_error(char* message) {
+  if (showStats) printf("Fatal Error: %s\n",message);
+    else show_fatal_error(message);
+  exit(1);
+  }
+
+/* Defaults, unicorn.cfg, the command line and <save>.cfg; the table counts, the maps and the -s report. Returns 0
+   when the game should end without opening its window. */
 Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   Int32 i;
   time_t         date_time;
@@ -116,6 +123,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   Int32 loot_rares;
   Int32 loot_very_rares;
   Int32 loot_ultra_rares;
+  char  error[256];
 
 #ifdef DEBUG
   debug_tab = 0;
@@ -247,6 +255,8 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   while (monsters[i].speed < 900) i++;
   NO_OF_MONSTERS = i;
   if (showStats) printf("Monster Count: %d\n",NO_OF_MONSTERS);
+  if (load_maps(maps,error,(Int32)sizeof(error)) == 0) fatal_error(error);
+  if (showStats) printf("Map Count: %d\n",MAP_COUNT);
   if (showStats) {
     printf("Options:\r\n");
     printf("  Auto Pickup Gold: %c\r\n",auto_pickup_gold);
