@@ -11,3 +11,5 @@ dos/
 bin/
 *.o
 *.exe
+.vs/
+*.vcxproj.user
