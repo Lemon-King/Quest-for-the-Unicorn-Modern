@@ -94,7 +94,7 @@ jobs:
           if ('${{ env.CONFIGURATION }}' -ne 'Release') { $name += '-${{ env.CONFIGURATION }}' }
           $stage = (New-Item -ItemType Directory "$env:RUNNER_TEMP\package\$name").FullName
           $out = "bin\${{ env.CONFIGURATION }}"
-          Copy-Item "$out\unicorn.exe", "$out\unicorn.cfg", "$out\unicorn.doc", LICENSE.md $stage
+          Copy-Item "$out\unicorn.exe", "$out\unicorn.cfg", "$out\unicorn.doc", "$out\editing.doc", LICENSE.md $stage
           Copy-Item "$out\music" $stage -Recurse
           Copy-Item "$out\maps" $stage -Recurse
           "name=$name" >> $env:GITHUB_OUTPUT

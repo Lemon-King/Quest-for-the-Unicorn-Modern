@@ -513,6 +513,14 @@
          Ctrl+M - Turn the music off or back on.  Works on every
                   screen.
 
+     Maps
+     ====
+         The upland and the towns are read from the text files in the
+         'maps' folder beside the game when it starts.  The game will
+         not start without them: if a map is missing or damaged, it
+         names the file and the line at fault.  editing.doc explains
+         how to change the maps.
+
      F-key usage
      ===========
 
