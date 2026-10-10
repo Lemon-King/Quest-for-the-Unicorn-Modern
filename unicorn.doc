@@ -455,7 +455,9 @@
          in the wilderness, the town theme in towns and the dungeon
          theme in dungeons, each repeating until you move on.  The
          songs are MIDI files in the 'music' folder beside the game.
-         Music is on by default; use NoMusic or -nmu to turn it off.
+         Music is on by default; NoMusic or -nmu starts with it off.
+         Ctrl+M - Turn the music off or back on.  Works on every
+                  screen.
 
      F-key usage
      ===========

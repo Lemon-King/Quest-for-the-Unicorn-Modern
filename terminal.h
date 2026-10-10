@@ -54,5 +54,6 @@
 #define KY_C_F12 237
 
 #define KY_SCREENSHOT 16   /* Ctrl+P */
+#define KY_MUSIC 238       /* Ctrl+M, kept apart from Enter's 13 */
 
 #endif

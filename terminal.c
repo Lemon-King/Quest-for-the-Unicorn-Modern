@@ -492,6 +492,11 @@ Int32 keypressed() {
       return 0;
       }
 
+    if (event.d1 == KEY_CTRL_M) {
+      toggle_music();
+      return 0;
+      }
+
     key_event = event;
     return -1;
     }
@@ -509,6 +514,7 @@ Int32 keytrans(Int32 n) {
     case KEY_DOWN:return '2';
     case KEY_LEFT:return '4';
     case KEY_RIGHT:return '6';
+    case KEY_CTRL_M:return KY_MUSIC;
 #ifndef WIN32
     case KEY_KP_UP:return '8';
     case KEY_KP_DOWN:return '2';
@@ -771,11 +777,13 @@ static Int32 next_key() {
 #endif
   }
 
+/* Ctrl+P and Ctrl+M work on every screen, so the game never sees them */
 Int32 readkey() {
   Int32 key;
   key = next_key();
-  while (key == KY_SCREENSHOT) {
-    screenshot();
+  while (key == KY_SCREENSHOT || key == KY_MUSIC) {
+    if (key == KY_SCREENSHOT) screenshot();
+    else toggle_music();
     key = next_key();
     }
   return key;

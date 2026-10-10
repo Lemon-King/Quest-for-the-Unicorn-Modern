@@ -1217,6 +1217,7 @@ extern void flush();
 /* music.c */
 extern void play_music(Int32 song);
 extern void stop_music();
+extern void toggle_music();
 
 /* uchar.c */
 extern char* fix_name(STRING32 name);

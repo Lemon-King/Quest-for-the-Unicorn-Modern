@@ -113,6 +113,7 @@ typedef GC      rcs_GC;
 #define KEY_KP_ADD    XK_KP_Add
 #define KEY_KP_ENTER  XK_KP_Enter
 #define KEY_KP_BEGIN  XK_KP_Begin
+#define KEY_CTRL_M    (XK_m + 0x40000)
 
 int ShiftState;
 int AltState;
@@ -214,6 +215,7 @@ typedef HWND rcs_Pixmap;
 #define KEY_CTRL_F10  (KEY_F10 + 0x40000)
 #define KEY_SHIFT_L   (VK_SHIFT+0xf000)
 #define KEY_SHIFT_R   (VK_SHIFT+0xf000)
+#define KEY_CTRL_M    ('M' + 0xf000 + 0x40000)
 
 typedef struct {
   HINSTANCE    hInstance;

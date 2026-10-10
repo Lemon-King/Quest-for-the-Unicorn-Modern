@@ -628,6 +628,8 @@ Int32 _capsState;
 #include "rgb.h"
 
 Int32 _rcs_winTranslate(Int32 key) {
+        /* Ctrl+M would become 13, the same as Enter */
+        if (key == 'M' && _ctrlState == 1) return KEY_CTRL_M;
         if (key >= 'A' && key <= 'Z') {
                 if (_ctrlState == 1) key -= 64;
                 else if ((_shiftState ^ ((GetKeyState(VK_CAPITAL))?1:0)) == 0) key+=32;
@@ -1328,6 +1330,8 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
                                 if (CtrlState) ret.d1 |= 0x40000;
                                break;
                     }
+                  /* Ctrl+M would become 13, the same as Enter */
+                  if (CtrlState && (ret.d1 == XK_m || ret.d1 == XK_M)) ret.d1 = KEY_CTRL_M;
                   if (CtrlState && ret.d1 >= XK_a && ret.d1 <= XK_z) ret.d1 -= XK_a - 1;
                   if (CtrlState && ret.d1 >= XK_A && ret.d1 <= XK_Z) ret.d1 -= XK_A - 1;
                   break;
