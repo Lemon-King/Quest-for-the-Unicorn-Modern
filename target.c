@@ -131,9 +131,6 @@ void target(Int32 sprt,Int32 stop_at_target,Int32 show_path) {
       fy = player.y + 0.5;
       mflag = ' ';
       if (sprt < 0) {
-#ifdef ASCII
-        sprt = 100;
-#else
         if (dir_x <  0 && dir_y >  0) sprt = 98;
         if (dir_x == 0 && dir_y >  0) sprt = 92;
         if (dir_x >  0 && dir_y >  0) sprt = 97;
@@ -144,7 +141,6 @@ void target(Int32 sprt,Int32 stop_at_target,Int32 show_path) {
         if (dir_x == 0 && dir_y <  0) sprt = 91;
         if (dir_x >  0 && dir_y <  0) sprt = 95;
 
-#endif
         }
       while (mflag == ' ') {
         fx += dir_x;

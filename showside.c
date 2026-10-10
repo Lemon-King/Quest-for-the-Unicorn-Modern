@@ -20,17 +20,6 @@ void show_time() {
 
 void show_side() {
   char buffer[80];
-/*
-  Int32 statusLine;
-  Int32 statusCol;
-#ifdef ASCII
-  statusLine = 280;
-  statusCol = 1450;
-#else
-  statusLine = 453;
-  statusCol = 5;
-#endif
-*/
   setfillstyle(1,0);
   bar(screen_width - 130,10,screen_width,100);
   settextstyle(0,0,1);
@@ -115,7 +104,6 @@ void show_side() {
     else if (player.effect[PE_ETHER] > 0) show_sprite(21,2,48);
       else show_sprite(21,2,10);
       */
-#ifndef ASCII
   putimage(tile_width*0,screen_height-tile_height,select_sprite(can_see() ? 43 : 10),0);
   putimage(tile_width*1,screen_height-tile_height,select_sprite((player.effect[PE_PROT] != 0) ? 47 : 10),0);
   putimage(tile_width*2,screen_height-tile_height,select_sprite((player.effect[PE_POISON] != 0) ? 46 : 10),0);
@@ -133,6 +121,5 @@ void show_side() {
     else putimage(tile_width*11,screen_height-tile_height,select_sprite(10),0);
 
     }
-#endif
   }
 

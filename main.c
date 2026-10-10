@@ -116,26 +116,6 @@ Int32 main2(Int32 argc,char** argv) {
   Int32 loot_very_rares;
   Int32 loot_ultra_rares;
 
-#ifdef ASCII
-  char k;
-  Int32  tw,th;
-  tw = 0;
-  th = 0;
-  unbuffer();
-  printf("\e[18t\n");
-  delay(100);
-  i = 0;
-  while (keypressed() && i < 20) {
-    read(0, &k, 1);
-    buffer[i++] = k;
-    }
-  if (buffer[strlen(buffer)-1] == 't') {
-    sscanf(buffer+3,";%d;%d",&th,&tw);
-    }
-  restoreTerm();
-#endif
-
-
 #ifdef DEBUG
   debug_tab = 0;
 #endif
@@ -154,13 +134,8 @@ Int32 main2(Int32 argc,char** argv) {
   TEXT_GRID_HEIGHT = 25;
   NUM_MSG = 10;
   for (i=0; i<12; i++) strcpy(macros[i],"");
-#ifdef ASCII
-  TILES_X = 55;
-  TILES_Y = 23;
-#else
   TILES_X = 16;
   TILES_Y = 16;
-#endif
   fkey_mode = 'S';
   loot_commons = 0;
   loot_uncommons = 0;
@@ -175,7 +150,6 @@ Int32 main2(Int32 argc,char** argv) {
   restock = 'N';
   loadgame = 0;
   bottom = 5;
-  no_color = 'N';
   music = 'Y';
   heroicMode = 0;
   skipcheck = 'N';
@@ -212,34 +186,17 @@ Int32 main2(Int32 argc,char** argv) {
   remember_option_defaults();
   if (screen_width < 640) screen_width = 640;
   if (screen_height < 480) screen_height = 480;
-#ifndef ASCII
   TILES_X = (screen_width - 240) / tile_width;
   TILES_Y = (screen_height - 48) / tile_height;
   screen_width = (TILES_X * tile_width) + 240;
   screen_height = (TILES_Y * tile_height) + 48;
-#endif
   TEXT_GRID_WIDTH = screen_width / 8;
   TEXT_GRID_HEIGHT = screen_height / 19;
   smap_offset_x = screen_width - 219;
   smap_offset_y = screen_height - 239;
-#ifndef ASCII
   NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
-#endif
-#ifdef ASCII
-  text_offset_x = 0;
-  text_offset_y = 0;
-  TEXT_GRID_WIDTH = 80;
-  TEXT_GRID_HEIGHT = 25;
-//  if (tw > 80 && th > 24) {
-//    TEXT_GRID_WIDTH = tw;
-//    TEXT_GRID_HEIGHT = th;
-//    TILES_X = TEXT_GRID_WIDTH - 25;
-//    TILES_Y = TEXT_GRID_HEIGHT - 2;
-//    }
-#else
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;
-#endif
   trophy_count = 0;
   while (trophies[trophy_count].criteria_type < 999) trophy_count++;
   if (showStats) printf("Trophy Count: %d\n",trophy_count);
@@ -318,7 +275,6 @@ Int32 main2(Int32 argc,char** argv) {
   if (showStats != 0) return(0);
   graphics = ' ';
   read_sprites();
-  unbuffer();
   init_graph();
 //MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
   hall_position = -1;
@@ -346,21 +302,9 @@ Int32 main2(Int32 argc,char** argv) {
     } while (exit_flag != 'S');
   stop_music();
 
-#ifdef ASCII
-  if (no_color != 'Y') printf("\e[0;30m");
-  clrscr();
-  restoreTerm();
-#endif
   return 0;
   }
 
-#ifndef WIN32
-int main(int argc,char** argv) {
-  return main2(argc, argv);
-  }
-#endif
-
-#ifdef WIN32
 #include <windows.h>
 
 extern void rcs_initWin32(HINSTANCE hInstance);
@@ -405,5 +349,4 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         main2(argc,argv);
         return 0;
 }
-#endif
 

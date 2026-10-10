@@ -35,12 +35,10 @@ Int32 process_option(char* pChar) {
     if (strcasecmp(option,"-asw") == 0) auto_bump_walls = 'Y';
     if (strcasecmp(option,"-at") == 0) auto_target = 'Y';
     if (strcasecmp(option,"-c") == 0) heroicMode = -1;
-    if (strcasecmp(option,"-clr") == 0) no_color = 'N';
     if (strcasecmp(option,"-e") == 0) heroicMode = 4;
     if (strcasecmp(option,"-eds") == 0) dungeon_scaling = 'Y';
     if (strcasecmp(option,"-fcd") == 0) party_combat_mode = 'F';
     if (strcasecmp(option,"-h") == 0) heroicMode = 2;
-    if (strcasecmp(option,"-m") == 0) no_color = 'Y';
     if (strcasecmp(option,"-mu") == 0) music = 'Y';
     if (strcasecmp(option,"-n") == 0) heroicMode = 0;
     if (strcasecmp(option,"-nabd") == 0) auto_open_doors = 'N';
@@ -94,7 +92,6 @@ Int32 process_option(char* pChar) {
     else if (strcasecmp(option,"AutoSearchWalls"   ) == 0) auto_bump_walls = 'Y';
     else if (strcasecmp(option,"AutoTarget"        ) == 0) auto_target = 'Y';
     else if (strcasecmp(option,"Casual"            ) == 0) heroicMode = -1;
-    else if (strcasecmp(option,"Color"             ) == 0) no_color = 'N';
     else if (strcasecmp(option,"DowngradeArena"    ) == 0) downgrade_arena = 'Y';
     else if (strcasecmp(option,"DungeonScaling"    ) == 0) dungeon_scaling = 'Y';
     else if (strcasecmp(option,"Epic"              ) == 0) heroicMode = 4;
@@ -104,7 +101,6 @@ Int32 process_option(char* pChar) {
     else if (strcasecmp(option,"FkeyWeapons"       ) == 0) fkey_mode = 'W';
     else if (strcasecmp(option,"FullPartyCombat"   ) == 0) party_combat_mode = 'F';
     else if (strcasecmp(option,"Heroic"            ) == 0) heroicMode = 2;
-    else if (strcasecmp(option,"Monochrome"        ) == 0) no_color = 'Y';
     else if (strcasecmp(option,"Music"             ) == 0) music = 'Y';
     else if (strcasecmp(option,"NoArenaCombat"     ) == 0) no_arena = 'Y';
     else if (strcasecmp(option,"NoAutoOpenDoors"   ) == 0) auto_open_doors = 'N';

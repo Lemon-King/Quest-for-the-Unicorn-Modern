@@ -889,13 +889,8 @@ void up_land() {
         else if (player.x>links[suggest].x && player.y>links[suggest].y) x = 96;
         else x = 10;
 */
-#ifdef ASCII
-          putimage(400,675,select_sprite(10),0);
-          putimage(400,675,select_sprite(x),0);
-#else
         putimage(300,screen_height-27,select_sprite(10),0);
         putimage(300,screen_height-27,select_sprite(x),0);
-#endif
         } else putimage(300,screen_height-27,select_sprite(10),0);
       }
     if (has_intrinsic(A_FOOD) && player.health < 100) player.health++;

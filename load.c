@@ -797,9 +797,6 @@ void load() {
 #endif
   if (save_file < 0) {
     printf("Fatal Error: Could not open %s\n",filename);
-#ifdef ASCII
-    restoreTerm();
-#endif
     exit(1);
     }
   dbuffer_pos = 0;
@@ -809,8 +806,6 @@ void load() {
   read_line(buffer);
   if (buffer[1] == '6' || buffer[1] == '5') {
     printf("Save file version %s is no longer supported by the native loader\n",buffer);
-    printf("Please use 'saveconvert' utility to convert your save file\n");
-    restoreTerm();
     close(save_file);
     exit(1);
     }
@@ -818,7 +813,6 @@ void load() {
     printf("save file version: %s\n",buffer);
     printf("Where did you get such an ancient save file?  I am sorry but there is\n");
     printf("no support for save versions older than 5.2\n");
-    restoreTerm();
     close(save_file);
     exit(1);
     }
@@ -827,7 +821,6 @@ void load() {
   if (strcmp(buffer, "v7.0.0e") == 0) { change_set = 0; encrypted = -1; }
   if (change_set < 0) {
     printf("Save file does not appear to be correct.  Cannot load\n");
-    restoreTerm();
     close(save_file);
     exit(1);
     }

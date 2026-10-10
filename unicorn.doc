@@ -155,11 +155,9 @@
          -dr=ms    - Delay for ranged combat visual effects
          -dh=ms    - Delay for successful hit visual effects
          -dt=ms    - Delay fro trap visual effects
-         -w=width  - Width of game screen (Graphics version only)
-         -h=height - Height of game screen (Graphics version only)
-         -m        - Monochrome mode (Text version only)
-         -clr      - Color mode (Text version only)
-         -mu       - Play background music (Windows graphics version)
+         -w=width  - Width of game screen
+         -h=height - Height of game screen
+         -mu       - Play background music
          -nmu      - Turn off background music
          -s        - Show stats/settings and exit
 
@@ -174,12 +172,10 @@
          AutoSearchWalls      -asw
          AutoTarget           -at
          Casual               -c
-         Color                -clr
          DungeonScaling       -eds
          Epic                 -e
          FullPartyCombat      -fcd
          Heroic               -h
-         Monochrome           -m
          Music                -mu
          NoArenaComabe        -nac
          NoAutoOpenDoors      -naod
@@ -387,7 +383,6 @@
          E - Enter/Exit a ship
          f - Fire weapon in right hand
          m - Cast a magic spell
-         M - Show mini map (Text version only)
          n - Take a Nap
          t - Talk to an adjacent character
          T - Throw an item
@@ -441,12 +436,11 @@
      Screenshots
      ===========
          Ctrl+P - Save a picture of the screen.  Works on every screen.
-                  Graphics versions write screenshotNNNN.bmp and the text
-                  version writes screenshotNNNN.txt, in the game directory.
+                  Writes screenshotNNNN.bmp in the game directory.
 
      Window size
      ===========
-         The graphics versions can be resized or maximized.  The game
+         The window can be resized or maximized.  The game
          screen grows to fill the window while keeping its shape, and it
          is centred with black borders.  At whole steps (2x, 3x, ...)
          every pixel stays sharp; in between, only the edges of pixels
@@ -457,7 +451,7 @@
 
      Music
      =====
-         The Windows graphics version plays the background music of
+         The game plays the background music of
          the MS-DOS release.  The intro theme plays from the title
          screen until play begins.  After that the upland theme plays
          in the wilderness, the town theme in towns and the dungeon

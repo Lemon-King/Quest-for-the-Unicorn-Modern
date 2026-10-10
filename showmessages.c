@@ -18,11 +18,7 @@ void show_messages() {
     setcolor(msg_clr[i]);
     while (strlen(messages[i]) < 22) strcat(messages[i]," ");
   if (strlen(messages[i]) > 22) messages[i][21] = 0;
-#ifdef ASCII
-    outtext_xy(TEXT_GRID_WIDTH - 24,11+i,messages[i]);
-#else
     outtextxy(screen_width-215,110+i*12,messages[i]);
-#endif
     }
   }
 
