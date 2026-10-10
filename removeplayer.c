@@ -34,7 +34,6 @@ void remove_player() {
     case  3:color=6; break;
     case  9:color=5; break;
     }
-  open_display();
   plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
   plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
   plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);

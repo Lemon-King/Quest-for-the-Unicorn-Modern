@@ -45,6 +45,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <CompileAs>CompileAsC</CompileAs>
+      <AdditionalIncludeDirectories>platform;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -335,7 +336,6 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="terminal.h" />
     <ClInclude Include="graphics.h" />
-    <ClInclude Include="rgb.h" />
     <ClInclude Include="gothic.h" />
     <ClInclude Include="maps.h" />
     <ClInclude Include="objects.h" />
@@ -359,6 +359,12 @@
     <CopyFileToFolders Include="music\*.mid">
       <DestinationFolders>$(OutDir)music</DestinationFolders>
     </CopyFileToFolders>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="platform\platform.vcxproj">
+      <Project>{9E4BFC1F-414C-464D-8847-9875EA6A7B04}</Project>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

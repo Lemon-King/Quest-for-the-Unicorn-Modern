@@ -25,7 +25,6 @@ static void land_discover(void) {
   Int32 i,j,color = 0;
   Int32 see_dist;
   see_dist = light_distance();
-  open_display();
   for (i=player.x-see_dist; i<=player.x+see_dist; i++)
     for (j=player.y-see_dist; j<=player.y+see_dist; j++)
       if (i>0 && i<101 && j>0 && j<101 && player.known[i][j] == 0) {

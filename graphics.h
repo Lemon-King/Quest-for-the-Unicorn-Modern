@@ -8,9 +8,9 @@
 /* ************************************* */
 
 #include <windows.h>
+#include <stdint.h>
 
 typedef HWND rcs_Window;
-typedef HWND rcs_Pixmap;
 
 #define KEY_F1        (VK_F1+0xf000)
 #define KEY_F2        (VK_F2+0xf000)
@@ -100,19 +100,7 @@ typedef HWND rcs_Pixmap;
 typedef struct {
   HINSTANCE    hInstance;
   TCHAR        className[80];
-  rcs_Window*  pixmapIDs;
-  int          numPixmaps;
-  HFONT        font;
-  int          fontAscent;
-  int          fontHeight;
-  int          fontOverhang;
   } rcs_Display;
-
-typedef struct _GC {
-  COLORREF foreground;
-  COLORREF background;
-  HFONT    font;
-  } *rcs_GC;
 
 
 /* ****************************** */
@@ -139,35 +127,22 @@ typedef struct {
   int          d1,d2,d3,d4,d5;
   } rcs_Event;
 
-/* Shows a fixed-size pixmap scaled to fill a window at its own aspect ratio, centred on black */
+/* Shows a fixed-size buffer of 0x00RRGGBB pixels scaled to fill a window at its own aspect ratio, centred on black */
 typedef struct _rcs_Viewport* rcs_Viewport;
 
 /* ******************************* */
 /* ***** Function prototypes ***** */
 /* ******************************* */
-LINK void         rcs_closeGC(rcs_Display* d,rcs_GC gc);
-LINK void         rcs_copyArea(rcs_Display*,rcs_Window,rcs_Window,rcs_GC,int sx,int sy,int w,int h,int dx,int dy);
-LINK rcs_Pixmap   rcs_createPixmap(rcs_Display*,rcs_Window,int,int);
-LINK rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,int width,int height);
+LINK rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,const uint32_t* pixels,int width,int height);
 LINK rcs_Window   rcs_createWindow(rcs_Display* d,rcs_Window parent, int x,int y,int width,int height);
-LINK void         rcs_drawFilledBox(rcs_Display*,rcs_Window win,rcs_GC gc,int x,int y,int w,int h);
-LINK void         rcs_drawLine(rcs_Display*,rcs_Window win,rcs_GC gc,int x1,int y1,int x2,int y2);
-LINK void         rcs_drawPixmap(rcs_Display* d,rcs_Window win,rcs_GC gc,int dx,int dy,const char** data);
-LINK void         rcs_drawPoint(rcs_Display*,rcs_Window win,rcs_GC gc,int x,int y);
-LINK void         rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,int x,int y,char* buffer,int clr);
 LINK rcs_Event    rcs_getEvent(rcs_Display*);
 LINK void         rcs_invalidateViewport(rcs_Viewport v,int x,int y,int w,int h);
-LINK void         rcs_namedBackground(rcs_Display* d,rcs_GC gc,const char* color);
-LINK void         rcs_namedForeground(rcs_Display* d,rcs_GC gc,const char* color);
 LINK rcs_Display *rcs_openDisplay(char* display_name);
-LINK rcs_GC       rcs_openGC(rcs_Display* d,rcs_Window win);
 LINK rcs_Event    rcs_pollEvent(rcs_Display*);
 LINK void         rcs_presentViewport(rcs_Viewport v);
 LINK rcs_Window   rcs_rootWindow(rcs_Display* d);
-LINK int          rcs_savePixmap(rcs_Display* d,rcs_Pixmap pixmap,int width,int height,char* filename);
 LINK void         rcs_setWindowName(rcs_Display*,rcs_Window,char*);
 LINK void         rcs_showWindow(rcs_Display* d,rcs_Window win);
-LINK void         rcs_stringBounds(rcs_Display* d,rcs_GC gc,int x,int y,char* buffer,int* left,int* top,int* width,int* height);
 
 #endif
 
