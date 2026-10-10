@@ -179,6 +179,7 @@ OBJS = \
 	load.o \
 	loadgear.o \
 	loadlevel.o \
+	loadmenu.o \
 	log.o \
 	lockdoor.o \
 	los.o \

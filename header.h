@@ -1332,6 +1332,8 @@ extern void show_sm_land();
 extern void show_sm_map();
 extern void show_spot(Int32 x,Int32 y);
 extern void title();
+extern Int32 title_menu();
+extern Int32 load_menu();
 extern void touch(Int32 damage,Int32 elem);
 
 /* unisubs3.c */

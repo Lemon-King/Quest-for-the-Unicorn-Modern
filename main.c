@@ -12,12 +12,24 @@
 
 #include "header.h"
 
+/* A game picked from the title screen gets its <name>.cfg, as one named on the command line does. The window is
+   already open, so the screen size stays. */
+static void apply_character_config() {
+  Int32 width;
+  Int32 height;
+  width = screen_width;
+  height = screen_height;
+
+  process_config(loadname);
+
+  screen_width = width;
+  screen_height = height;
+  if (music != 'Y') stop_music();
+  }
+
 static void start_game(Int32 loadgame) {
-  Int32 i;
   clear_game_data();
   if (loadgame == 1) {
-    i = strlen(loadname);
-    if (i > 4 && loadname[i-4] == '.') loadname[i-4] = 0;
     textmode(3); gotoxy(1,1); textcolor(10);
     txt_write("Loading Game . . .");
     load();
@@ -318,7 +330,11 @@ Int32 main2(Int32 argc,char** argv) {
   /* Death and giving up return to the title screen; saving ends the program. */
   do {
     play_music(MUSIC_INTRO);
-    title();
+    if (loadgame == 1) title();
+    else {
+      loadgame = title_menu();
+      if (loadgame == 1) apply_character_config();
+      }
     show_legends();
 /*
     show_final_scores();

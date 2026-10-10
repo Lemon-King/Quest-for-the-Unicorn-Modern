@@ -782,7 +782,7 @@ void load_player() {
 void load() {
   Int32 change_set;
   char line[1024];
-  char filename[64];
+  char filename[sizeof(backupname)];
 //  char ver[40];
 
   change_set = 0;

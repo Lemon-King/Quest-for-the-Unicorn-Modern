@@ -10,6 +10,14 @@
 
 #include "header.h"
 
+#define MENU_LINE       22
+#define MENU_COLUMN     36
+#define MENU_NEW_GAME    0
+#define MENU_LOAD_GAME   1
+#define MENU_COUNT       2
+
+static char* MENU_LABELS[MENU_COUNT] = { "New Game", "Load Game" };
+
 #ifndef ASCII
 typedef struct {
   Int32  x;
@@ -65,8 +73,7 @@ static char show_gothic_title() {
   }
 #endif
 
-void title() {
-  char   key;
+static void show_title_screen() {
   textmode(3);
 #ifdef MHR
 #include "./Mhr/title.c"
@@ -86,13 +93,58 @@ void title() {
   txt_write("This program may not be used for commercial purposes without the express");
   gotoxy(3, 20);
   txt_write("written permission from the author.");
+  }
+
+static void draw_menu_item(Int32 item, char selected) {
+  textcolor(15);
+  gotoxy(MENU_COLUMN - 4, MENU_LINE + item); txt_write((selected == 'Y') ? "-->" : "   ");
+
+  textcolor((selected == 'Y') ? 14 : 15);
+  gotoxy(MENU_COLUMN, MENU_LINE + item); txt_write(MENU_LABELS[item]);
+  }
+
+static Int32 choose_menu_item(Int32 item) {
+  Int32 i;
+  char  key;
+  for (i=0; i<MENU_COUNT; i++) draw_menu_item(i, 'N');
+
+  key = 0;
+  while (key != 13) {
+    draw_menu_item(item, 'Y');
+    key = inkey();
+    draw_menu_item(item, 'N');
+    if (key == '8') item = (item + MENU_COUNT - 1) % MENU_COUNT;
+    if (key == '2') item = (item + 1) % MENU_COUNT;
+    }
+  return item;
+  }
+
+/* The title screen for a game named on the command line. */
+void title() {
+  char   key;
+  show_title_screen();
   gotoxy(28, 24);
   txt_write("Press <ENTER> to continue");
-
 
   key = ' ';
   while (key != 13) {
     key = inkey();
     }
+  }
+
+/* The title screen with the main menu. Returns 1 when Load Game put a saved game's name in loadname. */
+Int32 title_menu() {
+  Int32 item;
+  Int32 loadgame;
+  item = MENU_NEW_GAME;
+  loadgame = 0;
+
+  do {
+    show_title_screen();
+    item = choose_menu_item(item);
+    if (item == MENU_LOAD_GAME) loadgame = load_menu();
+    } while (item == MENU_LOAD_GAME && loadgame == 0);
+
+  return loadgame;
   }
 
