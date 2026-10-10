@@ -195,6 +195,7 @@
     <ClCompile Include="load.c" />
     <ClCompile Include="loadgear.c" />
     <ClCompile Include="loadlevel.c" />
+    <ClCompile Include="loadmaps.c" />
     <ClCompile Include="loadmenu.c" />
     <ClCompile Include="log.c" />
     <ClCompile Include="lockdoor.c" />
@@ -247,6 +248,7 @@
     <ClCompile Include="prompt.c" />
     <ClCompile Include="r_missile.c" />
     <ClCompile Include="rcsrandom.c" />
+    <ClCompile Include="readmap.c" />
     <ClCompile Include="readsprites.c" />
     <ClCompile Include="recipestring.c" />
     <ClCompile Include="reducedmg.c" />

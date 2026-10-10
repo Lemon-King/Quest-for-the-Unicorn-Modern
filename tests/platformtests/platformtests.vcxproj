@@ -66,8 +66,18 @@
     <ClCompile Include="KeyTranslatorTests.cpp" />
     <ClCompile Include="ReferenceScaler.cpp" />
     <ClCompile Include="ScalePassTests.cpp" />
+    <ClCompile Include="MapTests.cpp" />
     <!-- The game's sprite table, compiled as the game compiles it -->
     <ClCompile Include="..\..\selectsprite.c">
+      <CompileAs>CompileAsC</CompileAs>
+      <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <!-- The game's map reader and loader, compiled as the game compiles them -->
+    <ClCompile Include="..\..\readmap.c;..\..\loadmaps.c">
       <CompileAs>CompileAsC</CompileAs>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
