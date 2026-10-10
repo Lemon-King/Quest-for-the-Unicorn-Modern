@@ -28,4 +28,5 @@ void process_config(char* name) {
     while (*pChar == ' ') pChar++;
     process_option(pChar);
     }
+  fclose(file);
   }
