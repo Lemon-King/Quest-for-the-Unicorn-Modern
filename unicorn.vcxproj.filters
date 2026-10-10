@@ -423,6 +423,9 @@
     <ClCompile Include="loadlevel.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="loadmaps.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="loadmenu.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -577,6 +580,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="rcsrandom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="readmap.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="readsprites.c">
