@@ -5,3 +5,6 @@
 AGENTS.MD
 CLAUDE.MD
 .GUIDANCE.MD
+
+*.o
+*.exe

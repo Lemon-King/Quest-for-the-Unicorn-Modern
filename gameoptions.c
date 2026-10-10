@@ -38,6 +38,7 @@ typedef struct {
   Int32  min;
   Int32  max;
   Int32  step;
+  Int32  initial;
   } OPTION_ROW;
 
 static Int32 mode_values[NUM_MODES] = { 0, 2, 4, -1 };
@@ -195,6 +196,23 @@ static void edit_options(char* title, char rules_editable) {
     }
   }
 
+/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. */
+void remember_option_defaults() {
+  Int32 i;
+  for (i=0; i<NUM_OPTIONS; i++) {
+    if (option_rows[i].kind == OPT_SWITCH) option_rows[i].initial = *option_rows[i].flag;
+      else option_rows[i].initial = *option_rows[i].number;
+    }
+  }
+
+static void restore_option_defaults() {
+  Int32 i;
+  for (i=0; i<NUM_OPTIONS; i++) {
+    if (option_rows[i].kind == OPT_SWITCH) *option_rows[i].flag = option_rows[i].initial;
+      else *option_rows[i].number = option_rows[i].initial;
+    }
+  }
+
 /* Sets the session's rule options from the character's player.effect[] entries. */
 void read_character_rules() {
   heroicMode = player.effect[PE_HEROIC];
@@ -204,6 +222,7 @@ void read_character_rules() {
   }
 
 void game_setup() {
+  restore_option_defaults();
   edit_options("New Game Options", 'Y');
   }
 

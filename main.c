@@ -12,6 +12,87 @@
 
 #include "header.h"
 
+static void start_game(Int32 loadgame) {
+  Int32 i;
+  clear_game_data();
+  if (loadgame == 1) {
+    i = strlen(loadname);
+    if (i > 4 && loadname[i-4] == '.') loadname[i-4] = 0;
+    textmode(3); gotoxy(1,1); textcolor(10);
+    txt_write("Loading Game . . .");
+    load();
+    if (player.d_level>0) mod_exit = 2;
+      else mod_exit = 1;
+    disp_char();
+    }
+  else {
+    strcpy(loadname,"");
+    strcpy(backupname,"");
+    new_game();
+    game_setup();
+    make_char(0);
+    mod_exit = 1;
+    build_dungeon(7,0);
+    }
+  }
+
+static void play_game() {
+  exit_flag = ' ';
+  while (exit_flag == ' ') {
+    if (mod_exit == 1) up_land();
+    if (mod_exit == 2) cave();
+    if (mod_exit == 3) exit_flag = '*';
+    if (mod_exit == 4) exit_flag = 'S';
+    if (mod_exit == 5) cave();
+    if (mod_exit == 6) exit_flag = 'D';
+    if (mod_exit == 7) { make_char(1); mod_exit = 1; }
+    if (mod_exit == 9) exit_flag = 'O';
+    }
+  }
+
+static void end_game() {
+  struct timeval tim;
+  gettimeofday(&tim,NULL);
+  end_time = tim.tv_sec;
+  player.time_played += (end_time - start_time);
+  if (exit_flag == 'S') {
+    save_new();
+    }
+  textmode(3);
+  unlink(backupname);
+  score_position = 0;
+  if (exit_flag == '*') {
+    textcolor(12);
+    gotoxy(21,12);
+    txt_writeln("You have cowardly given up your quest!!");
+    flush();
+    delay(2500);
+    final_score('Q');
+    show_final_scores();
+    }
+  if (exit_flag == 'D') {
+    textcolor(12);
+    gotoxy(27,12);
+    txt_writeln("Sorry but you have died!!");
+    flush();
+    delay(2500);
+    final_score('D');
+    show_final_scores();
+    }
+  if (exit_flag == 'O') {
+    textcolor(12);
+    gotoxy(22,12);
+    txt_writeln("Sorry but you have died of old age!!");
+    flush();
+    delay(2500);
+    final_score('D');
+    show_final_scores();
+    }
+  check_scores();
+  if (score1>0 || score2>0) show_scores();
+  textmode(3);
+  }
+
 Int32 main2(Int32 argc,char** argv) {
   Int32 i;
   Int32 loadgame;
@@ -75,12 +156,8 @@ Int32 main2(Int32 argc,char** argv) {
   loot_very_rares = 0;
   loot_ultra_rares = 0;
   showStats = 0;
-  in_arena = 'N';
   auto_target = 'Y';
   combat_mode = 's';
-  score1 = 0;
-  score2 = 0;
-  wizardmode = 'N';
   u_randomize();
   soundon = 'Y';
   restock = 'N';
@@ -99,21 +176,14 @@ Int32 main2(Int32 argc,char** argv) {
   downgrade_arena = 'N';
   downgrade_depth = -1;
   dungeon_scaling = 'N';
-  used_sunstone = 'N';
   party_combat_mode = 'R';
   monster_count = 60;
   delay_ranged = 5;
   delay_hit = 200;
   delay_trap = 100;
-  last_target_x = 0;
-  last_target_y = 0;
   encrypt_save_file = 'Y';
   gettimeofday(&tim,NULL);
   start_time = tim.tv_sec;
-  for (i=0; i<60; i++) {
-    strcpy(messages[i],"");
-    msg_clr[i] = 15;
-    }
   process_config("unicorn");
   for (i=1; i<argc; i++) {
     if (process_option(argv[i]) == 0) {
@@ -126,6 +196,7 @@ Int32 main2(Int32 argc,char** argv) {
       if (loadname[i] == '.') loadname[i] = 0;
     process_config(loadname);
     }
+  remember_option_defaults();
   if (screen_width < 640) screen_width = 640;
   if (screen_height < 480) screen_height = 480;
 #ifndef ASCII
@@ -235,85 +306,26 @@ Int32 main2(Int32 argc,char** argv) {
   read_sprites();
   unbuffer();
   init_graph();
-  title();
 //MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
   hall_position = -1;
   death_position = -1;
   num_hall_of_fame = 0;
   num_final_scores = 0;
   load_scores();
-  show_legends();
+
+  /* Death and giving up return to the title screen; saving ends the program. */
+  do {
+    title();
+    show_legends();
 /*
-  show_final_scores();
+    show_final_scores();
 */
-  clear_game_data();
-  if (loadgame == 1) {
-    i = strlen(loadname);
-    if (i > 4 && loadname[i-4] == '.') loadname[i-4] = 0;
-    textmode(3); gotoxy(1,1); textcolor(10);
-    txt_write("Loading Game . . .");
-    load();
-    if (player.d_level>0) mod_exit = 2;
-      else mod_exit = 1;
-    disp_char();
-    }
-  else {
-    new_game();
-    game_setup();
-    make_char(0);
-    mod_exit = 1;
-    build_dungeon(7,0);
-    }
-  exit_flag = ' ';
-  while (exit_flag == ' ') {
-    if (mod_exit == 1) up_land();
-    if (mod_exit == 2) cave();
-    if (mod_exit == 3) exit_flag = '*';
-    if (mod_exit == 4) exit_flag = 'S';
-    if (mod_exit == 5) cave();
-    if (mod_exit == 6) exit_flag = 'D';
-    if (mod_exit == 7) { make_char(1); mod_exit = 1; }
-    if (mod_exit == 9) exit_flag = 'O';
-    }
-  gettimeofday(&tim,NULL);
-  end_time = tim.tv_sec;
-  player.time_played += (end_time - start_time);
-  if (exit_flag == 'S') {
-    save_new();
-    }
-  textmode(3);
-  unlink(backupname);
-  score_position = 0;
-  if (exit_flag == '*') {
-    textcolor(12);
-    gotoxy(21,12);
-    txt_writeln("You have cowardly given up your quest!!");
-    flush();
-    delay(2500);
-    final_score('Q');
-    show_final_scores();
-    }
-  if (exit_flag == 'D') {
-    textcolor(12);
-    gotoxy(27,12);
-    txt_writeln("Sorry but you have died!!");
-    flush();
-    delay(2500);
-    final_score('D');
-    show_final_scores();
-    }
-  if (exit_flag == 'O') {
-    textcolor(12);
-    gotoxy(22,12);
-    txt_writeln("Sorry but you have died of old age!!");
-    flush();
-    delay(2500);
-    final_score('D');
-    show_final_scores();
-    }
-  check_scores();
-  if (score1>0 || score2>0) show_scores();
-  textmode(3);
+    start_game(loadgame);
+    loadgame = 0;
+    play_game();
+    end_game();
+    } while (exit_flag != 'S');
+
 #ifdef ASCII
   if (no_color != 'Y') printf("\e[0;30m");
   clrscr();

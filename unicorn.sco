@@ -1,9 +1,9 @@
 v7.0.0
 HighScores {
   Class 0 {
-    Name 
-    Title 
-    Exp 0.000000
+    Name asd
+    Title Veteran
+    Exp 11.000000
     Mode N
     }
   Class 1 {
@@ -162,4 +162,13 @@ Legends {
 HallOfFame {
   }
 FinalScores {
+  Entry 0 {
+    Name asd
+    Exp 11.000000
+    Level 1
+    Cause D
+    Class 1
+    Time 24
+    Mode N
+    }
   }

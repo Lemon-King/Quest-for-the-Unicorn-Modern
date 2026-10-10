@@ -1505,6 +1505,7 @@ extern Int32 offhand_weapon();
 extern void show_time();
 extern void process_config(char* name);
 extern Int32 process_option(char* pChar);
+extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();
 extern void read_character_rules();

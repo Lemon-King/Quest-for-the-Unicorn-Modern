@@ -127,6 +127,25 @@ void clear_game_data() {
   stats.num_trophies = 0;
 
   /* **************************** */
+  /* ***** Clear game flags ***** */
+  /* **************************** */
+  in_arena = 'N';
+  wizardmode = 'N';
+  used_sunstone = 'N';
+  last_target_x = 0;
+  last_target_y = 0;
+  score1 = 0;
+  score2 = 0;
+
+  /* ************************** */
+  /* ***** Clear messages ***** */
+  /* ************************** */
+  for (i=0; i<60; i++) {
+    strcpy(messages[i],"");
+    msg_clr[i] = 15;
+    }
+
+  /* **************************** */
   /* ***** Clear spell book ***** */
   /* **************************** */
   for (i=0; i<1000; i++) spellbook[i] = 0;

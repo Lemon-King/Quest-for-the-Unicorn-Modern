@@ -320,6 +320,10 @@
        The mode is chosen on the New Game Options screen when the character
      is created, and is recorded in the character data.
 
+       When a character dies or quits, its score is recorded and the game
+     returns to the title screen to start a new character.  The game only
+     closes after an exit with save.
+
      Upland Commands
      ===============
          8 - Move up
