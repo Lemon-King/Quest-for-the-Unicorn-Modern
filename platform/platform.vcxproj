@@ -55,6 +55,7 @@
     <ClCompile Include="Direct3DError.cpp" />
     <ClCompile Include="ErrorReport.cpp" />
     <ClCompile Include="FrameMailbox.cpp" />
+    <ClCompile Include="GameThread.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="GlyphFont.cpp" />
     <ClCompile Include="HostApi.cpp" />
@@ -65,6 +66,7 @@
     <ClCompile Include="Presenter.cpp" />
     <ClCompile Include="ScalePass.cpp" />
     <ClCompile Include="SpriteCache.cpp" />
+    <ClCompile Include="ThreadedHost.cpp" />
     <ClCompile Include="ViewportLayout.cpp" />
     <ClCompile Include="WinMain.cpp" />
     <ClCompile Include="XpmDecoder.cpp" />
@@ -78,6 +80,7 @@
     <ClInclude Include="ErrorReport.h" />
     <ClInclude Include="FrameMailbox.h" />
     <ClInclude Include="GameHost.h" />
+    <ClInclude Include="GameThread.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="GlyphFont.h" />
     <ClInclude Include="Image.h" />
@@ -90,6 +93,7 @@
     <ClInclude Include="ScalePass.h" />
     <ClInclude Include="SpriteCache.h" />
     <ClInclude Include="TerminalFont.h" />
+    <ClInclude Include="ThreadedHost.h" />
     <ClInclude Include="ViewportLayout.h" />
     <ClInclude Include="XpmDecoder.h" />
   </ItemGroup>

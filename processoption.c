@@ -100,6 +100,7 @@ Int32 process_option(char* pChar) {
     else if (_stricmp(option,"FkeySpells"        ) == 0) fkey_mode = 'S';
     else if (_stricmp(option,"FkeyWeapons"       ) == 0) fkey_mode = 'W';
     else if (_stricmp(option,"FullPartyCombat"   ) == 0) party_combat_mode = 'F';
+    else if (_stricmp(option,"GameThread"        ) == 0) game_thread = 'Y';
     else if (_stricmp(option,"Heroic"            ) == 0) heroicMode = 2;
     else if (_stricmp(option,"Music"             ) == 0) music = 'Y';
     else if (_stricmp(option,"NoArenaCombat"     ) == 0) no_arena = 'Y';
@@ -110,6 +111,7 @@ Int32 process_option(char* pChar) {
     else if (_stricmp(option,"NoAutoTarget"      ) == 0) auto_target = 'N';
     else if (_stricmp(option,"NoDungeonScaling"  ) == 0) dungeon_scaling = 'N';
     else if (_stricmp(option,"NoFullPartyCombat" ) == 0) party_combat_mode = 'R';
+    else if (_stricmp(option,"NoGameThread"      ) == 0) game_thread = 'N';
     else if (_stricmp(option,"NoMusic"           ) == 0) music = 'N';
     else if (_stricmp(option,"Normal"            ) == 0) heroicMode = 0;
     else if (_stricmp(option,"NoCrc"             ) == 0) skipcheck = 'Y';

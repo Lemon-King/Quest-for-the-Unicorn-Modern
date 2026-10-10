@@ -71,6 +71,16 @@ void GameWindow::showFrame() {
   if (presenter_ != nullptr) presenter_->present(frames_, placement_);
   }
 
+/* Safe from any thread; frames published while one is pending are shown together */
+void GameWindow::requestFrame() {
+  if (!framePending_.exchange(true)) PostMessageW(window_, WM_APP_FRAME, 0, 0);
+  }
+
+/* Safe from any thread */
+void GameWindow::gameEnded() {
+  PostMessageW(window_, WM_APP_GAME_ENDED, 0, 0);
+  }
+
 LRESULT CALLBACK GameWindow::procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
   GameWindow* self;
   if (message == WM_NCCREATE) {
@@ -139,6 +149,15 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
     case WM_CLOSE:
       ShowWindow(window_, SW_HIDE);
       input_.close();
+      return 0;
+
+    case WM_APP_FRAME:
+      framePending_ = false;
+      showFrame();
+      return 0;
+
+    case WM_APP_GAME_ENDED:
+      PostQuitMessage(0);
       return 0;
     }
 

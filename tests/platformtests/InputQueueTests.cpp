@@ -8,9 +8,12 @@
  *******************************************************************
 */
 
-/* Keys come out in the order they went in, and a closed window wins over waiting keys */
+/* Keys come out in the order they went in, a closed window wins over waiting keys, and a blocked read wakes for
+   either */
 
+#include <chrono>
 #include <string>
+#include <thread>
 
 #include "InputQueue.h"
 #include "TestRunner.h"
@@ -42,8 +45,31 @@ void inputQueueOrder(TestRunner& runner) {
   runner.check(input.closed(), "InputQueueOrder", "the queue should report closed");
   }
 
+/* The game thread blocks in waitPop() until the window thread pushes a key or closes */
+void inputQueueWaitPop(TestRunner& runner) {
+  platform::InputQueue keyed;
+  std::thread          pusher([&keyed] {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    keyed.push(7);
+    });
+  int32_t key = keyed.waitPop();
+  pusher.join();
+  runner.check(key == 7, "InputQueueWaitPop", "a key pushed from another thread gave " + std::to_string(key));
+
+  platform::InputQueue closing;
+  std::thread          closer([&closing] {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    closing.close();
+    });
+  int32_t closed = closing.waitPop();
+  closer.join();
+  runner.check(closed == HOST_KEY_CLOSED, "InputQueueWaitPop",
+               "a close from another thread gave " + std::to_string(closed) + ", expected HOST_KEY_CLOSED");
+  }
+
 }
 
 void runInputQueueTests(TestRunner& runner) {
   inputQueueOrder(runner);
+  inputQueueWaitPop(runner);
   }

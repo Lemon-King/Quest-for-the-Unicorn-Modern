@@ -146,12 +146,12 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   showStats = 0;
   auto_target = 'Y';
   combat_mode = 's';
-  u_randomize();
   soundon = 'Y';
   restock = 'N';
   loadgame = 0;
   bottom = 5;
   music = 'Y';
+  game_thread = 'Y';
   heroicMode = 0;
   skipcheck = 'N';
   in_upland = 'N';
@@ -268,6 +268,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     if (fkey_mode == 'G') printf("  Fkeys: Gear\n");
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
     printf("  Music: %c\n", music);
+    printf("  Game Thread: %c\n", game_thread);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);
@@ -275,11 +276,14 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   if (showStats != 0) return(0);
   setup->width = screen_width;
   setup->height = screen_height;
+  setup->gameThread = (game_thread == 'Y') ? 1 : 0;
   return 1;
   }
 
 /* The game in its window: title screen, play, scores, until the player saves and leaves */
 void run_game(GAME_HOST* host) {
+  /* rand() keeps its seed per thread, and with GameThread the game does not run on configure_game()'s thread */
+  u_randomize();
   graphics = ' ';
   read_sprites();
   init_graph(host);

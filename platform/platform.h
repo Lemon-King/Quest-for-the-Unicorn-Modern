@@ -49,6 +49,7 @@ void              sprite_cache_destroy(SPRITE_CACHE* sprites);
 typedef struct {
   int32_t width;
   int32_t height;
+  int32_t gameThread;       /* 1: run_game() on its own thread, the window on the main thread */
   } GAME_SETUP;
 
 /* The game as the host starts it: configure_game() applies unicorn.cfg and the command line and returns 0 when no
