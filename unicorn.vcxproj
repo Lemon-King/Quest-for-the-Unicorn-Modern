@@ -366,7 +366,7 @@
 
   <!-- The game reads these from its working folder, which is the output folder -->
   <ItemGroup>
-    <CopyFileToFolders Include="unicorn.cfg;unicorn.doc">
+    <CopyFileToFolders Include="unicorn.cfg;unicorn.doc;editing.doc">
       <DestinationFolders>$(OutDir)</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="music\*.mid">

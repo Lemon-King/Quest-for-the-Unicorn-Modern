@@ -1,0 +1,106 @@
+                              Quest for the Unicorn
+                                  Editing Maps
+
+
+       The upland and the towns of Quest are drawn from plain text files
+     in the 'maps' folder beside the game.  The game reads them when it
+     starts, so a change shows the next time you start the game.  The
+     dungeons are not in these files; they are generated.
+
+       Keep a copy of the original files before you change them.
+
+     The Map Files
+     =============
+       The upland is 12 regions in 3 rows of 4.  mapRC.map holds the
+     region in row R (1 to 3, north to south) and column C (1 to 4, west
+     to east).  Walking off the edge of a region leads into the region
+     next to it.
+
+         map11.map    The Northern Realm
+         map12.map    The Realm of Nichor
+         map13.map    The Olde Realm
+         map14.map    The Northeast Wastes
+         map21.map    The Great Desert
+         map22.map    The Kobold Mountains
+         map23.map    The Realm of Marduk
+         map24.map    The Realm of Larkon
+         map31.map    Radon Valley
+         map32.map    The Realm of Talgon
+         map33.map    The Enchanted Lands
+         map34.map    The Valley of the Unicorns
+
+       The towns:
+
+         radon.map    Radon
+         marduk.map   Marduk
+         nichor.map   Nichorville
+         generic.map  Talfharin, New Solat, Goldville, Capetown,
+                      New South Radon and Talgon, which share it
+         village.map  Every village
+         eshter.map   The Realm of Eshter, the fourth level of the
+                      Gateway
+
+     File Format
+     ===========
+       Each file is 100 lines of exactly 100 characters, and each
+     character is one square of the map.  The first character of the
+     first line is the north-west corner.  Save the files as plain text.
+     Lines may end the Windows way or the Unix way, and a Ctrl+Z at the
+     end of the file or empty lines after the last one are ignored.
+
+       If a file is missing, does not have 100 lines, or has a line that
+     is not 100 characters long, the game will not start.  It shows a
+     message naming the file and the line.
+
+     Characters
+     ==========
+         Space or .   Plains
+         #            Forest
+         %            Tree
+         ^            Mountains
+         v            Mountain floor
+         (            Hills
+         -            Desert
+         =            Swamp
+         ~            Water
+         |            Dock
+         s            Ship
+         !            Village
+         1            City
+         A            Dungeon entrance
+         }            Gateway
+         @            Brick wall
+         +            Stone floor
+         ,            Wood floor
+         /            Closed door
+         \            Open door
+         c            Chair
+         t            Table
+         b            Bed
+         m            Shelves
+         h            Merchant
+         B to Q       Merchant
+         Z            Gacha machine
+
+       Any other character is stone floor.
+
+     What the Maps Do Not Change
+     ===========================
+       Some places belong to the game itself rather than to the maps:
+
+     - A city (1) or a dungeon entrance (A) can only be entered at the
+       square where the game expects it.  One drawn anywhere else cannot
+       be entered, and painting over one leaves no way in.
+     - Every village (!) leads to the same village, so villages work
+       wherever they are drawn.
+     - You arrive in a town at a fixed square, so keep that square and
+       the way from it open.
+     - Shops are at fixed squares in each town.  The merchant letters
+       (h, B to Q) only draw a merchant: moving one does not move a shop,
+       and adding one does not make a new shop.
+     - The Gateway in the Valley of the Unicorns and your ship on the
+       upland are placed by the game.  A } in a map draws a closed
+       Gateway that leads nowhere.
+
+       The game redraws the upland and the towns from the maps each time
+     you enter them, so a change also shows in games saved before it.
