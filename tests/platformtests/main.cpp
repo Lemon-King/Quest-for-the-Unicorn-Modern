@@ -10,6 +10,8 @@
 
 /* Conformance tests for the platform layer: each part against the GDI behaviour it replaces */
 
+#include <string>
+
 #include "TestRunner.h"
 
 void runCanvasTests(TestRunner& runner);
@@ -20,8 +22,10 @@ void runFrameMailboxTests(TestRunner& runner);
 void runInputQueueTests(TestRunner& runner);
 void runKeyTranslatorTests(TestRunner& runner);
 void runScalePassTests(TestRunner& runner);
+void runIconTests(TestRunner& runner, const std::string& root);
 
-int main() {
+/* The first argument is the repo root, where the committed assets the tests check live */
+int main(int argc, char** argv) {
   TestRunner runner;
   runCanvasTests(runner);
   runSpriteTests(runner);
@@ -31,5 +35,6 @@ int main() {
   runInputQueueTests(runner);
   runKeyTranslatorTests(runner);
   runScalePassTests(runner);
+  runIconTests(runner, (argc > 1) ? argv[1] : "");
   return runner.finish();
   }

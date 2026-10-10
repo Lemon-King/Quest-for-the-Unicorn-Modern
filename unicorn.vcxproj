@@ -353,6 +353,14 @@
     <ClInclude Include="world.h" />
     <None Include="unicorn.xpm" />
     <None Include="res\unicorn.manifest" />
+    <None Include="res\unicorn.ico" />
+  </ItemGroup>
+
+  <!-- The application icon (sprite_132, converted by "assetgen icon") and the version shown in Explorer -->
+  <ItemGroup>
+    <ResourceCompile Include="res\unicorn.rc">
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)res;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
 
   <!-- The game reads these from its working folder, which is the output folder -->

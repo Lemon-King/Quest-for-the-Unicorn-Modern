@@ -56,6 +56,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TestRunner.cpp" />
     <ClCompile Include="GdiSurface.cpp" />
+    <ClCompile Include="IconTests.cpp" />
     <ClCompile Include="CanvasTests.cpp" />
     <ClCompile Include="SpriteTests.cpp" />
     <ClCompile Include="BmpWriterTests.cpp" />
