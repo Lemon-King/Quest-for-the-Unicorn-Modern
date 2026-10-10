@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
+#include "platform.h"
 
 #ifdef LINK
 #undef LINK
@@ -1164,7 +1165,7 @@ extern void delay(Int32 time);
 extern void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr);
 extern void gotoxy(Int32 x,Int32 y);
 extern void graphmode();
-extern void init_graph();
+extern void init_graph(GAME_HOST* host);
 extern Int32 keypressed();
 extern void outtextxy(Int32 x,Int32 y,char* buffer);
 extern void outtextxyclr(Int32 x,Int32 y,char* buffer);

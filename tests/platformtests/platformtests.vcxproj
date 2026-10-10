@@ -48,7 +48,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>gdi32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;user32.lib;d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
@@ -59,6 +59,12 @@
     <ClCompile Include="CanvasTests.cpp" />
     <ClCompile Include="SpriteTests.cpp" />
     <ClCompile Include="BmpWriterTests.cpp" />
+    <ClCompile Include="ViewportLayoutTests.cpp" />
+    <ClCompile Include="FrameMailboxTests.cpp" />
+    <ClCompile Include="InputQueueTests.cpp" />
+    <ClCompile Include="KeyTranslatorTests.cpp" />
+    <ClCompile Include="ReferenceScaler.cpp" />
+    <ClCompile Include="ScalePassTests.cpp" />
     <!-- The game's sprite table, compiled as the game compiles it -->
     <ClCompile Include="..\..\selectsprite.c">
       <CompileAs>CompileAsC</CompileAs>
@@ -73,6 +79,7 @@
   <ItemGroup>
     <ClInclude Include="Compare.h" />
     <ClInclude Include="GdiSurface.h" />
+    <ClInclude Include="ReferenceScaler.h" />
     <ClInclude Include="TestRunner.h" />
   </ItemGroup>
 

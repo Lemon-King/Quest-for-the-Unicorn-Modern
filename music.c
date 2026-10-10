@@ -53,14 +53,14 @@ static Int32 playing = -1;
 static void mci_command(char* verb,Int32 song,char* options,HWND notify) {
   char command[MAX_PATH + 64];
   snprintf(command,sizeof(command),"%s %s %s",verb,MUSIC_ALIASES[song],options);
-  mciSendString(command,NULL,0,notify);
+  mciSendStringA(command,NULL,0,notify);
   }
 
 static char open_song(Int32 song) {
   char command[MAX_PATH + 64];
   if (opened[song] == 'Y') return 'Y';
   snprintf(command,sizeof(command),"open \"%s\" type sequencer alias %s",MUSIC_FILES[song],MUSIC_ALIASES[song]);
-  opened[song] = (mciSendString(command,NULL,0,NULL) == 0) ? 'Y' : 'N';
+  opened[song] = (mciSendStringA(command,NULL,0,NULL) == 0) ? 'Y' : 'N';
   return opened[song];
   }
 
@@ -94,29 +94,29 @@ static LRESULT CALLBACK music_events(HWND window,UINT message,WPARAM wParam,LPAR
     /* A song that played to its end starts over; stopping it aborts instead */
     case MM_MCINOTIFY:
       if (wParam == MCI_NOTIFY_SUCCESSFUL && playing >= 0 &&
-          (MCIDEVICEID)lParam == mciGetDeviceID(MUSIC_ALIASES[playing]))
+          (MCIDEVICEID)lParam == mciGetDeviceIDA(MUSIC_ALIASES[playing]))
         mci_command("play",playing,"from 0 notify",window);
       return 0;
     }
-  return DefWindowProc(window,message,wParam,lParam);
+  return DefWindowProcA(window,message,wParam,lParam);
   }
 
 static DWORD WINAPI music_thread(LPVOID ready) {
-  WNDCLASSEX wcex;
+  WNDCLASSEXA wcex;
   MSG        msg;
 
   memset(&wcex,0,sizeof(wcex));
-  wcex.cbSize = sizeof(WNDCLASSEX);
+  wcex.cbSize = sizeof(WNDCLASSEXA);
   wcex.lpfnWndProc = music_events;
-  wcex.hInstance = GetModuleHandle(NULL);
+  wcex.hInstance = GetModuleHandleA(NULL);
   wcex.lpszClassName = MUSIC_CLASS;
-  RegisterClassEx(&wcex);
+  RegisterClassExA(&wcex);
 
-  music_window = CreateWindowEx(0,MUSIC_CLASS,"",0,0,0,0,0,HWND_MESSAGE,NULL,wcex.hInstance,NULL);
+  music_window = CreateWindowExA(0,MUSIC_CLASS,"",0,0,0,0,0,HWND_MESSAGE,NULL,wcex.hInstance,NULL);
   SetEvent((HANDLE)ready);
   if (music_window == NULL) return 0;
 
-  while (GetMessage(&msg,NULL,0,0) > 0) DispatchMessage(&msg);
+  while (GetMessageA(&msg,NULL,0,0) > 0) DispatchMessageA(&msg);
   return 0;
   }
 
@@ -129,7 +129,7 @@ static HWND music_thread_window() {
   if (started == 'Y') return music_window;
   started = 'Y';
 
-  ready = CreateEvent(NULL,TRUE,FALSE,NULL);
+  ready = CreateEventA(NULL,TRUE,FALSE,NULL);
   if (ready == NULL) return NULL;
   thread = CreateThread(NULL,0,music_thread,ready,0,NULL);
   if (thread != NULL) {
@@ -148,11 +148,11 @@ void play_music(Int32 song) {
   if (music != 'Y') return;
 
   window = music_thread_window();
-  if (window != NULL) PostMessage(window,WM_MUSIC_PLAY,(WPARAM)song,0);
+  if (window != NULL) PostMessageA(window,WM_MUSIC_PLAY,(WPARAM)song,0);
   }
 
 void stop_music() {
-  if (music_window != NULL) PostMessage(music_window,WM_MUSIC_STOP,0,0);
+  if (music_window != NULL) PostMessageA(music_window,WM_MUSIC_STOP,0,0);
   }
 
 /* Ctrl+M: silences the music, or brings back the song for where the player is */

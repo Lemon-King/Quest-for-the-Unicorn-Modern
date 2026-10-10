@@ -15,23 +15,9 @@
 
 #include <exception>
 
+#include "ApiTypes.h"
 #include "BmpWriter.h"
-#include "Canvas.h"
-#include "GlyphFont.h"
-#include "SpriteCache.h"
 #include "TerminalFont.h"
-
-struct CANVAS {
-  platform::Canvas canvas;
-  };
-
-struct GLYPH_FONT {
-  platform::GlyphFont font;
-  };
-
-struct SPRITE_CACHE {
-  platform::SpriteCache cache;
-  };
 
 extern "C" CANVAS* canvas_create(int32_t width, int32_t height) {
   try {
@@ -86,20 +72,6 @@ extern "C" int32_t canvas_save_bmp(const CANVAS* canvas, const char* filename) {
   catch (const std::exception&) {
     return 0;
     }
-  }
-
-extern "C" const uint32_t* canvas_pixels(const CANVAS* canvas) {
-  return canvas->canvas.pixels();
-  }
-
-extern "C" int32_t canvas_take_dirty(CANVAS* canvas, int32_t* x, int32_t* y, int32_t* width, int32_t* height) {
-  platform::Rect area = canvas->canvas.takeDirty();
-  if (area.empty()) return 0;
-  *x = area.left;
-  *y = area.top;
-  *width = area.width();
-  *height = area.height();
-  return 1;
   }
 
 extern "C" const GLYPH_FONT* terminal_font(void) {
