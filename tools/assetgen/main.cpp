@@ -8,13 +8,19 @@
  *******************************************************************
 */
 
-/* Generates committed assets from Windows: "assetgen font <TerminalFont.h>" captures the Terminal font's glyphs */
+/* Generates committed assets: "assetgen font <TerminalFont.h>" captures the Terminal font's glyphs, and
+   "assetgen icon <unicorn.ico>" stores the unicorn sprite, unscaled, as the application icon */
 
 #include <cstdio>
 #include <exception>
 #include <string>
 
 #include "FontCapture.h"
+#include "IconWriter.h"
+#include "XpmDecoder.h"
+
+/* sprites.c */
+extern "C" const char* const* unicorn_sprite(void);
 
 int main(int argc, char** argv) {
   try {
@@ -25,7 +31,14 @@ int main(int argc, char** argv) {
       return 0;
       }
 
-    std::fputs("usage: assetgen font <TerminalFont.h>\n", stderr);
+    if (command == "icon" && argc == 3) {
+      platform::XpmDecoder decoder;
+      platform::Image      sprite = decoder.decode(unicorn_sprite());
+      IconWriter(sprite, 32).write(argv[2]);
+      return 0;
+      }
+
+    std::fputs("usage: assetgen font <TerminalFont.h> | icon <unicorn.ico>\n", stderr);
     return 2;
     }
   catch (const std::exception& error) {

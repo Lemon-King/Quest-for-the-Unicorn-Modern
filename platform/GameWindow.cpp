@@ -21,6 +21,9 @@ namespace {
 
 constexpr wchar_t CLASS_NAME[] = L"QuestForTheUnicorn";
 
+/* res/unicorn.rc: the unicorn sprite as the application icon */
+constexpr int APPLICATION_ICON = 1;
+
 }
 
 GameWindow::GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval,
@@ -34,6 +37,12 @@ GameWindow::GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHe
   windowClass.hInstance = instance;
   windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
   windowClass.lpszClassName = CLASS_NAME;
+
+  /* Title bar and taskbar; without the resource (the tests' executable) both stay null, the default icon */
+  windowClass.hIcon = static_cast<HICON>(LoadImageW(instance, MAKEINTRESOURCEW(APPLICATION_ICON), IMAGE_ICON,
+                                                    GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0));
+  windowClass.hIconSm = static_cast<HICON>(LoadImageW(instance, MAKEINTRESOURCEW(APPLICATION_ICON), IMAGE_ICON,
+                                                      GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0));
   if (RegisterClassExW(&windowClass) == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
     throw std::runtime_error("RegisterClassExW failed");
 
