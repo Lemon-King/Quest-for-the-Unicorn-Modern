@@ -6,7 +6,19 @@ LFLAGS =
 INCDIR =
 INCS =
 
-.PHONY: clean dist
+# Everything the build makes goes under bin/: the game, mapcnvt, the objects in bin/obj and the
+# runtime files the game needs beside it
+BINDIR = bin
+OBJDIR = $(BINDIR)/obj
+
+# Windows linkers add .exe, so targets must name it or make relinks them on every run
+ifeq ($(OS),Windows_NT)
+EXE = .exe
+else
+EXE =
+endif
+
+.PHONY: all clean dist docs install
 
 # Defs for compiling with UNIX/Text
 #DEFS = -DUNIX -O3 -Wall -DASCII -DHC 
@@ -304,23 +316,46 @@ OBJS = \
 	writefont.o \
 	yesno.o
 
-$(PROJECT): $(OBJS)
-	$(CC) $(LFLAGS) $(DEFS) $(LIBDIR) -o $(PROJECT) $(OBJS) $(LIBS)
+GAME = $(BINDIR)/$(PROJECT)$(EXE)
+MAPCNVT = $(BINDIR)/mapcnvt$(EXE)
+MAKEDOC = $(BINDIR)/makedoc$(EXE)
 
-maps.h: mapcnvt map11.map map12.map map13.map map14.map map21.map map22.map map23.map map24.map map31.map map32.map map33.map map34.map eshter.map generic.map radon.map marduk.map nichor.map village.map
-	./mapcnvt > maps.h
+# The game reads these from its working directory, so they sit beside it
+RUNTIME = $(BINDIR)/unicorn.cfg $(BINDIR)/unicorn.doc
 
-mapcnvt: mapcnvt.o
-	$(CC) $(LFLAGS) $(LIBDIR) $(LIBS) -o mapcnvt mapcnvt.o
+all: $(GAME) $(RUNTIME)
 
-.c.o:
-	$(CC) $(CFLAGS) $(DEFS) $(INCDIR) $(INCS) -c $<
+$(GAME): $(addprefix $(OBJDIR)/,$(OBJS))
+	$(CC) $(LFLAGS) $(DEFS) $(LIBDIR) -o $@ $^ $(LIBS)
 
-docs:   makedoc
-	./makedoc -ls80 -rm5 -lm5 -tp5 -ps2 unicorn
+$(RUNTIME): $(BINDIR)/%: % | $(OBJDIR)
+	cp $< $@
 
-makedoc: makedoc.o
-	$(CC) $(LFLAGS) $(LIBDIR) $(LIBS) -o makedoc makedoc.o
+maps.h: $(MAPCNVT) map11.map map12.map map13.map map14.map map21.map map22.map map23.map map24.map map31.map map32.map map33.map map34.map eshter.map generic.map radon.map marduk.map nichor.map village.map
+	$(MAPCNVT) > maps.h
+
+$(MAPCNVT): $(OBJDIR)/mapcnvt.o
+	$(CC) $(LFLAGS) $(LIBDIR) $(LIBS) -o $@ $<
+
+# mapcnvt writes maps.h, so its object must not depend on the headers that include it
+$(OBJDIR)/mapcnvt.o: mapcnvt.c | $(OBJDIR)
+	$(CC) $(CFLAGS) $(DEFS) $(INCDIR) $(INCS) -c $< -o $@
+
+$(OBJDIR)/%.o: %.c $(HEADERS) | $(OBJDIR)
+	$(CC) $(CFLAGS) $(DEFS) $(INCDIR) $(INCS) -c $< -o $@
+
+$(OBJDIR)/graphics.o: rgb.h graphics.h
+$(OBJDIR)/terminal.o: graphics.h
+$(OBJDIR)/selectsprite.o: unicorn.xpm unicorn.text
+
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+docs: $(MAKEDOC)
+	$(MAKEDOC) -ls80 -rm5 -lm5 -tp5 -ps2 unicorn
+
+$(MAKEDOC): $(OBJDIR)/makedoc.o
+	$(CC) $(LFLAGS) $(LIBDIR) $(LIBS) -o $@ $<
 
 dist:
 	-mkdir dist
@@ -343,286 +378,9 @@ dist:
 	   tar cvfz unicorn_src.tgz ./unicorn/src/*
 	
 
-install: unicorn
-	cp unicorn $(INSTALLDIR)
+install: $(GAME)
+	cp $(GAME) $(INSTALLDIR)
 
 clean:
-	-rm *.o
-	-rm mapcnvt
-	-rm $(PROJECT)
-
-activate.o:         $(HEADERS) activate.c
-addskill.o:         $(HEADERS) addskill.c
-advancestat.o:      $(HEADERS) advancestat.c
-advancement.o:      $(HEADERS) advancement.c
-adjustmap.o:        $(HEADERS) adjustmap.c
-adjustabilities.o:  $(HEADERS) adjustabilities.c
-aoe.o:              $(HEADERS) aoe.c
-area9.o:            $(HEADERS) area9.c
-area25.o:           $(HEADERS) area25.c
-area49.o:           $(HEADERS) area49.c
-arena.o:            $(HEADERS) arena.c
-arenaheal.o:        $(HEADERS) arenaheal.c
-arenamoveenemy.o:   $(HEADERS) arenamoveenemy.c
-arenamoveparty.o:   $(HEADERS) arenamoveparty.c
-arenamovesnake.o:   $(HEADERS) arenamovesnake.c
-autodetect.o:       $(HEADERS) autodetect.c
-bank.o:             $(HEADERS) bank.c
-blind.o:            $(HEADERS) blind.c
-blindtrap.o:        $(HEADERS) blindtrap.c
-builddungeon.o:     $(HEADERS) builddungeon.c
-buyhouse.o:         $(HEADERS) buyhouse.c
-buyprice.o:         $(HEADERS) buyprice.c
-cansee.o:           $(HEADERS) cansee.c
-castspell.o:        $(HEADERS) castspell.c
-cast_spell.o:       $(HEADERS) cast_spell.c
-cavalier.o:         $(HEADERS) cavalier.c
-cave.o:             $(HEADERS) cave.c
-charattributes.o:   $(HEADERS) charattributes.c
-charmmonster.o:     $(HEADERS) charmmonster.c
-checkautos.o:       $(HEADERS) checkautos.c
-checkclasschange.o: $(HEADERS) checkclasschange.c
-checkencounter.o:   $(HEADERS) checkencounter.c
-checkintrinsic.o:   $(HEADERS) checkintrinsic.c
-checklevelclear.o:  $(HEADERS) checklevelclear.c
-checkmonkweapon.o:  $(HEADERS) checkmonkweapon.c
-checkmount.o:       $(HEADERS) checkmount.c
-checknoble.o:       $(HEADERS) checknoble.c
-checkscores.o:      $(HEADERS) checkscores.c
-checkspell1.o:      $(HEADERS) checkspell1.c
-cleargamedata.o:    $(HEADERS) cleargamedata.c
-clearprompt.o:      $(HEADERS) clearprompt.c
-closedoor.o:        $(HEADERS) closedoor.c
-combathelp.o:       $(HEADERS) combathelp.c
-compass.o:          $(HEADERS) compass.c
-convertrecipe.o:    $(HEADERS) convertrecipe.c
-converttime.o:      $(HEADERS) converttime.c
-copymap.o:          $(HEADERS) copymap.c
-crafting.o:         $(HEADERS) crafting.c
-darttrap.o:         $(HEADERS) darttrap.c
-datacard.o:         $(HEADERS) datacard.c
-deadmonster.o:      $(HEADERS) deadmonster.c
-decode.o:           $(HEADERS) decode.c
-discover.o:         $(HEADERS) discover.c
-dispchar.o:         $(HEADERS) dispchar.c
-displayabilities.o: $(HEADERS) displayabilities.c
-dmgreduction.o:     $(HEADERS) dmgreduction.c
-doblink.o:          $(HEADERS) doblink.c
-doexchange.o:       $(HEADERS) doexchange.c
-doget.o:            $(HEADERS) doget.c
-doheal.o:           $(HEADERS) doheal.c
-dosleep.o:          $(HEADERS) dosleep.c
-dragondice.o:       $(HEADERS) dragondice.c
-drain.o:            $(HEADERS) drain.c
-dungeonhelp.o:      $(HEADERS) dungeonhelp.c
-effect.o:           $(HEADERS) effect.c
-enemyhit.o:         $(HEADERS) enemyhit.c
-enemymissile.o:     $(HEADERS) enemymissile.c
-exist.o:            $(HEADERS) exist.c
-fear.o:             $(HEADERS) fear.c
-feardir.o:          $(HEADERS) feardir.c
-figuredamage.o:     $(HEADERS) figuredamage.c
-findempty.o:        $(HEADERS) findempty.c
-findgen.o:          $(HEADERS) findgen.c
-finditemslot.o:     $(HEADERS) finditemslot.c
-findlinkeditem.o:   $(HEADERS) findlinkeditem.c
-findlore.o:         $(HEADERS) findlore.c
-findpath.o:         $(HEADERS) findpath.c
-findtarget.o:       $(HEADERS) findtarget.c
-fire.o:             $(HEADERS) fire.c
-firetrap.o:         $(HEADERS) firetrap.c
-firewand.o:         $(HEADERS) firewand.c
-fireweapon.o:       $(HEADERS) fireweapon.c
-fixability.o:       $(HEADERS) fixability.c
-fixname.o:          $(HEADERS) fixname.c
-fkeys.o:            $(HEADERS) fkeys.c
-gainexp.o:          $(HEADERS) gainexp.c
-gamble.o:           $(HEADERS) gamble.c
-gameoptions.o:      $(HEADERS) gameoptions.c
-getalign.o:         $(HEADERS) getalign.c
-getcity.o:          $(HEADERS) getcity.c
-getclass.o:         $(HEADERS) getclass.c
-getdir.o:           $(HEADERS) getdir.c
-getdungeon.o:       $(HEADERS) getdungeon.c
-gethealth.o:        $(HEADERS) gethealth.c
-getitem.o:          $(HEADERS) getitem.c
-getlinkedmonst.o:   $(HEADERS) getlinkedmonst.c
-getlinkedmsg.o:     $(HEADERS) getlinkedmsg.c
-getmonster.o:       $(HEADERS) getmonster.c
-getname.o:          $(HEADERS) getname.c
-getrace.o:          $(HEADERS) getrace.c
-getsex.o:           $(HEADERS) getsex.c
-getshopitems.o:     $(HEADERS) getshopitems.c
-getshoprecipes.o:   $(HEADERS) getshoprecipes.c
-getshopspells.o:    $(HEADERS) getshopspells.c
-getskill.o:         $(HEADERS) getskill.c
-getspellname.o:     $(HEADERS) getspellname.c
-gobottom.o:         $(HEADERS) gobottom.c
-godown.o:           $(HEADERS) godown.c
-gold.o:             $(HEADERS) gold.c
-goship.o:           $(HEADERS) goship.c
-goup.o:             $(HEADERS) goup.c
-graphics.o:         $(HEADERS) rgb.h graphics.h graphics.c
-haggle.o:           $(HEADERS) haggle.c
-hasintrinsic.o:     $(HEADERS) hasintrinsic.c
-hassocket.o:        $(HEADERS) hassocket.c
-hasspell.o:         $(HEADERS) hasspell.c
-healing.o:          $(HEADERS) healing.c
-holeinventory.o:    $(HEADERS) holeinventory.c
-houseinventory.o:   $(HEADERS) houseinventory.c
-inkey.o:            $(HEADERS) inkey.c
-inroom.o:           $(HEADERS) inroom.c
-insight.o:          $(HEADERS) insight.c
-intrinsiccount.o:   $(HEADERS) intrinsiccount.c
-inventory.o:        $(HEADERS) inventory.c
-invvalid.o:         $(HEADERS) invvalid.c
-isweapon.o:         $(HEADERS) isweapon.c
-itemcolor.o:        $(HEADERS) itemcolor.c
-itemcost.o:         $(HEADERS) itemcost.c
-itemdir.o:          $(HEADERS) itemdir.c
-levellegacy.o:      $(HEADERS) levellegacy.c
-library.o:          $(HEADERS) library.c
-lightroom.o:        $(HEADERS) lightroom.c
-load.o:             $(HEADERS) load.c
-loadgear.o:         $(HEADERS) loadgear.c
-loadlevel.o:        $(HEADERS) loadlevel.c
-log.o:              $(HEADERS) log.c
-lockdoor.o:         $(HEADERS) lockdoor.c
-los.o:              $(HEADERS) los.c
-magicadjust.o:      $(HEADERS) magicadjust.c
-main.o:             $(HEADERS) main.c objects.h
-makechar.o:         $(HEADERS) makechar.c
-make_a.o:           $(HEADERS) make_a.c
-make_c.o:           $(HEADERS) make_c.c
-make_h.o:           $(HEADERS) make_h.c
-make_n.o:           $(HEADERS) make_n.c
-makemap.o:          $(HEADERS) makemap.c
-makestr.o:          $(HEADERS) makestr.c
-manacost.o:         $(HEADERS) manacost.c
-mapgen.o:           $(HEADERS) mapgen.c
-mapgenold.o:        $(HEADERS) mapgenold.c
-maxdamage.o:        $(HEADERS) maxdamage.c
-mechmerchant.o:     $(HEADERS) mechmerchant.c
-meleehit.o:         $(HEADERS) meleehit.c
-minimap.o:          $(HEADERS) minimap.c
-missile.o:          $(HEADERS) missile.c
-mounts.o:           $(HEADERS) mounts.c
-moveenemy.o:        $(HEADERS) moveenemy.c
-movesnake.o:        $(HEADERS) movesnake.c
-movesummoned.o:     $(HEADERS) movesummoned.c
-msg.o:              $(HEADERS) msg.c
-mutable.o:          $(HEADERS) mutable.c
-mutalegend.o:       $(HEADERS) mutalegend.c
-mval.o:             $(HEADERS) mval.c
-nap.o:              $(HEADERS) nap.c
-needed.o:           $(HEADERS) needed.c
-newgame.o:          $(HEADERS) newgame.c
-newmonth.o:         $(HEADERS) newmonth.c
-newpawn.o:          $(HEADERS) newpawn.c
-newspell.o:         $(HEADERS) newspell.c
-noise.o:            $(HEADERS) noise.c
-opendoor.o:         $(HEADERS) opendoor.c
-packit.o:           $(HEADERS) packit.c
-packitem.o:         $(HEADERS) packitem.c
-party.o:            $(HEADERS) party.c
-passable.o:         $(HEADERS) passable.c
-pawn.o:             $(HEADERS) pawn.c
-pittrap.o:          $(HEADERS) pittrap.c
-placeobject.o:      $(HEADERS) placeobject.c
-poisontrap.o:       $(HEADERS) poisontrap.c
-possesses.o:        $(HEADERS) possesses.c
-printrec.o:         $(HEADERS) printrec.c
-processconfig.o:    $(HEADERS) processconfig.c
-processoption.o:    $(HEADERS) processoption.c
-prompt.o:           $(HEADERS) prompt.c
-r_missile.o:        $(HEADERS) r_missile.c
-rcsrandom.o:        $(HEADERS) rcsrandom.c
-readsprites.o:      $(HEADERS) readsprites.c
-recipestring.o:     $(HEADERS) recipestring.c
-reducedmg.o:        $(HEADERS) reducedmg.c
-removelandplayer.o: $(HEADERS) removelandplayer.c
-removeplayer.o:     $(HEADERS) removeplayer.c
-reversebyte.o:      $(HEADERS) reversebyte.c
-roottrap.o:         $(HEADERS) roottrap.c
-savenew.o:          $(HEADERS) savenew.c
-savegear.o:         $(HEADERS) savegear.c
-savelevel.o:        $(HEADERS) savelevel.c
-sayword.o:          $(HEADERS) sayword.c
-scalemonster.o:     $(HEADERS) scalemonster.c
-school.o:           $(HEADERS) school.c
-selectsprite.o:     $(HEADERS) selectsprite.c unicorn.xpm unicorn.text
-settitle.o:         $(HEADERS) settitle.c
-settrap.o:          $(HEADERS) settrap.c
-shop.o:             $(HEADERS) shop.c
-showalign.o:        $(HEADERS) showalign.c
-showfkeys.o:        $(HEADERS) showfkeys.c
-showflt.o:          $(HEADERS) showflt.c
-showgain.o:         $(HEADERS) showgain.c
-showgen.o:          $(HEADERS) showgen.c
-showheadings.o:     $(HEADERS) showheadings.c
-showhealth.o:       $(HEADERS) showhealth.c
-showicons.o:        $(HEADERS) showicons.c
-showint.o:          $(HEADERS) showint.c
-showinventory.o:    $(HEADERS) showinventory.c
-showland.o:         $(HEADERS) showland.c
-showlandplayer.o:   $(HEADERS) showlandplayer.c
-showlog.o:          $(HEADERS) showlog.c
-showlore.o:         $(HEADERS) showlore.c
-showmap.o:          $(HEADERS) showmap.c
-showmessages.o:     $(HEADERS) showmessages.c
-shownumber.o:       $(HEADERS) shownumber.c
-showplayer.o:       $(HEADERS) showplayer.c
-showquest.o:        $(HEADERS) showquest.c
-showscores.o:       $(HEADERS) showscores.c
-showscreen.o:       $(HEADERS) showscreen.c
-showside.o:         $(HEADERS) showside.c
-showsmland.o:       $(HEADERS) showsmland.c
-showsmmap.o:        $(HEADERS) showsmmap.c
-showspell.o:        $(HEADERS) showspell.c
-showspot.o:         $(HEADERS) showspot.c
-showsprite.o:       $(HEADERS) showsprite.c
-showstats.o:        $(HEADERS) showstats.c
-sleeptrap.o:        $(HEADERS) sleeptrap.c
-sortshopitems.o:    $(HEADERS) sortshopitems.c
-specials.o:         $(HEADERS) specials.c
-sqr.o:              $(HEADERS) sqr.c
-statsdodamage.o:    $(HEADERS) statsdodamage.c
-statstakedamage.o:    $(HEADERS) statsdodamage.c
-stockencounter.o:   $(HEADERS) stockencounter.c
-stockmonsters.o:    $(HEADERS) stockmonsters.c
-stocktown.o:        $(HEADERS) stocktown.c
-stocktreasure.o:    $(HEADERS) stocktreasure.c
-super.o:            $(HEADERS) super.c
-taketime.o:         $(HEADERS) taketime.c
-target.o:           $(HEADERS) target.c
-tavern.o:           $(HEADERS) tavern.c
-temple.o:           $(HEADERS) temple.c
-teleport.o:         $(HEADERS) teleport.c
-teleporttrap.o:     $(HEADERS) teleporttrap.c
-terminal.o:         $(HEADERS) terminal.c
-throw.o:            $(HEADERS) throw.c
-thrownpotion.o:     $(HEADERS) thrownpotion.c
-title.o:            $(HEADERS) title.c
-touch.o:            $(HEADERS) touch.c
-transcribe.o:       $(HEADERS) transcribe.c
-travel.o:           $(HEADERS) travel.c
-triggertrap.o:      $(HEADERS) triggertrap.c
-trophies.o:         $(HEADERS) trophies.c
-trunc.o:            $(HEADERS) trunc.c
-upland.o:           $(HEADERS) upland.c
-uplandhelp.o:       $(HEADERS) uplandhelp.c
-upper.o:            $(HEADERS) upper.c
-unpack.o:           $(HEADERS) unpack.c
-urandom.o:          $(HEADERS) urandom.c
-urandomize.o:       $(HEADERS) urandomize.c
-usecompass.o:       $(HEADERS) usecompass.c
-useitem.o:          $(HEADERS) useitem.c
-validmove.o:        $(HEADERS) validmove.c
-view.o:             $(HEADERS) view.c
-winner.o:           $(HEADERS) winner.c
-wizard.o:           $(HEADERS) wizard.c
-writefont.o:        $(HEADERS) writefont.c
-yesno.o:            $(HEADERS) yesno.c
-
-
+	-rm -rf $(BINDIR)
 
