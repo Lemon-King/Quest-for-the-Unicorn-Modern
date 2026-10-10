@@ -22,15 +22,17 @@ struct Placement {
   int32_t height;
   };
 
-/* Fits the canvas to a client area at its own aspect ratio, never below 1:1, centred on black */
+/* Fits the canvas to a client area at its own aspect ratio, centred on black: as large as fits (never below 1:1), or
+   with integerScaling the largest whole-number scale that fits */
 class ViewportLayout {
   public:
-    ViewportLayout(int32_t canvasWidth, int32_t canvasHeight);
+    ViewportLayout(int32_t canvasWidth, int32_t canvasHeight, bool integerScaling);
     Placement place(int32_t clientWidth, int32_t clientHeight) const;
 
   private:
     int32_t canvasWidth_;
     int32_t canvasHeight_;
+    bool    integerScaling_;
   };
 
 }

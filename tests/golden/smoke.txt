@@ -33,6 +33,7 @@ Options:
   Screen Size: 640 x 480
   Music: Y
   Game Thread: Y
+  Integer Scaling: N
 Macros:
   F1 = 
   F2 = 

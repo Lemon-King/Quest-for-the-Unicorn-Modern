@@ -69,7 +69,8 @@ std::vector<uint32_t> drawClient(ID3D11Device* device, ID3D11DeviceContext* cont
   Direct3DError::check(device->CreateTexture2D(&description, nullptr, &staging), "CreateTexture2D");
 
   context->ClearRenderTargetView(view.Get(), BLACK);
-  pass.draw(context, view.Get(), platform::ViewportLayout(CANVAS_WIDTH, CANVAS_HEIGHT).place(clientWidth, clientHeight));
+  pass.draw(context, view.Get(),
+            platform::ViewportLayout(CANVAS_WIDTH, CANVAS_HEIGHT, false).place(clientWidth, clientHeight));
   context->CopyResource(staging.Get(), target.Get());
 
   std::vector<uint32_t> pixels(static_cast<size_t>(clientWidth) * static_cast<size_t>(clientHeight));

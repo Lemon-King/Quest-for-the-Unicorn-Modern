@@ -31,8 +31,8 @@ constexpr UINT WM_APP_GAME_ENDED = WM_APP + 2;   /* run_game() returned: end the
    asks, turns key messages into game keys, and reports a close to the game */
 class GameWindow {
   public:
-    GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval, FrameMailbox& frames,
-               InputQueue& input);
+    GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval, bool integerScaling,
+               FrameMailbox& frames, InputQueue& input);
     ~GameWindow();
 
     GameWindow(const GameWindow&) = delete;
@@ -43,6 +43,7 @@ class GameWindow {
     void requestFrame();
     void gameEnded();
     bool translate(const MSG& message);
+    void toggleFullscreen();
 
   private:
     static LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
@@ -64,6 +65,8 @@ class GameWindow {
     Placement                  placement_;
     std::unique_ptr<Presenter> presenter_;
     std::atomic<bool>          framePending_ = false;
+    bool                       fullscreen_ = false;
+    WINDOWPLACEMENT            restore_ = { sizeof(WINDOWPLACEMENT) };
   };
 
 }

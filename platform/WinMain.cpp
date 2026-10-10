@@ -33,7 +33,8 @@ int WINAPI WinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE, _In_ LPSTR, _In_
   try {
     platform::FrameMailbox frames(setup.width, setup.height);
     platform::InputQueue   input;
-    platform::GameWindow   window(instance, setup.width, setup.height, setup.gameThread ? 1 : 0, frames, input);
+    platform::GameWindow   window(instance, setup.width, setup.height, setup.gameThread ? 1 : 0, setup.integerScaling != 0,
+                                  frames, input);
 
     /* GameThread: the window thread presents with vsync. NoGameThread: as the GDI build, never waiting for vblank */
     if (setup.gameThread) {

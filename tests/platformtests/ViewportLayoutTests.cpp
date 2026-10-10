@@ -23,21 +23,27 @@ std::string describe(const platform::Placement& placement) {
   }
 
 void viewportLayoutPlaces(TestRunner& runner) {
-  struct Case { int32_t clientWidth, clientHeight; platform::Placement expected; };
+  struct Case { bool integer; int32_t clientWidth, clientHeight; platform::Placement expected; };
   const Case cases[] = {
-    {640, 480, {0, 0, 640, 480}},         /* 1:1 */
-    {1280, 960, {0, 0, 1280, 960}},       /* 2x */
-    {1500, 1000, {83, 0, 1333, 1000}},    /* fractional, bars left and right */
-    {600, 400, {-20, -40, 640, 480}},     /* smaller than the canvas: 1:1, centred and cropped */
+    {false, 640, 480, {0, 0, 640, 480}},            /* 1:1 */
+    {false, 1280, 960, {0, 0, 1280, 960}},          /* 2x */
+    {false, 1500, 1000, {83, 0, 1333, 1000}},       /* fractional, bars left and right */
+    {false, 600, 400, {-20, -40, 640, 480}},        /* smaller than the canvas: 1:1, centred and cropped */
+    {true, 1500, 1000, {110, 20, 1280, 960}},       /* integer: 2x, black borders all round */
+    {true, 1919, 1079, {319, 59, 1280, 960}},       /* a pixel short of 3x wide still gives 2x */
+    {true, 3840, 2160, {640, 120, 2560, 1920}},     /* 4K: 4x */
+    {true, 600, 400, {-20, -40, 640, 480}},         /* smaller than the canvas: still 1:1 */
+    {true, 1920, 1440, {0, 0, 1920, 1440}},         /* exactly 3x */
     };
 
-  platform::ViewportLayout layout(640, 480);
   for (const Case& item : cases) {
-    platform::Placement placement = layout.place(item.clientWidth, item.clientHeight);
+    platform::Placement placement = platform::ViewportLayout(640, 480, item.integer).place(item.clientWidth,
+                                                                                         item.clientHeight);
     bool same = placement.left == item.expected.left && placement.top == item.expected.top &&
                 placement.width == item.expected.width && placement.height == item.expected.height;
-    runner.check(same, "ViewportLayoutPlaces", std::to_string(item.clientWidth) + "x" + std::to_string(item.clientHeight) +
-                 " gave " + describe(placement) + ", expected " + describe(item.expected));
+    runner.check(same, "ViewportLayoutPlaces", std::string(item.integer ? "integer " : "fit ") +
+                 std::to_string(item.clientWidth) + "x" + std::to_string(item.clientHeight) + " gave " +
+                 describe(placement) + ", expected " + describe(item.expected));
     }
   }
 

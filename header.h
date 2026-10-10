@@ -1016,6 +1016,7 @@ LINK Int32                hall_position;
 LINK Int32                death_position;
 LINK char               music;
 LINK char               game_thread;
+LINK char               integer_scaling;
 LINK Int32                target_x;
 LINK Int32                target_y;
 LINK double             dir_x;

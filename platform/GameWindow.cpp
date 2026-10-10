@@ -24,9 +24,9 @@ constexpr wchar_t CLASS_NAME[] = L"QuestForTheUnicorn";
 }
 
 GameWindow::GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval,
-                       FrameMailbox& frames, InputQueue& input)
+                       bool integerScaling, FrameMailbox& frames, InputQueue& input)
   : window_(nullptr), canvasWidth_(canvasWidth), canvasHeight_(canvasHeight), frames_(frames), input_(input), keys_(),
-    layout_(canvasWidth, canvasHeight), placement_{0, 0, canvasWidth, canvasHeight}, presenter_() {
+    layout_(canvasWidth, canvasHeight, integerScaling), placement_{0, 0, canvasWidth, canvasHeight}, presenter_() {
   WNDCLASSEXW windowClass = {};
   windowClass.cbSize = sizeof(windowClass);
   windowClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -100,6 +100,29 @@ bool GameWindow::translate(const MSG& message) {
   return false;
   }
 
+/* Borderless over the whole monitor the window is on, then back to exactly where the window was. A popup has no
+   frame, so the minimum size lets it cover the monitor, and WM_SIZE resizes the swap chain as for any size. */
+void GameWindow::toggleFullscreen() {
+  MONITORINFO monitor = { sizeof(MONITORINFO) };
+
+  if (!fullscreen_) {
+    GetWindowPlacement(window_, &restore_);
+    GetMonitorInfoW(MonitorFromWindow(window_, MONITOR_DEFAULTTONEAREST), &monitor);
+    SetWindowLongPtrW(window_, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+    SetWindowPos(window_, HWND_TOP, monitor.rcMonitor.left, monitor.rcMonitor.top,
+                 monitor.rcMonitor.right - monitor.rcMonitor.left, monitor.rcMonitor.bottom - monitor.rcMonitor.top,
+                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+    fullscreen_ = true;
+    return;
+    }
+
+  SetWindowLongPtrW(window_, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+  SetWindowPlacement(window_, &restore_);
+  SetWindowPos(window_, nullptr, 0, 0, 0, 0,
+               SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+  fullscreen_ = false;
+  }
+
 bool GameWindow::route(const KeyRoute& route) {
   switch (route.target()) {
     case KeyRoute::Target::Game:
@@ -107,7 +130,10 @@ bool GameWindow::route(const KeyRoute& route) {
       return true;
 
     case KeyRoute::Target::Swallow:
+      return true;
+
     case KeyRoute::Target::Fullscreen:
+      toggleFullscreen();
       return true;
 
     case KeyRoute::Target::Windows:
