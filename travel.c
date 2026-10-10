@@ -10,6 +10,92 @@
 
 #include "header.h"
 
+static void new_town(Int32 where) {
+  Int32 i;
+//    Int32 m_file;
+//#ifdef MINGW
+//    m_file = open("temp01.$$$",O_WRONLY | O_BINARY);
+//#else
+//    m_file = open("temp01.$$$",O_WRONLY);
+//#endif
+//    if (m_file < 0) {
+//      printf("Fatal Error: Could not open temp01.$$$\n");
+//      exit(1);
+//      }
+//    lseek(m_file,sizeof(KNOW_TYPE) * player.city,SEEK_SET);
+//    write(m_file,&(player.known),sizeof(KNOW_TYPE));
+//    close(m_file);
+  memcpy(&(known_maps[player.city]), &(player.known), sizeof(KNOW_TYPE));
+
+  player.region = links[where].region;
+  player.city = links[where].diff;
+  player.land_x = links[where].x;
+  player.land_y = links[where].y;
+  player.x = links[where].sx;
+  player.y = links[where].sy;
+  strcpy(player.d_name,links[where].name);
+  copyMap(&player.map,player.city);
+//#ifdef MINGW
+//    m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
+//#else
+//    m_file = open("temp01.$$$",O_RDONLY);
+//#endif
+//    if (m_file < 0) {
+//      printf("Fatal Error: Could not open temp01.$$$\n");
+//      exit(1);
+//      }
+//    lseek(m_file,sizeof(KNOW_TYPE) * player.city,SEEK_SET);
+//    read(m_file,&(player.known),sizeof(KNOW_TYPE));
+//    close(m_file);
+  memcpy(&(player.known), &(known_maps[player.city]), sizeof(KNOW_TYPE));
+  i = 0;
+  while (i >= 0) {
+    if (shops[i].shoptype != 999) {
+      if (shops[i].region == player.region &&
+          shops[i].rx == player.land_x &&
+          shops[i].ry == player.land_y)
+        player.map[shops[i].cx][shops[i].cy] = 520;
+      i++;
+      } else i = -1;
+    }
+
+  stock_town(player.city);
+  player.map_x = player.x-TILES_X/2;
+  player.map_y = player.y-TILES_Y/2;
+  if (player.map_x<1) player.map_x = 1;
+  if (player.map_y<1) player.map_y = 1;
+  if (player.map_x>100-TILES_X) player.map_x = 100-TILES_X;
+  if (player.map_y>100-TILES_Y) player.map_y = 100-TILES_Y;
+  i = 0;
+  while (i >= 0) {
+    if (forsale[i].region != 999) {
+      if (forsale[i].region == player.region &&
+          forsale[i].rx == player.land_x &&
+          forsale[i].ry == player.land_y)
+        player.map[forsale[i].cx][forsale[i].cy] = S_SALE;
+      i++;
+      } else i = -1;
+    }
+  for (i=0; i<5; i++)
+    if (player.houses[i].region == player.region &&
+        player.houses[i].rx == player.land_x &&
+        player.houses[i].ry == player.land_y)
+      player.map[player.houses[i].cx][player.houses[i].cy] = S_SOLD;
+  clrscr();
+  show_map();
+  show_side();
+  show_player();
+  saveScreen();
+  } /* void new_town(Int32 where) */
+
+static Int32 getPX(Int32 r,Int32 x) {
+  return (((r - 1) % 4) * 100) + x;
+  }
+
+static Int32 getPY(Int32 r,Int32 y) {
+  return (((r - 1) / 4) * 100) + y;
+  }
+
 void travel(char* name) {
   char dest[9][33];
   Int32 cost[9];
@@ -24,92 +110,6 @@ void travel(char* name) {
   Int32  city;
   Int32  shipx,shipy;
   Int32  ndest;
-
-  void new_town(Int32 where) {
-//    Int32 m_file;
-//#ifdef MINGW
-//    m_file = open("temp01.$$$",O_WRONLY | O_BINARY);
-//#else
-//    m_file = open("temp01.$$$",O_WRONLY);
-//#endif
-//    if (m_file < 0) {
-//      printf("Fatal Error: Could not open temp01.$$$\n");
-//      exit(1);
-//      }
-//    lseek(m_file,sizeof(KNOW_TYPE) * player.city,SEEK_SET);
-//    write(m_file,&(player.known),sizeof(KNOW_TYPE));
-//    close(m_file);
-    memcpy(&(known_maps[player.city]), &(player.known), sizeof(KNOW_TYPE));
-
-    player.region = links[where].region;
-    player.city = links[where].diff;
-    player.land_x = links[where].x;
-    player.land_y = links[where].y;
-    player.x = links[where].sx;
-    player.y = links[where].sy;
-    strcpy(player.d_name,links[where].name);
-    copyMap(&player.map,player.city);
-//#ifdef MINGW
-//    m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
-//#else
-//    m_file = open("temp01.$$$",O_RDONLY);
-//#endif
-//    if (m_file < 0) {
-//      printf("Fatal Error: Could not open temp01.$$$\n");
-//      exit(1);
-//      }
-//    lseek(m_file,sizeof(KNOW_TYPE) * player.city,SEEK_SET);
-//    read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//    close(m_file);
-    memcpy(&(player.known), &(known_maps[player.city]), sizeof(KNOW_TYPE));
-    i = 0;
-    while (i >= 0) {
-      if (shops[i].shoptype != 999) {
-        if (shops[i].region == player.region &&
-            shops[i].rx == player.land_x &&
-            shops[i].ry == player.land_y)
-          player.map[shops[i].cx][shops[i].cy] = 520;
-        i++;
-        } else i = -1;
-      }
-
-    stock_town(player.city);
-    player.map_x = player.x-TILES_X/2;
-    player.map_y = player.y-TILES_Y/2;
-    if (player.map_x<1) player.map_x = 1;
-    if (player.map_y<1) player.map_y = 1;
-    if (player.map_x>100-TILES_X) player.map_x = 100-TILES_X;
-    if (player.map_y>100-TILES_Y) player.map_y = 100-TILES_Y;
-    i = 0;
-    while (i >= 0) {
-      if (forsale[i].region != 999) {
-        if (forsale[i].region == player.region &&
-            forsale[i].rx == player.land_x &&
-            forsale[i].ry == player.land_y)
-          player.map[forsale[i].cx][forsale[i].cy] = S_SALE;
-        i++;
-        } else i = -1;
-      }
-    for (i=0; i<5; i++)
-      if (player.houses[i].region == player.region &&
-          player.houses[i].rx == player.land_x &&
-          player.houses[i].ry == player.land_y)
-        player.map[player.houses[i].cx][player.houses[i].cy] = S_SOLD;
-    clrscr();
-    show_map();
-    show_side();
-    show_player();
-    saveScreen();
-    } /* void new_town(Int32 where) */
-
-  Int32 getPX(Int32 r,Int32 x) {
-    return (((r - 1) % 4) * 100) + x;
-    }
-
-  Int32 getPY(Int32 r,Int32 y) {
-    return (((r - 1) / 4) * 100) + y;
-    }
-
 
   shipx = -1;
   shipy = -1;

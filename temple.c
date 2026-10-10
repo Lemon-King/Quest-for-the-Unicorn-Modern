@@ -31,6 +31,39 @@ void rebirth() {
   if (key == 'E') heroicMode = 4;
   }
 
+static void show_top(char* name,char allowed,double* cost) {
+  Int32 line;
+  char buffer[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14);
+  line = 3;
+  gotoxy(27,line++); txt_write("1> Healing"); gotoxy(51,3); txt_write("  100");
+  gotoxy(27,line++); txt_write("2> Prayer");  gotoxy(51,4); txt_write("  500");
+  gotoxy(27,line); txt_write("3> Restore allignment");
+  *cost = player.align;
+  *cost = 500*(100-*cost);
+  sprintf(buffer,"%5.0f",*cost);
+  gotoxy(51,line++); txt_write(buffer);
+  gotoxy(27,line++); txt_write("4> Remove Curse");
+  if (allowed == 'Y') {
+    gotoxy(27,line++); txt_write("5> Become a Hierophant");
+    }
+  if (player.gateway == 'F' && player.effect[PE_HEROIC] >= 0) {
+    gotoxy(27,line++); txt_write("6> Rebirth");
+    }
+  if (player.effect[PE_HEROIC] >= 0) {
+    gotoxy(27,line++); txt_write("7> One with Nature");
+    }
+  gotoxy(27,line++); txt_write("<ESC> Leave");
+  line++;
+  gotoxy(30,line); txt_write("Option ?");
+  textcolor(15); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
 void temple(char* name) {
   double cost;
   char   buffer[80];
@@ -40,44 +73,12 @@ void temple(char* name) {
   Int32    i;
   char   allowed;
 
-  void show_top() {
-    Int32 line;
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    textcolor(14);
-    line = 3;
-    gotoxy(27,line++); txt_write("1> Healing"); gotoxy(51,3); txt_write("  100");
-    gotoxy(27,line++); txt_write("2> Prayer");  gotoxy(51,4); txt_write("  500");
-    gotoxy(27,line); txt_write("3> Restore allignment");
-    cost = player.align;
-    cost = 500*(100-cost);
-    sprintf(buffer,"%5.0f",cost);
-    gotoxy(51,line++); txt_write(buffer);
-    gotoxy(27,line++); txt_write("4> Remove Curse");
-    if (allowed == 'Y') {
-      gotoxy(27,line++); txt_write("5> Become a Hierophant");
-      }
-    if (player.gateway == 'F' && player.effect[PE_HEROIC] >= 0) {
-      gotoxy(27,line++); txt_write("6> Rebirth");
-      }
-    if (player.effect[PE_HEROIC] >= 0) {
-      gotoxy(27,line++); txt_write("7> One with Nature");
-      }
-    gotoxy(27,line++); txt_write("<ESC> Leave");
-    line++;
-    gotoxy(30,line); txt_write("Option ?");
-    textcolor(15); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-    }
-
   hier = -1;
   allowed = 'N';
   for (i=0; i<NUM_CLASSES; i++)
     if (classes[i].flags & CF_HIER) hier = i + 1;
   if (hier >= 0) allowed = (check_class_change(hier)) ? 'Y' : 'N';
-  show_top();
+  show_top(name,allowed,&cost);
   key = ' ';
   while (key != '0') {
     key = inkey();
@@ -108,7 +109,7 @@ void temple(char* name) {
       }
     if (key == '4') {
       item = inventory(NULL);
-      show_top();
+      show_top(name,allowed,&cost);
       if (item->plus >= 0) {
         gotoxy(27,13); textcolor(9); txt_write("That Item is not cursed");
         delay(1000);
@@ -169,6 +170,6 @@ void temple(char* name) {
         if (player.effect[PE_HEROIC] == 4) player.effect[PE_HEROIC] = 2;
         }
       }
-    show_top();
+    show_top(name,allowed,&cost);
     }
   } /* void temple(char* name) */
