@@ -1,6 +1,6 @@
 <#
   Captures the golden set into -Out: canvas captures (Ctrl+P), window captures and the -s report.
-  The game runs in a fresh work folder holding only the fixture config and save, without music.
+  The game runs in a fresh work folder holding the fixture config and save and the maps, without music.
 
     powershell -NoProfile -ExecutionPolicy Bypass -File tests/golden/screens.ps1 -Out bin/golden-check
     powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/run-unicorn/driver.ps1 compare-set tests/golden bin/golden-check
@@ -23,6 +23,7 @@ function Reset-WorkFolder {
   New-Item -ItemType Directory $Work | Out-Null
   Copy-Item (Join-Path $Fixtures "unicorn.cfg") $Work
   Copy-Item (Join-Path $Fixtures "Golden.sav") $Work
+  Copy-Item (Join-Path $Root "maps") $Work -Recurse
 
   # The Load Game screen prints the save's date, so it is pinned
   (Get-Item (Join-Path $Work "Golden.sav")).LastWriteTime = Get-Date "2026-01-01 12:00"
