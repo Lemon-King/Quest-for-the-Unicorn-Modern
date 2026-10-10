@@ -13,6 +13,9 @@
     <Filter Include="Headers">
       <UniqueIdentifier>{407CF46F-FD60-448F-9347-55069F3A0F96}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{7E9C87E6-1FA8-4579-8BF2-12D5D219611A}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activate.c">
@@ -350,9 +353,6 @@
     </ClCompile>
     <ClCompile Include="goup.c">
       <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="graphics.c">
-      <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="haggle.c">
       <Filter>Game</Filter>
@@ -848,12 +848,6 @@
     <ClInclude Include="terminal.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="graphics.h">
-      <Filter>Display</Filter>
-    </ClInclude>
-    <ClInclude Include="rgb.h">
-      <Filter>Display</Filter>
-    </ClInclude>
     <ClInclude Include="gothic.h">
       <Filter>Display</Filter>
     </ClInclude>
@@ -895,5 +889,16 @@
     <None Include="unicorn.xpm">
       <Filter>Display</Filter>
     </None>
+    <None Include="res\unicorn.ico">
+      <Filter>Resources</Filter>
+    </None>
+    <None Include="res\unicorn.manifest">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="res\unicorn.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
