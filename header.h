@@ -71,6 +71,9 @@ LINK Int32 NO_OF_MONSTERS;
 #define MUSIC_DUNGEON         2
 #define MUSIC_TOWN            3
 
+/* maps[]: index 0 repeats region 1, then regions 1-12, the towns (13-17) and Eshter's realm (18) */
+#define MAP_COUNT            19
+
 #define OF_FOR_SALE  (1 << 0)
 #define OF_NO_GACHA  (1 << 1)
 #define OF_UNIQUE    (1 << 2)
@@ -965,7 +968,6 @@ LINK PLAYER_REC         player;
 #include "gen.h"
 #include "objects.h"
 #include "monsters.h"
-#include "maps.h"
 #include "recipe.h"
 #include "races.h"
 #include "classes.h"
@@ -1093,6 +1095,7 @@ LINK char               macros[12][1024];
 LINK char               currentMacro[1024];
 LINK char               takes_time;
 LINK KNOW_TYPE          known_maps[51];
+LINK MAP_TYPE           maps[MAP_COUNT];
 LINK char               encrypt_save_file;
 
 
@@ -1256,6 +1259,8 @@ extern void check_monk_weapon();
 extern void check_noble();
 extern void check_scores();
 extern void copyMap(MAP_TYPE* dest,Int32 num);
+extern Int32 read_map(char* filename,MAP_TYPE* map,char* error,Int32 error_size);
+extern Int32 load_maps(MAP_TYPE* world,char* error,Int32 error_size);
 extern void decode(char* buffer);
 extern void winner();
 extern Int32 exist(char* filename);

@@ -8,7 +8,8 @@
  *******************************************************************
 */
 
-/* Conformance tests for the platform layer: each part against the GDI behaviour it replaces */
+/* Conformance tests for the platform layer, each part against the GDI behaviour it replaces, and tests for the game's
+   map reader and loader */
 
 #include <string>
 
@@ -23,10 +24,12 @@ void runInputQueueTests(TestRunner& runner);
 void runKeyTranslatorTests(TestRunner& runner);
 void runScalePassTests(TestRunner& runner);
 void runIconTests(TestRunner& runner, const std::string& root);
+void runMapTests(TestRunner& runner, const std::string& root);
 
 /* The first argument is the repo root, where the committed assets the tests check live */
 int main(int argc, char** argv) {
-  TestRunner runner;
+  TestRunner        runner;
+  const std::string root = (argc > 1) ? argv[1] : "";
   runCanvasTests(runner);
   runSpriteTests(runner);
   runBmpWriterTests(runner);
@@ -35,6 +38,7 @@ int main(int argc, char** argv) {
   runInputQueueTests(runner);
   runKeyTranslatorTests(runner);
   runScalePassTests(runner);
-  runIconTests(runner, (argc > 1) ? argv[1] : "");
+  runIconTests(runner, root);
+  runMapTests(runner, root);
   return runner.finish();
   }

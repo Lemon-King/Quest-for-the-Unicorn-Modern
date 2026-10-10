@@ -195,6 +195,7 @@
     <ClCompile Include="load.c" />
     <ClCompile Include="loadgear.c" />
     <ClCompile Include="loadlevel.c" />
+    <ClCompile Include="loadmaps.c" />
     <ClCompile Include="loadmenu.c" />
     <ClCompile Include="log.c" />
     <ClCompile Include="lockdoor.c" />
@@ -247,6 +248,7 @@
     <ClCompile Include="prompt.c" />
     <ClCompile Include="r_missile.c" />
     <ClCompile Include="rcsrandom.c" />
+    <ClCompile Include="readmap.c" />
     <ClCompile Include="readsprites.c" />
     <ClCompile Include="recipestring.c" />
     <ClCompile Include="reducedmg.c" />
@@ -340,7 +342,6 @@
     <ClInclude Include="header.h" />
     <ClInclude Include="terminal.h" />
     <ClInclude Include="gothic.h" />
-    <ClInclude Include="maps.h" />
     <ClInclude Include="objects.h" />
     <ClInclude Include="monsters.h" />
     <ClInclude Include="spells.h" />
@@ -365,11 +366,14 @@
 
   <!-- The game reads these from its working folder, which is the output folder -->
   <ItemGroup>
-    <CopyFileToFolders Include="unicorn.cfg;unicorn.doc">
+    <CopyFileToFolders Include="unicorn.cfg;unicorn.doc;editing.doc">
       <DestinationFolders>$(OutDir)</DestinationFolders>
     </CopyFileToFolders>
     <CopyFileToFolders Include="music\*.mid">
       <DestinationFolders>$(OutDir)music</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="maps\*.map">
+      <DestinationFolders>$(OutDir)maps</DestinationFolders>
     </CopyFileToFolders>
   </ItemGroup>
 

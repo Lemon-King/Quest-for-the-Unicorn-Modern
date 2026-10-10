@@ -53,8 +53,8 @@ typedef struct {
   int32_t integerScaling;   /* 1: whole-number scales only, black borders */
   } GAME_SETUP;
 
-/* The game as the host starts it: configure_game() applies unicorn.cfg and the command line and returns 0 when no
-   window should open (the -s report); run_game() plays until the player saves and leaves */
+/* The game as the host starts it: configure_game() applies unicorn.cfg and the command line, reads the maps and
+   returns 0 when no window should open (the -s report); run_game() plays until the player saves and leaves */
 int32_t           configure_game(int32_t argc, char** argv, GAME_SETUP* setup);
 void              run_game(GAME_HOST* host);
 
@@ -68,6 +68,9 @@ int32_t           host_peek_key(GAME_HOST* host);
 int32_t           host_read_key(GAME_HOST* host);
 void              host_sleep(GAME_HOST* host, int32_t milliseconds);
 int32_t           host_closed(GAME_HOST* host);
+
+/* Tells the player why the game has to close, in a message box; the caller then ends the game */
+void              show_fatal_error(const char* message);
 
 #ifdef __cplusplus
   }
