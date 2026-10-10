@@ -258,7 +258,7 @@ typedef struct {
   int          d1,d2,d3,d4,d5;
   } rcs_Event;
 
-/* Shows a fixed-size pixmap in a window at the largest whole-number scale that fits, centred on black */
+/* Shows a fixed-size pixmap scaled to fill a window at its own aspect ratio, centred on black */
 typedef struct _rcs_Viewport* rcs_Viewport;
 
 /* ******************************* */

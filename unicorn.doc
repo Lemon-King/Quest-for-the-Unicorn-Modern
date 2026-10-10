@@ -435,11 +435,13 @@
      Window size
      ===========
          The graphics versions can be resized or maximized.  The game
-         screen grows in whole steps (2x, 3x, ...) so every pixel stays
-         sharp, and it is centred with black borders.  The window cannot
+         screen grows to fill the window while keeping its shape, and it
+         is centred with black borders.  At whole steps (2x, 3x, ...)
+         every pixel stays sharp; in between, only the edges of pixels
+         are blended so they all stay the same size.  The window cannot
          be made smaller than the game screen set by -w and -h.  On
-         Windows the window opens at the step that best matches the
-         display scaling.
+         Windows the window opens at the whole step that best matches
+         the display scaling.
 
      F-key usage
      ===========

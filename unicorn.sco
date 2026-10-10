@@ -7,9 +7,9 @@ HighScores {
     Mode N
     }
   Class 1 {
-    Name 
-    Title 
-    Exp 0.000000
+    Name asedas
+    Title Gallant
+    Exp 100.000000
     Mode N
     }
   Class 2 {
@@ -163,6 +163,15 @@ HallOfFame {
   }
 FinalScores {
   Entry 0 {
+    Name asedas
+    Exp 100.000000
+    Level 1
+    Cause D
+    Class 2
+    Time 97
+    Mode N
+    }
+  Entry 1 {
     Name asd
     Exp 11.000000
     Level 1

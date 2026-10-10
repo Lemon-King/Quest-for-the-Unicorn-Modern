@@ -61,21 +61,44 @@ void rcs_buildColorMapping(rcs_Display* display) {
 /* ******************** */
 /* ***** Viewport ***** */
 /* ******************** */
+/* An area of pixels; right and bottom are exclusive */
+typedef struct {
+  Int32 left;
+  Int32 top;
+  Int32 right;
+  Int32 bottom;
+  } _rcs_Rect;
+
+/* One axis of the buffer: its size in buffer pixels and in window pixels */
+typedef struct {
+  Int32 size;
+  Int32 scaled;
+  } _rcs_Axis;
+
+/* Where a window pixel takes its colour along one axis: the buffer pixel it starts in and,
+   out of 256, how much of it lies over the next one */
+typedef struct {
+  Int32 source;
+  Int32 blend;
+  } _rcs_Sample;
+
+/* The 0x00RRGGBB pixels of an area, row by row */
+typedef struct {
+  _rcs_Rect area;
+  UInt32*   pixels;
+  } _rcs_Image;
+
 struct _rcs_Viewport {
   rcs_Display* display;
   rcs_Window   window;
   rcs_Pixmap   buffer;
-  Int32        width;
-  Int32        height;
+  _rcs_Axis    columns;
+  _rcs_Axis    rows;
   Int32        windowWidth;
   Int32        windowHeight;
-  Int32        scale;
   Int32        left;
   Int32        top;
-  Int32        dirtyLeft;
-  Int32        dirtyTop;
-  Int32        dirtyRight;
-  Int32        dirtyBottom;
+  _rcs_Rect    dirty;
 #ifdef X
   GC           gc;
 #endif
@@ -90,25 +113,69 @@ static XContext  _rcs_viewports;
 typedef HDC _rcs_Surface;
 #endif
 
-static void _rcs_clearDirty(rcs_Viewport v) {
-  v->dirtyLeft = 0;
-  v->dirtyTop = 0;
-  v->dirtyRight = 0;
-  v->dirtyBottom = 0;
+static Int32 _rcs_rectWidth(_rcs_Rect area) {
+  return area.right - area.left;
   }
 
+static Int32 _rcs_rectHeight(_rcs_Rect area) {
+  return area.bottom - area.top;
+  }
+
+static void _rcs_clearDirty(rcs_Viewport v) {
+  v->dirty.left = 0;
+  v->dirty.top = 0;
+  v->dirty.right = 0;
+  v->dirty.bottom = 0;
+  }
+
+/* Window pixel i covers buffer span i*size/scaled .. (i+1)*size/scaled: at most two buffer pixels */
+static _rcs_Sample _rcs_sampleAxis(_rcs_Axis axis,Int32 i) {
+  _rcs_Sample sample;
+  Int32       overlap;
+  sample.source = i * axis.size / axis.scaled;
+  overlap = (i + 1) * axis.size - (sample.source + 1) * axis.scaled;
+  sample.blend = (overlap > 0) ? overlap * 256 / axis.size : 0;
+  return sample;
+  }
+
+/* The window pixels that show any part of buffer pixels from .. to-1 */
+static void _rcs_axisShown(_rcs_Axis axis,Int32 from,Int32 to,Int32* first,Int32* last) {
+  *first = from * axis.scaled / axis.size;
+  *last = (to * axis.scaled + axis.size - 1) / axis.size;
+  }
+
+/* The buffer pixels that window pixels from .. to-1 take their colour from */
+static void _rcs_axisSampled(_rcs_Axis axis,Int32 from,Int32 to,Int32* first,Int32* last) {
+  _rcs_Sample end;
+  end = _rcs_sampleAxis(axis,to - 1);
+  *first = _rcs_sampleAxis(axis,from).source;
+  *last = end.source + ((end.blend > 0) ? 2 : 1);
+  }
+
+/* Fits the buffer to the window at its own aspect ratio, never below 1:1, centred. */
 static void _rcs_layoutViewport(rcs_Viewport v,Int32 windowWidth,Int32 windowHeight) {
-  Int32 scaleX;
-  Int32 scaleY;
-  scaleX = windowWidth / v->width;
-  scaleY = windowHeight / v->height;
-  v->scale = (scaleX < scaleY) ? scaleX : scaleY;
-  if (v->scale < 1) v->scale = 1;
+  Int32 width;
+  Int32 height;
+  width = v->columns.size;
+  height = v->rows.size;
+
+  if (windowWidth < width || windowHeight < height) {
+    v->columns.scaled = width;
+    v->rows.scaled = height;
+    }
+  else if (windowWidth * height <= windowHeight * width) {
+    v->columns.scaled = windowWidth;
+    v->rows.scaled = windowWidth * height / width;
+    }
+  else {
+    v->columns.scaled = windowHeight * width / height;
+    v->rows.scaled = windowHeight;
+    }
 
   v->windowWidth = windowWidth;
   v->windowHeight = windowHeight;
-  v->left = (windowWidth - v->width * v->scale) / 2;
-  v->top = (windowHeight - v->height * v->scale) / 2;
+  v->left = (windowWidth - v->columns.scaled) / 2;
+  v->top = (windowHeight - v->rows.scaled) / 2;
   }
 
 static void _rcs_fillBlack(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
@@ -129,88 +196,262 @@ static void _rcs_fillBlack(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,I
 #endif
   }
 
-#ifdef X
-/* Core X cannot scale a copy, so the area is enlarged on the client by repeating pixels. */
-static void _rcs_stretchToWindow(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
-  XImage*       source;
-  XImage*       scaled;
-  char*         row;
-  unsigned long pixel;
-  Int32         scale;
-  Int32         sx,sy,i;
-  scale = v->scale;
-  source = XGetImage(v->display,v->buffer,x,y,w,h,AllPlanes,ZPixmap);
-  if (source == NULL) return;
+static UInt32* _rcs_allocPixels(_rcs_Rect area) {
+  return (UInt32*)malloc(_rcs_rectWidth(area) * _rcs_rectHeight(area) * sizeof(UInt32));
+  }
 
-  scaled = XCreateImage(v->display,DefaultVisual(v->display,DefaultScreen(v->display)),
-                        source->depth,ZPixmap,0,NULL,w * scale,h * scale,32,0);
-  if (scaled == NULL) {
-    XDestroyImage(source);
-    return;
+/* Mixes weight/256 of second into first, one channel at a time */
+static UInt32 _rcs_blendPixel(UInt32 first,UInt32 second,Int32 weight) {
+  UInt32 redBlue;
+  UInt32 green;
+  redBlue = ((first & 0xff00ff) * (256 - weight) + (second & 0xff00ff) * weight) >> 8;
+  green = ((first & 0x00ff00) * (256 - weight) + (second & 0x00ff00) * weight) >> 8;
+  return (redBlue & 0xff00ff) | (green & 0x00ff00);
+  }
+
+static UInt32 _rcs_samplePixel(UInt32* row,_rcs_Sample column) {
+  if (column.blend == 0) return row[column.source];
+  return _rcs_blendPixel(row[column.source],row[column.source + 1],column.blend);
+  }
+
+/* Each window pixel averages the buffer pixels it covers, so whole-number scales stay sharp and
+   other scales soften only the edges between pixels. */
+static Int32 _rcs_scaleImage(rcs_Viewport v,_rcs_Image* source,_rcs_Image* scaled) {
+  _rcs_Sample* columns;
+  _rcs_Sample  row;
+  UInt32*      upper;
+  UInt32*      lower;
+  UInt32*      out;
+  Int32        sourceWidth;
+  Int32        width;
+  Int32        x,y;
+  sourceWidth = _rcs_rectWidth(source->area);
+  width = _rcs_rectWidth(scaled->area);
+  columns = (_rcs_Sample*)malloc(width * sizeof(_rcs_Sample));
+  if (columns == NULL) return 0;
+
+  for (x=0; x<width; x++) {
+    columns[x] = _rcs_sampleAxis(v->columns,scaled->area.left + x);
+    columns[x].source -= source->area.left;
     }
 
-  scaled->data = (char*)malloc(scaled->bytes_per_line * scaled->height);
-  if (scaled->data == NULL) {
-    XDestroyImage(scaled);
-    XDestroyImage(source);
-    return;
-    }
+  out = scaled->pixels;
+  for (y=scaled->area.top; y<scaled->area.bottom; y++) {
+    row = _rcs_sampleAxis(v->rows,y);
+    upper = source->pixels + (row.source - source->area.top) * sourceWidth;
+    lower = upper + sourceWidth;
 
-  for (sy=0; sy<h; sy++) {
-    for (sx=0; sx<w; sx++) {
-      pixel = XGetPixel(source,sx,sy);
-      for (i=0; i<scale; i++) XPutPixel(scaled,sx * scale + i,sy * scale,pixel);
+    for (x=0; x<width; x++) {
+      if (row.blend == 0)
+        *out++ = _rcs_samplePixel(upper,columns[x]);
+      else
+        *out++ = _rcs_blendPixel(_rcs_samplePixel(upper,columns[x]),_rcs_samplePixel(lower,columns[x]),
+                                 row.blend);
       }
-    row = scaled->data + sy * scale * scaled->bytes_per_line;
-    for (i=1; i<scale; i++) memcpy(row + i * scaled->bytes_per_line,row,scaled->bytes_per_line);
     }
 
-  XPutImage(v->display,surface,v->gc,scaled,0,0,v->left + x * scale,v->top + y * scale,
-            w * scale,h * scale);
-  XDestroyImage(scaled);
-  XDestroyImage(source);
+  free(columns);
+  return 1;
+  }
+
+#ifdef X
+/* Inverse of rcs_RGBToPixel() for one channel, scaled to 8 bits. */
+static unsigned char _rcs_pixelChannel(unsigned long pixel,Int32 mask,Int32 shift) {
+  unsigned long value;
+  if (shift < 0)
+    value = (pixel >> -shift) & mask;
+  else
+    value = (pixel << shift) & mask;
+  return value >> 8;
+  }
+
+static UInt32 _rcs_RGBFromPixel(unsigned long pixel) {
+  return ((UInt32)_rcs_pixelChannel(pixel,red_mask,red_shift) << 16) |
+         ((UInt32)_rcs_pixelChannel(pixel,green_mask,green_shift) << 8) |
+         _rcs_pixelChannel(pixel,blue_mask,blue_shift);
+  }
+
+/* rcs_RGBToPixel() takes 16-bit channels */
+static unsigned long _rcs_pixelFromRGB(UInt32 rgb) {
+  return rcs_RGBToPixel(((rgb >> 16) & 0xff) * 257,((rgb >> 8) & 0xff) * 257,(rgb & 0xff) * 257);
   }
 #endif
 
-/* Copies a buffer area to its scaled place in the window. */
-static void _rcs_copyToWindow(rcs_Viewport v,_rcs_Surface surface,Int32 x,Int32 y,Int32 w,Int32 h) {
-#ifdef X
-  if (v->scale == 1)
-    XCopyArea(v->display,v->buffer,surface,v->gc,x,y,w,h,v->left + x,v->top + y);
-  else
-    _rcs_stretchToWindow(v,surface,x,y,w,h);
+#ifdef WIN32
+/* A top-down 32-bit DIB, whose pixels read as 0x00RRGGBB */
+static void _rcs_imageInfo(BITMAPINFO* info,_rcs_Rect area) {
+  memset(info,0,sizeof(BITMAPINFO));
+  info->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  info->bmiHeader.biWidth = _rcs_rectWidth(area);
+  info->bmiHeader.biHeight = -_rcs_rectHeight(area);
+  info->bmiHeader.biPlanes = 1;
+  info->bmiHeader.biBitCount = 32;
+  info->bmiHeader.biCompression = BI_RGB;
+  }
 #endif
+
+/* Reads the image's area of the buffer into its pixels. */
+static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
+  Int32      width;
+  Int32      height;
+#ifdef X
+  XImage*    source;
+  UInt32*    out;
+  Int32      x,y;
+#endif
+#ifdef WIN32
+  BITMAPINFO info;
+  HBITMAP    section;
+  void*      bits;
+  HDC        source;
+  HDC        target;
+  HGDIOBJ    previousSource;
+  HGDIOBJ    previousTarget;
+#endif
+  width = _rcs_rectWidth(image->area);
+  height = _rcs_rectHeight(image->area);
+
+#ifdef X
+  source = XGetImage(v->display,v->buffer,image->area.left,image->area.top,width,height,AllPlanes,ZPixmap);
+  if (source == NULL) return 0;
+
+  out = image->pixels;
+  for (y=0; y<height; y++)
+    for (x=0; x<width; x++) *out++ = _rcs_RGBFromPixel(XGetPixel(source,x,y));
+
+  XDestroyImage(source);
+#endif
+#ifdef WIN32
+  /* GetDIBits only reads whole rows, so the area is first copied into a DIB section */
+  _rcs_imageInfo(&info,image->area);
+  section = CreateDIBSection(NULL,&info,DIB_RGB_COLORS,&bits,NULL,0);
+  if (section == NULL) return 0;
+
+  source = CreateCompatibleDC(NULL);
+  target = CreateCompatibleDC(NULL);
+  previousSource = SelectObject(source,v->buffer);
+  previousTarget = SelectObject(target,section);
+  BitBlt(target,0,0,width,height,source,image->area.left,image->area.top,SRCCOPY);
+  GdiFlush();
+  memcpy(image->pixels,bits,width * height * sizeof(UInt32));
+
+  SelectObject(target,previousTarget);
+  SelectObject(source,previousSource);
+  DeleteDC(target);
+  DeleteDC(source);
+  DeleteObject(section);
+#endif
+  return 1;
+  }
+
+/* Draws the image at its place in the window. */
+static void _rcs_writeWindow(rcs_Viewport v,_rcs_Surface surface,_rcs_Image* image) {
+  Int32      width;
+  Int32      height;
+#ifdef X
+  XImage*    output;
+  UInt32*    in;
+  Int32      x,y;
+#endif
+#ifdef WIN32
+  BITMAPINFO info;
+#endif
+  width = _rcs_rectWidth(image->area);
+  height = _rcs_rectHeight(image->area);
+
+#ifdef X
+  output = XCreateImage(v->display,DefaultVisual(v->display,DefaultScreen(v->display)),
+                        DefaultDepth(v->display,DefaultScreen(v->display)),ZPixmap,0,NULL,width,height,32,0);
+  if (output == NULL) return;
+
+  output->data = (char*)malloc(output->bytes_per_line * height);
+  if (output->data == NULL) {
+    XDestroyImage(output);
+    return;
+    }
+
+  in = image->pixels;
+  for (y=0; y<height; y++)
+    for (x=0; x<width; x++) XPutPixel(output,x,y,_rcs_pixelFromRGB(*in++));
+
+  XPutImage(v->display,surface,v->gc,output,0,0,v->left + image->area.left,v->top + image->area.top,
+            width,height);
+  XDestroyImage(output);
+#endif
+#ifdef WIN32
+  _rcs_imageInfo(&info,image->area);
+  SetDIBitsToDevice(surface,v->left + image->area.left,v->top + image->area.top,width,height,
+                    0,0,0,height,image->pixels,&info,DIB_RGB_COLORS);
+#endif
+  }
+
+/* At 1:1 the buffer is copied as it is. */
+static void _rcs_copyUnscaled(rcs_Viewport v,_rcs_Surface surface,_rcs_Rect area) {
 #ifdef WIN32
   HDC     source;
   HGDIOBJ previous;
+#endif
+#ifdef X
+  XCopyArea(v->display,v->buffer,surface,v->gc,area.left,area.top,_rcs_rectWidth(area),_rcs_rectHeight(area),
+            v->left + area.left,v->top + area.top);
+#endif
+#ifdef WIN32
   source = CreateCompatibleDC(surface);
   previous = SelectObject(source,v->buffer);
-
-  /* COLORONCOLOR repeats whole pixels, so a whole-number scale stays sharp */
-  SetStretchBltMode(surface,COLORONCOLOR);
-  StretchBlt(surface,v->left + x * v->scale,v->top + y * v->scale,w * v->scale,h * v->scale,
-             source,x,y,w,h,SRCCOPY);
-
+  BitBlt(surface,v->left + area.left,v->top + area.top,_rcs_rectWidth(area),_rcs_rectHeight(area),
+         source,area.left,area.top,SRCCOPY);
   SelectObject(source,previous);
   DeleteDC(source);
 #endif
   }
 
+/* Redraws the window pixels that show a buffer area, from the buffer pixels under them. */
+static void _rcs_copyScaled(rcs_Viewport v,_rcs_Surface surface,_rcs_Rect area) {
+  _rcs_Image source;
+  _rcs_Image scaled;
+  _rcs_axisShown(v->columns,area.left,area.right,&scaled.area.left,&scaled.area.right);
+  _rcs_axisShown(v->rows,area.top,area.bottom,&scaled.area.top,&scaled.area.bottom);
+  _rcs_axisSampled(v->columns,scaled.area.left,scaled.area.right,&source.area.left,&source.area.right);
+  _rcs_axisSampled(v->rows,scaled.area.top,scaled.area.bottom,&source.area.top,&source.area.bottom);
+
+  source.pixels = _rcs_allocPixels(source.area);
+  scaled.pixels = _rcs_allocPixels(scaled.area);
+  if (source.pixels != NULL && scaled.pixels != NULL &&
+      _rcs_readBuffer(v,&source) && _rcs_scaleImage(v,&source,&scaled))
+    _rcs_writeWindow(v,surface,&scaled);
+
+  free(source.pixels);
+  free(scaled.pixels);
+  }
+
+/* Copies a buffer area to its place in the window. */
+static void _rcs_copyToWindow(rcs_Viewport v,_rcs_Surface surface,_rcs_Rect area) {
+  if (v->columns.scaled == v->columns.size && v->rows.scaled == v->rows.size)
+    _rcs_copyUnscaled(v,surface,area);
+  else
+    _rcs_copyScaled(v,surface,area);
+  }
+
 /* Repaints the whole window: the scaled buffer framed by black borders. */
 static void _rcs_paintViewport(rcs_Viewport v,_rcs_Surface surface) {
-  Int32 right;
-  Int32 bottom;
-  Int32 height;
-  right = v->left + v->width * v->scale;
-  bottom = v->top + v->height * v->scale;
-  height = v->height * v->scale;
+  _rcs_Rect whole;
+  Int32     right;
+  Int32     bottom;
+  Int32     height;
+  right = v->left + v->columns.scaled;
+  bottom = v->top + v->rows.scaled;
+  height = v->rows.scaled;
 
   _rcs_fillBlack(v,surface,0,0,v->windowWidth,v->top);
   _rcs_fillBlack(v,surface,0,bottom,v->windowWidth,v->windowHeight - bottom);
   _rcs_fillBlack(v,surface,0,v->top,v->left,height);
   _rcs_fillBlack(v,surface,right,v->top,v->windowWidth - right,height);
 
-  _rcs_copyToWindow(v,surface,0,0,v->width,v->height);
+  whole.left = 0;
+  whole.top = 0;
+  whole.right = v->columns.size;
+  whole.bottom = v->rows.size;
+  _rcs_copyToWindow(v,surface,whole);
   _rcs_clearDirty(v);
   }
 
@@ -262,7 +503,7 @@ static Int32 _rcs_dpiScale(rcs_Viewport v) {
   scale = (GetDpiForWindow(v->window) + USER_DEFAULT_SCREEN_DPI / 2) / USER_DEFAULT_SCREEN_DPI;
 
   while (scale > 1) {
-    _rcs_frameSize(v->window,v->width * scale,v->height * scale,&outerWidth,&outerHeight);
+    _rcs_frameSize(v->window,v->columns.size * scale,v->rows.size * scale,&outerWidth,&outerHeight);
     if (outerWidth <= monitor.rcWork.right - monitor.rcWork.left &&
         outerHeight <= monitor.rcWork.bottom - monitor.rcWork.top) break;
     scale--;
@@ -273,7 +514,7 @@ static Int32 _rcs_dpiScale(rcs_Viewport v) {
 /* Keeps the client area from shrinking below the buffer. */
 static void _rcs_limitWindowSize(rcs_Viewport v,MINMAXINFO* limits) {
   Int32 outerWidth,outerHeight;
-  _rcs_frameSize(v->window,v->width,v->height,&outerWidth,&outerHeight);
+  _rcs_frameSize(v->window,v->columns.size,v->rows.size,&outerWidth,&outerHeight);
   limits->ptMinTrackSize.x = outerWidth;
   limits->ptMinTrackSize.y = outerHeight;
   }
@@ -296,8 +537,10 @@ rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,
   v->display = d;
   v->window = win;
   v->buffer = buffer;
-  v->width = width;
-  v->height = height;
+  v->columns.size = width;
+  v->columns.scaled = width;
+  v->rows.size = height;
+  v->rows.scaled = height;
   _rcs_clearDirty(v);
 
 #ifdef X
@@ -336,41 +579,37 @@ void rcs_invalidateViewport(rcs_Viewport v,Int32 x,Int32 y,Int32 w,Int32 h) {
   bottom = y + h;
   if (x < 0) x = 0;
   if (y < 0) y = 0;
-  if (right > v->width) right = v->width;
-  if (bottom > v->height) bottom = v->height;
+  if (right > v->columns.size) right = v->columns.size;
+  if (bottom > v->rows.size) bottom = v->rows.size;
   if (right <= x || bottom <= y) return;
 
-  if (v->dirtyRight <= v->dirtyLeft) {
-    v->dirtyLeft = x;
-    v->dirtyTop = y;
-    v->dirtyRight = right;
-    v->dirtyBottom = bottom;
+  if (v->dirty.right <= v->dirty.left) {
+    v->dirty.left = x;
+    v->dirty.top = y;
+    v->dirty.right = right;
+    v->dirty.bottom = bottom;
     return;
     }
 
-  if (x < v->dirtyLeft) v->dirtyLeft = x;
-  if (y < v->dirtyTop) v->dirtyTop = y;
-  if (right > v->dirtyRight) v->dirtyRight = right;
-  if (bottom > v->dirtyBottom) v->dirtyBottom = bottom;
+  if (x < v->dirty.left) v->dirty.left = x;
+  if (y < v->dirty.top) v->dirty.top = y;
+  if (right > v->dirty.right) v->dirty.right = right;
+  if (bottom > v->dirty.bottom) v->dirty.bottom = bottom;
   }
 
 void rcs_presentViewport(rcs_Viewport v) {
-  Int32 w;
-  Int32 h;
 #ifdef WIN32
-  HDC   dc;
+  HDC dc;
 #endif
-  if (v->dirtyRight <= v->dirtyLeft) return;
-  w = v->dirtyRight - v->dirtyLeft;
-  h = v->dirtyBottom - v->dirtyTop;
+  if (v->dirty.right <= v->dirty.left) return;
 
 #ifdef X
-  _rcs_copyToWindow(v,v->window,v->dirtyLeft,v->dirtyTop,w,h);
+  _rcs_copyToWindow(v,v->window,v->dirty);
   XFlush(v->display);
 #endif
 #ifdef WIN32
   dc = GetDC(v->window);
-  _rcs_copyToWindow(v,dc,v->dirtyLeft,v->dirtyTop,w,h);
+  _rcs_copyToWindow(v,dc,v->dirty);
   ReleaseDC(v->window,dc);
 #endif
   _rcs_clearDirty(v);
@@ -1321,18 +1560,6 @@ rcs_Window rcs_rootWindow(rcs_Display* d) {
 /* *********************** */
 /* ***** Save Pixmap ***** */
 /* *********************** */
-#ifdef X
-/* Inverse of rcs_RGBToPixel() for one channel, scaled to 8 bits. */
-static unsigned char _rcs_pixelChannel(unsigned long pixel,Int32 mask,Int32 shift) {
-  unsigned long value;
-  if (shift < 0)
-    value = (pixel >> -shift) & mask;
-  else
-    value = (pixel << shift) & mask;
-  return value >> 8;
-  }
-#endif
-
 /* Fills pixels with bottom-up rows of 24-bit BGR, the pixel layout of a BMP file. */
 static Int32 _rcs_readPixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,
                              UInt32 rowSize,unsigned char* pixels) {
