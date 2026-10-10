@@ -41,6 +41,7 @@ Int32 process_option(char* pChar) {
     if (strcasecmp(option,"-fcd") == 0) party_combat_mode = 'F';
     if (strcasecmp(option,"-h") == 0) heroicMode = 2;
     if (strcasecmp(option,"-m") == 0) no_color = 'Y';
+    if (strcasecmp(option,"-mu") == 0) music = 'Y';
     if (strcasecmp(option,"-n") == 0) heroicMode = 0;
     if (strcasecmp(option,"-nabd") == 0) auto_open_doors = 'N';
     if (strcasecmp(option,"-nabw") == 0) auto_bump_walls = 'N';
@@ -51,6 +52,7 @@ Int32 process_option(char* pChar) {
     if (strcasecmp(option,"-nasw") == 0) auto_bump_walls = 'N';
     if (strcasecmp(option,"-nat") == 0) auto_target = 'N';
     if (strcasecmp(option,"-nds") == 0) dungeon_scaling = 'N';
+    if (strcasecmp(option,"-nmu") == 0) music = 'N';
     if (strcasecmp(option,"-nocrc") == 0) skipcheck = 'Y';
     if (strcasecmp(option,"-rcd") == 0) party_combat_mode = 'R';
     if (strcasecmp(option,"-s") == 0) showStats = -1;
@@ -103,6 +105,7 @@ Int32 process_option(char* pChar) {
     else if (strcasecmp(option,"FullPartyCombat"   ) == 0) party_combat_mode = 'F';
     else if (strcasecmp(option,"Heroic"            ) == 0) heroicMode = 2;
     else if (strcasecmp(option,"Monochrome"        ) == 0) no_color = 'Y';
+    else if (strcasecmp(option,"Music"             ) == 0) music = 'Y';
     else if (strcasecmp(option,"NoArenaCombat"     ) == 0) no_arena = 'Y';
     else if (strcasecmp(option,"NoAutoOpenDoors"   ) == 0) auto_open_doors = 'N';
     else if (strcasecmp(option,"NoAutoPickupGold"  ) == 0) auto_pickup_gold = 'N';
@@ -111,6 +114,7 @@ Int32 process_option(char* pChar) {
     else if (strcasecmp(option,"NoAutoTarget"      ) == 0) auto_target = 'N';
     else if (strcasecmp(option,"NoDungeonScaling"  ) == 0) dungeon_scaling = 'N';
     else if (strcasecmp(option,"NoFullPartyCombat" ) == 0) party_combat_mode = 'R';
+    else if (strcasecmp(option,"NoMusic"           ) == 0) music = 'N';
     else if (strcasecmp(option,"Normal"            ) == 0) heroicMode = 0;
     else if (strcasecmp(option,"NoCrc"             ) == 0) skipcheck = 'Y';
     else if (strcasecmp(option,"ShowKeys"          ) == 0) show_keys = 'Y';

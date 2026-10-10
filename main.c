@@ -164,6 +164,7 @@ Int32 main2(Int32 argc,char** argv) {
   loadgame = 0;
   bottom = 5;
   no_color = 'N';
+  music = 'Y';
   heroicMode = 0;
   skipcheck = 'N';
   in_upland = 'N';
@@ -297,6 +298,7 @@ Int32 main2(Int32 argc,char** argv) {
     if (fkey_mode == 'W') printf("  Fkeys: Weapons\n");
     if (fkey_mode == 'G') printf("  Fkeys: Gear\n");
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
+    printf("  Music: %c\n", music);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);
@@ -315,6 +317,7 @@ Int32 main2(Int32 argc,char** argv) {
 
   /* Death and giving up return to the title screen; saving ends the program. */
   do {
+    play_music(MUSIC_INTRO);
     title();
     show_legends();
 /*
@@ -325,6 +328,7 @@ Int32 main2(Int32 argc,char** argv) {
     play_game();
     end_game();
     } while (exit_flag != 'S');
+  stop_music();
 
 #ifdef ASCII
   if (no_color != 'Y') printf("\e[0;30m");

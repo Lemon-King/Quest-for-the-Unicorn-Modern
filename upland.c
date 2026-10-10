@@ -663,6 +663,7 @@ void up_land() {
 /* ******************************************* */
 /* ***** Actual beginning of upland code ***** */
 /* ******************************************* */
+  play_music(MUSIC_UPLAND);
   while (keypressed()) key=inkey();
   in_upland = 'Y';
   player.d_level = 0;

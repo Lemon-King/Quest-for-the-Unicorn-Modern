@@ -787,6 +787,7 @@ void cave() {
   /* **************************************** */
   /* ***** Actual start of dungeon code ***** */
   /* **************************************** */
+  play_music((player.in_city == 'Y') ? MUSIC_TOWN : MUSIC_DUNGEON);
   currentFloor = 7;
   dungeon_floor = currentFloor;
   dungeon_wall = 21;

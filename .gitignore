@@ -6,6 +6,7 @@ AGENTS.MD
 CLAUDE.MD
 .GUIDANCE.MD
 
+assets/
 dos/
 bin/
 *.o

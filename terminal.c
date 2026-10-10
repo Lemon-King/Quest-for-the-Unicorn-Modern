@@ -452,6 +452,14 @@ static Int32 is_modifier(Int32 key) {
   }
 #endif
 
+#ifndef ASCII
+/* The window is closing or gone; without this the process lingers, music and all */
+static void window_closed() {
+  stop_music();
+  exit(0);
+  }
+#endif
+
 Int32 keypressed() {
   if (strlen(currentMacro) > 0) return 1;
 #ifdef ASCII
@@ -477,6 +485,7 @@ Int32 keypressed() {
 
   rcs_presentViewport(viewport);
   event = rcs_pollEvent(display);
+  if (event.type == EVENT_CLOSE || event.type == EVENT_QUIT) window_closed();
   if (event.type == EVENT_KEY_PRESS && !is_modifier(event.d1)) {
     if (event.d1 == KY_SCREENSHOT) {
       screenshot();
@@ -752,6 +761,7 @@ static Int32 next_key() {
     }
   while (flag == ' ') {
     event = rcs_getEvent(display);
+    if (event.type == EVENT_CLOSE || event.type == EVENT_QUIT) window_closed();
     if (event.type == EVENT_KEY_PRESS) {
       if (!is_modifier(event.d1))
         return keytrans(event.d1);

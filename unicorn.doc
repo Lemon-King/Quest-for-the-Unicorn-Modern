@@ -159,6 +159,8 @@
          -h=height - Height of game screen (Graphics version only)
          -m        - Monochrome mode (Text version only)
          -clr      - Color mode (Text version only)
+         -mu       - Play background music (Windows graphics version)
+         -nmu      - Turn off background music
          -s        - Show stats/settings and exit
 
      Long options
@@ -178,6 +180,7 @@
          FullPartyCombat      -fcd
          Heroic               -h
          Monochrome           -m
+         Music                -mu
          NoArenaComabe        -nac
          NoAutoOpenDoors      -naod
          NoAutoPickupgold     -napg
@@ -186,6 +189,7 @@
          NoAutoTarget         -nat
          NoDungeonScaling     -nds
          NoFullPartyCombat    -rcd
+         NoMusic              -nmu
          Normal               -n
          ShowStats            -s
          DelayHit             -dh
@@ -442,6 +446,16 @@
          be made smaller than the game screen set by -w and -h.  On
          Windows the window opens at the whole step that best matches
          the display scaling.
+
+     Music
+     =====
+         The Windows graphics version plays the background music of
+         the MS-DOS release.  The intro theme plays from the title
+         screen until play begins.  After that the upland theme plays
+         in the wilderness, the town theme in towns and the dungeon
+         theme in dungeons, each repeating until you move on.  The
+         songs are MIDI files in the 'music' folder beside the game.
+         Music is on by default; use NoMusic or -nmu to turn it off.
 
      F-key usage
      ===========

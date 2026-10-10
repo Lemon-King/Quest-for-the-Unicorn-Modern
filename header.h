@@ -80,6 +80,12 @@ int     NO_OF_MONSTERS;
 #define MAX_FINAL_SCORES  10000
 #define HEAL_TIME           500
 
+/* Background music, as in the DOS release: intro from the title on, then one song per mode */
+#define MUSIC_INTRO           0
+#define MUSIC_UPLAND          1
+#define MUSIC_DUNGEON         2
+#define MUSIC_TOWN            3
+
 #define OF_FOR_SALE  (1 << 0)
 #define OF_NO_GACHA  (1 << 1)
 #define OF_UNIQUE    (1 << 2)
@@ -1024,6 +1030,7 @@ LINK char               debugMSG[256];
 LINK Int32                hall_position;
 LINK Int32                death_position;
 LINK char               no_color;
+LINK char               music;
 LINK Int32                target_x;
 LINK Int32                target_y;
 LINK double             dir_x;
@@ -1206,6 +1213,10 @@ extern void open_display();
 extern void close_display();
 extern void plot(Int32 x,Int32 y,Int32 clr);
 extern void flush();
+
+/* music.c */
+extern void play_music(Int32 song);
+extern void stop_music();
 
 /* uchar.c */
 extern char* fix_name(STRING32 name);

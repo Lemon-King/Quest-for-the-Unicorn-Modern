@@ -38,7 +38,7 @@ LIBS = -lX11
 # Defs for compiling with MINGW for native Windows binary graphics
 #DEFS = -DUNIX -O3 -Wall -DWIN32 -DMINGW -DHC 
 #LIBDIR = 
-#LIBS = -s -lgdi32 -lcomctl32 -Wl,--subsystem,windows
+#LIBS = -s -lgdi32 -lcomctl32 -lwinmm -Wl,--subsystem,windows
 
 #HEADERS = header.h maps.h objects.h world.h gen.h lore.h monsters.h recipe.h spells.h races.h classes.h trophies.h Makefile
 HEADERS = header.h maps.h objects.h world.h gen.h lore.h monsters.h recipe.h spells.h races.h classes.h trophies.h terminal.h
@@ -204,6 +204,7 @@ OBJS = \
 	movesnake.o \
 	movesummoned.o \
 	msg.o \
+	music.o \
 	mutable.o \
 	mutalegend.o \
 	mval.o \
@@ -324,14 +325,21 @@ MAKEDOC = $(BINDIR)/makedoc$(EXE)
 
 # The game reads these from its working directory, so they sit beside it
 RUNTIME = $(BINDIR)/unicorn.cfg $(BINDIR)/unicorn.doc
+MUSIC = $(addprefix $(BINDIR)/music/,intro.mid upland.mid dungeon.mid town.mid)
 
-all: $(GAME) $(RUNTIME)
+all: $(GAME) $(RUNTIME) $(MUSIC)
 
 $(GAME): $(addprefix $(OBJDIR)/,$(OBJS))
 	$(CC) $(LFLAGS) $(DEFS) $(LIBDIR) -o $@ $^ $(LIBS)
 
 $(RUNTIME): $(BINDIR)/%: % | $(OBJDIR)
 	cp $< $@
+
+$(MUSIC): $(BINDIR)/music/%: music/% | $(BINDIR)/music
+	cp $< $@
+
+$(BINDIR)/music:
+	mkdir -p $@
 
 maps.h: $(MAPCNVT) map11.map map12.map map13.map map14.map map21.map map22.map map23.map map24.map map31.map map32.map map33.map map34.map eshter.map generic.map radon.map marduk.map nichor.map village.map
 	$(MAPCNVT) > maps.h
