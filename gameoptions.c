@@ -169,8 +169,8 @@ static void draw_screen(char* title, char rules_editable) {
   gotoxy(41 - strlen(title) / 2, 1); txt_write(title);
 
   textcolor(11);
-  gotoxy(3, RULES_LINE); txt_write("Character rules (fixed once the character is created)");
-  gotoxy(3, PREFS_LINE); txt_write("Preferences (press O during play to change them)");
+  gotoxy(3, RULES_LINE); txt_write("Game Rules");
+  gotoxy(3, PREFS_LINE); txt_write("Preferences");
   for (i=0; i<NUM_OPTIONS; i++) draw_option(i, 'N', rules_editable);
 
   textcolor(3);
