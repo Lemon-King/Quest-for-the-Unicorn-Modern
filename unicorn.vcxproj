@@ -1,0 +1,365 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <ProjectGuid>{ACA79706-11B8-4A87-9C73-C6EFF0C80A23}</ProjectGuid>
+    <RootNamespace>unicorn</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
+    <WholeProgramOptimization Condition="'$(Configuration)'=='Release'">true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="build\Unicorn.props" />
+  </ImportGroup>
+
+  <PropertyGroup>
+    <TargetName>unicorn</TargetName>
+    <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>8388608</StackReserveSize>
+      <AdditionalDependencies>gdi32.lib;user32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClCompile Include="activate.c" />
+    <ClCompile Include="addskill.c" />
+    <ClCompile Include="adjustabilities.c" />
+    <ClCompile Include="adjustmap.c" />
+    <ClCompile Include="advancement.c" />
+    <ClCompile Include="advancestat.c" />
+    <ClCompile Include="aoe.c" />
+    <ClCompile Include="area9.c" />
+    <ClCompile Include="area25.c" />
+    <ClCompile Include="area49.c" />
+    <ClCompile Include="arena.c" />
+    <ClCompile Include="arenaheal.c" />
+    <ClCompile Include="arenamoveenemy.c" />
+    <ClCompile Include="arenamoveparty.c" />
+    <ClCompile Include="arenamovesnake.c" />
+    <ClCompile Include="autodetect.c" />
+    <ClCompile Include="bank.c" />
+    <ClCompile Include="blind.c" />
+    <ClCompile Include="blindtrap.c" />
+    <ClCompile Include="builddungeon.c" />
+    <ClCompile Include="buyhouse.c" />
+    <ClCompile Include="buyprice.c" />
+    <ClCompile Include="cansee.c" />
+    <ClCompile Include="castspell.c" />
+    <ClCompile Include="cast_spell.c" />
+    <ClCompile Include="cavalier.c" />
+    <ClCompile Include="cave.c" />
+    <ClCompile Include="charattributes.c" />
+    <ClCompile Include="charmmonster.c" />
+    <ClCompile Include="checkautos.c" />
+    <ClCompile Include="checkclasschange.c" />
+    <ClCompile Include="checkencounter.c" />
+    <ClCompile Include="checkintrinsic.c" />
+    <ClCompile Include="checklevelclear.c" />
+    <ClCompile Include="checkmonkweapon.c" />
+    <ClCompile Include="checkmount.c" />
+    <ClCompile Include="checknoble.c" />
+    <ClCompile Include="checkscores.c" />
+    <ClCompile Include="checkspell1.c" />
+    <ClCompile Include="cleargamedata.c" />
+    <ClCompile Include="clearprompt.c" />
+    <ClCompile Include="closedoor.c" />
+    <ClCompile Include="combathelp.c" />
+    <ClCompile Include="compass.c" />
+    <ClCompile Include="convertrecipe.c" />
+    <ClCompile Include="converttime.c" />
+    <ClCompile Include="copymap.c" />
+    <ClCompile Include="crafting.c" />
+    <ClCompile Include="darttrap.c" />
+    <ClCompile Include="datacard.c" />
+    <ClCompile Include="deadmonster.c" />
+    <ClCompile Include="decode.c" />
+    <ClCompile Include="discover.c" />
+    <ClCompile Include="dispchar.c" />
+    <ClCompile Include="displayabilities.c" />
+    <ClCompile Include="dmgreduction.c" />
+    <ClCompile Include="doblink.c" />
+    <ClCompile Include="doexchange.c" />
+    <ClCompile Include="doget.c" />
+    <ClCompile Include="doheal.c" />
+    <ClCompile Include="dosleep.c" />
+    <ClCompile Include="drain.c" />
+    <ClCompile Include="dragondice.c" />
+    <ClCompile Include="dungeonhelp.c" />
+    <ClCompile Include="effect.c" />
+    <ClCompile Include="enemyhit.c" />
+    <ClCompile Include="enemymissile.c" />
+    <ClCompile Include="exist.c" />
+    <ClCompile Include="fear.c" />
+    <ClCompile Include="feardir.c" />
+    <ClCompile Include="figuredamage.c" />
+    <ClCompile Include="findempty.c" />
+    <ClCompile Include="findgen.c" />
+    <ClCompile Include="finditemslot.c" />
+    <ClCompile Include="findlinkeditem.c" />
+    <ClCompile Include="findlore.c" />
+    <ClCompile Include="findpath.c" />
+    <ClCompile Include="findtarget.c" />
+    <ClCompile Include="fire.c" />
+    <ClCompile Include="firetrap.c" />
+    <ClCompile Include="firewand.c" />
+    <ClCompile Include="fireweapon.c" />
+    <ClCompile Include="fixability.c" />
+    <ClCompile Include="fixname.c" />
+    <ClCompile Include="fkeys.c" />
+    <ClCompile Include="gainexp.c" />
+    <ClCompile Include="gamble.c" />
+    <ClCompile Include="gameoptions.c" />
+    <ClCompile Include="getalign.c" />
+    <ClCompile Include="getcity.c" />
+    <ClCompile Include="getclass.c" />
+    <ClCompile Include="getdir.c" />
+    <ClCompile Include="getdungeon.c" />
+    <ClCompile Include="gethealth.c" />
+    <ClCompile Include="getitem.c" />
+    <ClCompile Include="getlinkedmonst.c" />
+    <ClCompile Include="getlinkedmsg.c" />
+    <ClCompile Include="getmonster.c" />
+    <ClCompile Include="getname.c" />
+    <ClCompile Include="getrace.c" />
+    <ClCompile Include="getsex.c" />
+    <ClCompile Include="getskill.c" />
+    <ClCompile Include="getshopitems.c" />
+    <ClCompile Include="getshoprecipes.c" />
+    <ClCompile Include="getshopspells.c" />
+    <ClCompile Include="getspellname.c" />
+    <ClCompile Include="gobottom.c" />
+    <ClCompile Include="godown.c" />
+    <ClCompile Include="gold.c" />
+    <ClCompile Include="gothicfont.c" />
+    <ClCompile Include="goship.c" />
+    <ClCompile Include="goup.c" />
+    <ClCompile Include="graphics.c" />
+    <ClCompile Include="haggle.c" />
+    <ClCompile Include="hasintrinsic.c" />
+    <ClCompile Include="hassocket.c" />
+    <ClCompile Include="hasspell.c" />
+    <ClCompile Include="healing.c" />
+    <ClCompile Include="holeinventory.c" />
+    <ClCompile Include="houseinventory.c" />
+    <ClCompile Include="inkey.c" />
+    <ClCompile Include="inroom.c" />
+    <ClCompile Include="insight.c" />
+    <ClCompile Include="inventory.c" />
+    <ClCompile Include="invvalid.c" />
+    <ClCompile Include="intrinsiccount.c" />
+    <ClCompile Include="isweapon.c" />
+    <ClCompile Include="itemcolor.c" />
+    <ClCompile Include="itemcost.c" />
+    <ClCompile Include="itemdir.c" />
+    <ClCompile Include="levellegacy.c" />
+    <ClCompile Include="library.c" />
+    <ClCompile Include="lightroom.c" />
+    <ClCompile Include="load.c" />
+    <ClCompile Include="loadgear.c" />
+    <ClCompile Include="loadlevel.c" />
+    <ClCompile Include="loadmenu.c" />
+    <ClCompile Include="log.c" />
+    <ClCompile Include="lockdoor.c" />
+    <ClCompile Include="los.c" />
+    <ClCompile Include="magicadjust.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="make_a.c" />
+    <ClCompile Include="make_c.c" />
+    <ClCompile Include="make_h.c" />
+    <ClCompile Include="make_n.c" />
+    <ClCompile Include="makechar.c" />
+    <ClCompile Include="makemap.c" />
+    <ClCompile Include="makestr.c" />
+    <ClCompile Include="manacost.c" />
+    <ClCompile Include="mapgen.c" />
+    <ClCompile Include="mapgenold.c" />
+    <ClCompile Include="maxdamage.c" />
+    <ClCompile Include="mechmerchant.c" />
+    <ClCompile Include="meleehit.c" />
+    <ClCompile Include="missile.c" />
+    <ClCompile Include="mounts.c" />
+    <ClCompile Include="moveenemy.c" />
+    <ClCompile Include="movesnake.c" />
+    <ClCompile Include="movesummoned.c" />
+    <ClCompile Include="msg.c" />
+    <ClCompile Include="music.c" />
+    <ClCompile Include="mutable.c" />
+    <ClCompile Include="mutalegend.c" />
+    <ClCompile Include="mval.c" />
+    <ClCompile Include="nap.c" />
+    <ClCompile Include="needed.c" />
+    <ClCompile Include="newgame.c" />
+    <ClCompile Include="newmonth.c" />
+    <ClCompile Include="newpawn.c" />
+    <ClCompile Include="newspell.c" />
+    <ClCompile Include="noise.c" />
+    <ClCompile Include="opendoor.c" />
+    <ClCompile Include="packit.c" />
+    <ClCompile Include="packitem.c" />
+    <ClCompile Include="party.c" />
+    <ClCompile Include="passable.c" />
+    <ClCompile Include="pawn.c" />
+    <ClCompile Include="pittrap.c" />
+    <ClCompile Include="placeobject.c" />
+    <ClCompile Include="poisontrap.c" />
+    <ClCompile Include="possesses.c" />
+    <ClCompile Include="printrec.c" />
+    <ClCompile Include="processconfig.c" />
+    <ClCompile Include="processoption.c" />
+    <ClCompile Include="prompt.c" />
+    <ClCompile Include="r_missile.c" />
+    <ClCompile Include="rcsrandom.c" />
+    <ClCompile Include="readsprites.c" />
+    <ClCompile Include="recipestring.c" />
+    <ClCompile Include="reducedmg.c" />
+    <ClCompile Include="removeplayer.c" />
+    <ClCompile Include="removelandplayer.c" />
+    <ClCompile Include="reversebyte.c" />
+    <ClCompile Include="roottrap.c" />
+    <ClCompile Include="savenew.c" />
+    <ClCompile Include="savegear.c" />
+    <ClCompile Include="savelevel.c" />
+    <ClCompile Include="sayword.c" />
+    <ClCompile Include="scalemonster.c" />
+    <ClCompile Include="school.c" />
+    <ClCompile Include="selectsprite.c" />
+    <ClCompile Include="settitle.c" />
+    <ClCompile Include="settrap.c" />
+    <ClCompile Include="shop.c" />
+    <ClCompile Include="showalign.c" />
+    <ClCompile Include="showheadings.c" />
+    <ClCompile Include="showhealth.c" />
+    <ClCompile Include="showfkeys.c" />
+    <ClCompile Include="showflt.c" />
+    <ClCompile Include="showgain.c" />
+    <ClCompile Include="showgen.c" />
+    <ClCompile Include="showinventory.c" />
+    <ClCompile Include="showicons.c" />
+    <ClCompile Include="showint.c" />
+    <ClCompile Include="showland.c" />
+    <ClCompile Include="showlandplayer.c" />
+    <ClCompile Include="showlog.c" />
+    <ClCompile Include="showlore.c" />
+    <ClCompile Include="showmap.c" />
+    <ClCompile Include="showmessages.c" />
+    <ClCompile Include="shownumber.c" />
+    <ClCompile Include="showplayer.c" />
+    <ClCompile Include="showquest.c" />
+    <ClCompile Include="showscores.c" />
+    <ClCompile Include="showscreen.c" />
+    <ClCompile Include="showside.c" />
+    <ClCompile Include="showsmland.c" />
+    <ClCompile Include="showsmmap.c" />
+    <ClCompile Include="showspell.c" />
+    <ClCompile Include="showspot.c" />
+    <ClCompile Include="showsprite.c" />
+    <ClCompile Include="showstats.c" />
+    <ClCompile Include="sleeptrap.c" />
+    <ClCompile Include="sortshopitems.c" />
+    <ClCompile Include="specials.c" />
+    <ClCompile Include="sqr.c" />
+    <ClCompile Include="statsdodamage.c" />
+    <ClCompile Include="statstakedamage.c" />
+    <ClCompile Include="stockencounter.c" />
+    <ClCompile Include="stockmonsters.c" />
+    <ClCompile Include="stocktown.c" />
+    <ClCompile Include="stocktreasure.c" />
+    <ClCompile Include="strokefont.c" />
+    <ClCompile Include="super.c" />
+    <ClCompile Include="taketime.c" />
+    <ClCompile Include="target.c" />
+    <ClCompile Include="tavern.c" />
+    <ClCompile Include="teleport.c" />
+    <ClCompile Include="teleporttrap.c" />
+    <ClCompile Include="temple.c" />
+    <ClCompile Include="terminal.c" />
+    <ClCompile Include="throw.c" />
+    <ClCompile Include="thrownpotion.c" />
+    <ClCompile Include="title.c" />
+    <ClCompile Include="touch.c" />
+    <ClCompile Include="transcribe.c" />
+    <ClCompile Include="travel.c" />
+    <ClCompile Include="triggertrap.c" />
+    <ClCompile Include="trophies.c" />
+    <ClCompile Include="trunc.c" />
+    <ClCompile Include="unpack.c" />
+    <ClCompile Include="upland.c" />
+    <ClCompile Include="uplandhelp.c" />
+    <ClCompile Include="upper.c" />
+    <ClCompile Include="urandom.c" />
+    <ClCompile Include="urandomize.c" />
+    <ClCompile Include="usecompass.c" />
+    <ClCompile Include="useitem.c" />
+    <ClCompile Include="validmove.c" />
+    <ClCompile Include="view.c" />
+    <ClCompile Include="winner.c" />
+    <ClCompile Include="wizard.c" />
+    <ClCompile Include="writefont.c" />
+    <ClCompile Include="yesno.c" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="header.h" />
+    <ClInclude Include="terminal.h" />
+    <ClInclude Include="graphics.h" />
+    <ClInclude Include="rgb.h" />
+    <ClInclude Include="gothic.h" />
+    <ClInclude Include="maps.h" />
+    <ClInclude Include="objects.h" />
+    <ClInclude Include="monsters.h" />
+    <ClInclude Include="spells.h" />
+    <ClInclude Include="recipe.h" />
+    <ClInclude Include="races.h" />
+    <ClInclude Include="classes.h" />
+    <ClInclude Include="trophies.h" />
+    <ClInclude Include="lore.h" />
+    <ClInclude Include="gen.h" />
+    <ClInclude Include="world.h" />
+    <None Include="unicorn.xpm" />
+  </ItemGroup>
+
+  <!-- The game reads these from its working folder, which is the output folder -->
+  <ItemGroup>
+    <CopyFileToFolders Include="unicorn.cfg;unicorn.doc">
+      <DestinationFolders>$(OutDir)</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="music\*.mid">
+      <DestinationFolders>$(OutDir)music</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
