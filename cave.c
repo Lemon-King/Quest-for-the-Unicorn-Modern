@@ -10,6 +10,766 @@
 
 #include "header.h"
 
+static void cave_take_time(void) {
+  player.min++;
+  if (player.min > 59) {
+    player.min = 0;
+    player.hour++;
+    player.health--;
+    show_side();
+    if (player.hour == 24) {
+      player.hour = 0;
+      player.day++;
+      if (player.day == 32) {
+        new_month();
+        }
+      }
+    }
+  } /* void cave_take_time() */
+
+static Int32 barriers(void) {
+  Int32 i;
+  i = 0;
+  if (player.map[player.x][player.y-1] == dungeon_wall) i |= 1;
+  if (player.map[player.x+1][player.y] == dungeon_wall) i |= 2;
+  if (player.map[player.x][player.y+1] == dungeon_wall) i |= 4;
+  if (player.map[player.x-1][player.y] == dungeon_wall) i |= 8;
+  return i;
+  }
+
+static void hit_enemy(void) {
+  NPC_REC* monster;
+/*    activeDelay = 0; */
+  monster = get_monster(player.x,player.y);
+  if (monster == NULL) return;
+  if (is_weapon(&(player.invent[I_RHND]))) meleehit(0,&(player.invent[I_RHND]),get_weapon(),monster,'R');
+    else meleehit(0,NULL,get_weapon(),monster,'R');
+  if (is_weapon(&(player.invent[I_LHND])) && monster->hp > 0) meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
+  } /* void hit_enemy() */
+
+static void search_wall(Int32 px,Int32 py,Int32 wall) {
+  Int32 x,y;
+  for (x=px-1; x<= px+1; x++)
+    for (y=py-1; y<= py+1; y++)
+      if (x>1 && x<99 && y>1 && y<99)
+        if (player.map[x][y] == wall) {
+          if (player.map[x-1][y] != wall && player.map[x+1][y] != wall) {
+            player.map[x][y] = 22;
+            player.known[x][y] = 0;
+            add_skill(SK_SCOUT,1);
+            }
+          if (player.map[x][y-1] != wall && player.map[x][y+1] != wall) {
+            player.map[x][y] = 22;
+            player.known[x][y] = 0;
+            add_skill(SK_SCOUT,1);
+            }
+          }
+   return;
+
+
+
+    if (player.map[px][py-1] == wall && player.map[px][py-2] != wall &&
+        player.map[px-1][py-1] == wall && player.map[px+1][py-1] == wall &&
+        player.map[px][py] != wall) {
+      player.map[px][py-1] = 22;
+      player.known[px][py-1] = 0;
+      add_skill(SK_SCOUT,1);
+      }
+    if (player.map[px][py+1] == wall && player.map[px][py+2] != wall &&
+        player.map[px-1][py+1] == wall && player.map[px+1][py+1] == wall &&
+        player.map[px][py] != wall) {
+      player.map[px][py+1] = 22;
+      player.known[px][py+1] = 0;
+      add_skill(SK_SCOUT,1);
+      }
+    if (player.map[px-1][py] == wall && player.map[px-2][py] != wall &&
+        player.map[px-1][py-1] == wall && player.map[px-1][py+1] == wall &&
+        player.map[px][py] != wall) {
+      player.map[px-1][py] = 22;
+      player.known[px-1][py] = 0;
+      add_skill(SK_SCOUT,1);
+    }
+    if (player.map[px+1][py] == wall && player.map[px+2][py] != wall &&
+        player.map[px+1][py-1] == wall && player.map[px+1][py+1] == wall &&
+        player.map[px][py] != wall) {
+      player.map[px+1][py] = 22;
+      player.known[px+1][py] = 0;
+      add_skill(SK_SCOUT,1);
+      }
+  }
+
+static void search(void) {
+  Int32 x,y;
+  Int32 px,py;
+  if (player.in_city == 'Y') return;
+  px = player.x;
+  py = player.y;
+  for (x=player.x-1; x<= player.x+1; x++)
+    for (y=player.y-1; y<= player.y+1; y++)
+      if (player.map[x][y]>=800 && player.map[x][y]<900) {
+          if (u_random(100) < (10+get_skill(SK_SCOUT)) || has_intrinsic(A_SRCH)) {
+          player.map[x][y] = 40;
+          player.known[x][y] = 0;
+          add_skill(SK_SCOUT,1);
+          }
+      }
+  if (u_random(100) < (10 + get_skill(SK_SCOUT)) || has_intrinsic(A_SRCH)) {
+    search_wall(px,py,21);
+    search_wall(px,py,38);
+    search_wall(px,py,39);
+    search_wall(px,py,41);
+    }
+  discover();
+  if (u_random(10) == 1) add_skill(SK_SCOUT,1);
+  } /* void search() */
+
+static void attack(void) {
+  Int32 xdir,ydir;
+  char key;
+  clear_prompt();
+  prompt("Attack who ?");
+  key = inkey();
+  xdir = 0;
+  ydir = 0;
+  switch (key) {
+    case '8':ydir = -1; break;
+    case '2':ydir = 1; break;
+    case '4':xdir = -1; break;
+    case '6':xdir = 1; break;
+    case '1':ydir = 1; xdir = -1; break;
+    case '3':ydir = 1; xdir = 1; break;
+    case '7':ydir = -1; xdir = -1; break;
+    case '9':ydir = -1; xdir = 1; break;
+    }
+  player.x += xdir;
+  player.y += ydir;
+  if (player.map[player.x][player.y] < 0) {
+    if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0))
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+    else hit_enemy();
+    }
+  player.x -= xdir;
+  player.y -= ydir;
+  } /* void attack() */
+
+static void eat(void) {
+  OBJECT_REC* item;
+  Int32 i;
+  if (player.health > 100) {
+    clear_prompt();
+    prompt("Too full to eat any more");
+    return;
+    }
+  item = NULL;
+  for (i=1; i<11; i++)
+    if (player.invent[i].otype == O_FOOD) {
+       item = &(player.invent[i]);
+       i = 99;
+      }
+  if (item == NULL) {
+    for (i=1; i<=32; i++)
+      if (player.pack[i].otype == O_FOOD) {
+        item = &(player.pack[i]);
+        i = 99;
+        }
+    }
+  if (item == NULL) {
+    clear_prompt();
+    prompt("Nothing to Eat!!!");
+    }
+  else {
+    if (item->charges != -1) item->charges--;
+    if (item->charges == 0) {
+      item->otype = O_NONE;
+      }
+    perform_effect(item);
+    show_side();
+    }
+  }
+
+/*
+void eat() {
+  OBJECT_REC* item;
+  inv_item = 0;
+  item = NULL;
+  if (player.health > 100) {
+    clear_prompt();
+    prompt("Too full to eat any more");
+    return;
+    }
+  if (item == NULL) {
+    saveScreen();
+    item = inventory(NULL);
+    restoreScreen();
+    }
+  if (item != NULL && item->otype == O_FOOD) {
+    if (item->charges != -1) item->charges--;
+    if (item->charges == 0) {
+      item->otype = O_NONE;
+      if (use_from_ground == 'Y') player.map[player.x][player.y] = currentFloor;
+      }
+    perform_effect(item);
+    }
+  show_spot(player.x,player.y);
+  show_player();
+  show_side();
+  }
+*/
+
+static void move(Int32 xdir,Int32 ydir) {
+  Int32 x,y;
+  Int32 previous;
+  Int32 ex,ey;
+  last_target_x = 0;
+  last_target_y = 0;
+  remove_player();
+  x = player.x;
+  y = player.y;
+  if (player.map[player.x+xdir][player.y+ydir] == 22 &&
+      auto_open_doors == 'Y') {
+      player.map[player.x+xdir][player.y+ydir] = 23;
+      show_spot(player.x+xdir,player.y+ydir);
+      show_player();
+      return;
+    }
+  if (player.map[player.x+xdir][player.y+ydir] == 21 &&
+      auto_bump_walls == 'Y') {
+      search();
+      show_player();
+      return;
+    }
+  player.x += xdir;
+  player.y += ydir;
+  if (valid_move(player.x,player.y) == ' ') {
+    player.x -= xdir;
+    player.y -= ydir;
+    }
+  if (player.map[player.x][player.y] < 0 &&
+      (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
+    if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
+      ex = player.x;
+      ey = player.y;
+      previous = player.monster[1][0-player.map[ex][ey]].prev;
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+      if (player.map[ex][ey] == 7) player.map[ex][ey] = previous;
+      show_spot(ex,ey);
+      }
+    else {
+      player.x = x;
+      player.y = y;
+      show_player();
+      player.x += xdir;
+      player.y += ydir;
+      hit_enemy();
+      }
+    player.x = x;
+    player.y = y;
+    }
+  if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
+  if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }
+  if (adjust_map() == 'Y') show_map();
+  show_player();
+  stats.counts[STAT_STEPS_TAKEN]++;
+  check_autos();
+  }
+
+static void remove_bones(void) {
+  }
+
+static Int32 cave_level_cleared(void) {
+  Int32 x,y;
+  if (player.in_city == 'Y' || player.d_level < 1 || levelCleared) return 0;
+  y = 0;
+  for (x=1; x<=60; x++)
+    if (player.monster[1][x].hp > 0 && (player.monster[1][x].special & MS_FRIENDLY) == 0) y++;
+  return (y > 0) ? 0 : -1;
+  }
+
+static void down_level(Int32 check_clear) {
+  Int32 i,j;
+  if (player.map[player.x][player.y] == 24 ||
+      player.map[player.x][player.y] == 5) {
+    if (player.d_level > 0) {
+      save_level();
+      if (current_dungeon.level[player.d_level-1].cleared == 0) {
+        if (cave_level_cleared()) {
+          current_dungeon.level[player.d_level-1].cleared = -1;
+          stats.counts[STAT_LEVELS_CLEARED]++;
+          j = -1;
+          for (i=0; i<current_dungeon.num_levels; i++)
+            if (current_dungeon.level[i].cleared == 0) j = 0;
+          if (j) stats.counts[STAT_DUNGEON_CLEARED]++;
+          }
+        }
+      }
+    player.d_level++;
+    make_map('D');
+    levelCleared = cave_level_cleared();
+    player.map_x = player.x - TILES_X/2;
+    player.map_y = player.y - TILES_Y/2;
+    if (player.map_x < 1) player.map_x = 1;
+    if (player.map_y < 1) player.map_y = 1;
+    if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
+    if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    show_screen();
+/*      activeDelay = 2; */
+    if (in_room(player.x,player.y) && can_see()) light_room();
+    }
+  } /* void down_level() */
+
+static void up_level(void) {
+  Int32 i,j;
+  if (player.map[player.x][player.y] == 25) {
+    save_level();
+    if (current_dungeon.level[player.d_level-1].cleared == 0) {
+      if (cave_level_cleared()) {
+        current_dungeon.level[player.d_level-1].cleared = -1;
+        stats.counts[STAT_LEVELS_CLEARED]++;
+        j = -1;
+        for (i=0; i<current_dungeon.num_levels; i++)
+          if (current_dungeon.level[i].cleared == 0) j = 0;
+        if (j) stats.counts[STAT_DUNGEON_CLEARED]++;
+        }
+      }
+    player.d_level--;
+    if (player.d_level != 0) {
+      make_map('U');
+      levelCleared = cave_level_cleared();
+      }
+    player.map_x = player.x - TILES_X/2;
+    player.map_y = player.y - TILES_Y/2;
+    if (player.map_x < 1) player.map_x = 1;
+    if (player.map_y < 1) player.map_y = 1;
+    if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
+    if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    if (player.d_level != 0) show_screen();
+/*      activeDelay = 2; */
+    if (in_room(player.x,player.y) && can_see()) light_room();
+    }
+  } /* void up_level() */
+
+static void do_inventory(void) {
+  saveScreen();
+  inventory(NULL);
+  restoreScreen();
+  show_map();
+  show_player();
+  auto_detect();
+  } /* void do_inventory() */
+
+static void talk(void) {
+  char key;
+  char flag;
+  Int32  i;
+  NPC_REC* monster;
+  Int32  xdir,ydir;
+  key = item_dir(-1);
+  if (key == ' ') {
+    clear_prompt();
+    prompt("Talk to who?");
+    flag = ' ';
+    while (flag == ' ') {
+      key = inkey();
+      if (key >= '1' && key < '5') flag = '*';
+      if (key > '5' && key <= '9') flag = '*';
+      }
+    }
+  xdir = 0;
+  ydir = 0;
+  switch (key) {
+    case '2':ydir = 1; break;
+    case '8':ydir = -1; break;
+    case '4':xdir = -1; break;
+    case '6':xdir = 1; break;
+    case '1':xdir = -1; ydir = 1; break;
+    case '3':xdir = 1; ydir = 1; break;
+    case '7':xdir = -1; ydir = -1; break;
+    case '9':xdir = 1; ydir = -1; break;
+    }
+  monster = get_monster(player.x + xdir,player.y + ydir);
+  if (monster == NULL) {
+    clear_prompt();
+    msg("No one there ! ! !",14);
+    }
+  if (monster != NULL) {
+    if ((monster->special & MS_FRIENDLY) == 0) {
+      clear_prompt();
+      prompt("Die Scum!!!");
+      }
+    else {
+      if ((monster->special & MS_TALKED) == 0) {
+        monster->special |= MS_TALKED;
+        flag = ' ';
+        i = 0;
+        while (trophies[i].criteria_type < 999) {
+          if (trophies[i].criteria_type == TC_TRICK) {
+            if (player.invent[I_ARMR].link >= trophies[i].control[0] &&
+                player.invent[I_ARMR].link <= trophies[i].control[1] &&
+                (player.invent[I_RHND].link == trophies[i].control[2] ||
+                 player.invent[I_LHND].link == trophies[i].control[2])
+               ) {
+              stats.counts[trophies[i].control[3]] |=
+                   ( 1 << (player.invent[I_ARMR].link - trophies[i].control[0]));
+              msg("Trick or Treat",15);
+              special(84,NULL);
+              flag = '*';
+              }
+            }
+          i++;
+          }
+        if (flag == ' ' && player.in_city == 'Y' && player.city == 17) special(51,NULL);
+          else special(20,NULL);
+        stats.counts[STAT_CONVERSATIONS]++;
+        }
+      else {
+        clear_prompt();
+        msg("Hello!!",9);
+        }
+      }
+    }
+  } /* void talk() */
+
+static void light_torch(void) {
+  if (player.torch > 0) {
+    player.torch--;
+    player.effect[PE_LIGHT] = 2000;
+    show_side();
+    show_map();
+    show_player();
+    }
+  } /* void light_torch() */
+
+static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
+  Int32 pos;
+  if (player.party[1].hp == 0) pos = 1;
+    else if (player.party[2].hp == 0) pos = 2;
+    else if (player.party[3].hp == 0) pos = 3;
+    else if (player.party[4].hp == 0) pos = 4;
+    else if (player.party[5].hp == 0) pos = 5;
+    else pos = 0;
+  if (pos>0) {
+    clear_prompt();
+    msg("I would be Honored!!!",15);
+    monster->special |= MS_FRIENDLY;
+    player.party[pos] = *monster;
+    player.party[pos].exp = needed(player.party[pos].level);
+    player.party[pos].time = -1;
+    player.party[pos].hp = player.party[pos].level * 9;
+    player.party[i].attack = 2 * player.party[i].level;
+    player.party[i].defense = 2 * player.party[i].level;
+    if (player.party[i].mana > 0)
+      player.party[i].mana = 25 * player.party[i].level;
+    player.map[x][y] = player.party[pos].prev;
+    if (player.effect[PE_HEROIC] > 0) {
+      player.party[pos].hp *= player.effect[PE_HEROIC];
+      }
+    show_spot(x,y);
+    }
+  else {
+   clear_prompt();
+   msg("Your party seems full as it is!!",14);
+   }
+  }
+
+static void join(Int32 i) {
+  char key;
+  char flag;
+  NPC_REC*  monster;
+  Int32  xdir,ydir;
+  key = item_dir(-1);
+  if (key == ' ') {
+    clear_prompt();
+    prompt("Ask who to join?");
+    flag = ' ';
+    while (flag == ' ') {
+      key = inkey();
+      if (key >= '1' && key < '5') flag = '*';
+      if (key > '5' && key <= '9') flag = '*';
+      }
+    }
+  xdir = 0;
+  ydir = 0;
+  switch (key) {
+    case '2':ydir = 1; break;
+    case '8':ydir = -1; break;
+    case '4':xdir = -1; break;
+    case '6':xdir = 1; break;
+    case '1':xdir = -1; ydir = 1; break;
+    case '3':xdir = 1; ydir = 1; break;
+    case '7':xdir = -1; ydir = -1; break;
+    case '9':xdir = 1; ydir = -1; break;
+    }
+  monster = get_monster(player.x + xdir,player.y + ydir);
+  if (monster == NULL) {
+    clear_prompt();
+    msg("No one there ! ! !",14);
+    }
+  if (monster != NULL) {
+    if ((monster->special2 & M2_PACIFIED) != 0) {
+      if (u_random(100)<(50+(player.level-monster->level)*10)) {
+        add_to_party(monster,player.x+xdir,player.y+ydir,i);
+        }
+      else {
+          clear_prompt();
+          msg("No Thanks.",14);
+        }
+      }
+    else if ((monster->special & MS_FRIENDLY) == 0) {
+        clear_prompt();
+        msg("No Way Scum!!!",14);
+      }
+    else
+      if ((monster->special & MS_JOIN) == 0) {
+        monster->special |= MS_JOIN;
+          if (u_random(100)<(50+(player.level-monster->level)*10)) {
+            add_to_party(monster,player.x+xdir,player.y+ydir,i);
+            }
+          else {
+              clear_prompt();
+              msg("No Thanks.",14);
+            }
+        }
+      else {
+          clear_prompt();
+          msg("No Thanks.",14);
+        }
+  }
+  check_mount();
+  } /* void join() */
+
+static Int32 is_merchant(void) {
+  Int32 flag;
+  Int32 i;
+  flag = -1;
+  i = 0;
+  while (flag == -1) {
+    if (player.region == shops[i].region &&
+        player.land_x == shops[i].rx &&
+        player.land_y == shops[i].ry &&
+        player.x >= shops[i].cx-1 &&
+        player.x <= shops[i].cx+1 &&
+        player.y >= shops[i].cy-1 &&
+        player.y <= shops[i].cy+1) flag = i;
+    if (shops[i].shoptype == 999) flag = -2;
+    i++;
+    }
+  if (flag >= 0) return -1;
+  return 0;
+  }
+
+static void buy_item(Int32* i) {
+  Int32 flag;
+  Int32 x,y;
+  Int32 price;
+  OBJECT_REC item;
+  OBJECT_REC* pitem;
+  flag = 0;
+  for (y=player.y-1; y<=player.y+1; y++)
+    for (x=player.x-1; x<=player.x+1; x++)
+      if (player.map[x][y] == 536) flag = -1;
+  if (flag == -1) {
+    pitem = NULL;
+    if (u_random(1000) < 10) pitem = find_linked_item(532);
+    else if (u_random(1000) < 100) pitem = find_linked_item(533);
+    else if (u_random(1000) < 500) pitem = find_linked_item(535);
+    else pitem = find_linked_item(534);
+    price = 1000;
+    if (player.in_city == 'N') {
+      price = 300 - (player.d_level * 10);
+      }
+    if (price < 200) price = 200;
+    if (get_gold() < price) {
+      msg("Not enough gold",14);
+      pitem = NULL;
+      }
+    if (pitem != NULL) {
+      sub_gold(price);
+      item = *pitem;
+      item.flags |= OF_IDENT;
+      inventory(&item);
+      show_screen();
+      }
+    }
+  for (*i=0; *i<5; (*i)++) {
+    if (player.region == player.houses[*i].region &&
+        player.land_x == player.houses[*i].rx &&
+        player.land_y == player.houses[*i].ry &&
+        player.x >= player.houses[*i].cx-1 &&
+        player.x <= player.houses[*i].cx+1 &&
+        player.y >= player.houses[*i].cy-1 &&
+        player.y <= player.houses[*i].cy+1) {
+      saveScreen();
+      house_inventory(*i);
+      restoreScreen();
+      return;
+      }
+    }
+  flag = -1;
+  *i = 0;
+  while (flag == -1) {
+    if (player.region == forsale[*i].region &&
+        player.land_x == forsale[*i].rx &&
+        player.land_y == forsale[*i].ry &&
+        player.x >= forsale[*i].cx-1 &&
+        player.x <= forsale[*i].cx+1 &&
+        player.y >= forsale[*i].cy-1 &&
+        player.y <= forsale[*i].cy+1) flag = *i;
+    if (forsale[*i].region == 999) flag = -2;
+    (*i)++;
+    }
+  for (*i=0; *i<5; (*i)++) {
+    if (forsale[*i].region == player.houses[*i].region &&
+        forsale[*i].rx == player.houses[*i].rx &&
+        forsale[*i].ry == player.houses[*i].ry &&
+        forsale[*i].cx == player.houses[*i].cx &&
+        forsale[*i].cy == player.houses[*i].cy) flag = -1;
+    }
+  if (flag >= 0) {
+    saveScreen();
+    buy_house(flag);
+    restoreScreen();
+    return;
+    }
+
+  flag = -1;
+  *i = 0;
+  while (flag == -1) {
+    if (player.region == shops[*i].region &&
+        player.land_x == shops[*i].rx &&
+        player.land_y == shops[*i].ry &&
+        player.x >= shops[*i].cx-1 &&
+        player.x <= shops[*i].cx+1 &&
+        player.y >= shops[*i].cy-1 &&
+        player.y <= shops[*i].cy+1) flag = *i;
+    if (shops[*i].shoptype == 999) flag = -2;
+    (*i)++;
+    }
+  if (flag >= 0) {
+    saveScreen();
+    switch (shops[flag].shoptype) {
+      case  0:shop(shops[flag].name,SHOP_WEAP); break;
+      case  1:shop(shops[flag].name,SHOP_ARMR); break;
+      case  2:shop(shops[flag].name,SHOP_ALCH); break;
+      case  3:shop(shops[flag].name,SHOP_JEWL); break;
+      case  4:shop(shops[flag].name,SHOP_BOOK); break;
+      case  5:shop(shops[flag].name,SHOP_ROBE); break;
+      case  6:shop(shops[flag].name,SHOP_MAGC); break;
+      case  7:library(shops[flag].name); break;
+      case  8:tavern(shops[flag].name); break;
+      case  9:school(shops[flag].name); break;
+      case 10:travel(shops[flag].name); break;
+      case 11:shop(shops[flag].name,SHOP_FOOD); break;
+      case 12:pawn(shops[flag].name,get_city()); break;
+      case 13:temple(shops[flag].name); break;
+      case 14:cavalier(shops[flag].name); break;
+      case 15:mounts(shops[flag].name); break;
+      case 16:bank(shops[flag].name); break;
+      case 17:shop(shops[flag].name,SHOP_CRFT); break;
+      case 18:shop(shops[flag].name,SHOP_SPEL); break;
+      case 19:shop(shops[flag].name,SHOP_RECP); break;
+      }
+/*      show_screen(); */
+    restoreScreen();
+    show_player();
+    }
+  } /* void buy_item() */
+
+static void find_closest_mob(Int32* x,Int32* y) {
+  Int32 dist;
+  Int32 closestX;
+  Int32 closestY;
+  dist = 50000;
+  closestX = 0;
+  closestY = 0;
+  for (*x=1; *x<100; (*x)++)
+    for (*y=1; *y<100; (*y)++) {
+      if (player.map[*x][*y] < 0) {
+        if (sqr(*x-player.x) + sqr(*y-player.y) < dist) {
+          dist = sqr(*x-player.x) + sqr(*y-player.y);
+          closestX = *x;
+          closestY = *y;
+          }
+        }
+      }
+  target_x = closestX;
+  target_y = closestY;
+  }
+
+static void gps(void) {
+  char buffer[20];
+  sprintf(buffer,"Region    : %d",player.region);
+  msg(buffer,15);
+  sprintf(buffer,"Region X,Y: %d,%d",player.land_x,player.land_y);
+  msg(buffer,15);
+  sprintf(buffer,"X,Y       : %d,%d",player.x,player.y);
+  msg(buffer,15);
+  }
+
+static Int32 check_quit(void) {
+  Int32 key;
+  saveScreen();
+  clrscr();
+  textcolor(12); gotoxy(35,8); txt_write("WARNING!!!");
+  textcolor(15); gotoxy(6,10); txt_write("Using the <Q>uit command will permenently end your current character.");
+  textcolor(15); gotoxy(6,11); txt_write("Are you sure you want to permenently end this character (Y/N)?");
+  key = ' ';
+  while (key != 'Y' && key != 'N') {
+    key = inkey();
+    if (key == 'y') key = 'Y';
+    if (key == 'n') key = 'N';
+    }
+  restoreScreen();
+  return (key == 'Y') ? -1 : 0;
+  }
+
+static Int32 check_in_corridor(void) {
+  return (in_room(player.x, player.y)) ? 0 : -1;
+/*
+  Int32 walls;
+  walls = 0;
+  if (player.map[player.x-1][player.y] == 21) walls++;
+  if (player.map[player.x+1][player.y] == 21) walls++;
+  if (player.map[player.x][player.y-1] == 21) walls++;
+  if (player.map[player.x][player.y+1] == 21) walls++;
+  return (walls >= 2) ? -1 : 0;
+*/
+  }
+
+static void run(Int32* in_corridor) {
+  msg("Run dir?",14);
+  get_dir(&run_x,&run_y);
+  *in_corridor = check_in_corridor();
+  }
+
+static void check_stop_running(Int32* in_corridor) {
+  Int32 x;
+  Int32 y;
+  if (valid_move(player.x+run_x,player.y+run_y) == ' ') {
+    run_x = 0;
+    run_y = 0;
+    return;
+    }
+  if (player.map[player.x+run_x][player.y+run_y] == 24 ||
+      player.map[player.x+run_x][player.y+run_y] == 25) {
+    run_x = 0;
+    run_y = 0;
+    return;
+    }
+  for (y=player.y-1; y<= player.y+1; y++)
+    for (x=player.x-1; x<= player.x+1; x++) {
+      if (player.map[x][y] < 0) {
+        run_x = 0;
+        run_y = 0;
+        return;
+        }
+      }
+  if (!*in_corridor && check_in_corridor()) *in_corridor = -1;
+  if (*in_corridor && !check_in_corridor()) {
+    run_x = 0;
+    run_y = 0;
+    }
+  }
+
 void cave() {
   char haste_flag;
   Int32  i;
@@ -20,769 +780,9 @@ void cave() {
   byte key;
   Int32 dmg;
   char buffer[20];
-  Int32  in_corridor;
+  Int32  in_corridor = 0;
 
 /*  Int32  activeDelay; */
-
-  void take_time() {
-    player.min++;
-    if (player.min > 59) {
-      player.min = 0;
-      player.hour++;
-      player.health--;
-      show_side();
-      if (player.hour == 24) {
-        player.hour = 0;
-        player.day++;
-        if (player.day == 32) {
-          new_month();
-          }
-        }
-      }
-    } /* void take_time() */
-
-  Int32 barriers() {
-    Int32 i;
-    i = 0;
-    if (player.map[player.x][player.y-1] == dungeon_wall) i |= 1;
-    if (player.map[player.x+1][player.y] == dungeon_wall) i |= 2;
-    if (player.map[player.x][player.y+1] == dungeon_wall) i |= 4;
-    if (player.map[player.x-1][player.y] == dungeon_wall) i |= 8;
-    return i;
-    }
-
-  void hit_enemy() {
-    NPC_REC* monster;
-/*    activeDelay = 0; */
-    monster = get_monster(player.x,player.y);
-    if (monster == NULL) return;
-    if (is_weapon(&(player.invent[I_RHND]))) meleehit(0,&(player.invent[I_RHND]),get_weapon(),monster,'R');
-      else meleehit(0,NULL,get_weapon(),monster,'R');
-    if (is_weapon(&(player.invent[I_LHND])) && monster->hp > 0) meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
-    } /* void hit_enemy() */
-
-  void search_wall(Int32 px,Int32 py,Int32 wall) {
-    Int32 x,y;
-    for (x=px-1; x<= px+1; x++)
-      for (y=py-1; y<= py+1; y++)
-        if (x>1 && x<99 && y>1 && y<99)
-          if (player.map[x][y] == wall) {
-            if (player.map[x-1][y] != wall && player.map[x+1][y] != wall) {
-              player.map[x][y] = 22;
-              player.known[x][y] = 0;
-              add_skill(SK_SCOUT,1);
-              }
-            if (player.map[x][y-1] != wall && player.map[x][y+1] != wall) {
-              player.map[x][y] = 22;
-              player.known[x][y] = 0;
-              add_skill(SK_SCOUT,1);
-              }
-            }
-     return;
-
-
-
-      if (player.map[px][py-1] == wall && player.map[px][py-2] != wall &&
-          player.map[px-1][py-1] == wall && player.map[px+1][py-1] == wall &&
-          player.map[px][py] != wall) {
-        player.map[px][py-1] = 22;
-        player.known[px][py-1] = 0;
-        add_skill(SK_SCOUT,1);
-        }
-      if (player.map[px][py+1] == wall && player.map[px][py+2] != wall &&
-          player.map[px-1][py+1] == wall && player.map[px+1][py+1] == wall &&
-          player.map[px][py] != wall) {
-        player.map[px][py+1] = 22;
-        player.known[px][py+1] = 0;
-        add_skill(SK_SCOUT,1);
-        }
-      if (player.map[px-1][py] == wall && player.map[px-2][py] != wall &&
-          player.map[px-1][py-1] == wall && player.map[px-1][py+1] == wall &&
-          player.map[px][py] != wall) {
-        player.map[px-1][py] = 22;
-        player.known[px-1][py] = 0;
-        add_skill(SK_SCOUT,1);
-      }
-      if (player.map[px+1][py] == wall && player.map[px+2][py] != wall &&
-          player.map[px+1][py-1] == wall && player.map[px+1][py+1] == wall &&
-          player.map[px][py] != wall) {
-        player.map[px+1][py] = 22;
-        player.known[px+1][py] = 0;
-        add_skill(SK_SCOUT,1);
-        }
-    }
-
-  void search() {
-    Int32 x,y;
-    Int32 px,py;
-    if (player.in_city == 'Y') return;
-    px = player.x;
-    py = player.y;
-    for (x=player.x-1; x<= player.x+1; x++)
-      for (y=player.y-1; y<= player.y+1; y++)
-        if (player.map[x][y]>=800 && player.map[x][y]<900) {
-            if (u_random(100) < (10+get_skill(SK_SCOUT)) || has_intrinsic(A_SRCH)) {
-            player.map[x][y] = 40;
-            player.known[x][y] = 0;
-            add_skill(SK_SCOUT,1);
-            }
-        }
-    if (u_random(100) < (10 + get_skill(SK_SCOUT)) || has_intrinsic(A_SRCH)) {
-      search_wall(px,py,21);
-      search_wall(px,py,38);
-      search_wall(px,py,39);
-      search_wall(px,py,41);
-      } 
-    discover();
-    if (u_random(10) == 1) add_skill(SK_SCOUT,1);
-    } /* void search() */
- 
-  void attack() {
-    Int32 xdir,ydir;
-    char key;
-    clear_prompt();
-    prompt("Attack who ?");
-    key = inkey();
-    xdir = 0;
-    ydir = 0;
-    switch (key) {
-      case '8':ydir = -1; break;
-      case '2':ydir = 1; break;
-      case '4':xdir = -1; break;
-      case '6':xdir = 1; break;
-      case '1':ydir = 1; xdir = -1; break;
-      case '3':ydir = 1; xdir = 1; break;
-      case '7':ydir = -1; xdir = -1; break;
-      case '9':ydir = -1; xdir = 1; break;
-      }
-    player.x += xdir;
-    player.y += ydir;
-    if (player.map[player.x][player.y] < 0) {
-      if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0))
-        arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
-      else hit_enemy();
-      }
-    player.x -= xdir;
-    player.y -= ydir;
-    } /* void attack() */
-
-  void eat() {
-    OBJECT_REC* item;
-    Int32 i;
-    if (player.health > 100) {
-      clear_prompt();
-      prompt("Too full to eat any more");
-      return;
-      }
-    item = NULL;
-    for (i=1; i<11; i++)
-      if (player.invent[i].otype == O_FOOD) {
-         item = &(player.invent[i]);
-         i = 99;
-        }
-    if (item == NULL) {
-      for (i=1; i<=32; i++)
-        if (player.pack[i].otype == O_FOOD) {
-          item = &(player.pack[i]);
-          i = 99;
-          }
-      }
-    if (item == NULL) {
-      clear_prompt();
-      prompt("Nothing to Eat!!!");
-      }
-    else {
-      if (item->charges != -1) item->charges--;
-      if (item->charges == 0) {
-        item->otype = O_NONE;
-        }
-      perform_effect(item);
-      show_side();
-      }
-    }
-
-/*
-  void eat() {
-    OBJECT_REC* item;
-    inv_item = 0;
-    item = NULL;
-    if (player.health > 100) {
-      clear_prompt();
-      prompt("Too full to eat any more");
-      return;
-      }
-    if (item == NULL) {
-      saveScreen();
-      item = inventory(NULL);
-      restoreScreen();
-      }
-    if (item != NULL && item->otype == O_FOOD) {
-      if (item->charges != -1) item->charges--;
-      if (item->charges == 0) {
-        item->otype = O_NONE;
-        if (use_from_ground == 'Y') player.map[player.x][player.y] = currentFloor;
-        }
-      perform_effect(item);
-      }
-    show_spot(player.x,player.y);
-    show_player();
-    show_side();
-    }
-*/
-
-  void move(Int32 xdir,Int32 ydir) {
-    Int32 x,y;
-    Int32 previous;
-    Int32 ex,ey;
-    last_target_x = 0;
-    last_target_y = 0;
-    remove_player();
-    x = player.x;
-    y = player.y;
-    if (player.map[player.x+xdir][player.y+ydir] == 22 &&
-        auto_open_doors == 'Y') {
-        player.map[player.x+xdir][player.y+ydir] = 23;
-        show_spot(player.x+xdir,player.y+ydir);
-        show_player();
-        return;
-      }
-    if (player.map[player.x+xdir][player.y+ydir] == 21 &&
-        auto_bump_walls == 'Y') {
-        search();
-        show_player();
-        return;
-      }
-    player.x += xdir;
-    player.y += ydir;
-    if (valid_move(player.x,player.y) == ' ') {
-      player.x -= xdir;
-      player.y -= ydir;
-      }
-    if (player.map[player.x][player.y] < 0 &&
-        (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
-      if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
-        ex = player.x;
-        ey = player.y;
-        previous = player.monster[1][0-player.map[ex][ey]].prev;
-        arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
-        if (player.map[ex][ey] == 7) player.map[ex][ey] = previous;
-        show_spot(ex,ey);
-        }
-      else {
-        player.x = x;
-        player.y = y;
-        show_player();
-        player.x += xdir;
-        player.y += ydir;
-        hit_enemy();
-        }
-      player.x = x;
-      player.y = y;
-      }
-    if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
-    if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }
-    if (adjust_map() == 'Y') show_map();
-    show_player();
-    stats.counts[STAT_STEPS_TAKEN]++;
-    check_autos();
-    }
-
-  void remove_bones() {
-    }
-
-  Int32 check_level_cleared() {
-    Int32 x,y;
-    if (player.in_city == 'Y' || player.d_level < 1 || levelCleared) return 0;
-    y = 0;
-    for (x=1; x<=60; x++)
-      if (player.monster[1][x].hp > 0 && (player.monster[1][x].special & MS_FRIENDLY) == 0) y++;
-    return (y > 0) ? 0 : -1;
-    }
-
-  void down_level(Int32 check_clear) {
-    Int32 i,j;
-    if (player.map[player.x][player.y] == 24 ||
-        player.map[player.x][player.y] == 5) {
-      if (player.d_level > 0) {
-        save_level();
-        if (current_dungeon.level[player.d_level-1].cleared == 0) {
-          if (check_level_cleared()) {
-            current_dungeon.level[player.d_level-1].cleared = -1;
-            stats.counts[STAT_LEVELS_CLEARED]++;
-            j = -1;
-            for (i=0; i<current_dungeon.num_levels; i++)
-              if (current_dungeon.level[i].cleared == 0) j = 0;
-            if (j) stats.counts[STAT_DUNGEON_CLEARED]++;
-            }
-          }
-        }
-      player.d_level++;
-      make_map('D');
-      levelCleared = check_level_cleared();
-      player.map_x = player.x - TILES_X/2;
-      player.map_y = player.y - TILES_Y/2;
-      if (player.map_x < 1) player.map_x = 1;
-      if (player.map_y < 1) player.map_y = 1;
-      if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
-      if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
-      show_screen();
-/*      activeDelay = 2; */
-      if (in_room(player.x,player.y) && can_see()) light_room();
-      }
-    } /* void down_level() */
-
-  void up_level() {
-    Int32 i,j;
-    if (player.map[player.x][player.y] == 25) {
-      save_level();
-      if (current_dungeon.level[player.d_level-1].cleared == 0) {
-        if (check_level_cleared()) {
-          current_dungeon.level[player.d_level-1].cleared = -1;
-          stats.counts[STAT_LEVELS_CLEARED]++;
-          j = -1;
-          for (i=0; i<current_dungeon.num_levels; i++)
-            if (current_dungeon.level[i].cleared == 0) j = 0;
-          if (j) stats.counts[STAT_DUNGEON_CLEARED]++;
-          }
-        }
-      player.d_level--;
-      if (player.d_level != 0) {
-        make_map('U');
-        levelCleared = check_level_cleared();
-        }
-      player.map_x = player.x - TILES_X/2;
-      player.map_y = player.y - TILES_Y/2;
-      if (player.map_x < 1) player.map_x = 1;
-      if (player.map_y < 1) player.map_y = 1;
-      if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
-      if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
-      if (player.d_level != 0) show_screen();
-/*      activeDelay = 2; */
-      if (in_room(player.x,player.y) && can_see()) light_room();
-      }
-    } /* void up_level() */
-
-  void do_inventory() {
-    saveScreen();
-    inventory(NULL);
-    restoreScreen();
-    show_map();
-    show_player();
-    auto_detect();
-    } /* void do_inventory() */
-
-  void talk() {
-    char key;
-    char flag;
-    Int32  i;
-    NPC_REC* monster;
-    Int32  xdir,ydir;
-    key = item_dir(-1);
-    if (key == ' ') {
-      clear_prompt();
-      prompt("Talk to who?");
-      flag = ' ';
-      while (flag == ' ') {
-        key = inkey();
-        if (key >= '1' && key < '5') flag = '*';
-        if (key > '5' && key <= '9') flag = '*';
-        }
-      }
-    xdir = 0;
-    ydir = 0;
-    switch (key) {
-      case '2':ydir = 1; break;
-      case '8':ydir = -1; break;
-      case '4':xdir = -1; break;
-      case '6':xdir = 1; break;
-      case '1':xdir = -1; ydir = 1; break;
-      case '3':xdir = 1; ydir = 1; break;
-      case '7':xdir = -1; ydir = -1; break;
-      case '9':xdir = 1; ydir = -1; break;
-      }
-    monster = get_monster(player.x + xdir,player.y + ydir);
-    if (monster == NULL) {
-      clear_prompt();
-      msg("No one there ! ! !",14);
-      }
-    if (monster != NULL) {
-      if ((monster->special & MS_FRIENDLY) == 0) {
-        clear_prompt();
-        prompt("Die Scum!!!");
-        }
-      else {
-        if ((monster->special & MS_TALKED) == 0) {
-          monster->special |= MS_TALKED;
-          flag = ' ';
-          i = 0;
-          while (trophies[i].criteria_type < 999) {
-            if (trophies[i].criteria_type == TC_TRICK) {
-              if (player.invent[I_ARMR].link >= trophies[i].control[0] &&
-                  player.invent[I_ARMR].link <= trophies[i].control[1] &&
-                  (player.invent[I_RHND].link == trophies[i].control[2] ||
-                   player.invent[I_LHND].link == trophies[i].control[2])
-                 ) {
-                stats.counts[trophies[i].control[3]] |= 
-                     ( 1 << (player.invent[I_ARMR].link - trophies[i].control[0]));
-                msg("Trick or Treat",15);
-                special(84,NULL);
-                flag = '*';
-                }
-              }
-            i++;
-            }
-          if (flag == ' ' && player.in_city == 'Y' && player.city == 17) special(51,NULL);
-            else special(20,NULL);
-          stats.counts[STAT_CONVERSATIONS]++;
-          }
-        else {
-          clear_prompt();
-          msg("Hello!!",9);
-          }
-        }
-      }
-    } /* void talk() */
-
-  void light_torch() {
-    if (player.torch > 0) {
-      player.torch--;
-      player.effect[PE_LIGHT] = 2000;
-      show_side();
-      show_map();
-      show_player();
-      }
-    } /* void light_torch() */
-
-  void add_to_party(NPC_REC* monster,Int32 x,Int32 y) {
-    Int32 pos;
-    if (player.party[1].hp == 0) pos = 1;
-      else if (player.party[2].hp == 0) pos = 2;
-      else if (player.party[3].hp == 0) pos = 3;
-      else if (player.party[4].hp == 0) pos = 4;
-      else if (player.party[5].hp == 0) pos = 5;
-      else pos = 0;
-    if (pos>0) {
-      clear_prompt();
-      msg("I would be Honored!!!",15);
-      monster->special |= MS_FRIENDLY;
-      player.party[pos] = *monster;
-      player.party[pos].exp = needed(player.party[pos].level);
-      player.party[pos].time = -1;
-      player.party[pos].hp = player.party[pos].level * 9;
-      player.party[i].attack = 2 * player.party[i].level;
-      player.party[i].defense = 2 * player.party[i].level;
-      if (player.party[i].mana > 0)
-        player.party[i].mana = 25 * player.party[i].level;
-      player.map[x][y] = player.party[pos].prev;
-      if (player.effect[PE_HEROIC] > 0) {
-        player.party[pos].hp *= player.effect[PE_HEROIC];
-        }
-      show_spot(x,y);
-      }
-    else {
-     clear_prompt();
-     msg("Your party seems full as it is!!",14);
-     }
-  }
-
-  void join() {
-    char key;
-    char flag;
-    NPC_REC*  monster;
-    Int32  xdir,ydir;
-    key = item_dir(-1);
-    if (key == ' ') {
-      clear_prompt();
-      prompt("Ask who to join?");
-      flag = ' ';
-      while (flag == ' ') {
-        key = inkey();
-        if (key >= '1' && key < '5') flag = '*';
-        if (key > '5' && key <= '9') flag = '*';
-        }
-      }
-    xdir = 0;
-    ydir = 0;
-    switch (key) {
-      case '2':ydir = 1; break;
-      case '8':ydir = -1; break;
-      case '4':xdir = -1; break;
-      case '6':xdir = 1; break;
-      case '1':xdir = -1; ydir = 1; break;
-      case '3':xdir = 1; ydir = 1; break;
-      case '7':xdir = -1; ydir = -1; break;
-      case '9':xdir = 1; ydir = -1; break;
-      }
-    monster = get_monster(player.x + xdir,player.y + ydir);
-    if (monster == NULL) {
-      clear_prompt();
-      msg("No one there ! ! !",14);
-      }
-    if (monster != NULL) {
-      if ((monster->special2 & M2_PACIFIED) != 0) {
-        if (u_random(100)<(50+(player.level-monster->level)*10)) {
-          add_to_party(monster,player.x+xdir,player.y+ydir);
-          }
-        else {
-            clear_prompt();
-            msg("No Thanks.",14);
-          }
-        }
-      else if ((monster->special & MS_FRIENDLY) == 0) {
-          clear_prompt();
-          msg("No Way Scum!!!",14);
-        }
-      else
-        if ((monster->special & MS_JOIN) == 0) {
-          monster->special |= MS_JOIN;
-            if (u_random(100)<(50+(player.level-monster->level)*10)) {
-              add_to_party(monster,player.x+xdir,player.y+ydir);
-              }
-            else {
-                clear_prompt();
-                msg("No Thanks.",14);
-              }
-          }
-        else {
-            clear_prompt();
-            msg("No Thanks.",14);
-          }
-    }
-    check_mount();
-    } /* void join() */
-
-  Int32 is_merchant() {
-    Int32 flag;
-    Int32 i;
-    flag = -1;
-    i = 0;
-    while (flag == -1) {
-      if (player.region == shops[i].region &&
-          player.land_x == shops[i].rx &&
-          player.land_y == shops[i].ry &&
-          player.x >= shops[i].cx-1 &&
-          player.x <= shops[i].cx+1 &&
-          player.y >= shops[i].cy-1 &&
-          player.y <= shops[i].cy+1) flag = i;
-      if (shops[i].shoptype == 999) flag = -2;
-      i++;
-      }
-    if (flag >= 0) return -1;
-    return 0;
-    }
-
-  void buy_item() {
-    Int32 flag;
-    Int32 x,y;
-    Int32 price;
-    OBJECT_REC item;
-    OBJECT_REC* pitem;
-    flag = 0;
-    for (y=player.y-1; y<=player.y+1; y++)
-      for (x=player.x-1; x<=player.x+1; x++)
-        if (player.map[x][y] == 536) flag = -1;
-    if (flag == -1) {
-      pitem = NULL;
-      if (u_random(1000) < 10) pitem = find_linked_item(532);
-      else if (u_random(1000) < 100) pitem = find_linked_item(533);
-      else if (u_random(1000) < 500) pitem = find_linked_item(535);
-      else pitem = find_linked_item(534);
-      price = 1000;
-      if (player.in_city == 'N') {
-        price = 300 - (player.d_level * 10);
-        }
-      if (price < 200) price = 200;
-      if (get_gold() < price) {
-        msg("Not enough gold",14);
-        pitem = NULL;
-        }
-      if (pitem != NULL) {
-        sub_gold(price);
-        item = *pitem;
-        item.flags |= OF_IDENT;
-        inventory(&item);
-        show_screen();
-        }
-      }
-    for (i=0; i<5; i++) {
-      if (player.region == player.houses[i].region &&
-          player.land_x == player.houses[i].rx &&
-          player.land_y == player.houses[i].ry &&
-          player.x >= player.houses[i].cx-1 &&
-          player.x <= player.houses[i].cx+1 &&
-          player.y >= player.houses[i].cy-1 &&
-          player.y <= player.houses[i].cy+1) {
-        saveScreen();
-        house_inventory(i);
-        restoreScreen();
-        return;
-        }
-      }
-    flag = -1;
-    i = 0;
-    while (flag == -1) {
-      if (player.region == forsale[i].region &&
-          player.land_x == forsale[i].rx &&
-          player.land_y == forsale[i].ry &&
-          player.x >= forsale[i].cx-1 &&
-          player.x <= forsale[i].cx+1 &&
-          player.y >= forsale[i].cy-1 &&
-          player.y <= forsale[i].cy+1) flag = i;
-      if (forsale[i].region == 999) flag = -2;
-      i++;
-      }
-    for (i=0; i<5; i++) {
-      if (forsale[i].region == player.houses[i].region &&
-          forsale[i].rx == player.houses[i].rx &&
-          forsale[i].ry == player.houses[i].ry &&
-          forsale[i].cx == player.houses[i].cx &&
-          forsale[i].cy == player.houses[i].cy) flag = -1;
-      }
-    if (flag >= 0) {
-      saveScreen();
-      buy_house(flag);
-      restoreScreen();
-      return;
-      }
-
-    flag = -1;
-    i = 0;
-    while (flag == -1) {
-      if (player.region == shops[i].region &&
-          player.land_x == shops[i].rx &&
-          player.land_y == shops[i].ry &&
-          player.x >= shops[i].cx-1 &&
-          player.x <= shops[i].cx+1 &&
-          player.y >= shops[i].cy-1 &&
-          player.y <= shops[i].cy+1) flag = i;
-      if (shops[i].shoptype == 999) flag = -2;
-      i++;
-      }
-    if (flag >= 0) {
-      saveScreen();
-      switch (shops[flag].shoptype) {
-        case  0:shop(shops[flag].name,SHOP_WEAP); break;
-        case  1:shop(shops[flag].name,SHOP_ARMR); break;
-        case  2:shop(shops[flag].name,SHOP_ALCH); break;
-        case  3:shop(shops[flag].name,SHOP_JEWL); break;
-        case  4:shop(shops[flag].name,SHOP_BOOK); break;
-        case  5:shop(shops[flag].name,SHOP_ROBE); break;
-        case  6:shop(shops[flag].name,SHOP_MAGC); break;
-        case  7:library(shops[flag].name); break;
-        case  8:tavern(shops[flag].name); break;
-        case  9:school(shops[flag].name); break;
-        case 10:travel(shops[flag].name); break;
-        case 11:shop(shops[flag].name,SHOP_FOOD); break;
-        case 12:pawn(shops[flag].name,get_city()); break;
-        case 13:temple(shops[flag].name); break;
-        case 14:cavalier(shops[flag].name); break;
-        case 15:mounts(shops[flag].name); break;
-        case 16:bank(shops[flag].name); break;
-        case 17:shop(shops[flag].name,SHOP_CRFT); break;
-        case 18:shop(shops[flag].name,SHOP_SPEL); break;
-        case 19:shop(shops[flag].name,SHOP_RECP); break;
-        }
-/*      show_screen(); */
-      restoreScreen();
-      show_player();
-      }
-    } /* void buy_item() */
-
-  void find_closest_mob() {
-    Int32 dist;
-    Int32 closestX;
-    Int32 closestY;
-    dist = 50000;
-    closestX = 0;
-    closestY = 0;
-    for (x=1; x<100; x++)
-      for (y=1; y<100; y++) {
-        if (player.map[x][y] < 0) {
-          if (sqr(x-player.x) + sqr(y-player.y) < dist) {
-            dist = sqr(x-player.x) + sqr(y-player.y);
-            closestX = x;
-            closestY = y;
-            }
-          }
-        }
-    target_x = closestX;
-    target_y = closestY;
-    }
-
-  void gps() {
-    char buffer[20];
-    sprintf(buffer,"Region    : %d",player.region);
-    msg(buffer,15);
-    sprintf(buffer,"Region X,Y: %d,%d",player.land_x,player.land_y);
-    msg(buffer,15);
-    sprintf(buffer,"X,Y       : %d,%d",player.x,player.y);
-    msg(buffer,15);
-    }
-
-  Int32 check_quit() {
-    Int32 key;
-    saveScreen();
-    clrscr();
-    textcolor(12); gotoxy(35,8); txt_write("WARNING!!!");
-    textcolor(15); gotoxy(6,10); txt_write("Using the <Q>uit command will permenently end your current character.");
-    textcolor(15); gotoxy(6,11); txt_write("Are you sure you want to permenently end this character (Y/N)?");
-    key = ' ';
-    while (key != 'Y' && key != 'N') {
-      key = inkey();
-      if (key == 'y') key = 'Y';
-      if (key == 'n') key = 'N';
-      }
-    restoreScreen();
-    return (key == 'Y') ? -1 : 0;
-    }
-
-   Int32 check_in_corridor() {
-     return (in_room(player.x, player.y)) ? 0 : -1;
-/*
-     Int32 walls;
-     walls = 0;
-     if (player.map[player.x-1][player.y] == 21) walls++;
-     if (player.map[player.x+1][player.y] == 21) walls++;
-     if (player.map[player.x][player.y-1] == 21) walls++;
-     if (player.map[player.x][player.y+1] == 21) walls++;
-     return (walls >= 2) ? -1 : 0;
-*/
-     }
-
-   void run() {
-     msg("Run dir?",14);
-     get_dir(&run_x,&run_y);
-     in_corridor = check_in_corridor();
-     }
-
-   void check_stop_running() {
-     Int32 x;
-     Int32 y;
-     if (valid_move(player.x+run_x,player.y+run_y) == ' ') {
-       run_x = 0;
-       run_y = 0;
-       return;
-       }
-     if (player.map[player.x+run_x][player.y+run_y] == 24 ||
-         player.map[player.x+run_x][player.y+run_y] == 25) {
-       run_x = 0;
-       run_y = 0;
-       return;
-       }
-     for (y=player.y-1; y<= player.y+1; y++)
-       for (x=player.x-1; x<= player.x+1; x++) {
-         if (player.map[x][y] < 0) {
-           run_x = 0;
-           run_y = 0;
-           return;
-           }
-         }
-     if (!in_corridor && check_in_corridor()) in_corridor = -1;
-     if (in_corridor && !check_in_corridor()) {
-       run_x = 0;
-       run_y = 0;
-       }
-     }
 
   /* **************************************** */
   /* ***** Actual start of dungeon code ***** */
@@ -902,7 +902,7 @@ void cave() {
      show_time();
      show_player();
      takes_time = 'Y';
-     if (run_x != 0 || run_y != 0) check_stop_running();
+     if (run_x != 0 || run_y != 0) check_stop_running(&in_corridor);
       if (player.effect[PE_SLEEP] != 0) key = ' ';
         else {
           if (run_x == -1 && run_y == 0) key = '4';
@@ -917,7 +917,7 @@ void cave() {
           }
       if (player.effect[PE_FEAR] > 0 && 
           ((key >= '1' && key <= '9') || key == 'f')) {
-        find_closest_mob();
+        find_closest_mob(&x,&y);
         key = fear_dir(player.x,player.y,target_x,target_y);
         }
       if (player.effect[PE_CONFUSED] > 0) {
@@ -947,7 +947,7 @@ void cave() {
         case '9':move(1,-1); break;
         case '1':move(-1,1); break;
         case '3':move(1,1); break;
-        case '5':run(); break;
+        case '5':run(&in_corridor); break;
         case '>':down_level(-1); break;
         case '<':up_level(); break;
         case '}':save_gear('N',-1); break;
@@ -1021,13 +1021,13 @@ void cave() {
         case KY_C_F12:ctrl_fkey_pressed(12); break;
         case 'x':transcribe(); break;
         case 'n':nap(); break;
-        case 't': if (is_merchant()) buy_item(); else talk();
+        case 't': if (is_merchant()) buy_item(&i); else talk();
                    break;
         case 'T':throw(' '); break;
         case '-':throw('L'); break;
         case '=':throw('R'); break;
         case '+':throw('R'); break;
-        case 'j':join(); break;
+        case 'j':join(i); break;
         case 'J':lock_door(); break;
         case 'p':party();
                  takes_time = 'N';
@@ -1046,7 +1046,7 @@ void cave() {
                  msg("Words do Not work Here!!",12);
                  }
               break;
-        case 'b':buy_item(); break;
+        case 'b':buy_item(&i); break;
         case 'S':
               if (player.effect[PE_HEROIC] >= 0) exitf = 4;
               else {
@@ -1404,7 +1404,7 @@ void cave() {
             if (player.cmana<get_mmana()) player.cmana = player.cmana+1;
             show_side();
           }
-        take_time();
+        cave_take_time();
         if (player.in_city == 'Y')
           if (player.x == 1 || player.x == 100 ||
               player.y == 1 || player.y == 100) {
