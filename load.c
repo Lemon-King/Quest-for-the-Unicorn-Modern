@@ -779,13 +779,78 @@ void load_player() {
     }
   }
 
+/* Starts reading file with its version line, left in version. Returns 0 unless it is a version load() reads. */
+static Int32 read_version(FILE* file, char* version) {
+  save_file = file;
+  dbuffer_pos = 0;
+  dbuffer_count = 0;
+  eosf = 0;
+  encrypted = 0;
+  offset = 1;
+  read_line(version);
+
+  if (strcmp(version, "v7.0.0") == 0) return 1;
+
+  if (strcmp(version, "v7.0.0e") == 0) {
+    encrypted = 0xff;
+    return 1;
+    }
+
+  return 0;
+  }
+
+static void load_player_summary(SAVE_SUMMARY* summary) {
+  byte flag;
+  char line[1024];
+  char *next;
+  flag = 0xff;
+  while (flag) {
+    read_line(line);
+    if (eosf) flag = 0;
+    if (_strnicmp(line, "}",1) == 0) flag = 0;
+    if (flag) {
+      next = next_word(line);
+      if (match(line, "Level ")) summary->level = atoi(next);
+      if (match(line, "Class ")) summary->class = atoi(next);
+      if (match(line, "TimePlayed ")) summary->time_played = atoi(next);
+      if (match(line, "Effect") && atoi(line+6) == PE_HEROIC) summary->mode = atoi(next);
+      }
+    }
+  }
+
+/* Reads the Player section of <name>.sav. Returns 0 when load() could not load the save. */
+Int32 load_summary(char* name, SAVE_SUMMARY* summary) {
+  FILE* file;
+  char  line[1024];
+  char  filename[sizeof(backupname)];
+  Int32 readable;
+
+  memset(summary, 0, sizeof(SAVE_SUMMARY));
+  strcpy(filename,name);
+  strcat(filename,".sav");
+
+  file = fopen(filename,"rb");
+  if (file == NULL) return 0;
+
+  readable = read_version(file, line);
+  while (readable && !eosf) {
+    read_line(line);
+    if (match(line, "Player {")) {
+      load_player_summary(summary);
+      break;
+      }
+    }
+
+  fclose(file);
+  return (readable && summary->class >= 1 && summary->class <= NUM_CLASSES);
+  }
+
 void load() {
-  Int32 change_set;
+  Int32 readable;
   char line[1024];
   char filename[sizeof(backupname)];
 //  char ver[40];
 
-  change_set = 0;
   strcpy(filename,loadname);
   strcat(filename,".sav");
   strcpy(backupname,loadname);
@@ -795,11 +860,7 @@ void load() {
     printf("Fatal Error: Could not open %s\n",filename);
     exit(1);
     }
-  dbuffer_pos = 0;
-  dbuffer_count = 0;
-  eosf = 0;
-  encrypted = 0;
-  read_line(buffer);
+  readable = read_version(save_file, buffer);
   if (buffer[1] == '6' || buffer[1] == '5') {
     printf("Save file version %s is no longer supported by the native loader\n",buffer);
     fclose(save_file);
@@ -812,15 +873,11 @@ void load() {
     fclose(save_file);
     exit(1);
     }
-  change_set = -1;
-  if (strcmp(buffer, "v7.0.0") == 0) { change_set = 0; encrypted = 0; }
-  if (strcmp(buffer, "v7.0.0e") == 0) { change_set = 0; encrypted = -1; }
-  if (change_set < 0) {
+  if (!readable) {
     printf("Save file does not appear to be correct.  Cannot load\n");
     fclose(save_file);
     exit(1);
     }
-  offset = 1;
   while (!eosf) {
     read_line(line);
     if (match(line, "Player {")) load_player();

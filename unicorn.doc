@@ -266,7 +266,9 @@
        The title screen offers New Game and Load Game.  Use 8 and 2 (or
      the arrow keys) to choose one and ENTER to select it.  Load Game
      lists the saved games (.sav files) in the game's folder, most
-     recently saved first.  Use 8 and 2 to select a game, 9 and 3 (or
+     recently saved first, with each character's class, level, game
+     mode and time played.  A file the game cannot load is shown as
+     Unreadable.  Use 8 and 2 to select a game, 9 and 3 (or
      PgUp and PgDn) to move a page at a time, ENTER to load it and ESC to
      return to the title screen.  A game loaded this way reads its
      character config file too, except for the screen size, which is

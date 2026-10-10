@@ -97,6 +97,10 @@ static Int32 mode_index(Int32 mode) {
   return 0;
   }
 
+char* mode_name(Int32 mode) {
+  return mode_names[mode_index(mode)];
+  }
+
 static Int32 is_editable(Int32 i, char rules_editable) {
   return (option_rows[i].rule != 'Y' || rules_editable == 'Y');
   }
@@ -117,7 +121,7 @@ static Int32 next_option(Int32 i, Int32 dir, char rules_editable) {
 
 static void format_value(OPTION_ROW* row, char* text) {
   switch (row->kind) {
-    case OPT_MODE:   sprintf(text, "%-8s", mode_names[mode_index(*row->number)]); break;
+    case OPT_MODE:   sprintf(text, "%-8s", mode_name(*row->number)); break;
     case OPT_SWITCH: sprintf(text, "%-8s", (*row->flag == row->on) ? "On" : "Off"); break;
     case OPT_NUMBER: sprintf(text, "%-8d", *row->number); break;
     }

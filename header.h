@@ -869,6 +869,14 @@ typedef struct {
   Int32          treasurey;
   } DUNGEON;
 
+/* What the Load Game screen shows of a save, read by load_summary(). */
+typedef struct {
+  Int32       class;
+  Int32       level;
+  Int32       mode;
+  Int32       time_played;
+  } SAVE_SUMMARY;
+
 typedef struct {
   char      name[21];
   byte      age;
@@ -1255,6 +1263,7 @@ extern Int32 find_gen(char* search);
 extern Int32 find_lore(char* search);
 extern char inkey();
 extern void load();
+extern Int32 load_summary(char* name, SAVE_SUMMARY* summary);
 extern void make_c();
 extern void make_h();
 extern void make_n();
@@ -1508,6 +1517,7 @@ extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();
 extern void read_character_rules();
+extern char* mode_name(Int32 mode);
 extern Int32 can_drop(Int32 destx,Int32 desty,char check_inair);
 extern Int32 in_room(Int32 x,Int32 y);
 extern void light_room();

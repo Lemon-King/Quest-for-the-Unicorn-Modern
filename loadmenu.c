@@ -8,7 +8,7 @@
  *******************************************************************
 */
 
-/* The Load Game screen: the saved games in the working directory, newest first. */
+/* The Load Game screen: the saved games in the working directory, newest first, with each one's character. */
 
 #include "header.h"
 
@@ -17,16 +17,26 @@
 #define LIST_LINE        4
 #define LIST_ROWS       18
 #define COUNT_LINE      22
-#define CURSOR_COLUMN    5
-#define NAME_COLUMN      9
-#define NAME_WIDTH      45
-#define DATE_COLUMN     56
-#define DATE_WIDTH      16
+#define CURSOR_COLUMN    2
+#define NAME_COLUMN      6
+#define NAME_WIDTH      20
+#define CLASS_COLUMN    28
+#define CLASS_WIDTH     10
+#define LEVEL_COLUMN    40
+#define LEVEL_WIDTH      3
+#define MODE_COLUMN     45
+#define MODE_WIDTH       6
+#define TIME_COLUMN     53
+#define TIME_WIDTH      15
+#define DATE_COLUMN     70
+#define DATE_WIDTH      10
 #define ROW_WIDTH       (DATE_COLUMN + DATE_WIDTH - CURSOR_COLUMN)
 
 typedef struct {
-  char   name[sizeof(loadname)];
-  time_t saved;
+  char         name[sizeof(loadname)];
+  time_t       saved;
+  SAVE_SUMMARY summary;
+  Int32        readable;
   } SAVED_GAME;
 
 typedef struct {
@@ -37,6 +47,7 @@ typedef struct {
 
 static void add_saved_game(SAVE_LIST* list, char* file_name, time_t saved) {
   SAVED_GAME* games;
+  SAVED_GAME* game;
   Int32       length;
   length = strlen(file_name);
 
@@ -52,9 +63,11 @@ static void add_saved_game(SAVE_LIST* list, char* file_name, time_t saved) {
     list->capacity += 16;
     }
 
-  strcpy(list->games[list->count].name, file_name);
-  list->games[list->count].name[length - 4] = 0;
-  list->games[list->count].saved = saved;
+  game = &list->games[list->count];
+  strcpy(game->name, file_name);
+  game->name[length - 4] = 0;
+  game->saved = saved;
+  game->readable = load_summary(game->name, &game->summary);
   list->count++;
   }
 
@@ -99,25 +112,52 @@ static void close_save_list(SAVE_LIST* list) {
   list->capacity = 0;
   }
 
+/* Writes value padded or cut to width, so it covers whatever the row showed before. */
+static void write_field(Int32 column, Int32 line, Int32 width, char* value) {
+  char text[81];
+  sprintf(text, "%-*.*s", width, width, value);
+  gotoxy(column, line); txt_write(text);
+  }
+
+static void draw_summary(SAVED_GAME* game, Int32 line) {
+  char level[16];
+  char played[32];
+
+  if (!game->readable) {
+    write_field(CLASS_COLUMN, line, TIME_COLUMN + TIME_WIDTH - CLASS_COLUMN, "Unreadable");
+    return;
+    }
+
+  sprintf(level, "%*d", LEVEL_WIDTH, game->summary.level);
+  convert_time(game->summary.time_played, played);
+
+  write_field(CLASS_COLUMN, line, CLASS_WIDTH, classes[game->summary.class - 1].name);
+  write_field(LEVEL_COLUMN, line, LEVEL_WIDTH, level);
+  write_field(MODE_COLUMN, line, MODE_WIDTH, mode_name(game->summary.mode));
+  write_field(TIME_COLUMN, line, TIME_WIDTH, played);
+  }
+
 static void draw_saved_game(SAVE_LIST* list, Int32 i, Int32 top, char selected) {
-  char       name[NAME_WIDTH + 1];
-  char       stamp[DATE_WIDTH + 1];
-  struct tm* when;
-  Int32      line;
+  SAVED_GAME* game;
+  char        stamp[DATE_WIDTH + 1];
+  struct tm*  when;
+  Int32       line;
+  game = &list->games[i];
   line = LIST_LINE + i - top;
 
   textcolor(15);
   gotoxy(CURSOR_COLUMN, line); txt_write((selected == 'Y') ? "-->" : "   ");
 
   textcolor((selected == 'Y') ? 14 : 2);
-  sprintf(name, "%-*.*s", NAME_WIDTH, NAME_WIDTH, list->games[i].name);
-  gotoxy(NAME_COLUMN, line); txt_write(name);
+  write_field(NAME_COLUMN, line, NAME_WIDTH, game->name);
 
-  when = localtime(&list->games[i].saved);
-  if (when == NULL) strcpy(stamp, "");
-    else strftime(stamp, sizeof(stamp), "%Y-%m-%d %H:%M", when);
   textcolor(7);
-  gotoxy(DATE_COLUMN, line); txt_write(stamp);
+  draw_summary(game, line);
+
+  when = localtime(&game->saved);
+  if (when == NULL) strcpy(stamp, "");
+    else strftime(stamp, sizeof(stamp), "%Y-%m-%d", when);
+  write_field(DATE_COLUMN, line, DATE_WIDTH, stamp);
   }
 
 static void draw_page(SAVE_LIST* list, Int32 top) {
@@ -154,6 +194,10 @@ static void draw_load_screen(SAVE_LIST* list) {
 
   textcolor(11);
   gotoxy(NAME_COLUMN, LIST_LINE - 1); txt_write("Saved Game");
+  gotoxy(CLASS_COLUMN, LIST_LINE - 1); txt_write("Class");
+  gotoxy(LEVEL_COLUMN, LIST_LINE - 1); txt_write("Lvl");
+  gotoxy(MODE_COLUMN, LIST_LINE - 1); txt_write("Mode");
+  gotoxy(TIME_COLUMN, LIST_LINE - 1); txt_write("Time Played");
   gotoxy(DATE_COLUMN, LIST_LINE - 1); txt_write("Last Saved");
 
   textcolor(3);

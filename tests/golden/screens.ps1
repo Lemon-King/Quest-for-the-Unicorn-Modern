@@ -41,7 +41,7 @@ Reset-WorkFolder
 Invoke-Driver launch -nmu
 Save-Screen "title-menu"                 # Gothic title, notice, "--> New Game"
 Invoke-Driver keys down enter
-Save-Screen "load-menu"                  # Load Game, one row: Golden 2026-01-01 12:00
+Save-Screen "load-menu"                  # Load Game, one row: Golden, Fighter 1, Casual, 2026-01-01
 Invoke-Driver keys esc up enter          # Esc leaves the title menu's cursor on Load Game
 Save-Screen "legends"                    # first page after the title
 Invoke-Driver keys enter
