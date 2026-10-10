@@ -1093,13 +1093,6 @@ LINK Int32                debug_tab;
 /* advance.c */
 extern void advancement();
 extern void advance_stat();
-extern void skills1();
-extern void skills2();
-extern void skills3();
-extern void skills4();
-extern void skills5();
-extern void skills6();
-extern void skills7();
 
 /* cave.c */
 extern void cave();

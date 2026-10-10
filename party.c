@@ -10,142 +10,143 @@
 
 #include "header.h"
 
-void party() {
-
-  void party_show_top() {
-    Int32  i;
-    char buffer[80];
-    gotoxy(24,1); textcolor(2);
-    txt_write("  #  Name               Lvl     Hp");
-    for (i=1; i<=5; i++) {
-      gotoxy(25,i + 2); textcolor(14);
-      sprintf(buffer,"%2d: ",i);
+static void party_show_top(void) {
+  Int32  i;
+  char buffer[80];
+  gotoxy(24,1); textcolor(2);
+  txt_write("  #  Name               Lvl     Hp");
+  for (i=1; i<=5; i++) {
+    gotoxy(25,i + 2); textcolor(14);
+    sprintf(buffer,"%2d: ",i);
+    txt_write(buffer);
+    if (player.party[i].hp != 0) {
+      txt_write(player.party[i].name);
+      gotoxy(49,i+2);
+      sprintf(buffer,"%2d    %3d",player.party[i].level,player.party[i].hp);
       txt_write(buffer);
-      if (player.party[i].hp != 0) {
-        txt_write(player.party[i].name);
-        gotoxy(49,i+2);
-        sprintf(buffer,"%2d    %3d",player.party[i].level,player.party[i].hp);
-        txt_write(buffer);
-        }
-      else {
-        txt_write("                                                  ");
-        }
       }
-    gotoxy(40,9); textcolor(14);
-    txt_write("P");
-    gotoxy(30,10); if (player.party[1].hp != 0) textcolor(14); else textcolor(8);
-    txt_write("1");
-    gotoxy(50,10); if (player.party[2].hp != 0) textcolor(14); else textcolor(8);
-    txt_write("2");
-    gotoxy(20,11); if (player.party[3].hp != 0) textcolor(14); else textcolor(8);
-    txt_write("3");
-    gotoxy(60,11); if (player.party[4].hp != 0) textcolor(14); else textcolor(8);
-    txt_write("4");
-    gotoxy(40,11); if (player.party[5].hp != 0) textcolor(14); else textcolor(8);
-    txt_write("5");
-    }
-
-  void show_member(Int32 member) {
-    Int32  i;
-    char key;
-    char flag;
-    char buffer[80];
-    double cost;
-  
-    void show_stats() {
-        textcolor(2);
-        gotoxy(20,16); txt_write("Name   :");
-        gotoxy(20,17); txt_write("Level  :");
-        gotoxy(20,18); txt_write("Hp     :");
-        gotoxy(20,19); txt_write("Mana   :");
-        gotoxy(20,20); txt_write("Attack :");
-        gotoxy(20,21); txt_write("Defense:");
-        gotoxy(20,22); txt_write("Orders :");
-        gotoxy(40,17); txt_write("Time      :");
-        gotoxy(40,18); txt_write("Sleeping  :");
-        gotoxy(40,19); txt_write("Scared    :");
-        gotoxy(40,20); txt_write("Experience:");
-        gotoxy(40,21); txt_write("Next Level:");
-        textcolor(14);
-        gotoxy(28,16); txt_write(player.party[member].name);
-        sprintf(buffer,"%d",player.party[member].level);
-        gotoxy(28,17); txt_write(buffer);
-        sprintf(buffer,"%d",player.party[member].hp);
-        gotoxy(28,18); txt_write(buffer);
-        sprintf(buffer,"%d",player.party[member].mana);
-        gotoxy(28,19); txt_write(buffer);
-        sprintf(buffer,"%d",player.party[member].attack);
-        gotoxy(28,20); txt_write(buffer);
-        sprintf(buffer,"%d",player.party[member].defense);
-        gotoxy(28,21); txt_write(buffer);
-        gotoxy(28,22);
-        if ((player.party[member].special & MS_EVADE) == 0)
-          txt_write("Attack"); else txt_write("Evade ");
-        gotoxy(51,17);
-        if (player.party[member].time < 0)
-          txt_write("Perm");
-        else {
-          sprintf(buffer,"%d      ",player.party[member].time);
-          txt_write(buffer);
-          }
-         gotoxy(51,18);
-        if (player.party[member].sleep == 0)
-          txt_write("No "); else txt_write("Yes ");
-         gotoxy(51,19);
-        if (player.party[member].fear == 0)
-          txt_write("No "); else txt_write("Yes ");
-        gotoxy(51,20);
-        sprintf(buffer,"%9.0f",player.party[member].exp);
-        txt_write(buffer);
-        gotoxy(51,21);
-        sprintf(buffer,"%9.0f",needed(player.party[member].level+1));
-        txt_write(buffer);
-      }
-    flag = ' ';
-    for (i=16; i<=22; i++) {
-      gotoxy(28,i);
-      txt_write("                                                ");
-      }
-    while (flag == ' ') {
-      flag = '*';
-        show_stats();
-      if (player.in_city == 'Y') {
-        cost = (needed(player.party[member].level + 1) - player.party[member].exp);
-        if (cost <= get_gold()) {
-          gotoxy(20,23);
-          sprintf(buffer,"Training to next level will cost %.0f Gold",cost);
-          txt_write(buffer);
-          gotoxy(20,24); txt_write("Do you wish to train member ?");
-          sprintf(buffer,"Gold=%d",get_gold());
-          gotoxy(34,25); txt_write(buffer);
-          key = ' ';
-          while (key != 'Y' && key != 'N') {
-            key = inkey();
-            if (key == 'n') key = 'N';
-            if (key == 'y') key = 'Y';
-            }
-          if (key == 'Y') {
-            player.party[member].exp += cost + 1;
-            player.party[member].level++;
-            player.party[member].attack += 2;
-            player.party[member].defense += 2;
-            if (player.party[member].mana != 0)
-              player.party[member].mana += 25;
-            sub_gold(cost);
-            player.party[member].hp = player.party[member].level * 9;
-            party_show_top();
-            show_stats();
-            }
-          }
-        else
-          flag = '*';
-          gotoxy(20,23); txt_write("                                                  ");
-          gotoxy(20,24); txt_write("                                                  ");
-          gotoxy(20,25); txt_write("                                                  ");
-        }
+    else {
+      txt_write("                                                  ");
       }
     }
+  gotoxy(40,9); textcolor(14);
+  txt_write("P");
+  gotoxy(30,10); if (player.party[1].hp != 0) textcolor(14); else textcolor(8);
+  txt_write("1");
+  gotoxy(50,10); if (player.party[2].hp != 0) textcolor(14); else textcolor(8);
+  txt_write("2");
+  gotoxy(20,11); if (player.party[3].hp != 0) textcolor(14); else textcolor(8);
+  txt_write("3");
+  gotoxy(60,11); if (player.party[4].hp != 0) textcolor(14); else textcolor(8);
+  txt_write("4");
+  gotoxy(40,11); if (player.party[5].hp != 0) textcolor(14); else textcolor(8);
+  txt_write("5");
+  }
 
+static void show_member_stats(Int32 member) {
+  char buffer[80];
+  textcolor(2);
+  gotoxy(20,16); txt_write("Name   :");
+  gotoxy(20,17); txt_write("Level  :");
+  gotoxy(20,18); txt_write("Hp     :");
+  gotoxy(20,19); txt_write("Mana   :");
+  gotoxy(20,20); txt_write("Attack :");
+  gotoxy(20,21); txt_write("Defense:");
+  gotoxy(20,22); txt_write("Orders :");
+  gotoxy(40,17); txt_write("Time      :");
+  gotoxy(40,18); txt_write("Sleeping  :");
+  gotoxy(40,19); txt_write("Scared    :");
+  gotoxy(40,20); txt_write("Experience:");
+  gotoxy(40,21); txt_write("Next Level:");
+  textcolor(14);
+  gotoxy(28,16); txt_write(player.party[member].name);
+  sprintf(buffer,"%d",player.party[member].level);
+  gotoxy(28,17); txt_write(buffer);
+  sprintf(buffer,"%d",player.party[member].hp);
+  gotoxy(28,18); txt_write(buffer);
+  sprintf(buffer,"%d",player.party[member].mana);
+  gotoxy(28,19); txt_write(buffer);
+  sprintf(buffer,"%d",player.party[member].attack);
+  gotoxy(28,20); txt_write(buffer);
+  sprintf(buffer,"%d",player.party[member].defense);
+  gotoxy(28,21); txt_write(buffer);
+  gotoxy(28,22);
+  if ((player.party[member].special & MS_EVADE) == 0)
+    txt_write("Attack"); else txt_write("Evade ");
+  gotoxy(51,17);
+  if (player.party[member].time < 0)
+    txt_write("Perm");
+  else {
+    sprintf(buffer,"%d      ",player.party[member].time);
+    txt_write(buffer);
+    }
+   gotoxy(51,18);
+  if (player.party[member].sleep == 0)
+    txt_write("No "); else txt_write("Yes ");
+   gotoxy(51,19);
+  if (player.party[member].fear == 0)
+    txt_write("No "); else txt_write("Yes ");
+  gotoxy(51,20);
+  sprintf(buffer,"%9.0f",player.party[member].exp);
+  txt_write(buffer);
+  gotoxy(51,21);
+  sprintf(buffer,"%9.0f",needed(player.party[member].level+1));
+  txt_write(buffer);
+  }
+
+static void show_member(Int32 member) {
+  Int32  i;
+  char key;
+  char flag;
+  char buffer[80];
+  double cost;
+
+  flag = ' ';
+  for (i=16; i<=22; i++) {
+    gotoxy(28,i);
+    txt_write("                                                ");
+    }
+  while (flag == ' ') {
+    flag = '*';
+      show_member_stats(member);
+    if (player.in_city == 'Y') {
+      cost = (needed(player.party[member].level + 1) - player.party[member].exp);
+      if (cost <= get_gold()) {
+        gotoxy(20,23);
+        sprintf(buffer,"Training to next level will cost %.0f Gold",cost);
+        txt_write(buffer);
+        gotoxy(20,24); txt_write("Do you wish to train member ?");
+        sprintf(buffer,"Gold=%d",get_gold());
+        gotoxy(34,25); txt_write(buffer);
+        key = ' ';
+        while (key != 'Y' && key != 'N') {
+          key = inkey();
+          if (key == 'n') key = 'N';
+          if (key == 'y') key = 'Y';
+          }
+        if (key == 'Y') {
+          player.party[member].exp += cost + 1;
+          player.party[member].level++;
+          player.party[member].attack += 2;
+          player.party[member].defense += 2;
+          if (player.party[member].mana != 0)
+            player.party[member].mana += 25;
+          sub_gold(cost);
+          player.party[member].hp = player.party[member].level * 9;
+          party_show_top();
+          show_member_stats(member);
+          }
+        }
+      else
+        flag = '*';
+        gotoxy(20,23); txt_write("                                                  ");
+        gotoxy(20,24); txt_write("                                                  ");
+        gotoxy(20,25); txt_write("                                                  ");
+      }
+    }
+  }
+
+void party() {
   Int32 i=0,j=0;
   char temp;
   NPC_REC ptemp;
