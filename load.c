@@ -375,6 +375,31 @@ void load_fkey_spells() {
     }
   }
 
+void load_options() {
+  byte flag;
+  char line[1024];
+  char *next;
+  flag = 0xff;
+  while (flag) {
+    read_line(line);
+    if (eosf) flag = 0;
+    if (strncasecmp(line, "}",1) == 0) flag = 0;
+    if (flag) {
+      next = next_word(line);
+      if (match(line, "DungeonScaling ")) dungeon_scaling = *next;
+      if (match(line, "PartyCombat ")) party_combat_mode = *next;
+      if (match(line, "AutoTarget ")) auto_target = *next;
+      if (match(line, "AutoPickupGold ")) auto_pickup_gold = *next;
+      if (match(line, "AutoPickupTorch ")) auto_pickup_torch = *next;
+      if (match(line, "AutoOpenDoors ")) auto_open_doors = *next;
+      if (match(line, "AutoSearchWalls ")) auto_bump_walls = *next;
+      if (match(line, "DelayRanged ")) delay_ranged = atoi(next);
+      if (match(line, "DelayHit ")) delay_hit = atoi(next);
+      if (match(line, "DelayTraps ")) delay_trap = atoi(next);
+      }
+    }
+  }
+
 void load_stats() {
   byte flag;
   char line[1024];
@@ -810,6 +835,7 @@ void load() {
   while (!eosf) {
     read_line(line);
     if (match(line, "Player {")) load_player();
+    if (match(line, "Options {")) load_options();
     if (match(line, "Inventory {")) load_inventory();
     if (match(line, "Pack {")) load_pack();
     if (match(line, "PortableHole {")) load_portable_hole();
@@ -826,6 +852,7 @@ void load() {
     if (match(line, "GearManager {")) load_gear_manager();
     }
   close(save_file);
+  read_character_rules();
 #ifdef HC
   if (player.effect[PE_HEROIC] >= 0) {
     unlink(backupname);

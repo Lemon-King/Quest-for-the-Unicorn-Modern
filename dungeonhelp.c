@@ -57,6 +57,7 @@ void dungeon_help() {
 #endif
   help_item("n - Nap",26,23,4);
   help_item("o - Open door",26,23,4);
+  help_item("O - Options",26,23,4);
   help_item("p - Party commands",26,23,4);
   help_item("P - Pick up and pack",26,23,4);
   help_item("q - Quest log",26,23,4);

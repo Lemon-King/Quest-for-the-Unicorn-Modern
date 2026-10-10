@@ -751,6 +751,14 @@ void up_land() {
           show_land_player();
           show_side();
           break;
+      case 'O':
+          game_options();
+          graphmode();
+          show_land();
+          show_sm_land();
+          show_land_player();
+          show_side();
+          break;
       case '~':gps(); break;
       case KY_F1:tardis(1); break;
       case KY_F2:tardis(2); break;

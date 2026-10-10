@@ -118,6 +118,7 @@ OBJS = \
 	fkeys.o \
 	gainexp.o \
 	gamble.o \
+	gameoptions.o \
 	getalign.o \
 	getcity.o \
 	getclass.o \
@@ -437,6 +438,7 @@ fixname.o:          $(HEADERS) fixname.c
 fkeys.o:            $(HEADERS) fkeys.c
 gainexp.o:          $(HEADERS) gainexp.c
 gamble.o:           $(HEADERS) gamble.c
+gameoptions.o:      $(HEADERS) gameoptions.c
 getalign.o:         $(HEADERS) getalign.c
 getcity.o:          $(HEADERS) getcity.c
 getclass.o:         $(HEADERS) getclass.c

@@ -246,6 +246,23 @@ void save_player(FILE* file) {
     }
   }
 
+/* Options that are not already player.effect[] entries. */
+void save_options(FILE* file) {
+  char line[1024];
+  sprintf(line, "Options {");                               write_line(file, line);
+  sprintf(line, "  DungeonScaling %c", dungeon_scaling);    write_line(file, line);
+  sprintf(line, "  PartyCombat %c", party_combat_mode);     write_line(file, line);
+  sprintf(line, "  AutoTarget %c", auto_target);            write_line(file, line);
+  sprintf(line, "  AutoPickupGold %c", auto_pickup_gold);   write_line(file, line);
+  sprintf(line, "  AutoPickupTorch %c", auto_pickup_torch); write_line(file, line);
+  sprintf(line, "  AutoOpenDoors %c", auto_open_doors);     write_line(file, line);
+  sprintf(line, "  AutoSearchWalls %c", auto_bump_walls);   write_line(file, line);
+  sprintf(line, "  DelayRanged %d", delay_ranged);          write_line(file, line);
+  sprintf(line, "  DelayHit %d", delay_hit);                write_line(file, line);
+  sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
+  sprintf(line, "  }");                                     write_line(file, line);
+  }
+
 void save_known(FILE* file, KNOW_TYPE known, Int32 indents) {
   Int32 x, y;
   Int32 count;
@@ -495,6 +512,7 @@ void save_new() {
     else fprintf(file, "%s\n",VERSION);
   enc = 1;
   save_player(file);
+  save_options(file);
   save_pawn_shops(file);
   save_current_level(file);
   save_known_maps(file);

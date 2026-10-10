@@ -1063,6 +1063,12 @@ void cave() {
               restoreScreen();
               takes_time = 'N';
               break;
+        case 'O':
+              saveScreen();
+              game_options();
+              restoreScreen();
+              takes_time = 'N';
+              break;
         case 'h':healing(); break;
         case 'A':activate(player.x,player.y); break;
         case '?':dungeon_help();

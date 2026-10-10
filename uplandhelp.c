@@ -14,7 +14,6 @@ void upland_help() {
   textmode(3);
   textcolor(12); gotoxy(31,1);
   txt_writeln("Upland Commands:");
-  txt_writeln("");
   textcolor(14);
   txt_writeln("                           8 - Move Up");
   txt_writeln("                           2 - Move Down");
@@ -28,6 +27,7 @@ void upland_help() {
   txt_writeln("                           E - Enter/Exit a ship");
   txt_writeln("                           h - Hunt");
   txt_writeln("                           H - Show Icons");
+  txt_writeln("                           O - Options");
   txt_writeln("                           R - Show player record");
   txt_writeln("                           Q - Quit, NO SAVE");
   txt_writeln("                           v - View a direction");

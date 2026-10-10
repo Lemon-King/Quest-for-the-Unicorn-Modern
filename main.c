@@ -259,6 +259,7 @@ Int32 main2(Int32 argc,char** argv) {
     }
   else {
     new_game();
+    game_setup();
     make_char(0);
     mod_exit = 1;
     build_dungeon(7,0);

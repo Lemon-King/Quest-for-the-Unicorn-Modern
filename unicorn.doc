@@ -206,10 +206,13 @@
          Fn=macro             Assigne Fn macro (Ex. F1=Rs)
 
 
-       note: Switches -d, -c, -h, -e, -mc, and -ac, -nac only have an
-     effect on a new game.  These switches will have no effect on a game
-     that is loaded.  A loaded game will have the modes set when the
-     character was created.
+       note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
+     -apg, -napg, -apt, -napt, -aod, -naod, -asw, -nasw, -ac, -nac, -eds,
+     -nds, -fcd, -rcd, -mc, -dr, -dh, -dt) and their long options are
+     deprecated.  They only set the starting values of the New Game
+     Options screen.  Each character keeps its own options in its save
+     file, so these switches have no effect on a game that is loaded.
+     See "Game Options".
 
        note: Using -downgradedepth can only make dungeons shallower to a
      minimum depth of 2.  You cannot specify a depth that is greater than
@@ -231,7 +234,8 @@
      All the command line options except the downgrade options may be
      specified in this file.  This way if you have common options you like
      to use, you can put them in this file and then you will no longer need
-     to specify them on the command line.
+     to specify them on the command line.  Game options in this file only
+     set the starting values of the New Game Options screen.
 
      Character config file
      =====================
@@ -245,12 +249,48 @@
      specific configs is how the function keys are used.  For example on a
      warrior you may prefer the function keys access the gear manager while
      on a mage you would want them to access your spells.  Or you may want
-     to define different macros depending on the character.
+     to define different macros depending on the character.  Game options
+     are the exception: a loaded character always uses the options stored
+     in its save file.
 
      Loading a Saved Game
      ====================
        To load a saved game, just specify the name of the save file (no
      extension) on the command line. ex.  UNICORN JUDY
+
+     Game Options
+     ============
+       Before a new character is created, the New Game Options screen lets
+     you choose how the game will play.  Use 8 and 2 (or the arrow keys)
+     to select an option, 4 and 6 to change it, and ENTER when done.  The
+     screen starts with the values from unicorn.cfg and the command line.
+
+       Character rules are fixed once the character is created:
+
+         Game mode            Normal, Heroic, Epic or Casual (see below)
+         Dungeon depth        Levels in each dungeon, 2 to 10
+         Monster count        Monsters or groups per level, 10 to 60
+         Arena combat         Multi-monster arena combat
+         Dungeon scaling      Dungeon monsters scale to your level
+         Full party combat    Full damage between party and monsters
+
+       Preferences can be changed at any time by pressing O in the upland,
+     in towns and in dungeons:
+
+         Auto target          Target the nearest monster automatically
+         Auto pickup gold     Pick up gold you walk over
+         Auto pickup torches  Pick up torches you walk over
+         Auto open doors      Open doors you bump into
+         Auto search walls    Search when you bump into a wall
+         Ranged delay (ms)    Delay for ranged attack flight
+         Hit delay (ms)       Delay for the successful hit effect
+         Trap delay (ms)      Delay for showing trap effects
+
+       All of these options are saved with the character, so every saved
+     game keeps its own options.  A game saved by an older version keeps
+     its mode, depth, monster count and arena setting, and takes the other
+     options from unicorn.cfg and the command line the first time it is
+     loaded.
 
      Modes of Play
      =============
@@ -277,12 +317,8 @@
      save.  As a consequence of playing in this mode no scores will be
      recorded and you will not qualify for the Ritual of Rebirth.
 
-       The mode is set when the character is created.  If the -h, -e, or -c
-     command line switch was provided when the program is run for a new
-     character then the mode of the character will be set to the
-     appropriate switch.  After the character is created there is no longer
-     a need to provide the mode switch when starting the game, it is
-     automatically recorded in the character data.
+       The mode is chosen on the New Game Options screen when the character
+     is created, and is recorded in the character data.
 
      Upland Commands
      ===============
@@ -302,6 +338,7 @@
          h - Hunt for food
          E - Enter/Exit a ship
          R - Show player record
+         O - Options
          { - Save weapon set
          [ - Recall weapon set
          } - Save gear set
@@ -346,6 +383,7 @@
          b - Buy an item (Must be standing near a merchant)
          S - Save and exit
          R - Show player record
+         O - Options
          H - Show icons
          x - Transcribe spell
          - - Throw left hand
