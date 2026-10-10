@@ -437,6 +437,13 @@
          ] - Recall gear set
          ? - Show commands
 
+     Keys
+     ====
+         The keypad moves the same with or without NumLock: the arrows,
+         Home, End, PgUp and PgDn give 8, 2, 4, 6, 7, 1, 9 and 3, and the
+         keypad's centre key gives 5.  F1 .. F12 work alone, with Shift
+         and with Ctrl (Ctrl wins when both are held); see "F-key usage".
+
      Screenshots
      ===========
          Ctrl+P - Save a picture of the screen.  Works on every screen.
@@ -468,12 +475,16 @@
      F-key usage
      ===========
 
-         Mode        Fkey         Shifted      Ctrl   Alt
+         Mode        Fkey         Shifted      Ctrl   Alt+1..=
          ----------- ------------ ------------ ------ ------------
          FKeySpells  Spells       Save Weapons Macros Load Weapons
          FKeyWeapons Load Weapons Save Weapons Macros Spells
          FKeyGear    Load Gear    Save Gear    Macros Spells
          FKeyMacros  Macros       Save Weapons Spells Load Weapons
+
+         The Alt column uses Alt with the number row: Alt+1 .. Alt+9,
+         Alt+0, Alt+- and Alt+= stand for F1 .. F12.  Alt+F4 closes the
+         window without saving.
 
      Status Indicators
      =================

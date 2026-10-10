@@ -81,6 +81,41 @@ void GameWindow::gameEnded() {
   PostMessageW(window_, WM_APP_GAME_ENDED, 0, 0);
   }
 
+/* Key messages for this window, before TranslateMessage: true when they were dealt with here */
+bool GameWindow::translate(const MSG& message) {
+  if (message.hwnd != window_) return false;
+
+  switch (message.message) {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+      return route(keys_.keyDown(message.message, message.wParam, message.lParam));
+
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+      keys_.keyUp(message.wParam);
+
+      /* Releasing Alt or F10 would otherwise put the window into menu mode */
+      return message.wParam == VK_MENU || message.wParam == VK_F10;
+    }
+  return false;
+  }
+
+bool GameWindow::route(const KeyRoute& route) {
+  switch (route.target()) {
+    case KeyRoute::Target::Game:
+      input_.push(route.key());
+      return true;
+
+    case KeyRoute::Target::Swallow:
+    case KeyRoute::Target::Fullscreen:
+      return true;
+
+    case KeyRoute::Target::Windows:
+      return false;
+    }
+  return false;
+  }
+
 LRESULT CALLBACK GameWindow::procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
   GameWindow* self;
   if (message == WM_NCCREATE) {
@@ -133,13 +168,19 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
                    suggested->bottom - suggested->top, SWP_NOZORDER | SWP_NOACTIVATE);
       return 0;
 
-    case WM_KEYDOWN:
-      if (std::optional<int32_t> key = keys_.keyDown(wParam, GetKeyState(VK_CAPITAL) != 0)) input_.push(*key);
+    case WM_CHAR:
+      if (std::optional<int32_t> key = keys_.character(wParam)) input_.push(*key);
       return 0;
 
-    case WM_KEYUP:
-      keys_.keyUp(wParam);
+    /* Alt+letter: no beep, nothing for the game. Alt+Space goes on, as DefWindowProc opens the system menu from it */
+    case WM_SYSCHAR:
+      if (wParam == ' ') break;
       return 0;
+
+    /* Plain Alt or F10 must not open the system menu; Alt+Space still does */
+    case WM_SYSCOMMAND:
+      if ((wParam & 0xfff0) == SC_KEYMENU && lParam == 0) return 0;
+      break;
 
     case WM_KILLFOCUS:
       keys_.reset();

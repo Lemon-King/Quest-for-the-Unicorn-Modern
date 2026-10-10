@@ -1531,7 +1531,7 @@ extern Int32 check_level_cleared(Int32 lvl);
 extern void pit_trap();
 extern void fkey_pressed(Int32 n);
 extern void shift_fkey_pressed(Int32 n);
-extern void alt_fkey_pressed(Int32 n);
+extern void alt_key_pressed(Int32 n);
 extern void ctrl_fkey_pressed(Int32 n);
 extern Int32 find_empty(Int32 cx,Int32 cy,Int32 range,Int32 floor,Int32* dx,Int32 * dy);
 extern void move_summoned();

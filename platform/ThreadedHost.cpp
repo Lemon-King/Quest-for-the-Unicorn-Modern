@@ -27,7 +27,9 @@ int ThreadedHost::run() {
   GameThread game(*this, window_);
   MSG        message;
 
+  /* Special keys go to the window before TranslateMessage could turn them into characters */
   while (GetMessageW(&message, nullptr, 0, 0) > 0) {
+    if (window_.translate(message)) continue;
     TranslateMessage(&message);
     DispatchMessageW(&message);
     }
