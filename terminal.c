@@ -9,95 +9,88 @@
 */
 
 #include "graphics.h"
-
-/* Drawing goes to xscreen only; the viewport shows it in the window when the game flushes or waits */
-rcs_Event          key_event;
-rcs_Window         window;
-rcs_Display*       display;
-rcs_Pixmap         xscreen;
-rcs_Pixmap         screenSave;
-rcs_Viewport       viewport;
-rcs_GC             colors[16];
-rcs_GC             gc;
-
 #include "header.h"
 #include "terminal.h"
+#include "platform.h"
+
+/* The window, and the viewport that shows the canvas in it */
+static rcs_Display*      display;
+static rcs_Window        window;
+static rcs_Viewport      viewport;
+static rcs_Event         key_event;
+
+/* Drawing goes to the canvas only; present() shows what changed when the game flushes or waits.
+   saved is the copy saveScreen() keeps; sprites and font draw on either. */
+static CANVAS*           screen;
+static CANVAS*           saved;
+static SPRITE_CACHE*     sprites;
+static const GLYPH_FONT* font;
+
+/* CLR_BLACK..CLR_WHITE as the GDI build resolved their X11 names */
+static const UInt32 PALETTE[16] = {
+  0x000000,   /* black      */
+  0x0000cd,   /* blue3      */
+  0x00cd00,   /* green3     */
+  0x00ffff,   /* cyan       */
+  0xff0000,   /* red        */
+  0xa020f0,   /* purple     */
+  0xa52a2a,   /* brown      */
+  0x7f7f7f,   /* gray50     */
+  0x404040,   /* gray25     */
+  0x0000ff,   /* blue1      */
+  0x00ff00,   /* green1     */
+  0xe0ffff,   /* light cyan */
+  0xff0000,   /* red1       */
+  0x9b30ff,   /* purple1    */
+  0xffff00,   /* yellow     */
+  0xffffff    /* white      */
+  };
 
 Int32 cursor_x;
 Int32 cursor_y;
 Int32 text_color;
 Int32 g_color;
 
-static void clear_buffer() {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  rcs_drawFilledBox(display,xscreen,gc,0,0,screen_width,screen_height);
-  rcs_closeGC(display,gc);
-  rcs_invalidateViewport(viewport,0,0,screen_width,screen_height);
+/* The GDI build left a colour outside the palette at the GC's default, black */
+static UInt32 palette_rgb(Int32 color) {
+  return (color >= 0 && color < 16) ? PALETTE[color] : PALETTE[CLR_BLACK];
   }
 
-static void invalidate_string(rcs_GC gc,Int32 x,Int32 y,char* buffer) {
-  Int32 left,top,width,height;
-  rcs_stringBounds(display,gc,x,y,buffer,&left,&top,&width,&height);
-  rcs_invalidateViewport(viewport,left,top,width,height);
+static void clear_buffer() {
+  canvas_fill(screen,0,0,screen_width,screen_height,PALETTE[CLR_BLACK]);
+  }
+
+/* What the game drew since the last call reaches the window */
+static void present() {
+  Int32 x,y,width,height;
+  if (canvas_take_dirty(screen,&x,&y,&width,&height)) rcs_invalidateViewport(viewport,x,y,width,height);
+  rcs_presentViewport(viewport);
   }
 
 void clrscr() {
   clear_buffer();
   }
 
-void gc_color(rcs_GC* gc,Int32 clr) {
-  switch (clr) {
-    case 0:rcs_namedForeground(display,*gc,"black"); break;
-    case 1:rcs_namedForeground(display,*gc,"blue3"); break;
-    case 2:rcs_namedForeground(display,*gc,"green3"); break;
-    case 3:rcs_namedForeground(display,*gc,"cyan"); break;
-    case 4:rcs_namedForeground(display,*gc,"red"); break;
-    case 5:rcs_namedForeground(display,*gc,"purple"); break;
-    case 6:rcs_namedForeground(display,*gc,"brown"); break;
-    case 7:rcs_namedForeground(display,*gc,"gray50"); break;
-    case 8:rcs_namedForeground(display,*gc,"gray25"); break;
-    case 9:rcs_namedForeground(display,*gc,"blue1"); break;
-    case 10:rcs_namedForeground(display,*gc,"green1"); break;
-    case 11:rcs_namedForeground(display,*gc,"light cyan"); break;
-    case 12:rcs_namedForeground(display,*gc,"red1"); break;
-    case 13:rcs_namedForeground(display,*gc,"purple1"); break;
-    case 14:rcs_namedForeground(display,*gc,"yellow"); break;
-    case 15:rcs_namedForeground(display,*gc,"white"); break;
-    }
-  rcs_namedBackground(display, *gc, "black");
-  }
-
 void init_graph() {
-  Int32 i;
   display = rcs_openDisplay(":0.0");
-  window =rcs_createWindow(display,rcs_rootWindow(display),0,0,screen_width,screen_height);
+  window = rcs_createWindow(display,rcs_rootWindow(display),0,0,screen_width,screen_height);
   rcs_setWindowName(display,window,"Quest for the Unicorn");
-  xscreen = rcs_createPixmap(display,window,screen_width,screen_height);
-  screenSave = rcs_createPixmap(display,window,screen_width,screen_height);
-  viewport = rcs_createViewport(display,window,xscreen,screen_width,screen_height);
+  screen = canvas_create(screen_width,screen_height);
+  saved = canvas_create(screen_width,screen_height);
+  sprites = sprite_cache_create();
+  font = terminal_font();
+  if (screen == NULL || saved == NULL || sprites == NULL) exit(1);
+  viewport = rcs_createViewport(display,window,canvas_pixels(screen),screen_width,screen_height);
   clear_buffer();
   rcs_showWindow(display,window);
-  for (i=0; i<16; i++) {
-    colors[i] = rcs_openGC(display,window);
-    gc_color(&(colors[i]),i);
-    }
   }
 
 void saveScreen() {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_copyArea(display,xscreen,screenSave,gc,0,0,screen_width,screen_height,0,0);
-  rcs_closeGC(display,gc);
+  canvas_copy(saved,screen);
   }
 
 void restoreScreen() {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  rcs_copyArea(display,screenSave,xscreen,gc,0,0,screen_width,screen_height,0,0);
-  rcs_closeGC(display,gc);
-  rcs_invalidateViewport(viewport,0,0,screen_width,screen_height);
+  canvas_copy(screen,saved);
   }
 
 /* Finds the first unused screenshotNNNN.<extension> in the working directory. */
@@ -115,16 +108,11 @@ static Int32 screenshot_name(char* filename,char* extension) {
 
 void screenshot() {
   char filename[32];
-  if (!screenshot_name(filename,"bmp")) return;
-  rcs_savePixmap(display,xscreen,screen_width,screen_height,filename);
+  if (screenshot_name(filename,"bmp")) canvas_save_bmp(screen,filename);
   }
 
 void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr) {
-  Int32 left,top;
-  left = (x1 < x2) ? x1 : x2;
-  top = (y1 < y2) ? y1 : y2;
-  rcs_drawLine(display,xscreen,colors[clr],x1,y1,x2,y2);
-  rcs_invalidateViewport(viewport,left,top,abs(x2 - x1) + 1,abs(y2 - y1) + 1);
+  canvas_line(screen,x1,y1,x2,y2,palette_rgb(clr));
   }
 
 void graphmode() {
@@ -148,25 +136,13 @@ void txt_write(char* buffer) {
   Int32 i;
   Int32 x,y;
   char b2[2];
-  rcs_GC gc;
-  rcs_GC black;
-  gc = rcs_openGC(display,window);
-  black = rcs_openGC(display,window);
-  rcs_namedForeground(display,gc,"black");
-  gc_color(&gc,text_color);
   b2[1] = 0;
   for (i=0; i<strlen(buffer); i++) {
     x = cursor_x + text_offset_x;
     y = cursor_y + text_offset_y;
     b2[0] = buffer[i];
-//    rcs_drawFilledBox(display,window,black,cursor_x*8,cursor_y*19,8,19);
-//    rcs_drawFilledBox(display,xscreen,black,cursor_x*8,cursor_y*19,8,19);
-//    rcs_drawString(display,window,gc,cursor_x * 8,10+cursor_y * 19,b2,0);
-//    rcs_drawString(display,xscreen,gc,cursor_x * 8,10+cursor_y * 19,b2,0);
-    rcs_drawFilledBox(display,xscreen,black,x*8,y*19,8,19);
-    rcs_drawString(display,xscreen,gc,x * 8,10+y * 19,b2,0);
-    rcs_invalidateViewport(viewport,x*8,y*19,8,19);
-    invalidate_string(gc,x * 8,10+y * 19,b2);
+    canvas_fill(screen,x*8,y*19,8,19,PALETTE[CLR_BLACK]);
+    canvas_text(screen,font,x * 8,10+y * 19,b2,palette_rgb(text_color));
     cursor_x++;
     if (cursor_x == 80) {
       cursor_x = 0;
@@ -174,8 +150,6 @@ void txt_write(char* buffer) {
       if (cursor_y > 24) cursor_y = 24;
       }
     }
-  rcs_closeGC(display,gc);
-  rcs_closeGC(display,black);
   }
 
 void txt_writeln(char* buffer) {
@@ -201,7 +175,7 @@ Int32 keypressed() {
   rcs_Event event;
   if (strlen(currentMacro) > 0) return 1;
 
-  rcs_presentViewport(viewport);
+  present();
   event = rcs_pollEvent(display);
   if (event.type == EVENT_CLOSE || event.type == EVENT_QUIT) window_closed();
   if (event.type == EVENT_KEY_PRESS && !is_modifier(event.d1)) {
@@ -290,7 +264,7 @@ static Int32 next_key() {
   rcs_Event event;
   char      flag;
   flag = ' ';
-  rcs_presentViewport(viewport);
+  present();
   if (key_event.type == EVENT_KEY_PRESS) {
     key_event.type = EVENT_NONE;
     return keytrans(key_event.d1);
@@ -319,22 +293,16 @@ Int32 readkey() {
   }
 
 void flush() {
-  rcs_presentViewport(viewport);
+  present();
   }
 
-void open_display() {
-  gc = rcs_openGC(display,window);
-  }
-
+/* Its callers pair it with their batches of plot() */
 void close_display() {
-  rcs_presentViewport(viewport);
-  rcs_closeGC(display,gc);
+  present();
   }
 
 void plot(Int32 x,Int32 y,Int32 clr) {
-//  gc_color(&gc,clr);
-  rcs_drawPoint(display,xscreen,colors[clr],x,y);
-  rcs_invalidateViewport(viewport,x,y,1,1);
+  canvas_point(screen,x,y,palette_rgb(clr));
   }
 
 void setfillstyle(Int32 st,Int32 clr) {
@@ -342,12 +310,7 @@ void setfillstyle(Int32 st,Int32 clr) {
   }
 
 void bar(Int32 x1,Int32 y1,Int32 x2,Int32 y2) {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  gc_color(&gc,g_color);
-  rcs_drawFilledBox(display,xscreen,gc,x1,y1,x2-x1,y2-y1);
-  rcs_closeGC(display,gc);
-  rcs_invalidateViewport(viewport,x1,y1,x2-x1,y2-y1);
+  canvas_fill(screen,x1,y1,x2-x1,y2-y1,palette_rgb(g_color));
   }
 
 void setcolor(Int32 clr) {
@@ -359,44 +322,24 @@ void settextstyle(Int32 a,Int32 b,Int32 c) {
   }
 
 void outtext_xy(Int32 x,Int32 y,char* buffer) {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  gc_color(&gc,g_color);
-  rcs_drawString(display,xscreen,gc,x*8,y*11,buffer,0);
-  invalidate_string(gc,x*8,y*11,buffer);
-  rcs_closeGC(display,gc);
+  canvas_text(screen,font,x*8,y*11,buffer,palette_rgb(g_color));
   }
 
 void outtextxy(Int32 x,Int32 y,char* buffer) {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  gc_color(&gc,g_color);
-  rcs_drawString(display,xscreen,gc,x,y,buffer,0);
-  invalidate_string(gc,x,y,buffer);
-  rcs_closeGC(display,gc);
+  canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 
+/* The GDI build drew this one transparently too */
 void outtextxyclr(Int32 x,Int32 y,char* buffer) {
-  rcs_GC gc;
-  gc = rcs_openGC(display,window);
-  gc_color(&gc,g_color);
-  rcs_drawString(display,xscreen,gc,x,y,buffer,-1);
-  invalidate_string(gc,x,y,buffer);
-  rcs_closeGC(display,gc);
+  canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 
 void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
-  rcs_GC gc;
-  Int32  width,height;
-  gc = rcs_openGC(display,window);
-  rcs_drawPixmap(display,xscreen,gc,x,y,(const char**)img);
-  rcs_closeGC(display,gc);
-  sscanf(img[0],"%d %d",&width,&height);
-  rcs_invalidateViewport(viewport,x,y,width,height);
+  canvas_sprite(screen,sprites,x,y,(const char* const*)img);
   }
 
 void delay(Int32 tm) {
-  rcs_presentViewport(viewport);
+  present();
   Sleep(tm);
   }
 

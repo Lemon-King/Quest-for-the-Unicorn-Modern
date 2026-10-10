@@ -37,7 +37,6 @@ void light_room() {
   if (max_x > 99) max_x = 99;
   if (min_y < 1) min_y = 1;
   if (max_y > 99) max_y = 99;
-  open_display();
   for (y=min_y; y<=max_y; y++)
     for (x=min_x; x<=max_x; x++)
       if (player.known[x][y] == 0) {

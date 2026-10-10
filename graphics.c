@@ -38,16 +38,16 @@ typedef struct {
   } _rcs_Image;
 
 struct _rcs_Viewport {
-  rcs_Display* display;
-  rcs_Window   window;
-  rcs_Pixmap   buffer;
-  _rcs_Axis    columns;
-  _rcs_Axis    rows;
-  Int32        windowWidth;
-  Int32        windowHeight;
-  Int32        left;
-  Int32        top;
-  _rcs_Rect    dirty;
+  rcs_Display*  display;
+  rcs_Window    window;
+  const UInt32* pixels;
+  _rcs_Axis     columns;
+  _rcs_Axis     rows;
+  Int32         windowWidth;
+  Int32         windowHeight;
+  Int32         left;
+  Int32         top;
+  _rcs_Rect     dirty;
   };
 
 /* What the window is painted through: a device context */
@@ -201,36 +201,12 @@ static void _rcs_imageInfo(BITMAPINFO* info,_rcs_Rect area) {
 
 /* Reads the image's area of the buffer into its pixels. */
 static Int32 _rcs_readBuffer(rcs_Viewport v,_rcs_Image* image) {
-  Int32      width;
-  Int32      height;
-  BITMAPINFO info;
-  HBITMAP    section;
-  void*      bits;
-  HDC        source;
-  HDC        target;
-  HGDIOBJ    previousSource;
-  HGDIOBJ    previousTarget;
+  Int32 width;
+  Int32 y;
   width = _rcs_rectWidth(image->area);
-  height = _rcs_rectHeight(image->area);
-
-  /* GetDIBits only reads whole rows, so the area is first copied into a DIB section */
-  _rcs_imageInfo(&info,image->area);
-  section = CreateDIBSection(NULL,&info,DIB_RGB_COLORS,&bits,NULL,0);
-  if (section == NULL) return 0;
-
-  source = CreateCompatibleDC(NULL);
-  target = CreateCompatibleDC(NULL);
-  previousSource = SelectObject(source,v->buffer);
-  previousTarget = SelectObject(target,section);
-  BitBlt(target,0,0,width,height,source,image->area.left,image->area.top,SRCCOPY);
-  GdiFlush();
-  memcpy(image->pixels,bits,width * height * sizeof(UInt32));
-
-  SelectObject(target,previousTarget);
-  SelectObject(source,previousSource);
-  DeleteDC(target);
-  DeleteDC(source);
-  DeleteObject(section);
+  for (y=image->area.top; y<image->area.bottom; y++)
+    memcpy(image->pixels + (y - image->area.top) * width,v->pixels + y * v->columns.size + image->area.left,
+           width * sizeof(UInt32));
   return 1;
   }
 
@@ -249,14 +225,13 @@ static void _rcs_writeWindow(rcs_Viewport v,_rcs_Surface surface,_rcs_Image* ima
 
 /* At 1:1 the buffer is copied as it is. */
 static void _rcs_copyUnscaled(rcs_Viewport v,_rcs_Surface surface,_rcs_Rect area) {
-  HDC     source;
-  HGDIOBJ previous;
-  source = CreateCompatibleDC(surface);
-  previous = SelectObject(source,v->buffer);
-  BitBlt(surface,v->left + area.left,v->top + area.top,_rcs_rectWidth(area),_rcs_rectHeight(area),
-         source,area.left,area.top,SRCCOPY);
-  SelectObject(source,previous);
-  DeleteDC(source);
+  _rcs_Image image;
+  image.area = area;
+  image.pixels = _rcs_allocPixels(area);
+  if (image.pixels != NULL && _rcs_readBuffer(v,&image))
+    _rcs_writeWindow(v,surface,&image);
+
+  free(image.pixels);
   }
 
 /* Redraws the window pixels that show a buffer area, from the buffer pixels under them. */
@@ -355,7 +330,8 @@ static void _rcs_limitWindowSize(rcs_Viewport v,MINMAXINFO* limits) {
   limits->ptMinTrackSize.y = outerHeight;
   }
 
-rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,Int32 width,Int32 height) {
+/* The pixels stay the caller's; they must outlive the window, at width x height, row by row */
+rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,const UInt32* pixels,Int32 width,Int32 height) {
   rcs_Viewport      v;
   RECT              client;
   Int32             scale;
@@ -365,7 +341,7 @@ rcs_Viewport rcs_createViewport(rcs_Display* d,rcs_Window win,rcs_Pixmap buffer,
 
   v->display = d;
   v->window = win;
-  v->buffer = buffer;
+  v->pixels = pixels;
   v->columns.size = width;
   v->columns.scaled = width;
   v->rows.size = height;
@@ -420,12 +396,6 @@ rcs_Display disp;
 Int32 _shiftState;
 Int32 _ctrlState;
 Int32 _capsState;
-
-/* Text cell of the Win32 font: one column of the game's 8-pixel text grid */
-#define FONT_WIDTH   8
-#define FONT_HEIGHT  12
-
-#include "rgb.h"
 
 Int32 _rcs_winTranslate(Int32 key) {
         /* Ctrl+M would become 13, the same as Enter */
@@ -498,14 +468,6 @@ Int32 _rcs_winTranslate(Int32 key) {
         return key;
 }
 
-Int32 _rcs_isBitmap(rcs_Window w) {
-  Int32 i;
-  if (disp.numPixmaps==0) return FALSE;
-  for (i=0;i<disp.numPixmaps;i++)
-    if (disp.pixmapIDs[i]==w) return TRUE;
-  return FALSE;
-  }
-
 LRESULT CALLBACK rcs_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
   rcs_Viewport viewport;
   PAINTSTRUCT  paint;
@@ -550,29 +512,12 @@ LRESULT CALLBACK rcs_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 
 void rcs_initWin32(HINSTANCE hInstance) {
         WNDCLASSEX wcex;
-  HDC        dc;
-  HGDIOBJ    previous;
-  TEXTMETRIC metrics;
 
   /* Without this, Windows stretches the window on scaled displays and blurs every pixel */
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
   disp.hInstance=hInstance;
   strcpy(disp.className,"rcsawlib");
-  disp.numPixmaps=0;
-  disp.pixmapIDs=NULL;
-  disp.font=CreateFont(FONT_HEIGHT,FONT_WIDTH,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
-                       OEM_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-                       NONANTIALIASED_QUALITY,FIXED_PITCH | FF_MODERN,"Terminal");
-
-  dc = GetDC(NULL);
-  previous = SelectObject(dc,disp.font);
-  GetTextMetrics(dc,&metrics);
-  SelectObject(dc,previous);
-  ReleaseDC(NULL,dc);
-  disp.fontAscent = metrics.tmAscent;
-  disp.fontHeight = metrics.tmHeight;
-  disp.fontOverhang = (metrics.tmMaxCharWidth > FONT_WIDTH) ? metrics.tmMaxCharWidth - FONT_WIDTH : 0;
 
         wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -598,95 +543,6 @@ void rcs_initWin32(HINSTANCE hInstance) {
   }
 
 
-/* ************************ */
-/* ***** Build Colors ***** */
-/* ************************ */
-void  _rcs_buildColors(rcs_Display* d,COLORREF* colors,const char** data,Int32 *none) {
-  Int32        sizeX,sizeY,numColors;
-  Int32        x,i;
-  char       index,temp,index2;
-  char       buffer[80];
-  char       nbuffer[8];
-  Int32        colorIndex;
-  Int32        bytesPer;
-  unsigned long        red,green,blue;
-  *none=-1;
-  sscanf(data[0],"%d %d %d %d",&sizeX,&sizeY,&numColors,&bytesPer);
-  for (x=1;x<=numColors;x++) {
-    if (bytesPer != 2) {
-      sscanf(data[x],"%c %c %s",&index,&temp,buffer);
-      colorIndex = index;
-      } else {
-      sscanf(data[x],"%c%c %c %s",&index,&index2,&temp,buffer);
-      colorIndex = (index-32)*96 + (index2-32);
-      }
-    if (buffer[0] != '#') {
-      if (strcmp(buffer,"None")==0) *none=index;
-      rcs_namedColor(buffer,&red,&green,&blue);
-      colors[colorIndex]=RGB(red,green,blue);
-      } else {
-      for (i=0;i<4;i++) nbuffer[i]=buffer[i+1];
-      nbuffer[4]=0;
-      sscanf(nbuffer,"%lx",&red);
-      for (i=0;i<4;i++) nbuffer[i]=buffer[i+5];
-      nbuffer[4]=0;
-      sscanf(nbuffer,"%lx",&green);
-      for (i=0;i<4;i++) nbuffer[i]=buffer[i+9];
-      nbuffer[4]=0;
-      sscanf(nbuffer,"%lx",&blue);
-      if (red>255) red/=256;
-      if (blue>255) blue/=256;
-      if (green>255) green/=256;
-      colors[colorIndex]=RGB(red,green,blue);
-      }
-    }
-  }
-
-/* ******************** */
-/* ***** Close GC ***** */
-/* ******************** */
-void rcs_closeGC(rcs_Display* d,rcs_GC gc) {
-  free(gc);
-  }
-
-/* ********************* */
-/* ***** Copy Area ***** */
-/* ********************* */
-void rcs_copyArea(rcs_Display* d,rcs_Window src,rcs_Window dest,rcs_GC gc,Int32 sx,Int32 sy,Int32 w,Int32 h,Int32 dx,Int32 dy) {
-  HDC dc;
-  HDC ddc;
-  if (_rcs_isBitmap(src)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,src);
-    } else dc=GetDC(src);
-  if (_rcs_isBitmap(dest)==TRUE) {
-    ddc=CreateCompatibleDC(0);
-    SelectObject(ddc,dest);
-    } else ddc=GetDC(dest);
-  BitBlt(ddc,dx,dy,w,h,dc,sx,sy,SRCCOPY);
-  if (_rcs_isBitmap(src)==TRUE) DeleteDC(dc);
-    else ReleaseDC(src,dc);
-  if (_rcs_isBitmap(dest)==TRUE) DeleteDC(ddc);
-    else ReleaseDC(dest,ddc);
-  }
-
-/* ************************* */
-/* ***** Create Pixmap ***** */
-/* ************************* */
-rcs_Pixmap rcs_createPixmap(rcs_Display* d,rcs_Window win,Int32 x,Int32 y) {
-  rcs_Pixmap ret;
-  HBITMAP    bitmap;
-  HDC        dc;
-  dc=GetDC(win);
-  bitmap=CreateCompatibleBitmap(dc,x,y);
-  ReleaseDC(win,dc);
-  ret=(rcs_Pixmap)bitmap;
-  if (disp.numPixmaps == 0) disp.pixmapIDs=(rcs_Window*)malloc(sizeof(rcs_Window));
-    else disp.pixmapIDs=(rcs_Window*)realloc(disp.pixmapIDs,(sizeof(rcs_Window))*(disp.numPixmaps+1));
-  disp.pixmapIDs[disp.numPixmaps++]=ret;
-  return ret;
-  }
-
 /* ************************* */
 /* ***** Create Window ***** */
 /* ************************* */
@@ -705,151 +561,6 @@ rcs_Window  rcs_createWindow(rcs_Display* d,rcs_Window parent,Int32 x,Int32 y,In
   if (!ret) MessageBox(NULL, TEXT("Hmmmmm"), TEXT("Error"), MB_ICONERROR | MB_OK);
 
   return ret;
-  }
-
-/* *************************** */
-/* ***** Draw Filled Box ***** */
-/* *************************** */
-void rcs_drawFilledBox(rcs_Display* d,rcs_Window win,rcs_GC gc,
-                  Int32 x,Int32 y,Int32 w,Int32 h) {
-  HDC dc;
-  HPEN pen;
-  HBRUSH brush;
-  RECT rect;
-  rect.top=y;
-  rect.left=x;
-  rect.bottom=y+h;
-  rect.right=x+w;
-  if (_rcs_isBitmap(win)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,win);
-    } else dc=GetDC(win);
-  pen=CreatePen(PS_SOLID,0,gc->foreground);
-  brush=CreateSolidBrush(gc->foreground);
-  pen=(HPEN)SelectObject(dc,pen);
-  FillRect(dc,&rect,brush);
-  pen=(HPEN)SelectObject(dc,pen);
-  DeleteObject(pen);
-  DeleteObject(brush);
-  if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
-    else ReleaseDC(win,dc);
-  }
-
-/* ********************* */
-/* ***** Draw Line ***** */
-/* ********************* */
-void rcs_drawLine(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x1,Int32 y1,Int32 x2,Int32 y2) {
-  HDC dc;
-  HPEN pen;
-  if (_rcs_isBitmap(win)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,win);
-    } else dc=GetDC(win);
-  pen=CreatePen(PS_SOLID,0,gc->foreground);
-  pen=(HPEN)SelectObject(dc,pen);
-  MoveToEx(dc,x1,y1,NULL);
-  LineTo(dc,x2,y2);
-  pen=(HPEN)SelectObject(dc,pen);
-  DeleteObject(pen);
-  if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
-    else ReleaseDC(win,dc);
-  }
-
-/* *********************** */
-/* ***** Draw Pixmap ***** */
-/* *********************** */
-void  rcs_drawPixmap(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 dx,Int32 dy,const char** data) {
-  Int32        sizeX,sizeY,numColors;
-  Int32        x,y;
-/*  char       index; */
-  Int32        none;
-  Int32        colorIndex;
-  Int32        bytesPer;
-  HDC        dc;
-  HPEN       pen,oldPen;
-  COLORREF   colors[10000];
-  none=-1;
-  _rcs_buildColors(d,colors,data,&none);
-  sscanf(data[0],"%d %d %d %d",&sizeX,&sizeY,&numColors,&bytesPer);
-  if (_rcs_isBitmap(win)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,win);
-    } else dc=GetDC(win);
-  for (y=0;y<sizeY;y++)
-    for (x=0;x<sizeX;x++) {
-      if (bytesPer != 2) colorIndex=data[y+numColors+1][x];
-        else colorIndex = (data[y+numColors+1][x*2]-32) * 96 +
-                          (data[y+numColors+1][x*2+1]-32);
-      if (colorIndex != none) {
-        pen=CreatePen(PS_SOLID,0,colors[colorIndex]);
-        oldPen=(HPEN)SelectObject(dc,pen);
-        MoveToEx(dc,x+dx,y+dy,NULL);
-        LineTo(dc,x+1+dx,y+dy);
-        oldPen=(HPEN)SelectObject(dc,oldPen);
-        DeleteObject(oldPen);
-        }
-      }
-  if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
-    else ReleaseDC(win,dc);
-  }
-
-/* ********************** */
-/* ***** Draw Point ***** */
-/* ********************** */
-void rcs_drawPoint(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y) {
-  HDC dc;
-  HPEN pen;
-  if (_rcs_isBitmap(win)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,win);
-    } else dc=GetDC(win);
-  pen=CreatePen(PS_SOLID,0,gc->foreground);
-  pen=(HPEN)SelectObject(dc,pen);
-  MoveToEx(dc,x,y,NULL);
-  LineTo(dc,x+1,y);
-  pen=(HPEN)SelectObject(dc,pen);
-  DeleteObject(pen);
-  if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
-    else ReleaseDC(win,dc);
-  }
-
-/* *********************** */
-/* ***** Draw String ***** */
-/* *********************** */
-void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char* buffer,Int32 clr) {
-  HDC   dc;
-  Int32 i;
-  if (_rcs_isBitmap(win)==TRUE) {
-    dc=CreateCompatibleDC(0);
-    SelectObject(dc,win);
-    } else dc=GetDC(win);
-  SelectObject(dc,gc->font);
-  SetTextAlign(dc,TA_LEFT | TA_BASELINE);
-  SetBkColor(dc,gc->background);
-  SetTextColor(dc,gc->foreground);
-  SetBkMode(dc,TRANSPARENT);
-
-  /* One glyph per cell keeps columns aligned even if Windows substitutes the font */
-  for (i=0; buffer[i] != 0; i++)
-    TextOut(dc,x + i * FONT_WIDTH,y,&buffer[i],1);
-
-  if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
-    else ReleaseDC(win,dc);
-  }
-
-/* ************************* */
-/* ***** String Bounds ***** */
-/* ************************* */
-/* The rectangle rcs_drawString() may touch for the same arguments, with or without clr. */
-void rcs_stringBounds(rcs_Display* d,rcs_GC gc,Int32 x,Int32 y,char* buffer,
-                      Int32* left,Int32* top,Int32* width,Int32* height) {
-  Int32 length;
-  length = strlen(buffer);
-
-  *left = x;
-  *top = y - d->fontAscent;
-  *width = (length > 0) ? length * FONT_WIDTH + d->fontOverhang : 0;
-  *height = d->fontHeight;
   }
 
 /* ********************* */
@@ -974,41 +685,11 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
   return ret;
   }
 
-/* **************************** */
-/* ***** Named Background ***** */
-/* **************************** */
-void rcs_namedBackground(rcs_Display* d,rcs_GC gc,const char* color) {
-  Int32 red,green,blue;
-  rcs_namedColor(color,&red,&green,&blue);
-  gc->background=RGB(red,green,blue);
-  }
-
-/* **************************** */
-/* ***** Named Foreground ***** */
-/* **************************** */
-void rcs_namedForeground(rcs_Display* d,rcs_GC gc,const char* color) {
-  Int32 red,green,blue;
-  rcs_namedColor(color,&red,&green,&blue);
-  gc->foreground=RGB(red,green,blue);
-  }
-
 /* ************************ */
 /* ***** Open Display ***** */
 /* ************************ */
 rcs_Display *rcs_openDisplay(char* display_name) {
   return &disp;
-  }
-
-/* ******************* */
-/* ***** Open GC ***** */
-/* ******************* */
-rcs_GC rcs_openGC(rcs_Display* d,rcs_Window win) {
-  rcs_GC ret;
-        ret=(rcs_GC)malloc(sizeof(struct _GC));
-  ret->foreground=RGB(0,0,0);
-  ret->background=RGB(255,255,255);
-  ret->font=disp.font;
-  return ret;
   }
 
 /* ********************** */
@@ -1027,87 +708,6 @@ rcs_Event rcs_pollEvent(rcs_Display* d) {
 /* *********************** */
 rcs_Window rcs_rootWindow(rcs_Display* d) {
   return GetDesktopWindow();
-  }
-
-/* *********************** */
-/* ***** Save Pixmap ***** */
-/* *********************** */
-/* Fills pixels with bottom-up rows of 24-bit BGR, the pixel layout of a BMP file. */
-static Int32 _rcs_readPixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,
-                             UInt32 rowSize,unsigned char* pixels) {
-  BITMAPINFO info;
-  HDC        dc;
-  Int32      lines;
-  memset(&info,0,sizeof(info));
-  info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  info.bmiHeader.biWidth = width;
-  info.bmiHeader.biHeight = height;
-  info.bmiHeader.biPlanes = 1;
-  info.bmiHeader.biBitCount = 24;
-  info.bmiHeader.biCompression = BI_RGB;
-
-  dc = GetDC(NULL);
-  lines = GetDIBits(dc,(HBITMAP)pixmap,0,height,pixels,&info,DIB_RGB_COLORS);
-  ReleaseDC(NULL,dc);
-  return lines == height;
-  }
-
-static void _rcs_writeShort(FILE* file,UInt32 value) {
-  fputc(value & 0xff,file);
-  fputc((value >> 8) & 0xff,file);
-  }
-
-static void _rcs_writeLong(FILE* file,UInt32 value) {
-  _rcs_writeShort(file,value & 0xffff);
-  _rcs_writeShort(file,value >> 16);
-  }
-
-static Int32 _rcs_writeBMP(char* filename,Int32 width,Int32 height,UInt32 rowSize,unsigned char* pixels) {
-  FILE*  file;
-  UInt32 imageSize;
-  UInt32 written;
-  imageSize = rowSize * height;
-  file = fopen(filename,"wb");
-  if (file == NULL) return 0;
-
-  /* BITMAPFILEHEADER (14 bytes); the pixels follow both headers */
-  fputc('B',file);
-  fputc('M',file);
-  _rcs_writeLong(file,14 + 40 + imageSize);
-  _rcs_writeLong(file,0);
-  _rcs_writeLong(file,14 + 40);
-
-  /* BITMAPINFOHEADER (40 bytes): 24 bits per pixel, uncompressed, 72 dpi */
-  _rcs_writeLong(file,40);
-  _rcs_writeLong(file,width);
-  _rcs_writeLong(file,height);
-  _rcs_writeShort(file,1);
-  _rcs_writeShort(file,24);
-  _rcs_writeLong(file,0);
-  _rcs_writeLong(file,imageSize);
-  _rcs_writeLong(file,2835);
-  _rcs_writeLong(file,2835);
-  _rcs_writeLong(file,0);
-  _rcs_writeLong(file,0);
-
-  written = fwrite(pixels,1,imageSize,file);
-  if (fclose(file) != 0) return 0;
-  return written == imageSize;
-  }
-
-Int32 rcs_savePixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,char* filename) {
-  UInt32         rowSize;
-  unsigned char* pixels;
-  Int32          saved;
-  rowSize = (width * 3 + 3) & ~3;   /* BMP rows are padded to 4 bytes */
-  pixels = (unsigned char*)calloc(rowSize,height);
-  if (pixels == NULL) return 0;
-
-  saved = _rcs_readPixmap(d,pixmap,width,height,rowSize,pixels);
-  if (saved) saved = _rcs_writeBMP(filename,width,height,rowSize,pixels);
-
-  free(pixels);
-  return saved;
   }
 
 /* *************************** */

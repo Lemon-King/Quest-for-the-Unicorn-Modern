@@ -1357,7 +1357,6 @@ void write_font(Int32 x,Int32 y,Int32 color,char* line) {
   byte letter;
   Int32  i;
 
-  open_display();
   for (i=0; i<=strlen(line); i++)
     {
       letter = line[i];

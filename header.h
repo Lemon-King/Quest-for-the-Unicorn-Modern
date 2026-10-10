@@ -1183,7 +1183,6 @@ extern void textmode(Int32 mode);
 extern void textcolor(Int32 color);
 extern void txt_write(char* buffer);
 extern void txt_writeln(char* buffer);
-extern void open_display();
 extern void close_display();
 extern void plot(Int32 x,Int32 y,Int32 clr);
 extern void flush();

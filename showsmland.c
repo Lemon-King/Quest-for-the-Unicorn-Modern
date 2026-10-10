@@ -16,7 +16,6 @@ void show_sm_land() {
   pixel = 0;
   setfillstyle(1,0);
   bar(smap_offset_x,smap_offset_y,smap_offset_x+99,smap_offset_y+99);
-  open_display();
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {
       color = 0;
