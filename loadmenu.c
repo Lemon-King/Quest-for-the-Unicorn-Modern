@@ -12,11 +12,7 @@
 
 #include "header.h"
 
-#ifdef _WIN32
 #include <io.h>
-#else
-#include <dirent.h>
-#endif
 
 #define LIST_LINE        4
 #define LIST_ROWS       18
@@ -62,7 +58,6 @@ static void add_saved_game(SAVE_LIST* list, char* file_name, time_t saved) {
   list->count++;
   }
 
-#ifdef _WIN32
 static void read_saved_games(SAVE_LIST* list) {
   struct _finddata_t found;
   intptr_t           search;
@@ -76,22 +71,6 @@ static void read_saved_games(SAVE_LIST* list) {
 
   _findclose(search);
   }
-#else
-static void read_saved_games(SAVE_LIST* list) {
-  DIR*           folder;
-  struct dirent* entry;
-  struct stat    info;
-
-  folder = opendir(".");
-  if (folder == NULL) return;
-
-  while ((entry = readdir(folder)) != NULL) {
-    if (stat(entry->d_name, &info) == 0 && S_ISREG(info.st_mode)) add_saved_game(list, entry->d_name, info.st_mtime);
-    }
-
-  closedir(folder);
-  }
-#endif
 
 static int newest_first(const void* a, const void* b) {
   const SAVED_GAME* first;

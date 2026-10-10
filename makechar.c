@@ -51,7 +51,6 @@ void make_char(Int32 rebirth) {
   Int32  starts[NUM_CLASSES];
   Int32  numStarts;
   char key;
-  struct timeval tim;
   clrscr();
   char_sheet_labels('N');
   textcolor(14);
@@ -486,8 +485,7 @@ void make_char(Int32 rebirth) {
 /*    new_spell();   */
     }
   if (rebirth != 0) player.effect[PE_REBIRTH]++;
-  gettimeofday(&tim,NULL);
-  start_time = tim.tv_sec;
+  start_time = (Int32)time(NULL);
   new_pawn();
   if (rebirth != 0) {
     i = 0;

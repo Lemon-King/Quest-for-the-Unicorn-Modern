@@ -20,9 +20,6 @@ rcs_Viewport       viewport;
 rcs_GC             colors[16];
 rcs_GC             gc;
 
-#include <sys/time.h>
-#include <sys/timeb.h>
-
 #include "header.h"
 #include "terminal.h"
 
@@ -400,51 +397,9 @@ void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
 
 void delay(Int32 tm) {
   rcs_presentViewport(viewport);
-  usleep(tm * 1000);
-/*
-  Int32 sec;
-  long te;
-  long ts;
-  struct timeval tim;
-  sec = tm / 1000;
-  tm -= (sec * 1000);
-  gettimeofday(&tim,NULL);
-  te = ((tim.tv_sec & 0xff) * 1000000) + tim.tv_usec;
-  te += (tm * 1000);
-  gettimeofday(&tim,NULL);
-  ts = ((tim.tv_sec & 0xff) * 1000000) + tim.tv_usec;
-  while (ts < te && abs(ts-te) <= (tm*1000)) {
-    gettimeofday(&tim,NULL);
-    ts = ((tim.tv_sec & 0xff) * 1000000) + tim.tv_usec;
-    }
-*/
+  Sleep(tm);
   }
 
-/*
-void delay(Int32 tm) {
-  Int32 sec;
-  struct timeval ts,te;
-debugLog("entering delay\n");
-  sec = tm / 1000;
-  tm -= (sec * 1000);
-  gettimeofday(&te,NULL);
-  te.tv_sec += sec;
-  te.tv_usec += (tm * 1000);
-debugLog("Before usec to seconds\n");
-  while (te.tv_usec >= 1000000) {
-    te.tv_sec++;
-    te.tv_usec -= 1000000;
-    }
-debugLog("After usec to seconds\n");
-  gettimeofday(&ts,NULL);
-  while (ts.tv_sec < te.tv_sec || ts.tv_usec < te.tv_usec) {
-sprintf(debugMSG,"%ld %ld \n",ts.tv_sec-te.tv_sec,ts.tv_usec-te.tv_usec);
-debugLog(debugMSG);
-    gettimeofday(&ts,NULL);
-    }
-debugLog("exiting delay\n");
-  }
-*/
 Int32 p_read(char* buffer) {
   Int32 temp_x,temp_y;
   unsigned char key;

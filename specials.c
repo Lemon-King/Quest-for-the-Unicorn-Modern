@@ -660,14 +660,14 @@ void special46() {
       promptNS(buffer);
       }
     }
-  if (strcasecmp(invoke,"auralal") == 0) special1();
-  if (strcasecmp(invoke,"litraal") == 0) special6();
-  if (strcasecmp(invoke,"suraal") == 0) special15();
-  if (strcasecmp(invoke,"reahl") == 0) special21();
-  if (strcasecmp(invoke,"mala") == 0) special22();
-  if (strcasecmp(invoke,"loeer") == 0) special28();
-  if (strcasecmp(invoke,"detral") == 0) special43();
-  if (strcasecmp(invoke,"idahl") == 0) special23();
+  if (_stricmp(invoke,"auralal") == 0) special1();
+  if (_stricmp(invoke,"litraal") == 0) special6();
+  if (_stricmp(invoke,"suraal") == 0) special15();
+  if (_stricmp(invoke,"reahl") == 0) special21();
+  if (_stricmp(invoke,"mala") == 0) special22();
+  if (_stricmp(invoke,"loeer") == 0) special28();
+  if (_stricmp(invoke,"detral") == 0) special43();
+  if (_stricmp(invoke,"idahl") == 0) special23();
   }
 
 void special47() {
@@ -1409,32 +1409,32 @@ void special100() {
   cores = 0;
   shards = 0;
   for (i=1; i<20; i++) {
-    if (player.invent[i].otype == O_MISC && strcasecmp(player.invent[i].name,"sun core") == 0) cores++;
-    if (player.invent[i].otype == O_MISC && strcasecmp(player.invent[i].name,"sun shard") == 0) shards++;
+    if (player.invent[i].otype == O_MISC && _stricmp(player.invent[i].name,"sun core") == 0) cores++;
+    if (player.invent[i].otype == O_MISC && _stricmp(player.invent[i].name,"sun shard") == 0) shards++;
     }
   for (i=0; i<33; i++) {
-    if (player.pack[i].otype == O_MISC && strcasecmp(player.pack[i].name,"sun core") == 0) cores++;
-    if (player.pack[i].otype == O_MISC && strcasecmp(player.pack[i].name,"sun shard") == 0) shards++;
+    if (player.pack[i].otype == O_MISC && _stricmp(player.pack[i].name,"sun core") == 0) cores++;
+    if (player.pack[i].otype == O_MISC && _stricmp(player.pack[i].name,"sun shard") == 0) shards++;
     }
   if (cores < 1 || shards < 8) return;
   cores = 1;
   shards = 8;
   for (i=1; i<20; i++) {
-    if (player.invent[i].otype == O_MISC && strcasecmp(player.invent[i].name,"sun core") == 0 && cores > 0) {
+    if (player.invent[i].otype == O_MISC && _stricmp(player.invent[i].name,"sun core") == 0 && cores > 0) {
       cores--;
       player.invent[i].otype = O_NONE;
       }
-    if (player.invent[i].otype == O_MISC && strcasecmp(player.invent[i].name,"sun shard") == 0 && shards > 0) {
+    if (player.invent[i].otype == O_MISC && _stricmp(player.invent[i].name,"sun shard") == 0 && shards > 0) {
       shards--;
       player.invent[i].otype = O_NONE;
       }
     }
   for (i=0; i<33; i++) {
-    if (player.pack[i].otype == O_MISC && strcasecmp(player.pack[i].name,"sun core") == 0 && cores > 0) {
+    if (player.pack[i].otype == O_MISC && _stricmp(player.pack[i].name,"sun core") == 0 && cores > 0) {
       cores--;
       player.pack[i].otype = O_NONE;
       }
-    if (player.pack[i].otype == O_MISC && strcasecmp(player.pack[i].name,"sun shard") == 0 && shards > 0) {
+    if (player.pack[i].otype == O_MISC && _stricmp(player.pack[i].name,"sun shard") == 0 && shards > 0) {
       shards--;
       player.pack[i].otype = O_NONE;
       }

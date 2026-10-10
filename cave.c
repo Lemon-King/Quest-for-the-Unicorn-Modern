@@ -306,7 +306,7 @@ void cave() {
       if (player.d_level > 0) {
         save_level();
         if (current_dungeon.level[player.d_level-1].cleared == 0) {
-          if (check_level_cleared(player.d_level-1)) {
+          if (check_level_cleared()) {
             current_dungeon.level[player.d_level-1].cleared = -1;
             stats.counts[STAT_LEVELS_CLEARED]++;
             j = -1;
@@ -336,7 +336,7 @@ void cave() {
     if (player.map[player.x][player.y] == 25) {
       save_level();
       if (current_dungeon.level[player.d_level-1].cleared == 0) {
-        if (check_level_cleared(player.d_level-1)) {
+        if (check_level_cleared()) {
           current_dungeon.level[player.d_level-1].cleared = -1;
           stats.counts[STAT_LEVELS_CLEARED]++;
           j = -1;

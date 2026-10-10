@@ -21,7 +21,7 @@ Int32 check_spell_1(char* spell_name,Int32 level,Int32 allign,Int32 first) {
   for (i=1; i<=num_spells; i++)
     if (spells[i].level <= level && has_spell(i) == 0 &&
         spells[i].allign == allign) {
-      if (strncasecmp(spell_name,spells[i].name,strlen(spell_name)) == 0) {
+      if (_strnicmp(spell_name,spells[i].name,strlen(spell_name)) == 0) {
         count++;
         found = i;
         }

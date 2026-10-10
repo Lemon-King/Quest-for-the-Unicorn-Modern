@@ -14,14 +14,13 @@
  *
  * Opening a song takes MCI about a second, so all MCI work happens on a music thread with its own message-only
  * window. The game only posts requests to that window and never waits. Each song is opened once and kept open, as
- * DOS kept all four in EMS; after the first song starts, the thread opens the others in the background. Other builds
- * have no music.
+ * DOS kept all four in EMS; after the first song starts, the thread opens the others in the background.
  */
 
-#include "header.h"
-
-#ifdef WIN32
+#include <windows.h>
 #include <mmsystem.h>
+
+#include "header.h"
 
 #define MUSIC_CLASS    "unicornmusic"
 #define MUSIC_COUNT    ((Int32)(sizeof(MUSIC_FILES) / sizeof(MUSIC_FILES[0])))
@@ -140,10 +139,8 @@ static HWND music_thread_window() {
   CloseHandle(ready);
   return music_window;
   }
-#endif
 
 void play_music(Int32 song) {
-#ifdef WIN32
   HWND window;
 
   if (song < 0 || song >= MUSIC_COUNT) return;
@@ -152,20 +149,15 @@ void play_music(Int32 song) {
 
   window = music_thread_window();
   if (window != NULL) PostMessage(window,WM_MUSIC_PLAY,(WPARAM)song,0);
-#endif
   }
 
 void stop_music() {
-#ifdef WIN32
   if (music_window != NULL) PostMessage(music_window,WM_MUSIC_STOP,0,0);
-#endif
   }
 
 /* Ctrl+M: silences the music, or brings back the song for where the player is */
 void toggle_music() {
   music = (music == 'Y') ? 'N' : 'Y';
-#ifdef WIN32
   if (music == 'Y' && requested >= 0) play_music(requested);
   if (music == 'N') stop_music();
-#endif
   }
