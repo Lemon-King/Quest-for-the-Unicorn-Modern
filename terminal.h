@@ -53,4 +53,6 @@
 #define KY_C_F11 236
 #define KY_C_F12 237
 
+#define KY_SCREENSHOT 16   /* Ctrl+P */
+
 #endif

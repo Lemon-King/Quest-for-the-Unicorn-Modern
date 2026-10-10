@@ -1191,6 +1191,7 @@ extern void readln(char* buffer);
 extern Int32 p_read(char* buffer);
 extern void restoreScreen();
 extern void saveScreen();
+extern void screenshot();
 extern void setcolor(Int32 clr);
 extern void setfillstyle(Int32 st,Int32 clr);
 extern void settextstyle(Int32 a,Int32 b,Int32 c);

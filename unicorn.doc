@@ -384,6 +384,12 @@
          ] - Recall gear set
          ? - Show commands
 
+     Screenshots
+     ===========
+         Ctrl+P - Save a picture of the screen.  Works on every screen.
+                  Graphics versions write screenshotNNNN.bmp and the text
+                  version writes screenshotNNNN.txt, in the game directory.
+
      F-key usage
      ===========
 

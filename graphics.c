@@ -1,6 +1,7 @@
 #ifndef ASCII
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "graphics.h"
 
@@ -62,6 +63,10 @@ rcs_Display disp;
 Int32 _shiftState;
 Int32 _ctrlState;
 Int32 _capsState;
+
+/* Text cell of the Win32 font: one column of the game's 8-pixel text grid */
+#define FONT_WIDTH   8
+#define FONT_HEIGHT  12
 
 #include "rgb.h"
 
@@ -158,6 +163,9 @@ void rcs_initWin32(HINSTANCE hInstance) {
   strcpy(disp.className,"rcsawlib");
   disp.numPixmaps=0;
   disp.pixmapIDs=NULL;
+  disp.font=CreateFont(FONT_HEIGHT,FONT_WIDTH,0,0,FW_NORMAL,FALSE,FALSE,FALSE,
+                       OEM_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
+                       NONANTIALIASED_QUALITY,FIXED_PITCH | FF_MODERN,"Terminal");
 
         wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -517,29 +525,22 @@ void rcs_drawString(rcs_Display* d,rcs_Window win,rcs_GC gc,Int32 x,Int32 y,char
   else     XDrawString(d,win,gc,x,y,buffer,strlen(buffer));
 #endif
 #ifdef WIN32
-  HDC dc;
-  HPEN pen;
-  RECT rect;
-  Int32  height;
-  rect.top=y;
-  rect.left=x;
-  rect.bottom=20;
-  rect.right=20;
+  HDC   dc;
+  Int32 i;
   if (_rcs_isBitmap(win)==TRUE) {
     dc=CreateCompatibleDC(0);
     SelectObject(dc,win);
     } else dc=GetDC(win);
-  pen=CreatePen(PS_SOLID,0,gc->foreground);
-  pen=(HPEN)SelectObject(dc,pen);
   SelectObject(dc,gc->font);
+  SetTextAlign(dc,TA_LEFT | TA_BASELINE);
   SetBkColor(dc,gc->background);
   SetTextColor(dc,gc->foreground);
   SetBkMode(dc,TRANSPARENT);
-  height=DrawText(dc,buffer,strlen(buffer),&rect,DT_CALCRECT);
-  rect.top-=height;
-  DrawText(dc,buffer,strlen(buffer),&rect,DT_TOP);
-  pen=(HPEN)SelectObject(dc,pen);
-  DeleteObject(pen);
+
+  /* One glyph per cell keeps columns aligned even if Windows substitutes the font */
+  for (i=0; buffer[i] != 0; i++)
+    TextOut(dc,x + i * FONT_WIDTH,y,&buffer[i],1);
+
   if (_rcs_isBitmap(win)==TRUE) DeleteDC(dc);
     else ReleaseDC(win,dc);
 #endif
@@ -662,8 +663,8 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
                     case XK_Shift_R: ShiftState = -1; break;
                     case XK_Alt_L: AltState = -1; break;
                     case XK_Alt_R: AltState = -1; break;
-                    case XK_Control_L: CtrlState = -1; ret.d1 = 0; break;
-                    case XK_Control_R: CtrlState = -1; ret.d1 = 0; break;
+                    case XK_Control_L: CtrlState = -1; break;
+                    case XK_Control_R: CtrlState = -1; break;
                     case XK_F1:
                     case XK_F2:
                     case XK_F3:
@@ -678,6 +679,8 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
                                 if (CtrlState) ret.d1 |= 0x40000;
                                break;
                     }
+                  if (CtrlState && ret.d1 >= XK_a && ret.d1 <= XK_z) ret.d1 -= XK_a - 1;
+                  if (CtrlState && ret.d1 >= XK_A && ret.d1 <= XK_Z) ret.d1 -= XK_A - 1;
                   break;
     }
 #endif
@@ -763,15 +766,12 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
       ret.window=msg.hwnd;
       ret.d1=msg.wParam;
 	  if (ret.d1 == VK_SHIFT) {
-		  ret.d1 += 0xf000;
 		  _shiftState = 1;
 	  }
 	  if (ret.d1 == VK_CONTROL) {
-		  ret.d1 += 0xf000;
 		  _ctrlState = 1;
 	  }
 	  if (ret.d1 == VK_CAPITAL) {
-		  ret.d1 += 0xf000;
 		  _capsState ^= 1;
 	  }
       ret.d1 = _rcs_winTranslate(ret.d1);
@@ -781,11 +781,9 @@ rcs_Event rcs_getEvent(rcs_Display* d) {
       ret.window=msg.hwnd;
       ret.d1=msg.wParam;
 	  if (ret.d1 == VK_SHIFT) {
-		  ret.d1 += 0xf000;
 		  _shiftState = 0;
 	  }
 	  if (ret.d1 == VK_CONTROL) {
-		  ret.d1 += 0xf000;
 		  _ctrlState = 0;
 	  }
       ret.d1 = _rcs_winTranslate(ret.d1);
@@ -869,7 +867,7 @@ rcs_GC rcs_openGC(rcs_Display* d,rcs_Window win) {
         ret=(rcs_GC)malloc(sizeof(struct _GC));
   ret->foreground=RGB(0,0,0);
   ret->background=RGB(255,255,255);
-  ret->font=(HFONT)GetStockObject(SYSTEM_FONT);
+  ret->font=disp.font;
   return ret;
 #endif
   }
@@ -907,6 +905,122 @@ rcs_Window rcs_rootWindow(rcs_Display* d) {
 #ifdef WIN32
   return GetDesktopWindow();
 #endif
+  }
+
+/* *********************** */
+/* ***** Save Pixmap ***** */
+/* *********************** */
+#ifdef X
+/* Inverse of rcs_RGBToPixel() for one channel, scaled to 8 bits. */
+static unsigned char _rcs_pixelChannel(unsigned long pixel,Int32 mask,Int32 shift) {
+  unsigned long value;
+  if (shift < 0)
+    value = (pixel >> -shift) & mask;
+  else
+    value = (pixel << shift) & mask;
+  return value >> 8;
+  }
+#endif
+
+/* Fills pixels with bottom-up rows of 24-bit BGR, the pixel layout of a BMP file. */
+static Int32 _rcs_readPixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,
+                             UInt32 rowSize,unsigned char* pixels) {
+#ifdef X
+  XImage*        image;
+  unsigned long  pixel;
+  unsigned char* out;
+  Int32          x,y;
+  image = XGetImage(d,pixmap,0,0,width,height,AllPlanes,ZPixmap);
+  if (image == NULL) return 0;
+
+  for (y=0; y<height; y++) {
+    out = pixels + (height-1-y) * rowSize;
+    for (x=0; x<width; x++) {
+      pixel = XGetPixel(image,x,y);
+      *out++ = _rcs_pixelChannel(pixel,blue_mask,blue_shift);
+      *out++ = _rcs_pixelChannel(pixel,green_mask,green_shift);
+      *out++ = _rcs_pixelChannel(pixel,red_mask,red_shift);
+      }
+    }
+
+  XDestroyImage(image);
+  return 1;
+#endif
+#ifdef WIN32
+  BITMAPINFO info;
+  HDC        dc;
+  Int32      lines;
+  memset(&info,0,sizeof(info));
+  info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  info.bmiHeader.biWidth = width;
+  info.bmiHeader.biHeight = height;
+  info.bmiHeader.biPlanes = 1;
+  info.bmiHeader.biBitCount = 24;
+  info.bmiHeader.biCompression = BI_RGB;
+
+  dc = GetDC(NULL);
+  lines = GetDIBits(dc,(HBITMAP)pixmap,0,height,pixels,&info,DIB_RGB_COLORS);
+  ReleaseDC(NULL,dc);
+  return lines == height;
+#endif
+  }
+
+static void _rcs_writeShort(FILE* file,UInt32 value) {
+  fputc(value & 0xff,file);
+  fputc((value >> 8) & 0xff,file);
+  }
+
+static void _rcs_writeLong(FILE* file,UInt32 value) {
+  _rcs_writeShort(file,value & 0xffff);
+  _rcs_writeShort(file,value >> 16);
+  }
+
+static Int32 _rcs_writeBMP(char* filename,Int32 width,Int32 height,UInt32 rowSize,unsigned char* pixels) {
+  FILE*  file;
+  UInt32 imageSize;
+  UInt32 written;
+  imageSize = rowSize * height;
+  file = fopen(filename,"wb");
+  if (file == NULL) return 0;
+
+  /* BITMAPFILEHEADER (14 bytes); the pixels follow both headers */
+  fputc('B',file);
+  fputc('M',file);
+  _rcs_writeLong(file,14 + 40 + imageSize);
+  _rcs_writeLong(file,0);
+  _rcs_writeLong(file,14 + 40);
+
+  /* BITMAPINFOHEADER (40 bytes): 24 bits per pixel, uncompressed, 72 dpi */
+  _rcs_writeLong(file,40);
+  _rcs_writeLong(file,width);
+  _rcs_writeLong(file,height);
+  _rcs_writeShort(file,1);
+  _rcs_writeShort(file,24);
+  _rcs_writeLong(file,0);
+  _rcs_writeLong(file,imageSize);
+  _rcs_writeLong(file,2835);
+  _rcs_writeLong(file,2835);
+  _rcs_writeLong(file,0);
+  _rcs_writeLong(file,0);
+
+  written = fwrite(pixels,1,imageSize,file);
+  if (fclose(file) != 0) return 0;
+  return written == imageSize;
+  }
+
+Int32 rcs_savePixmap(rcs_Display* d,rcs_Pixmap pixmap,Int32 width,Int32 height,char* filename) {
+  UInt32         rowSize;
+  unsigned char* pixels;
+  Int32          saved;
+  rowSize = (width * 3 + 3) & ~3;   /* BMP rows are padded to 4 bytes */
+  pixels = (unsigned char*)calloc(rowSize,height);
+  if (pixels == NULL) return 0;
+
+  saved = _rcs_readPixmap(d,pixmap,width,height,rowSize,pixels);
+  if (saved) saved = _rcs_writeBMP(filename,width,height,rowSize,pixels);
+
+  free(pixels);
+  return saved;
   }
 
 /* *************************** */

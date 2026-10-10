@@ -219,6 +219,7 @@ typedef struct {
   TCHAR        className[80];
   rcs_Window*  pixmapIDs;
   int          numPixmaps;
+  HFONT        font;
   } rcs_Display;
 
 typedef struct _GC {
@@ -275,6 +276,7 @@ LINK rcs_GC       rcs_openGC(rcs_Display* d,rcs_Window win);
 LINK rcs_Event    rcs_pollEvent(rcs_Display*);
 LINK unsigned long rcs_RGBToPixel(int red, int green, int blue);
 LINK rcs_Window   rcs_rootWindow(rcs_Display* d);
+LINK int          rcs_savePixmap(rcs_Display* d,rcs_Pixmap pixmap,int width,int height,char* filename);
 LINK void         rcs_setWindowName(rcs_Display*,rcs_Window,char*);
 LINK void         rcs_showWindow(rcs_Display* d,rcs_Window win);
 

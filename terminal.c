@@ -296,6 +296,46 @@ void restoreScreen() {
   }
 #endif
 
+/* Finds the first unused screenshotNNNN.<extension> in the working directory. */
+static Int32 screenshot_name(char* filename,char* extension) {
+  Int32 i;
+  FILE* file;
+  for (i=1; i<10000; i++) {
+    sprintf(filename,"screenshot%04d.%s",i,extension);
+    file = fopen(filename,"r");
+    if (file == NULL) return 1;
+    fclose(file);
+    }
+  return 0;
+  }
+
+#ifdef ASCII
+void screenshot() {
+  char  filename[32];
+  FILE* file;
+  Int32 x,y;
+  Int32 last;
+  if (!screenshot_name(filename,"txt")) return;
+  file = fopen(filename,"w");
+  if (file == NULL) return;
+
+  for (y=0; y<25; y++) {
+    last = 79;
+    while (last >= 0 && screen[last][y][0] == ' ') last--;
+    for (x=0; x<=last; x++) fputc(screen[x][y][0],file);
+    fputc('\n',file);
+    }
+
+  fclose(file);
+  }
+#else
+void screenshot() {
+  char filename[32];
+  if (!screenshot_name(filename,"bmp")) return;
+  rcs_savePixmap(display,xscreen,screen_width,screen_height,filename);
+  }
+#endif
+
 void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr) {
 #ifndef ASCII
   rcs_drawLine(display,window,colors[clr],x1,y1,x2,y2);
@@ -400,6 +440,14 @@ void txt_writeln(char* buffer) {
   if (cursor_y > 24) cursor_y = 24;
   }
 
+#ifndef ASCII
+static Int32 is_modifier(Int32 key) {
+  if (key == KEY_SHIFT_L || key == KEY_SHIFT_R) return 1;
+  if (key == KEY_CTRL_L || key == KEY_CTRL_R) return 1;
+  return 0;
+  }
+#endif
+
 Int32 keypressed() {
   if (strlen(currentMacro) > 0) return 1;
 #ifdef ASCII
@@ -431,7 +479,12 @@ Int32 keypressed() {
                                           event.d1,event.d2);
     rcs_closeGC(display,gc);
     }
-  if (event.type == EVENT_KEY_PRESS) {
+  if (event.type == EVENT_KEY_PRESS && !is_modifier(event.d1)) {
+    if (event.d1 == KY_SCREENSHOT) {
+      screenshot();
+      return 0;
+      }
+
     key_event = event;
     return -1;
     }
@@ -538,7 +591,7 @@ Int32 keytrans(Int32 n) {
 #endif
   }
 
-Int32 readkey() {
+static Int32 next_key() {
 #ifdef ASCII
 #ifdef MINGW
   Int32           c;
@@ -708,12 +761,22 @@ Int32 readkey() {
       rcs_closeGC(display,gc);
       }
     if (event.type == EVENT_KEY_PRESS) {
-      if (event.d1 != KEY_SHIFT_L && event.d1 != KEY_SHIFT_R)
+      if (!is_modifier(event.d1))
         return keytrans(event.d1);
       }
     }
   return 0;
 #endif
+  }
+
+Int32 readkey() {
+  Int32 key;
+  key = next_key();
+  while (key == KY_SCREENSHOT) {
+    screenshot();
+    key = next_key();
+    }
+  return key;
   }
 
 
