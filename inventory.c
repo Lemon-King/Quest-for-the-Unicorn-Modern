@@ -107,63 +107,63 @@ Int32 can_drop(Int32 destx,Int32 desty,char check_inair) {
   return 0;
   }
 
+static void inventory_show_screen(void) {
+  Int32 i;
+  Int32 ct;
+  char buffer[40];
+  textmode(3);
+  textcolor(6);
+  gotoxy(1,1);
+  txt_write("<");
+  textcolor(14); txt_write("ESC");
+  textcolor(6); txt_write(">quit, <");
+  textcolor(14); txt_write("P");
+  textcolor(6); txt_write(">ack, <");
+  textcolor(14); txt_write("T");
+  textcolor(6); txt_write(">ake from pack, e<");
+  textcolor(14); txt_write("X");
+  textcolor(6); txt_write(">change, <");
+  textcolor(14); txt_write("ENTER");
+  textcolor(6); txt_write("> select, <");
+  textcolor(14); txt_write("I");
+  textcolor(6); txt_write(">nfo");
+  textcolor(2);
+  gotoxy(1,3);
+  txt_writeln("       On Ground      :");
+  txt_writeln("    a) Main Hand      :");
+  txt_writeln("    b) Off Hand       :");
+  txt_writeln("    c) Left Shoulder  :");
+  txt_writeln("    d) Right Shoulder :");
+  txt_writeln("    e) Neck 1         :");
+  txt_writeln("    f) Neck 2         :");
+  txt_writeln("    g) Belt Left      :");
+  txt_writeln("    h) Belt Right     :");
+  txt_writeln("    i) Belt Front     :");
+  txt_writeln("    j) Belt Back      :");
+  txt_writeln("    k) Shield         :");
+  txt_writeln("    l) Armor          :");
+  txt_writeln("    m) Ring Left 1    :");
+  txt_writeln("    n) Ring Left 2    :");
+  txt_writeln("    o) Ring Right 1   :");
+  txt_writeln("    p) Ring Right 2   :");
+  txt_writeln("    q) Cloak          :");
+  txt_writeln("    r) Boots          :");
+  txt_writeln("    s) Helm           :");
+  show_inventory(&in_air);
+  ct = 0;
+  for (i=1; i<=32; i++)
+    if (player.pack[i].otype != O_NONE) ct++;
+  textcolor(14); gotoxy(5,24);
+  sprintf(buffer,"Pack holds %d items",ct);
+  txt_write(buffer);
+  }
+
 OBJECT_REC* inventory(OBJECT_REC* it) {
   OBJECT_REC* treasure;
   char key;
   Int32  line;
   char flag;
   Int32  i,j;
-
-  void show_screen() {
-    Int32 i;
-    Int32 ct;
-    char buffer[40];
-    textmode(3);
-    textcolor(6);
-    gotoxy(1,1);
-    txt_write("<");
-    textcolor(14); txt_write("ESC");
-    textcolor(6); txt_write(">quit, <");
-    textcolor(14); txt_write("P");
-    textcolor(6); txt_write(">ack, <");
-    textcolor(14); txt_write("T");
-    textcolor(6); txt_write(">ake from pack, e<");
-    textcolor(14); txt_write("X");
-    textcolor(6); txt_write(">change, <");
-    textcolor(14); txt_write("ENTER");
-    textcolor(6); txt_write("> select, <");
-    textcolor(14); txt_write("I");
-    textcolor(6); txt_write(">nfo");
-    textcolor(2);
-    gotoxy(1,3);
-    txt_writeln("       On Ground      :");
-    txt_writeln("    a) Main Hand      :");
-    txt_writeln("    b) Off Hand       :");
-    txt_writeln("    c) Left Shoulder  :");
-    txt_writeln("    d) Right Shoulder :");
-    txt_writeln("    e) Neck 1         :");
-    txt_writeln("    f) Neck 2         :");
-    txt_writeln("    g) Belt Left      :");
-    txt_writeln("    h) Belt Right     :");
-    txt_writeln("    i) Belt Front     :");
-    txt_writeln("    j) Belt Back      :");
-    txt_writeln("    k) Shield         :");
-    txt_writeln("    l) Armor          :");
-    txt_writeln("    m) Ring Left 1    :");
-    txt_writeln("    n) Ring Left 2    :");
-    txt_writeln("    o) Ring Right 1   :");
-    txt_writeln("    p) Ring Right 2   :");
-    txt_writeln("    q) Cloak          :");
-    txt_writeln("    r) Boots          :");
-    txt_writeln("    s) Helm           :");
-    show_inventory(&in_air);
-    ct = 0;
-    for (i=1; i<=32; i++)
-      if (player.pack[i].otype != O_NONE) ct++;
-    textcolor(14); gotoxy(5,24);
-    sprintf(buffer,"Pack holds %d items",ct);
-    txt_write(buffer);
-    }
 
   takes_time = 'N';
   if (it != NULL) {
@@ -219,7 +219,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
     }
   it = NULL;
   item_to_use = NULL;
-  show_screen();
+  inventory_show_screen();
   line = 3;
   flag = ' ';
   textcolor(14);
@@ -248,20 +248,20 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       }
     if (key == 'V' || key == 'v') {
       unpack(line - 3);
-      show_screen();
+      inventory_show_screen();
       textcolor(14);
       gotoxy(1,line); txt_write("->");
       }
     if (key == 'P') {
       pack_item(&in_air,line);
-      show_screen();
+      inventory_show_screen();
       textcolor(14);
       gotoxy(1,line); txt_write("->");
       takes_time = 'Y';
       }
     if (key == 'T') {
       unpack(line - 3);
-      show_screen();
+      inventory_show_screen();
       textcolor(14);
       gotoxy(1,line); txt_write("->");
       }
@@ -288,7 +288,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
     if (key == 'I') {
       if (line > 3) data_card(&(player.invent[line-3]));
         else data_card(&in_air);
-      show_screen();
+      inventory_show_screen();
       gotoxy(1,line); txt_write("->");
       }
     if (key == 27) {

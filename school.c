@@ -43,43 +43,44 @@ SCHOOL_CLASSES school_classes[] = {
   { "Combat Techniques   ",   50, 16 },
   };
 
+static Int32 class_price(Int32 cls) {
+  Int32 ret;
+  Int32 skill;
+  ret = school_classes[cls].cost;
+  skill = school_classes[cls].skill;
+  if (get_skill(skill) >= 5 && get_skill(skill) < 10) ret *= 3;
+  if (get_skill(skill) >= 10 && get_skill(skill) < 25) ret *= 5;
+  if (get_skill(skill) >= 25 && get_skill(skill) < 50) ret *= 7;
+  if (get_skill(skill) >= 50 && get_skill(skill) < 75) ret *= 9;
+  if (get_skill(skill) >= 75)  ret *= 11;
+  ret *= (1 + get_skill(school_classes[cls].skill));
+  return ret;
+  }
+
+static void show_top(char* name) {
+  Int32 i;
+  char buffer[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  gotoxy(1,3); textcolor(14);
+  for (i=0; i<12; i++) {
+    sprintf(buffer,"   %2d> %s  %7d      %2d> %s  %7d",i+1,school_classes[i].name,class_price(i),
+                                                       i+13,school_classes[i+12].name,class_price(i+12));
+    txt_writeln(buffer);
+    }
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
 void school(char* name) {
   Int32 option;
   double price;
   Int32 i;
   char buffer[80];
 
-  Int32  class_price(Int32 cls) {
-    Int32 ret;
-    Int32 skill;
-    ret = school_classes[cls].cost;
-    skill = school_classes[cls].skill;
-    if (get_skill(skill) >= 5 && get_skill(skill) < 10) ret *= 3;
-    if (get_skill(skill) >= 10 && get_skill(skill) < 25) ret *= 5;
-    if (get_skill(skill) >= 25 && get_skill(skill) < 50) ret *= 7;
-    if (get_skill(skill) >= 50 && get_skill(skill) < 75) ret *= 9;
-    if (get_skill(skill) >= 75)  ret *= 11;
-    ret *= (1 + get_skill(school_classes[cls].skill));
-    return ret;
-    }
-
-  void show_top() {
-    Int32 i;
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    gotoxy(1,3); textcolor(14);
-    for (i=0; i<12; i++) {
-      sprintf(buffer,"   %2d> %s  %7d      %2d> %s  %7d",i+1,school_classes[i].name,class_price(i),
-                                                         i+13,school_classes[i+12].name,class_price(i+12));
-      txt_writeln(buffer);
-      }
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-    }
-
-  show_top();
+  show_top(name);
   option = 1;
   price = 5000;
   while (option != 0) {
@@ -107,7 +108,7 @@ void school(char* name) {
         delay(1000);
         player.skill[school_classes[option-1].skill] += 100000;
         if (player.skill[school_classes[option-1].skill] > 9900000) player.skill[school_classes[option-1].skill] = 9900000;
-        show_top();
+        show_top(name);
         }
       }
     }

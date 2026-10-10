@@ -11,62 +11,62 @@
 #include "header.h"
 
 
+static void library_display_msg(Int32 msg,char ext) {
+  Int32 i;
+  Int32 x,y;
+//    Int32 space;
+  Int32 size;
+  byte last;
+  MESSAGE general;
+  general = (ext == 'L') ? lore[msg] : gen[msg];
+  decode(general.message);
+  graphmode();
+  display_scroll();
+  x = 60; y = 60; size = 30;
+//    space = 25;
+  setcolor(0);
+  while (strlen(general.message) != 0) {
+    if (strlen(general.message)<size) {
+      outtextxy(x,y,general.message);
+      strcpy(general.message,"");
+      }
+    else {
+     i = size;
+     while (i > 0 && general.message[i] != ' ') i--;
+     last = general.message[i];
+     general.message[i] = 0;
+     outtextxy(x,y,general.message);
+     general.message[i] = last;
+     i++;
+     strcpy(general.message,general.message+i);
+     }
+   }
+  inkey();
+  } /* void library_display_msg(Int32 msg, char* ext) */
+
+static void show_top(char* name) {
+  char buffer[80];
+  textmode(3);
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14);
+  gotoxy(10,5);
+  txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+  textcolor(14); gotoxy(35,24);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  } /* void show_top()() */
+
 void library(char* name) {
   char flag;
   char search[33];
   Int32 msg;
   char key;
 
-  void display_msg(Int32 msg, char ext) {
-    Int32 i;
-    Int32 x,y;
-//    Int32 space;
-    Int32 size;
-    byte last;
-    MESSAGE general;
-    general = (ext == 'L') ? lore[msg] : gen[msg];
-    decode(general.message);
-    graphmode();
-    display_scroll();
-    x = 60; y = 60; size = 30;
-//    space = 25;
-    setcolor(0);
-    while (strlen(general.message) != 0) {
-      if (strlen(general.message)<size) {
-        outtextxy(x,y,general.message);
-        strcpy(general.message,"");
-        }
-      else {
-       i = size;
-       while (i > 0 && general.message[i] != ' ') i--;
-       last = general.message[i];
-       general.message[i] = 0;
-       outtextxy(x,y,general.message);
-       general.message[i] = last;
-       i++;
-       strcpy(general.message,general.message+i);
-       }
-     }
-    inkey();
-  } /* void display_msg(Int32 msg, char* ext) */
-
-  void show_top() {
-    char buffer[80];
-    textmode(3);
-    textmode(3); gotoxy(27,1); textcolor(11);
-    sprintf(buffer,"Welcome to %s",name);
-    txt_write(buffer);
-    textcolor(14);
-    gotoxy(10,5);
-    txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
-    } /* void show_top()() */
-
   flag = ' ';
   while (flag == ' ') {
-    show_top();
+    show_top(name);
     key = inkey();
     if (key == 'Q' || key == 'q') flag = '*';
     if (key == 'L' || key == 'l') {
@@ -96,7 +96,7 @@ void library(char* name) {
             }
           else {
             player.lore[msg] = -1;
-            display_msg(msg,'L');
+            library_display_msg(msg,'L');
             }
           }
         }
@@ -128,7 +128,7 @@ void library(char* name) {
             }
           else {
             player.gen[msg] = -1;
-            display_msg(msg,'G');
+            library_display_msg(msg,'G');
             }
           }
         }
