@@ -152,6 +152,7 @@ OBJS = \
 	gobottom.o \
 	godown.o \
 	gold.o \
+	gothicfont.o \
 	goship.o \
 	goup.o \
 	graphics.o \
@@ -284,6 +285,7 @@ OBJS = \
 	stockmonsters.o \
 	stocktown.o \
 	stocktreasure.o \
+	strokefont.o \
 	super.o \
 	taketime.o \
 	target.o \
@@ -347,6 +349,7 @@ $(OBJDIR)/%.o: %.c $(HEADERS) | $(OBJDIR)
 $(OBJDIR)/graphics.o: rgb.h graphics.h
 $(OBJDIR)/terminal.o: graphics.h
 $(OBJDIR)/selectsprite.o: unicorn.xpm unicorn.text
+$(OBJDIR)/gothicfont.o: gothic.h
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)

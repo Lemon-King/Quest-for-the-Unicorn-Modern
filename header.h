@@ -612,6 +612,8 @@ typedef struct {
   char*  female;
   } TITLE_REC;
 
+typedef struct STROKE_FONT STROKE_FONT;
+
 typedef struct {
   Int32 counts[255];
   Int32 trophies[255];
@@ -1347,6 +1349,13 @@ extern void view(Int32 floor);
 
 /* writefont.c */
 extern void write_font(Int32 x,Int32 y,Int32 color,char* line);
+
+/* strokefont.c */
+extern STROKE_FONT* stroke_font_create(const byte* data,Int32 length);
+extern void stroke_font_draw(const STROKE_FONT* font,Int32 x,Int32 y,Int32 size,Int32 color,char* text);
+
+/* gothicfont.c */
+extern STROKE_FONT* gothic_font();
 
 extern Int32 check_intrinsic(OBJECT_REC obj,Int32 intr);
 extern Int32 find_item_slot();

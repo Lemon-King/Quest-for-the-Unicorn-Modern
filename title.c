@@ -10,11 +10,28 @@
 
 #include "header.h"
 
-void title() {
-  char   key;
-#ifdef MHR
-#include "./Mhr/title.c"
-#else
+#ifndef ASCII
+typedef struct {
+  Int32  x;
+  Int32  y;
+  Int32  size;
+  Int32  color;
+  char*  text;
+  } TITLE_LINE;
+
+/* The title block in Gothic, placed where the DOS release drew it on a 640x480 screen. */
+static const TITLE_LINE TITLE_LINES[] = {
+  { 275,  27, 4, 14, "Quest" },
+  { 285,  82, 2,  2, "for the" },
+  { 265, 110, 4, 14, "Unicorn" },
+  { 300, 158, 2,  4, VERSION },
+  { 245, 185, 3,  9, "by Mike Riley" }
+  };
+
+#define TITLE_LINE_COUNT ((Int32)(sizeof(TITLE_LINES) / sizeof(TITLE_LINE)))
+#endif
+
+static void show_text_title() {
   setcolor(14);
   gotoxy(38, 2); txt_write("Quest");
   setcolor(2);
@@ -25,8 +42,42 @@ void title() {
   gotoxy(37, 9); txt_write(VERSION);
   setcolor(9);
   gotoxy(34, 11); txt_write("by Mike Riley");
-  setcolor(15);
+  }
+
+#ifndef ASCII
+static char show_gothic_title() {
+  STROKE_FONT* font;
+  Int32        i;
+  Int32        left,top;
+
+  font = gothic_font();
+  if (font == NULL) return 'N';
+
+  left = text_offset_x * 8;
+  top = text_offset_y * 19;
+
+  for (i=0; i<TITLE_LINE_COUNT; i++) {
+    stroke_font_draw(font,left + TITLE_LINES[i].x,top + TITLE_LINES[i].y,TITLE_LINES[i].size,
+                     TITLE_LINES[i].color,TITLE_LINES[i].text);
+    }
+
+  return 'Y';
+  }
 #endif
+
+void title() {
+  char   key;
+  textmode(3);
+#ifdef MHR
+#include "./Mhr/title.c"
+#else
+#ifdef ASCII
+  show_text_title();
+#else
+  if (show_gothic_title() != 'Y') show_text_title();
+#endif
+#endif
+  setcolor(15);
   gotoxy(3, 17);
   txt_write("This program is copyright by Michael H. Riley and may be copied, modified,");
   gotoxy(3, 18);
