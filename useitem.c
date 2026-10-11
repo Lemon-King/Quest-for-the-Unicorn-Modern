@@ -13,6 +13,7 @@
 void use_item() {
   OBJECT_REC  it;
   OBJECT_REC* item;
+  Int32 ground_x,ground_y;
   item = NULL;
   if (player.map[player.x][player.y] >= 1000 &&
       player.map[player.x][player.y] < 2000) {
@@ -24,6 +25,10 @@ void use_item() {
     }
   saveScreen();
   item = inventory(item);
+
+  /* Where inventory() put an item used from the ground; perform_effect() below can call inventory() again */
+  ground_x = drop_x;
+  ground_y = drop_y;
   restoreScreen();
   show_spot(player.x,player.y);
   show_player();
@@ -37,8 +42,12 @@ void use_item() {
       perform_effect(item);
       if (item->charges == 0) {
         item->otype = O_NONE;
-        if (use_from_ground == 'Y') {
-          player.map[player.x][player.y] =currentFloor;
+
+        /* Clears the square the item lay on. It used to clear the player's own square, which turned stairs or a door
+           to floor when the item had been dropped beside them, and left the item's square pointing at an empty slot */
+        if (use_from_ground == 'Y' && ground_x > 0 && ground_y > 0) {
+          player.map[ground_x][ground_y] = currentFloor;
+          show_spot(ground_x,ground_y);
           }
         }
       }

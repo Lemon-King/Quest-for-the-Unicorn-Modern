@@ -231,6 +231,13 @@ void save_player(FILE* file) {
     if (player.quests[i] == 'Y') {
       sprintf(line,"  Quest %d",i); write_line(file, line);
       }
+
+  /* Without the Quest State change only completed quests are saved, so entered ('E') dungeons are lost on a load */
+  if (change_quest_state == 'Y')
+    for (i=0; i<1000; i++)
+      if (player.quests[i] == 'E') {
+        sprintf(line,"  Entered %d",i); write_line(file, line);
+        }
   sprintf(line, "  }"); write_line(file, line);
   sprintf(line, "FKeySpells {"); write_line(file, line);
   for (i=0; i<13; i++)
@@ -273,6 +280,7 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayHit %d", delay_hit);                write_line(file, line);
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
+  sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }

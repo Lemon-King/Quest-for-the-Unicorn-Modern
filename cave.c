@@ -179,7 +179,10 @@ static void eat(void) {
     }
   else {
     if (item->charges != -1) item->charges--;
-    if (item->charges == 0) {
+
+    /* Without the Last Bite change the last bite is cleared before perform_effect() can count it as a meal; with it
+       perform_effect() clears it after counting, as for u */
+    if (item->charges == 0 && change_last_bite != 'Y') {
       item->otype = O_NONE;
       }
     perform_effect(item);
@@ -1361,21 +1364,7 @@ void cave() {
               show_map();
               }
           }
-        if (player.effect[PE_POLYTIME]>0) {
-            player.effect[PE_POLYTIME]--;
-            if (player.effect[PE_POLYTIME] == 10) msg("Poly ends 10 turns",15);
-            if (player.effect[PE_POLYTIME] > 0 && player.effect[PE_POLYTIME] < 6) {
-              sprintf(buffer,"Poly ends %d turns",player.effect[PE_POLYTIME]);
-              msg(buffer,15);
-              }
-            if (player.effect[PE_POLYTIME] == 0) {
-              msg("Polymorph ended",15);
-              player.chp -= monsters[player.effect[PE_POLYMORPH]].hp;
-              player.mhp -= monsters[player.effect[PE_POLYMORPH]].hp;
-              if (player.chp < 0) player.chp = 0;
-              show_side();
-              }
-          }
+        tick_polymorph();
         if (player.phase>0) {
             player.phase--;
             if (player.phase == 0) {
@@ -1466,7 +1455,9 @@ void cave() {
       if (get_str() <= 0 || get_dex() <= 0 || get_int() <= 0 ||
           get_con() <= 0 || get_wis() <= 0 || get_chr() <= 0) exitf = 9;
       }
+    show_floor_item();
     }
+  hide_floor_item();
   /* ************************************ */
   /* ***** End of main dungeon loop ***** */
   /* ************************************ */

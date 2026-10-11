@@ -15,7 +15,7 @@ typedef struct {
   unsigned int    special2;
   int    sprite;
   int    mtype;
-  char   name[16];
+  char   name[20];
   int    time;
   int    sleep;  
   int    fear;

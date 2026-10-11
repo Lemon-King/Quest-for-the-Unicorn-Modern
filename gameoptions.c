@@ -18,8 +18,8 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      10
-#define NUM_CHANGES    46
+#define NUM_PREFS      11
+#define NUM_CHANGES    52
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -116,6 +116,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },
+  { .label = "Floor Item Names",
+    .help  = "Shows the name of the item you stand on, in the bottom right",
+    .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -257,7 +260,25 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_meat_potatoes, .on = 'Y', .off = 'N', .key = "MeatAndPotatoes" },
   { .label = "World Seed",
     .help  = "New worlds pick from 2 billion dungeon layouts, not 32,767",
-    .kind  = OPT_SWITCH, .flag = &change_world_seed, .on = 'Y', .off = 'N', .key = "WorldSeed" }
+    .kind  = OPT_SWITCH, .flag = &change_world_seed, .on = 'Y', .off = 'N', .key = "WorldSeed" },
+  { .label = "Arena Timers",
+    .help  = "Resistances, blindness, light and polymorph wear off during arena fights",
+    .kind  = OPT_SWITCH, .flag = &change_arena_timers, .on = 'Y', .off = 'N', .key = "ArenaTimers" },
+  { .label = "Last Bite",
+    .help  = "Eating the last bite of a food with e counts as a meal, as with u",
+    .kind  = OPT_SWITCH, .flag = &change_last_bite, .on = 'Y', .off = 'N', .key = "LastBite" },
+  { .label = "Floor Items",
+    .help  = "Packing a floor item frees its spot, and a full floor drops no bogus tile",
+    .kind  = OPT_SWITCH, .flag = &change_floor_items, .on = 'Y', .off = 'N', .key = "FloorItems" },
+  { .label = "Quest State",
+    .help  = "The compass keeps to dungeons you entered or heard of after a load too",
+    .kind  = OPT_SWITCH, .flag = &change_quest_state, .on = 'Y', .off = 'N', .key = "QuestState" },
+  { .label = "Valley of Fear",
+    .help  = "The Valley of Fear can be entered, and the compass finds its real entrance",
+    .kind  = OPT_SWITCH, .flag = &change_valley_of_fear, .on = 'Y', .off = 'N', .key = "ValleyOfFear" },
+  { .label = "Sun Stone Fixes",
+    .help  = "The Sun Stone returns to the dungeon it holds; records only dungeon levels",
+    .kind  = OPT_SWITCH, .flag = &change_sun_stone_fixes, .on = 'Y', .off = 'N', .key = "SunStoneFixes" }
   };
 
 static Int32 mode_index(Int32 mode) {
@@ -290,6 +311,19 @@ static Int32 side_first(Int32 side) {
 
 static Int32 side_end(Int32 side) {
   return (side == SIDE_RIGHT) ? NUM_OPTIONS : FIRST_CHANGE;
+  }
+
+/* The groups TAB moves between: rules, preferences and gameplay changes */
+static Int32 option_group(Int32 i) {
+  if (i < NUM_RULES) return 0;
+  if (i < FIRST_CHANGE) return 1;
+  return 2;
+  }
+
+static Int32 group_first(Int32 group) {
+  if (group == 0) return 0;
+  if (group == 1) return NUM_RULES;
+  return FIRST_CHANGE;
   }
 
 static Int32 is_new_game_only(Int32 i) {
@@ -432,21 +466,22 @@ static void draw_screen(char* title, char rules_editable) {
   draw_options(rules_editable);
 
   textcolor(3);
-  gotoxy(13, 24); txt_write("(8/2) Select   (4/6) Change   (TAB) Side   (ENTER) Done");
+  gotoxy(13, 24); txt_write("(8/2) Select   (4/6) Change   (TAB) Group   (ENTER) Done");
   }
 
 static void edit_options(char* title, char rules_editable) {
   Int32 i;
   Int32 dir;
-  Int32 side_row[2];
+  Int32 group;
+  Int32 group_row[3];
   char  key;
   changes_top = 0;
   draw_screen(title, rules_editable);
   i = first_editable(rules_editable);
 
-  /* TAB returns to the row last selected on the other side */
-  side_row[SIDE_LEFT] = i;
-  side_row[SIDE_RIGHT] = FIRST_CHANGE;
+  /* TAB moves to the next group, back to the row last selected there */
+  for (group=0; group<3; group++) group_row[group] = group_first(group);
+  group_row[option_group(i)] = i;
 
   key = 0;
   while (key != 13 && key != 27) {
@@ -456,9 +491,11 @@ static void edit_options(char* title, char rules_editable) {
     draw_option(i, 'N', rules_editable);
     if (key == '8') i = next_option(i, -1);
     if (key == '2') i = next_option(i, 1);
-    if (key == 9 && NUM_CHANGES > 0) {
-      side_row[option_side(i)] = i;
-      i = side_row[1 - option_side(i)];
+    if (key == 9) {
+      group_row[option_group(i)] = i;
+      group = (option_group(i) + 1) % 3;
+      if (group == 2 && NUM_CHANGES == 0) group = 0;
+      i = group_row[group];
       }
     if (scroll_to(i)) draw_options(rules_editable);
 

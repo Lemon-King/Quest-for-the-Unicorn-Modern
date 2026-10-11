@@ -45,7 +45,9 @@ byte decrypt(byte value) {
   if (value < 32) return value;
   value += 64;
   value -= offset;
-  if (value < 95) value += 95;
+  /* A wrapped character comes back here as its code minus 31, at most 95 for '~'; with < 95 a '~' decoded as 31 and
+     ended the line early */
+  if (value <= 95) value += 95;
   value -= 64;
   if (++offset > 64) offset = 1;
   return value;
@@ -351,6 +353,11 @@ void load_completed_quests() {
         i = atoi(next);
         player.quests[i] = 'Y';
         }
+      if (match(line, "Entered ")) {
+        next = next_word(line);
+        i = atoi(next);
+        player.quests[i] = 'E';
+        }
       }
     }
   }
@@ -398,6 +405,7 @@ void load_options() {
       if (match(line, "DelayHit ")) delay_hit = atoi(next);
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
+      if (match(line, "FloorItemNames ")) floor_item_names = *next;
       load_gameplay_change(line);
       }
     }
@@ -871,6 +879,7 @@ Int32 load_summary(char* name, SAVE_SUMMARY* summary) {
   }
 
 void load() {
+  Int32 i;
   Int32 readable;
   char line[1024];
   char filename[sizeof(backupname)];
@@ -928,6 +937,13 @@ void load() {
     if (match(line, "GearManager {")) load_gear_manager();
     }
   fclose(save_file);
+
+  /* clear_game_data() leaves every quest 0, and the save brings back only 'Y' (and, with the Quest State change, 'E').
+     The rest are never-entered dungeons: 'N', as make_char() sets them. Without the change they stay 0, which the
+     compass takes for entered, so it lists every dungeon. */
+  if (change_quest_state == 'Y')
+    for (i=0; i<1000; i++)
+      if (player.quests[i] == 0) player.quests[i] = 'N';
   read_character_rules();
   hold_save(loadname);
   }

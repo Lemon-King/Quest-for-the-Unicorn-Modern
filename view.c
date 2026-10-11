@@ -32,6 +32,7 @@ void view(Int32 floor) {
   x = target_x;
   y = target_y;
 */
+  hide_floor_item();
   setcolor(15);
   msg("Press <ESC> to end view mode",15);
   x = player.x - player.map_x;
@@ -149,6 +150,10 @@ void view(Int32 floor) {
     if (player.map[x+player.map_x][y+player.map_y] >= 1000) {
       strcpy(buffer,get_name(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
       itemColor(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000]));
+
+      /* itemColor() sets the text colour, but outtextxyclr() draws in the graphics colour, so items showed in the
+         yellow set above */
+      setcolor(get_textcolor());
       }
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||
         (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||

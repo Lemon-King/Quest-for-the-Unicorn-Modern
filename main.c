@@ -37,6 +37,10 @@ static void start_game(Int32 loadgame) {
     textmode(3); gotoxy(1,1); textcolor(10);
     txt_write("Loading Game . . .");
     load();
+
+    /* Play time counts from the load, as make_char() starts it for a new character. Before, a game loaded after another
+       one ended in the same session also counted that game's time and the title screens. */
+    start_time = (Int32)time(NULL);
     if (player.d_level>0) mod_exit = 2;
       else mod_exit = 1;
     disp_char();
@@ -186,6 +190,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_hit = 200;
   delay_trap = 100;
   enhanced_sprites = 'N';
+  floor_item_names = 'Y';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);

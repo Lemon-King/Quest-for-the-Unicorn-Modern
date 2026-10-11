@@ -371,12 +371,12 @@ static void enter_dungeon(void) {
     x = 0;
     link = links[x++];
     flag = '*';
-    if (link.x != player.x || link.y != player.y || link.typ != 11 ||
+    if (link.x != player.x || link_y(x-1) != player.y || link.typ != 11 ||
         link.region != player.region) flag = ' ';
     while (flag == ' ') {
       link = links[x++];
       flag = '*';
-      if (link.x != player.x || link.y != player.y || link.typ != 11 ||
+      if (link.x != player.x || link_y(x-1) != player.y || link.typ != 11 ||
           link.region != player.region) flag = ' ';
       if (link.region == 99) flag = '*';
       }
@@ -419,7 +419,10 @@ static void eat(void) {
     }
   else {
     if (item->charges != -1) item->charges--;
-    if (item->charges == 0) {
+
+    /* Without the Last Bite change the last bite is cleared before perform_effect() can count it as a meal; with it
+       perform_effect() clears it after counting, as for u */
+    if (item->charges == 0 && change_last_bite != 'Y') {
       item->otype = O_NONE;
       }
     perform_effect(item);

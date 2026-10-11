@@ -426,6 +426,9 @@
     <ClCompile Include="lightroom.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="linky.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="load.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -672,6 +675,9 @@
     <ClCompile Include="showfkeys.c">
       <Filter>Display</Filter>
     </ClCompile>
+    <ClCompile Include="showflooritem.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="showflt.c">
       <Filter>Display</Filter>
     </ClCompile>
@@ -811,6 +817,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="thrownpotion.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="tickpolymorph.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="title.c">

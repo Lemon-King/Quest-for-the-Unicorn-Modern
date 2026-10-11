@@ -67,6 +67,10 @@ void pack_it(Int32 floor) {
 
     it->flags |= OF_COUNTED;
     player.pack[slot] = player.map_objects[pitem];
+
+    /* Without the Floor Items change the floor slot keeps a copy of the packed item, so the slot is never reused;
+       do_get() frees it */
+    if (change_floor_items == 'Y') it->otype = O_NONE;
     clear_prompt();
     msg("Packed     ",14);
     player.map[player.x][player.y] = floor;

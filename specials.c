@@ -1456,8 +1456,32 @@ void special100() {
   show_screen();
   }
 
+/* Whether the Sun Stone holds a dungeon level it can return to: a level of a dungeon in links[], or of the Gateway when
+   the Sun Stone Gateway change makes that return safe */
+static Int32 sun_stone_record_usable(void) {
+  Int32 i;
+  Int32 dungeon;
+  Int32 depth;
+  dungeon = player.effect[PE_DUNGEON];
+  if (dungeon == GATEWAY_DUNGEON) {
+    if (change_sun_stone_gateway != 'Y') return 0;
+    depth = 5;
+    }
+  else {
+    if (dungeon < 0) return 0;
+    for (i=0; links[i].region < 90 && i != dungeon; i++);
+    if (links[i].region >= 90 || links[i].typ != 11) return 0;
+    depth = player.effect[PE_DEPTH];
+    }
+  return (player.effect[PE_DLEVEL] >= 1 && player.effect[PE_DLEVEL] <= depth);
+  }
+
 void special101() {
   if (player.in_city == 'Y') {
+
+    /* Without the Sun Stone Fixes change a stone that holds no usable level still returns, to level 0 of whatever it
+       holds, which reads outside the dungeon's levels */
+    if (change_sun_stone_fixes == 'Y' && !sun_stone_record_usable()) return;
     exitf = 10;
     player.in_city = 'N';
     player.d_level = player.effect[PE_DLEVEL];
@@ -1475,12 +1499,23 @@ void special101() {
       strcpy(player.d_name,links[player.dungeon_number].name);
       player.diff = links[player.dungeon_number].diff;
       player.land_x = links[player.dungeon_number].x;
-      player.land_y = links[player.dungeon_number].y;
+      player.land_y = link_y(player.dungeon_number);
       player.region = links[player.dungeon_number].region;
       }
     used_sunstone = 'Y';
+
+    /* Without the Sun Stone Fixes change the return loads the level from whatever dungeon is in memory. build_dungeon()
+       does nothing when the recorded dungeon is the one in memory. */
+    if (change_sun_stone_fixes == 'Y') build_dungeon(7,player.dungeon_number);
     }
   else {
+
+    /* Without the Sun Stone Fixes change the stone also records the overworld (level 0) and arena fights, and leaves
+       the level unsaved, so a return finds it as it was on arrival: killed monsters back, taken items on the floor */
+    if (change_sun_stone_fixes == 'Y') {
+      if (player.d_level < 1 || in_arena == 'Y') return;
+      save_level();
+      }
     player.effect[PE_DLEVEL] = player.d_level;
     player.effect[PE_DUNGEON] = player.dungeon_number;
     player.d_level = 0;

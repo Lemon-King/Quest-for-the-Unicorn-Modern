@@ -951,6 +951,22 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
           player.effect[PE_MIND]--;
           if (player.effect[PE_MIND] == 0) show_side();
           }
+
+        /* Without the Arena Timers change cold, electric and arcane resistance wait for the fight to end */
+        if (change_arena_timers == 'Y') {
+          if (player.effect[PE_COLD] > 0) {
+            player.effect[PE_COLD]--;
+            if (player.effect[PE_COLD] == 0) show_side();
+            }
+          if (player.effect[PE_ELEC] > 0) {
+            player.effect[PE_ELEC]--;
+            if (player.effect[PE_ELEC] == 0) show_side();
+            }
+          if (player.effect[PE_ARCN] > 0) {
+            player.effect[PE_ARCN]--;
+            if (player.effect[PE_ARCN] == 0) show_side();
+            }
+          }
         if (player.effect[PE_HASTE] > 0) {
           player.effect[PE_HASTE]--;
           if (player.effect[PE_HASTE] == 0) show_side();
@@ -996,6 +1012,22 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       if (player.effect[PE_SLEEP] > 0) player.effect[PE_SLEEP]--;
       if (player.effect[PE_LEV] > 0) player.effect[PE_LEV]--;
       if (player.effect[PE_ROOT] > 0) player.effect[PE_ROOT]--;
+
+      /* Without the Arena Timers change blindness, light and polymorph wait for the fight to end */
+      if (change_arena_timers == 'Y') {
+        if (player.effect[PE_BLIND] > 0) {
+          player.effect[PE_BLIND]--;
+          if (player.effect[PE_BLIND] == 0) show_map();
+          }
+        if (player.effect[PE_LIGHT] > 0) {
+          player.effect[PE_LIGHT]--;
+          if (player.effect[PE_LIGHT] == 0) {
+            show_side();
+            show_map();
+            }
+          }
+        tick_polymorph();
+        }
       player.hp_count -= get_hpr();
       if (player.hp_count < 1) {
         player.hp_count = 20;
@@ -1012,7 +1044,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       if (player.x <= offset_x || player.y <= offset_y ||
           player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y) exitf = 1;
       }
+    show_floor_item();
     } /* while (exitf == 0) */
+  hide_floor_item();
   exitf = 0;
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {

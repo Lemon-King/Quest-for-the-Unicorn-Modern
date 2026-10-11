@@ -18,13 +18,13 @@ Int32 compass(Int32 suggest) {
      start of the next row */
   if (change_compass == 'Y') {
     dx = getPX(links[suggest].region,links[suggest].x);
-    dy = getPY(links[suggest].region,links[suggest].y);
+    dy = getPY(links[suggest].region,link_y(suggest));
     px = getPX(player.region,player.x);
     py = getPY(player.region,player.y);
     }
   else {
     dx = (links[suggest].region % 4) * 100 + links[suggest].x;
-    dy = (links[suggest].region / 4) * 100 + links[suggest].y;
+    dy = (links[suggest].region / 4) * 100 + link_y(suggest);
     px = (player.region % 4) * 100 + player.x;
     py = (player.region / 4) * 100 + player.y;
     }

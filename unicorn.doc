@@ -283,11 +283,12 @@
      ============
        Before a new character is created, the New Game Options screen lets
      you choose how the game will play.  Use 8 and 2 (or the arrow keys)
-     to select an option, 4 and 6 to change it, TAB to move between the
-     left and right sides, and ENTER when done.  Options shown in grey
-     cannot be changed, but can still be selected to read about them.
-     The screen starts with the values from unicorn.cfg and the command
-     line.
+     to select an option, 4 and 6 to change it, TAB to move to the next
+     group (rules, preferences, gameplay changes), and ENTER when done.
+     TAB returns to the option last selected in a group.  Options shown
+     in grey cannot be changed, but can still be selected to read about
+     them.  The screen starts with the values from unicorn.cfg and the
+     command line.
 
        Character rules are fixed once the character is created:
 
@@ -494,6 +495,43 @@
                               and 100 potatoes alone earn the trophy
          World Seed           A new world picks from 2 billion dungeon
                               layouts.  Off, from only 32,767
+         Arena Timers         Cold, electric and arcane resistance,
+                              blindness, light and polymorph wear off
+                              during arena fights, as in dungeons.
+                              Off, they pause until the fight ends
+         Last Bite            Eating the last bite of a food with e
+                              counts as a meal, as it does with u.
+                              Off, it is not counted
+         Floor Items          Putting an item from the floor straight
+                              into your pack frees its place in the
+                              level's list of floor items, and when
+                              that list is full a slain monster drops
+                              nothing instead of an item.  Off, packed
+                              items keep their place, and a full list
+                              leaves a stray tile where the item should
+                              have been
+         Quest State          The save remembers which dungeons you
+                              have entered, so after a load the
+                              compass still lists only the dungeons
+                              you have entered or heard of.  Off, a
+                              loaded game's compass lists every
+                              dungeon
+         Valley of Fear       The Valley of Fear is entered from its
+                              entrance at the end of the canyon south
+                              of the pass, and the compass points
+                              there.  Off, it cannot be entered, and
+                              the compass points at the mountains to
+                              the north
+         Sun Stone Fixes      A Sun Stone records only a dungeon level,
+                              not the upland or an arena fight, and
+                              keeps that level as you left it.  It
+                              returns you to the dungeon it holds,
+                              rebuilding it if you went elsewhere,
+                              and does nothing if it holds no level.
+                              Off, a return can land in the last
+                              dungeon you visited, monsters and items
+                              you dealt with are back, and an empty
+                              stone sends you to the Northern Realm
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
@@ -507,6 +545,8 @@
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
          Enhanced Sprites     Show the tile under creatures and items
+         Floor Item Names     Show the name of the item you stand on in the
+                              bottom right, in its inventory colour
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in

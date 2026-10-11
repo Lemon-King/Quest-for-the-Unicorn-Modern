@@ -309,7 +309,11 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       player.map[drop_x][drop_y] = i+1000;
       show_spot(drop_x,drop_y);
       show_player();
-      if (use_from_ground == 'Y') item_to_use = &(player.map_objects[player.map[player.x][player.y] - 1000]);
+
+      /* The item was put in slot i, at drop_x,drop_y. It used to be looked up from the player's own square, which is
+         only right when can_drop() picked that square; off plain floor (a shop, a house, stairs) the pointer was
+         map_objects[tile - 1000], outside the list, and callers read and wrote through it. */
+      if (use_from_ground == 'Y') item_to_use = &(player.map_objects[i]);
       }
     } else {
     }

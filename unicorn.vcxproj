@@ -196,6 +196,7 @@
     <ClCompile Include="levellegacy.c" />
     <ClCompile Include="library.c" />
     <ClCompile Include="lightroom.c" />
+    <ClCompile Include="linky.c" />
     <ClCompile Include="load.c" />
     <ClCompile Include="loadgear.c" />
     <ClCompile Include="loadlevel.c" />
@@ -278,6 +279,7 @@
     <ClCompile Include="showheadings.c" />
     <ClCompile Include="showhealth.c" />
     <ClCompile Include="showfkeys.c" />
+    <ClCompile Include="showflooritem.c" />
     <ClCompile Include="showflt.c" />
     <ClCompile Include="showgain.c" />
     <ClCompile Include="showgen.c" />
@@ -325,6 +327,7 @@
     <ClCompile Include="terminal.c" />
     <ClCompile Include="throw.c" />
     <ClCompile Include="thrownpotion.c" />
+    <ClCompile Include="tickpolymorph.c" />
     <ClCompile Include="title.c" />
     <ClCompile Include="touch.c" />
     <ClCompile Include="transcribe.c" />
