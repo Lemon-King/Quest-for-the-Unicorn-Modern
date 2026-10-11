@@ -14,6 +14,7 @@ void pack_it(Int32 floor) {
   Int32  i;
   Int32  ct;
   char buffer[40];
+  char packed[160];
   char flag;
   Int32  slot;
   Int32  pitem;
@@ -76,7 +77,8 @@ void pack_it(Int32 floor) {
        do_get() frees it */
     if (change_floor_items == 'Y') it->otype = O_NONE;
     clear_prompt();
-    msg("Packed     ",14);
+    sprintf(packed,"Packed %s",get_name(&(player.pack[slot])));
+    msg(packed,item_color(&(player.pack[slot])));
     player.map[player.x][player.y] = floor;
     show_spot(player.x,player.y);
     ct = 0;

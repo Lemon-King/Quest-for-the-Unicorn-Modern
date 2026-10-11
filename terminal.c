@@ -119,10 +119,6 @@ void textcolor(Int32 color) {
   text_color = color;
   }
 
-Int32 get_textcolor(void) {
-  return text_color;
-  }
-
 void gotoxy(Int32 x,Int32 y) {
   cursor_x = x - 1;
   cursor_y = y - 1;

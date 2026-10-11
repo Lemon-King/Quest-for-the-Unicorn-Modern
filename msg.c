@@ -30,11 +30,21 @@ void msg(char* message,Int32 color) {
   color = abs(color);
   while (strlen(pChar) > 21) {
     next = pChar + 21;
-    while (*next != ' ') next--;
-    *next = 0;
+    while (next > pChar && *next != ' ') next--;
+
+    /* A word longer than a line breaks at the line's end; the search used to run off the start of the buffer */
+    if (next == pChar) {
+      strncpy(messages[NUM_MSG-1],pChar,21);
+      messages[NUM_MSG-1][21] = 0;
+      pChar += 21;
+      }
+    else {
+      *next = 0;
+      strcpy(messages[NUM_MSG-1],pChar);
+      pChar = next + 1;
+      }
+
     msg_clr[NUM_MSG-1] = color;
-    strcpy(messages[NUM_MSG-1],pChar);
-    pChar = next + 1;
     if (color >= 0) scroll_msg();
     }
   msg_clr[NUM_MSG-1] = color;

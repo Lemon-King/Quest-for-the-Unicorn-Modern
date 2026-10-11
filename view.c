@@ -154,11 +154,9 @@ void view(Int32 floor) {
       strcpy(buffer,"Lore Book");
     else if (player.map[x+player.map_x][y+player.map_y] >= 1000) {
       strcpy(buffer,get_name(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
-      itemColor(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000]));
 
-      /* itemColor() sets the text colour, but outtextxyclr() draws in the graphics colour, so items showed in the
-         yellow set above */
-      setcolor(get_textcolor());
+      /* outtextxyclr() draws in the graphics colour, which itemColor() left alone, so items showed in yellow */
+      setcolor(item_color(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
       }
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||
         (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||

@@ -38,8 +38,7 @@ void show_floor_item(void) {
   buffer[NAME_WIDTH] = 0;
   x = screen_width - 160;
   if (x + 8*(Int32)strlen(buffer) > screen_width) x = screen_width - 8*(Int32)strlen(buffer);
-  itemColor(item);
-  setcolor(get_textcolor());
+  setcolor(item_color(item));
   outtextxyclr(x, screen_height-15, buffer);
   shown = 'Y';
   }
