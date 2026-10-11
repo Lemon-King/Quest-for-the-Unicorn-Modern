@@ -262,6 +262,7 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayHit %d", delay_hit);                write_line(file, line);
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
+  save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }
 

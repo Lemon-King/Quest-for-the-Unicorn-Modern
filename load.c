@@ -398,6 +398,7 @@ void load_options() {
       if (match(line, "DelayHit ")) delay_hit = atoi(next);
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
+      load_gameplay_change(line);
       }
     }
   }
@@ -883,6 +884,7 @@ void load() {
 
   /* Saves from before the Permadeath option have none; Casual never has permadeath anyway */
   permadeath = 'Y';
+  clear_gameplay_changes();
 
   while (!eosf) {
     read_line(line);

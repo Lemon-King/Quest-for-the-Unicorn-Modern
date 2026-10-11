@@ -297,6 +297,14 @@
          Dungeon Scaling      Monsters in dungeons scale to your level
          Full Party Combat    Monsters and party members take full damage
 
+       Gameplay changes are listed to the right of the rules.  Each one
+     changes how the original game plays, most often to fix a bug.  Like
+     the rules, they are chosen on the New Game Options screen and are
+     fixed once the character is created.  A new character starts with
+     every change On; Off plays as the original game.  A game saved
+     before a change existed keeps it Off.  This version has no gameplay
+     changes yet.
+
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 

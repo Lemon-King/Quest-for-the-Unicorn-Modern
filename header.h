@@ -1528,6 +1528,9 @@ extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();
 extern void read_character_rules();
+extern void clear_gameplay_changes();
+extern void save_gameplay_changes(FILE* file);
+extern void load_gameplay_change(char* line);
 extern char* mode_name(Int32 mode);
 extern Int32 can_drop(Int32 destx,Int32 desty,char check_inair);
 extern Int32 in_room(Int32 x,Int32 y);
@@ -1559,6 +1562,7 @@ extern Int32 find_empty(Int32 cx,Int32 cy,Int32 range,Int32 floor,Int32* dx,Int3
 extern void move_summoned();
 extern Int32 find_target(Int32 x,Int32 y,Int32* tx,Int32* ty);
 extern void save_new();
+extern void write_line(FILE* file, char* line);
 extern Int32 has_permadeath();
 extern void hold_save(char* name);
 extern void end_permadeath();
