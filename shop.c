@@ -166,13 +166,14 @@ void shop(char* name,Int32 shop_type) {
   char key;
   Int32  line;
 
+  /* Without the Shop Boots and Wands change no shop asks for boots or wands, so those for sale are never stocked */
   switch (shop_type) {
     case SHOP_ALCH: get_shop_items(O_POTN,0,0,0,0,0,1000); break;
-    case SHOP_ARMR: get_shop_items(O_ARMR,O_SHLD,O_HELM,0,0,0,5000); break;
+    case SHOP_ARMR: get_shop_items(O_ARMR,O_SHLD,O_HELM,(change_shop_boots_wands == 'Y') ? O_BOOT : 0,0,0,5000); break;
     case SHOP_BOOK: get_shop_items(O_SCRL,O_BOOK,0,0,0,0,1000); break;
     case SHOP_ROBE: get_shop_items(O_ROBE,0,0,0,0,0,1000); break;
     case SHOP_JEWL: get_shop_items(O_RING,O_NECK,O_JEWL,0,0,0,1000); break;
-    case SHOP_MAGC: get_shop_items(O_STFF,O_MISC,0,0,0,0,500); break;
+    case SHOP_MAGC: get_shop_items(O_STFF,O_MISC,(change_shop_boots_wands == 'Y') ? O_WAND : 0,0,0,0,500); break;
     case SHOP_WEAP: get_shop_items(O_EDGE,O_POLE,O_DAGR,O_BOW,O_BLNT,O_THRN,5000); break;
     case SHOP_FOOD: get_shop_items(O_FOOD,O_CONS,0,0,0,0,1000); break;
     case SHOP_CRFT: get_shop_items(O_CRFT,0,0,0,0,0,200); break;

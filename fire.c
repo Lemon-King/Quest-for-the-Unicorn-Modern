@@ -10,7 +10,14 @@
 
 #include "header.h"
 
-void fire(Int32 damage,OBJECT_REC* weapon) { 
+/* Without the Thrown Weapons change a thrown rock or star, passed as a NULL weapon, crashes the game here when it stops
+   on an item */
+static Int32 is_bow(OBJECT_REC* weapon) {
+  if (change_thrown_weapons == 'Y' && weapon == NULL) return 0;
+  return (weapon->otype == O_BOW);
+  }
+
+void fire(Int32 damage,OBJECT_REC* weapon) {
   Int32 sprt = 0;
   Int32  x,y;
   double fx,fy;
@@ -67,11 +74,16 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
       i = max_damage(weapon,monster,damage) / 2;
       i = (i/2) + u_random(i/2);
       if (i < 1) i = 1;
-      if (u_random(100) < get_crit()) {
-        i *= 2;
-        stats.counts[STAT_CRITS]++;
+
+      /* aoe() rolls the crit and counts the damage, as for a melee hit. Without the Ranged Damage change the shot
+         does both here first, so it can crit twice and is counted twice. */
+      if (change_ranged_damage != 'Y') {
+        if (u_random(100) < get_crit()) {
+          i *= 2;
+          stats.counts[STAT_CRITS]++;
+          }
+        stats_do_damage(i);
         }
-      stats_do_damage(i);
       aoe(x,y,E_DAMG,0,-i,0,0,0,-100);
       }
     else {
@@ -85,7 +97,7 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
     player.map[x][y] = currentFloor;
     show_spot(x,y);
     }
-  else if (item != NULL && weapon->otype == O_BOW) {
+  else if (item != NULL && is_bow(weapon)) {
     if (item->otype == O_POTN) {
       player.map[x][y] = currentFloor;
       show_spot(x,y);

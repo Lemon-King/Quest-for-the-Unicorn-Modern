@@ -87,6 +87,7 @@
     <ClCompile Include="cast_spell.c" />
     <ClCompile Include="cavalier.c" />
     <ClCompile Include="cave.c" />
+    <ClCompile Include="centerview.c" />
     <ClCompile Include="charattributes.c" />
     <ClCompile Include="charmmonster.c" />
     <ClCompile Include="checkautos.c" />
@@ -97,6 +98,7 @@
     <ClCompile Include="checkmonkweapon.c" />
     <ClCompile Include="checkmount.c" />
     <ClCompile Include="checknoble.c" />
+    <ClCompile Include="checkquit.c" />
     <ClCompile Include="checkscores.c" />
     <ClCompile Include="checkspell1.c" />
     <ClCompile Include="cleargamedata.c" />
@@ -145,9 +147,11 @@
     <ClCompile Include="fixability.c" />
     <ClCompile Include="fixname.c" />
     <ClCompile Include="fkeys.c" />
+    <ClCompile Include="foundrow.c" />
     <ClCompile Include="gainexp.c" />
     <ClCompile Include="gamble.c" />
     <ClCompile Include="gameoptions.c" />
+    <ClCompile Include="gateway.c" />
     <ClCompile Include="getalign.c" />
     <ClCompile Include="getcity.c" />
     <ClCompile Include="getclass.c" />
@@ -236,11 +240,13 @@
     <ClCompile Include="packit.c" />
     <ClCompile Include="packitem.c" />
     <ClCompile Include="party.c" />
+    <ClCompile Include="partyblow.c" />
     <ClCompile Include="passable.c" />
     <ClCompile Include="pawn.c" />
     <ClCompile Include="permadeath.c" />
     <ClCompile Include="pittrap.c" />
     <ClCompile Include="placeobject.c" />
+    <ClCompile Include="poisonkill.c" />
     <ClCompile Include="poisontrap.c" />
     <ClCompile Include="possesses.c" />
     <ClCompile Include="printrec.c" />
@@ -299,6 +305,8 @@
     <ClCompile Include="sleeptrap.c" />
     <ClCompile Include="sortshopitems.c" />
     <ClCompile Include="specials.c" />
+    <ClCompile Include="spellkill.c" />
+    <ClCompile Include="spelltarget.c" />
     <ClCompile Include="sqr.c" />
     <ClCompile Include="statsdodamage.c" />
     <ClCompile Include="statstakedamage.c" />
@@ -323,6 +331,7 @@
     <ClCompile Include="travel.c" />
     <ClCompile Include="triggertrap.c" />
     <ClCompile Include="trophies.c" />
+    <ClCompile Include="trophycounter.c" />
     <ClCompile Include="trunc.c" />
     <ClCompile Include="unpack.c" />
     <ClCompile Include="upland.c" />
@@ -336,6 +345,7 @@
     <ClCompile Include="view.c" />
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
+    <ClCompile Include="worldpos.c" />
     <ClCompile Include="writefont.c" />
     <ClCompile Include="yesno.c" />
   </ItemGroup>

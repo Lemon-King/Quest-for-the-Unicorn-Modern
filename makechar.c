@@ -10,6 +10,13 @@
 
 #include "header.h"
 
+/* A world seed from 0 to 1,999,999,999 built from three rand() calls of 15 bits each */
+static Int32 world_seed(void) {
+  UInt32 s;
+  s = ((UInt32)rand() << 30) ^ ((UInt32)rand() << 15) ^ (UInt32)rand();
+  return (Int32)(s % 2000000000);
+  }
+
 void initial_inventory(Int32 slot,Int32 itemnum) {
   player.invent[slot] = *(find_linked_item(itemnum));
   player.invent[slot].flags |= OF_IDENT;
@@ -222,7 +229,9 @@ void make_char(Int32 rebirth) {
   player.effect[PE_NOARENA] = (no_arena == 'Y') ? 1 : 0;
   player.effect[PE_MCOUNT] = monster_count;
   player.effect[PE_HEROIC] = 0;
-  player.effect[PE_WORLDSEED] = u_random(2000000000);
+
+  /* Without the World Seed change u_random() scales a single rand() of 0-32767, so there are only 32,767 worlds */
+  player.effect[PE_WORLDSEED] = (change_world_seed == 'Y') ? world_seed() : u_random(2000000000);
   if (heroicMode != 0) player.effect[PE_HEROIC] = heroicMode;
   player.in_city = 'N';
   player.hp_count = 15;

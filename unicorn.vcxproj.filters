@@ -99,6 +99,9 @@
     <ClCompile Include="cave.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="centerview.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="charattributes.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -127,6 +130,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="checknoble.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="checkquit.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="checkscores.c">
@@ -273,6 +279,9 @@
     <ClCompile Include="fkeys.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="foundrow.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="gainexp.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -280,6 +289,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="gameoptions.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gateway.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="getalign.c">
@@ -546,6 +558,9 @@
     <ClCompile Include="party.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="partyblow.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="passable.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -559,6 +574,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="placeobject.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="poisonkill.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="poisontrap.c">
@@ -735,6 +753,12 @@
     <ClCompile Include="specials.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="spellkill.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="spelltarget.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="sqr.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -807,6 +831,9 @@
     <ClCompile Include="trophies.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="trophycounter.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="trunc.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -844,6 +871,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="wizard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="worldpos.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="writefont.c">

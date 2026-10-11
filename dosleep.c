@@ -19,7 +19,7 @@ void do_sleep() {
   y = target_y;
   if (player.map[x][y] < 0 || (player.map[x][y]>400 && player.map[x][y]<500)) {
     if (in_arena == 'Y') mon = player.map[x][y] - 400;
-      else mon = player.map[x][y];
+      else mon = spell_target(player.map[x][y]);
     if (in_arena == 'Y') i=50+5*(player.level-player.monster[mon][a_mon].level);
       else i=50+5*(player.level-player.monster[1][mon].level);
     if (in_arena == 'Y' && (player.monster[mon][a_mon].special & MS_AMAGIC) == MS_AMAGIC) i=0;

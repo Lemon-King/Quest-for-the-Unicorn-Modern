@@ -11,7 +11,6 @@
 #include "header.h"
 
 void super(Int32 damage,Int32 elem) { 
-  char buffer[32];
   Int32  x,y;
   Int32  x1,y1;
   Int32  mon;
@@ -56,18 +55,8 @@ void super(Int32 damage,Int32 elem) {
             else i=player.monster[1][mon].hp;
           if (i <= 0) {
             clear_prompt();
-            if (in_arena != 'Y') {
-              sprintf(buffer,"Exp=%.0f",player.monster[1][mon].exp);
-              prompt(buffer);
-              player.exp += player.monster[1][mon].exp;
-              player.map[x][y] = player.monster[1][mon].prev;
-              }
-            if (in_arena == 'Y') {
-              sprintf(buffer,"Exp=%.0f",player.monster[mon][a_mon].exp);
-              prompt(buffer);
-              player.exp += player.monster[mon][a_mon].exp;
-              player.map[x][y] = player.monster[mon][a_mon].prev;
-              }
+            if (in_arena != 'Y') spell_kill(&(player.monster[1][mon]),x,y);
+            if (in_arena == 'Y') spell_kill(&(player.monster[mon][a_mon]),x,y);
             show_spot(x,y);
             if (in_arena != 'Y' && (player.monster[1][mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
               player.align -= 20;

@@ -110,7 +110,13 @@ void temple(char* name) {
     if (key == '4') {
       item = inventory(NULL);
       show_top(name,allowed,&cost);
-      if (item->plus >= 0) {
+
+      /* Without the Temple Uncurse change leaving the inventory without choosing an item crashes on item->plus */
+      if (item == NULL && change_temple_uncurse == 'Y') {
+        gotoxy(27,13); textcolor(15); txt_write("Maybe next time.");
+        delay(1000);
+        }
+      else if (item->plus >= 0) {
         gotoxy(27,13); textcolor(9); txt_write("That Item is not cursed");
         delay(1000);
         } else {

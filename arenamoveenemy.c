@@ -10,6 +10,12 @@
 
 #include "header.h"
 
+/* The lowest party value on the arena map: 300 is the summoned creature, 301-305 the party. Without the Summon Combat
+   change monsters start at 301, so they never go for the summon and can walk over it. */
+static Int32 first_party_cell() {
+  return (change_summon_combat == 'Y') ? 300 : 301;
+  }
+
 static char valid(Int32 monster,Int32 x,Int32 y) {
   Int32 i;
   char flag;
@@ -22,7 +28,7 @@ static char valid(Int32 monster,Int32 x,Int32 y) {
   if (player.map[x][y] < 0) flag = ' ';
   if (player.map[x][y] == 21) flag = ' ';
   if (player.map[x][y] == 22) flag = ' ';
-  if (player.map[x][y]>300 && player.map[x][y]<500) flag = ' ';
+  if (player.map[x][y]>=first_party_cell() && player.map[x][y]<500) flag = ' ';
   if (x == player.x && y == player.y) flag = ' ';
   if (x<offset_x || x>offset_x+ARENA_SIZE_X || y<offset_y || y>offset_y+ARENA_SIZE_Y) flag = ' ';
   if (player.map[x][y] < 255) {
@@ -64,7 +70,7 @@ static void enemy_target(Int32 x,Int32 y,Int32* targetx,Int32* targety,Int32* di
   *targety = player.y;
   for (x1=offset_x; x1<=offset_x+16; x1++)
     for (y1=offset_y; y1<=offset_y+16; y1++)
-      if (player.map[x1][y1]>300 && player.map[x1][y1]<400 &&
+      if (player.map[x1][y1]>=first_party_cell() && player.map[x1][y1]<400 &&
           (sqr(x1-x)+sqr(y1-y)) < *dist) {
         *targetx = x1;
         *targety = y1;

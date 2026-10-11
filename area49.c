@@ -10,8 +10,24 @@
 
 #include "header.h"
 
-void area49(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) { 
-  char buffer[32];
+/* Without the Blast Spells change the 7x7 blast reads a creature's special flags as an older single number: 1 for
+   anti-magic, over 9 for friendly, and 10 taken off to make it hostile. The other spells test the MS_ bits. */
+static Int32 is_anti_magic(NPC_REC* target) {
+  if (change_blast_spells == 'Y') return ((target->special & MS_AMAGIC) == MS_AMAGIC);
+  return (target->special == 1);
+  }
+
+static Int32 is_friendly(NPC_REC* target) {
+  if (change_blast_spells == 'Y') return ((target->special & MS_FRIENDLY) == MS_FRIENDLY);
+  return (target->special > 9);
+  }
+
+static void make_hostile(NPC_REC* target) {
+  if (change_blast_spells == 'Y') target->special -= MS_FRIENDLY;
+    else target->special -= 10;
+  }
+
+void area49(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
   Int32  x,y;
   Int32  x1,y1;
   Int32  mon;
@@ -26,20 +42,20 @@ void area49(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
           else mon = player.map[x][y];
         if (mon < 0) mon = -mon;
         i = 90;
-        if (in_arena == 'Y' && player.monster[mon][a_mon].special == 1) i = 0;
-        if (in_arena != 'Y' && player.monster[1][mon].special == 1) i = 0;
+        if (in_arena == 'Y' && is_anti_magic(&player.monster[mon][a_mon])) i = 0;
+        if (in_arena != 'Y' && is_anti_magic(&player.monster[1][mon])) i = 0;
         if (u_random(100) < i) {
           clear_prompt();
           noise(1000,100);
           prompt("HIT !!!"); 
-          if (in_arena != 'Y' && player.monster[1][mon].special > 9) {
+          if (in_arena != 'Y' && is_friendly(&player.monster[1][mon])) {
             player.align -= 20;
-            player.monster[1][mon].special -= 10;
-            if (player.align < 0) player.align = 0; 
+            make_hostile(&player.monster[1][mon]);
+            if (player.align < 0) player.align = 0;
             }
-          if (in_arena == 'Y' && player.monster[mon][a_mon].special > 9) {
+          if (in_arena == 'Y' && is_friendly(&player.monster[mon][a_mon])) {
             player.align -= 20;
-            player.monster[mon][a_mon].special -= 10;
+            make_hostile(&player.monster[mon][a_mon]);
             if (player.align < 0) player.align = 0;
             }
           if (in_sight(x,y) == '*') {
@@ -61,24 +77,14 @@ void area49(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
             else i=player.monster[1][mon].hp;
           if (i <= 0) {
             clear_prompt();
-            if (in_arena != 'Y') {
-              sprintf(buffer,"Exp=%.0f",player.monster[1][mon].exp);
-              prompt(buffer);
-              player.exp += player.monster[1][mon].exp;
-              player.map[x][y] = player.monster[1][mon].prev;
-              }
-            if (in_arena == 'Y') {
-              sprintf(buffer,"Exp=%.0f",player.monster[mon][a_mon].exp);
-              prompt(buffer);
-              player.exp += player.monster[mon][a_mon].exp;
-              player.map[x][y] = player.monster[mon][a_mon].prev;
-              }
+            if (in_arena != 'Y') spell_kill(&(player.monster[1][mon]),x,y);
+            if (in_arena == 'Y') spell_kill(&(player.monster[mon][a_mon]),x,y);
             show_spot(x,y);
-            if (in_arena != 'Y' && player.monster[1][mon].special > 9) {
+            if (in_arena != 'Y' && is_friendly(&player.monster[1][mon])) {
               player.align -= 20;
               if (player.align < 0) player.align = 0;
               }
-            if (in_arena == 'Y' && player.monster[mon][a_mon].special > 9) {
+            if (in_arena == 'Y' && is_friendly(&player.monster[mon][a_mon])) {
               player.align -= 20;
               if (player.align < 0) player.align = 0;
               }

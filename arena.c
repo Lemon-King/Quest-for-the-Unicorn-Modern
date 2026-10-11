@@ -53,9 +53,7 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
         delay(delay_hit);
         show_spot(ex,ey);
         }
-      i = u_random(player.monster[mon][a_mon].attack);
-      if (party_combat_mode != 'F') i /= NPC_DIV;
-      if (i < 1) i = 1;
+      i = party_blow(&player.monster[mon][a_mon]);
       player.party[target].hp -= i;
       if ((player.monster[mon][a_mon].special & MS_SLEEP) == MS_SLEEP) {
         hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
@@ -485,13 +483,35 @@ static void do_inventory(void) {
   restoreScreen();
   }
 
+/* Without the Arena Decorations change a second try is used whatever it lands on, so a decoration can replace a monster
+   or a party member. With it the tries go on until one finds the floor. Most of the arena is floor, so one always
+   does; if 1000 miss, the spot is the player's own square, which is set back to floor after decorating. */
 static void pick_spot(Int32* x,Int32* y,Int32 what) {
+  Int32 tries;
   *x = u_random(ARENA_SIZE_X) + offset_x;
   *y = u_random(ARENA_SIZE_Y) + offset_y;
-  if (player.map[*x][*y] != what) {
+  if (change_arena_decorations == 'Y') {
+    for (tries=1; tries<1000 && player.map[*x][*y] != what; tries++) {
+      *x = u_random(ARENA_SIZE_X) + offset_x;
+      *y = u_random(ARENA_SIZE_Y) + offset_y;
+      }
+    if (player.map[*x][*y] != what) {
+      *x = player.x;
+      *y = player.y;
+      }
+    }
+  else if (player.map[*x][*y] != what) {
     *x = u_random(ARENA_SIZE_X) + offset_x;
     *y = u_random(ARENA_SIZE_Y) + offset_y;
     }
+  }
+
+/* -1 when every monster of the arena's group is dead, else 0 */
+static Int32 monsters_dead(void) {
+  Int32 i;
+  for (i=1; i<=5; i++)
+    if (player.monster[i][a_mon].hp > 0) return 0;
+  return -1;
   }
 
 static void find_closest_mob(Int32* x,Int32* y) {
@@ -716,6 +736,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             }
           }
         }
+
+    /* Without the Arena Exit change all_dead is only worked out after the fight, so ENTER and ESC never leave */
+    if (change_arena_exit == 'Y') all_dead = monsters_dead();
     switch (key) {
       case '8': move(0,-1); break;
       case '2': move(0,1); break;
@@ -803,7 +826,6 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       case 'H': show_icons();
                 takes_time = 'N';
                 break;
-      case ':': special(54,NULL); break;
       case 'R': disp_char();
                 show_screen();
                 takes_time = 'N';
@@ -821,7 +843,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             }
           }
         }
-      if (player.align <= 0 && player.class != 7) make_assassin();
+      /* Without the Arena Assassins change this tests class 7 (Monk) for the Assassin (8), so an Assassin restarts at
+         level 1 on every arena turn; the test after it is the right one, as in cave() */
+      if (change_arena_assassins != 'Y' && player.align <= 0 && player.class != 7) make_assassin();
       if (player.align <= 0 && !(classes[player.class-1].flags & CF_ROGUE)) make_assassin();
       while (player.exp >= player.exp_next) {
         advancement();
@@ -896,7 +920,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
           if (player.monster[x][a_mon].poison > 0) {
             player.monster[x][a_mon].poison--;
             player.monster[x][a_mon].hp -= 2;
-            dead_monster(&(player.monster[x][a_mon]),'Y',player.x,player.y);
+            poison_kill(&(player.monster[x][a_mon]));
             }
           }
         } /* if (haste_flag == ' ') */
@@ -904,7 +928,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         if (player.level >= 23) player.effect[PE_HASTE] = 10;
         if (player.level >= 17) player.effect[PE_SLEEP] = 0;
         if (player.level >= 29) player.effect[PE_POISON] = 0;
-        if (player.level >= 14) player.effect[PE_FEAR] = 0;
+        if (player.level >= ((change_arena_monk_fear == 'Y') ? 11 : 14)) player.effect[PE_FEAR] = 0;
         check_monk_weapon();
         }
       if (haste_flag == '*') haste_flag = ' ';
@@ -920,6 +944,12 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         if (player.effect[PE_FIRE] > 0) {
           player.effect[PE_FIRE]--;
           if (player.effect[PE_FIRE] == 0) show_side();
+          }
+
+        /* Without the Mind Shield change nothing counts PE_MIND down, so a Mind Shield never wears off */
+        if (change_mind_shield == 'Y' && player.effect[PE_MIND] > 0) {
+          player.effect[PE_MIND]--;
+          if (player.effect[PE_MIND] == 0) show_side();
           }
         if (player.effect[PE_HASTE] > 0) {
           player.effect[PE_HASTE]--;

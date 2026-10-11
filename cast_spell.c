@@ -45,11 +45,14 @@ void cast_spell(Int32 number) {
       }
     switch (spells[spell].effect) {
       case 1:do_blink();
+             if (change_blink_only == 'Y') break;
       case 2:player.effect[PE_PROT] = spell_adjust(player.level * 8);
              player.effect[PE_APROT] = spells[spell].control * player.level;
              break;
       case 3:touch(spell_adjust(spells[spell].control),spells[spell].special); break;
       case 4:missile(spell_adjust(spells[spell].control),spells[spell].special,0); break;
+      case 5:if (change_teleport_spell == 'Y') teleport_spell();
+             break;
       case 6:do_sleep(); break;
       case 7:special(spells[spell].control,NULL); break;
       case 8:fear(0); break;

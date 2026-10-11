@@ -11,7 +11,6 @@
 #include "header.h"
 
 void drain(Int32 damage,Int32 elem) {
-  char buffer[32];
   Int32  x,y;
   Int32  xdir,ydir;
   Int32  mon;
@@ -21,7 +20,7 @@ void drain(Int32 damage,Int32 elem) {
   y = player.y + ydir;
   if (player.map[x][y] < 0 || (player.map[x][y]>400 && player.map[x][y]<500)) {
     if (in_arena == 'Y') mon = player.map[x][y] - 400;
-      else mon = player.map[x][y];
+      else mon = spell_target(player.map[x][y]);
     i = 90;
     if (in_arena == 'Y' && (player.monster[mon][a_mon].special & MS_AMAGIC) == MS_AMAGIC) i = 0;
     if (in_arena != 'Y' && (player.monster[1][mon].special & MS_AMAGIC) == MS_AMAGIC) i = 0;
@@ -56,18 +55,8 @@ void drain(Int32 damage,Int32 elem) {
         else i=player.monster[1][mon].hp;
       if (i <= 0) {
         clear_prompt();
-        if (in_arena != 'Y') {
-          sprintf(buffer,"Exp=%.0f",player.monster[1][mon].exp);
-          prompt(buffer);
-          player.exp += player.monster[1][mon].exp;
-          player.map[x][y] = player.monster[1][mon].prev;
-          }
-        if (in_arena == 'Y') {
-          sprintf(buffer,"Exp=%.0f",player.monster[mon][a_mon].exp);
-          prompt(buffer);
-          player.exp += player.monster[mon][a_mon].exp;
-          player.map[x][y] = player.monster[mon][a_mon].prev;
-          }
+        if (in_arena != 'Y') spell_kill(&(player.monster[1][mon]),x,y);
+        if (in_arena == 'Y') spell_kill(&(player.monster[mon][a_mon]),x,y);
         show_spot(x,y);
         if (in_arena != 'Y' && (player.monster[1][mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
           player.align -= 20;

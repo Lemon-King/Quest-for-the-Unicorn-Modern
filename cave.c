@@ -289,7 +289,10 @@ static void down_level(Int32 check_clear) {
   Int32 i,j;
   if (player.map[player.x][player.y] == 24 ||
       player.map[player.x][player.y] == 5) {
-    if (player.d_level > 0) {
+
+    /* check_clear is 0 when cave() places the player on a level without leaving one. Without the Sun Stone change it
+       is ignored, so a Sun Stone return saves the town it came from over the level above. */
+    if (player.d_level > 0 && (check_clear || change_sun_stone != 'Y')) {
       save_level();
       if (current_dungeon.level[player.d_level-1].cleared == 0) {
         if (cave_level_cleared()) {
@@ -441,6 +444,7 @@ static void light_torch(void) {
 
 static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
   Int32 pos;
+  Int32 member;
   if (player.party[1].hp == 0) pos = 1;
     else if (player.party[2].hp == 0) pos = 2;
     else if (player.party[3].hp == 0) pos = 3;
@@ -455,10 +459,14 @@ static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
     player.party[pos].exp = needed(player.party[pos].level);
     player.party[pos].time = -1;
     player.party[pos].hp = player.party[pos].level * 9;
-    player.party[i].attack = 2 * player.party[i].level;
-    player.party[i].defense = 2 * player.party[i].level;
-    if (player.party[i].mana > 0)
-      player.party[i].mana = 25 * player.party[i].level;
+
+    /* Without the Party Joining change these go to party[i], i being cave()'s loop variable passed in through join():
+       often 6, one past the party, so the player's own data after it is overwritten */
+    member = (change_party_joining == 'Y') ? pos : i;
+    player.party[member].attack = 2 * player.party[member].level;
+    player.party[member].defense = 2 * player.party[member].level;
+    if (player.party[member].mana > 0)
+      player.party[member].mana = 25 * player.party[member].level;
     player.map[x][y] = player.party[pos].prev;
     if (player.effect[PE_HEROIC] > 0) {
       player.party[pos].hp *= player.effect[PE_HEROIC];
@@ -557,6 +565,12 @@ static Int32 is_merchant(void) {
   return 0;
   }
 
+/* Whether a house for sale is the house owned in a house slot */
+static Int32 same_house(FORSALE* sale,HOUSE* house) {
+  return sale->region == house->region && sale->rx == house->rx && sale->ry == house->ry &&
+         sale->cx == house->cx && sale->cy == house->cy;
+  }
+
 static void buy_item(Int32* i) {
   Int32 flag;
   Int32 x,y;
@@ -617,12 +631,14 @@ static void buy_item(Int32* i) {
     if (forsale[*i].region == 999) flag = -2;
     (*i)++;
     }
+
+  /* Without the House Buying change for-sale row n is checked against house slot n, whichever house you stand at, so
+     owning a house in the slot of its own row stops every purchase */
   for (*i=0; *i<5; (*i)++) {
-    if (forsale[*i].region == player.houses[*i].region &&
-        forsale[*i].rx == player.houses[*i].rx &&
-        forsale[*i].ry == player.houses[*i].ry &&
-        forsale[*i].cx == player.houses[*i].cx &&
-        forsale[*i].cy == player.houses[*i].cy) flag = -1;
+    if (change_house_buying == 'Y') {
+      if (flag >= 0 && same_house(&forsale[flag],&player.houses[*i])) flag = -1;
+      }
+    else if (same_house(&forsale[*i],&player.houses[*i])) flag = -1;
     }
   if (flag >= 0) {
     saveScreen();
@@ -703,23 +719,6 @@ static void gps(void) {
   msg(buffer,15);
   sprintf(buffer,"X,Y       : %d,%d",player.x,player.y);
   msg(buffer,15);
-  }
-
-static Int32 check_quit(void) {
-  Int32 key;
-  saveScreen();
-  clrscr();
-  textcolor(12); gotoxy(35,8); txt_write("WARNING!!!");
-  textcolor(15); gotoxy(6,10); txt_write("Using the <Q>uit command will permenently end your current character.");
-  textcolor(15); gotoxy(6,11); txt_write("Are you sure you want to permenently end this character (Y/N)?");
-  key = ' ';
-  while (key != 'Y' && key != 'N') {
-    key = inkey();
-    if (key == 'y') key = 'Y';
-    if (key == 'n') key = 'N';
-    }
-  restoreScreen();
-  return (key == 'Y') ? -1 : 0;
   }
 
 static Int32 check_in_corridor(void) {
@@ -1108,7 +1107,8 @@ void cave() {
             }
           }
         }
-      if (player.map[player.x][player.y] == 801 && player.effect[PE_SLEEP] != 0) {
+      /* Without the Sleep Traps change a sleep trap springs only under a sleeping player, who cannot step on it */
+      if (player.map[player.x][player.y] == 801 && (change_sleep_traps == 'Y' || player.effect[PE_SLEEP] != 0)) {
         player.map[player.x][player.y] = 40;
         if (has_intrinsic(A_LEV) == 0) sleep_trap();
         }
@@ -1233,7 +1233,7 @@ void cave() {
   msg(buffer,15);
                 player.monster[1][x].poison--;
                 player.monster[1][x].hp -= 2;
-                dead_monster(&(player.monster[1][x]),'Y',player.x,player.y);
+                poison_kill(&(player.monster[1][x]));
   msg("done",15);
                 }
             }
@@ -1267,6 +1267,12 @@ void cave() {
           if (player.effect[PE_ARCN]>0) {
               player.effect[PE_ARCN]--;
               if (player.effect[PE_ARCN] == 0)  show_side();
+            }
+
+          /* Without the Mind Shield change nothing counts PE_MIND down, so a Mind Shield never wears off */
+          if (change_mind_shield == 'Y' && player.effect[PE_MIND]>0) {
+              player.effect[PE_MIND]--;
+              if (player.effect[PE_MIND] == 0)  show_side();
             }
           if (player.effect[PE_HASTE]>0) {
               player.effect[PE_HASTE]--;

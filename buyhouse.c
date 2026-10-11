@@ -64,6 +64,7 @@ void buy_house(Int32 hnum) {
       if (p_read(buffer) == 0) {
         sscanf(buffer,"%lf",&down);
         } else down = 0;
+      down = typed_gold(down);
       a = (p-down)*((i*pow(1+i,360))/(pow(1+i,360)-1));
       }
     if (key == '2') {

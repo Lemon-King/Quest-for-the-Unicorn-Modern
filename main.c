@@ -49,6 +49,11 @@ static void start_game(Int32 loadgame) {
     make_char(0);
     mod_exit = 1;
     build_dungeon(7,0);
+
+    /* clear_game_data() leaves dungeon 0, the Temple of the Forest, marked as built with empty levels, so the call
+       above does nothing. Without the New Game Dungeon change a character whose first dungeon is the Temple of the
+       Forest walks into those empty levels. */
+    if (change_new_game_dungeon == 'Y') current_dungeon.dungeon_number = -1;
     }
   }
 

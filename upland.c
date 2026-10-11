@@ -54,6 +54,15 @@ static void land_discover(void) {
   close_display();
   } /* void land_discover() */
 
+/* The Gateway's entrance: seen with A_GATE, and open with A_GACT as well */
+static void place_gateway(void) {
+  if (player.region != GATEWAY_REGION) return;
+  if (player.gateway == ' ' && has_intrinsic(A_GATE))
+    player.map[GATEWAY_X][GATEWAY_Y] = 32;
+  if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
+    has_intrinsic(A_GACT)) player.map[GATEWAY_X][GATEWAY_Y] = 31;
+  }
+
 static void check_region(void) {
   char flag;
 //    Int32  m_file;
@@ -161,12 +170,7 @@ static void check_region(void) {
     flag = '*';
     }
   strcpy(player.d_name,regions[player.region-1].name);
-  if (player.region == 12) {
-    if (player.gateway == ' ' && has_intrinsic(A_GATE))
-       player.map[80][78] = 32;
-    if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-       has_intrinsic(A_GACT)) player.map[80][78] = 31;
-    }
+  place_gateway();
   if (player.inship == ' ' && player.ship_r == player.region) {
     player.map[player.ship_x][player.ship_y] = 12;
     }
@@ -327,13 +331,10 @@ static void enter_dungeon(void) {
   Int32  x;
   LINK_REC link;
   if (player.map[player.x][player.y] == 31) {
-    strcpy(player.d_name,"The Gateway");
     exitf = 2;
     player.in_city = 'N';
     player.d_level = 0;
-    player.diff = 20;
-    if (player.gateway != 'F') player.gateway = '*';
-    player.dungeon_number = 99;
+    set_gateway_dungeon();
     build_dungeon(7,player.dungeon_number);
     }
   if (player.map[player.x][player.y] == 17) {
@@ -532,6 +533,12 @@ static void land_go_ship(void) {
   show_land_player();
   } /* void land_go_ship() */
 
+/* Without the Tardis Descriptions change a description has no length limit, and overruns invoke and tardis_d */
+static Int32 description_has_room(char* invoke) {
+  if (change_tardis_descriptions != 'Y') return 1;
+  return (strlen(invoke) < sizeof(STRING32) - 1);
+  }
+
 static void new_tardis(Int32 i) {
   char invoke[33];
   char key;
@@ -545,7 +552,7 @@ static void new_tardis(Int32 i) {
     key = 255;
     while (key != 13) {
       key = inkey();
-      if (key>31) {
+      if (key>31 && description_has_room(invoke)) {
         invoke[strlen(invoke) + 1] = 0;
         invoke[strlen(invoke)] = key;
         clear_prompt();
@@ -599,12 +606,7 @@ static void tardis(Int32 i) {
       if (player.inship == ' ' && player.ship_r == player.region) {
             player.map[player.ship_x][player.ship_y] = 12;
         }
-      if (player.region == 12) {
-        if (player.gateway == ' ' && has_intrinsic(A_GATE))
-          player.map[80][78] = 32;
-        if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-          has_intrinsic(A_GACT)) player.map[80][78] = 31;
-        }
+      place_gateway();
       show_map();
       show_sm_map();
       show_side();
@@ -667,6 +669,10 @@ void up_land() {
   while (keypressed()) key=inkey();
   in_upland = 'Y';
   player.d_level = 0;
+
+  /* Without the Gateway Exit change the Gateway's flag stays set after leaving it: every later dungeon is built by the
+     Gateway's rules, and its entrance does not show again */
+  if (change_gateway_exit == 'Y' && player.gateway == '*') player.gateway = ' ';
   copyMap(&player.map,player.region);
 //#ifdef MINGW
 //  m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
@@ -690,12 +696,7 @@ void up_land() {
       player.map[player.ship_x][player.ship_y] = 12;
     }
   strcpy(player.d_name,regions[player.region-1].name);
-  if (player.region == 12) {
-    if (player.gateway == ' ' && has_intrinsic(A_GATE))
-      player.map[80][78] = 32;
-    if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-      has_intrinsic(A_GACT)) player.map[80][78] = 31;
-    }
+  place_gateway();
   graphmode();
   show_land();
   show_sm_land();
@@ -707,7 +708,12 @@ void up_land() {
     show_time();
     key = inkey();
     switch (key) {
-      case 'Q':exitf = 3;
+      /* Without the Upland Quit change Q quits at once, unasked, and falls through into a step north */
+      case 'Q':if (change_upland_quit == 'Y') {
+                 if (check_quit()) exitf = 3;
+                 break;
+                 }
+               exitf = 3;
       case '8':move_up(); break;
       case '2':move_down(); break;
       case '4':move_left(); break;

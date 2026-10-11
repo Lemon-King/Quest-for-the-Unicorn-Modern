@@ -12,6 +12,10 @@
 
 void go_bottom() {
   char flag;
+
+  /* Without the Words of Power change sinking in a town drops onto a level of the last dungeon built, still as a
+     town */
+  if (change_words_of_power == 'Y' && player.in_city == 'Y') return;
   if (player.d_level < bottom) {
     if (player.d_level > 0 && player.in_city != 'Y') save_level();
     flag = ' ';

@@ -690,6 +690,27 @@ void load_gear_manager() {
     }
   }
 
+/* One line of a Tardis slot as the Tardis Saves change writes it: TardisX<n>, TardisY<n>, TardisR<n> or TardisDesc<n> */
+static void load_tardis(char* line) {
+  Int32 i;
+  char* value;
+  value = next_word(line);
+
+  if (match(line, "TardisDesc")) {
+    i = atoi(line+10);
+    if (i < 0 || i >= 11) return;
+    strncpy(player.tardis_d[i], value, sizeof(STRING32) - 1);
+    player.tardis_d[i][sizeof(STRING32) - 1] = 0;
+    return;
+    }
+
+  i = atoi(line+7);
+  if (i < 0 || i >= 11) return;
+  if (match(line, "TardisX")) player.tardis_x[i] = atoi(value);
+  if (match(line, "TardisY")) player.tardis_y[i] = atoi(value);
+  if (match(line, "TardisR")) player.tardis_r[i] = atoi(value);
+  }
+
 void load_player() {
   byte flag;
   char line[1024];
@@ -754,7 +775,8 @@ void load_player() {
       if (match(line, "CavPaid ")) { next = next_word(line); player.cav_paid = atoi(next); }
       if (match(line, "DungeonNum ")) { next = next_word(line); player.dungeon_number = atoi(next); }
       if (match(line, "TimePlayed ")) { next = next_word(line); player.time_played = atoi(next); }
-      if (match(line, "Stat")) { 
+      if (match(line, "Tardis")) load_tardis(line);
+      if (match(line, "Stat")) {
         i = atoi(line+4);
         next = next_word(line); player.stat[i] = atoi(next);
         }

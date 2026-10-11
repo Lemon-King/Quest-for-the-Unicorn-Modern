@@ -10,6 +10,22 @@
 
 #include "header.h"
 
+/* Without the Eshter Spawns change this tests player.d_level, which build_dungeon() leaves at 0 while it stocks every
+   level, so Eshter never appears. */
+static Int32 is_eshter_level(Int32 depth) {
+  if (player.gateway != '*') return 0;
+  if (change_eshter_spawns == 'Y') return (depth == 5);
+  return (player.d_level == 5);
+  }
+
+/* The bottom level of the Den of Horror, where Daleks guard the Tardis. It has Eshter's fault without the Dalek
+   Spawns change. */
+static Int32 is_dalek_level(Int32 depth) {
+  if (player.land_x != 16 || player.land_y != 28) return 0;
+  if (change_dalek_spawns == 'Y') return (depth == bottom);
+  return (player.d_level == bottom);
+  }
+
 void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DUNGEON_MONSTERS* dmonsters) {
   Int32 i,j;
   byte x,y;
@@ -34,8 +50,7 @@ void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DU
   if (min > 20) min = 20;
   max = player.diff + depth / 4;
   if (max < min) max = min;
-  if (player.land_x == 16 && player.land_y == 28 &&
-      player.d_level == bottom) {
+  if (is_dalek_level(depth)) {
     min = 99;
     max = 99;
     }
@@ -72,7 +87,7 @@ void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DU
        }
     if (groupsize > 5) groupsize = 5;
     for (j=1; j<=groupsize; j++) {
-      if (player.gateway == '*' && player.d_level == 5 && j == 1 && i == 1) {
+      if (is_eshter_level(depth) && j == 1 && i == 1) {
         for (x1=x-2; x1<=x+2; x1++)
           for (y1=y-2; y1<=y+2; y1++)
             (*map)[x1][y1] = 145;
@@ -82,7 +97,7 @@ void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DU
       flag = ' ';
       while (flag == ' ') {
         mnst = -1;
-        if (player.gateway == '*' && player.d_level == 5 && j == 1 && i == 1) {
+        if (is_eshter_level(depth) && j == 1 && i == 1) {
           mnst = get_linked_monster(90); /* Eshter */
           flag = '*';
           }
@@ -106,8 +121,7 @@ void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DU
             mnst = -1;
             }
           }
-        else if (player.land_x == 16 && player.land_y == 28 &&
-                 player.d_level == bottom) {
+        else if (is_dalek_level(depth)) {
           mnst = get_linked_monster(91);   /* Dalek */
           flag = '*';
           }
@@ -146,7 +160,7 @@ void stock_monsters(Int32 depth,Int32 treasurex,Int32 treasurey,MAP_TYPE* map,DU
       (*dmonsters)[j][i].speed = -(*dmonsters)[j][i].speed;
       }
     }
-  if (player.gateway == '*' && player.d_level == 5)
+  if (is_eshter_level(depth))
     for (i=2; i<=5; i++) (*dmonsters)[i][1].hp = 0;
   }
 

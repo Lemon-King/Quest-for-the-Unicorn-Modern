@@ -17,13 +17,26 @@ void teleport() {
     player.x = u_random(100) + 1;
     player.y = u_random(100) + 1;
     }
-  player.map_x = player.x - (TILES_X / 2);
-  player.map_y = player.y - (TILES_Y / 2);
-  if (player.map_x < 1) player.map_x = 1;
-  if (player.map_y < 1) player.map_y = 1;
-  if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
-  if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+  center_view();
   last_target_x = 0;
   last_target_y = 0;
+  }
+
+/* The Teleport spell works on dungeon levels only. teleport() hunts for stone floor, which the upland, the village and
+   the Realm of Eshter have little or none of, and the arena must not be left. */
+static Int32 can_teleport() {
+  if (in_upland == 'Y' || in_arena == 'Y' || player.in_city == 'Y') return 0;
+  return !(player.gateway == '*' && player.d_level == 4);
+  }
+
+/* The Teleport spell, with the Teleport Spell change */
+void teleport_spell() {
+  if (!can_teleport()) {
+    msg("Fizzle",9);
+    return;
+    }
+  teleport();
+  discover();
+  show_screen();
   }
 

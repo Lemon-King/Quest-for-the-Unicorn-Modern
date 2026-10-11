@@ -88,14 +88,6 @@ static void new_town(Int32 where) {
   saveScreen();
   } /* void new_town(Int32 where) */
 
-static Int32 getPX(Int32 r,Int32 x) {
-  return (((r - 1) % 4) * 100) + x;
-  }
-
-static Int32 getPY(Int32 r,Int32 y) {
-  return (((r - 1) / 4) * 100) + y;
-  }
-
 void travel(char* name) {
   char dest[9][33];
   Int32 cost[9];
@@ -202,6 +194,14 @@ void travel(char* name) {
         else {
           sub_gold(2500);
           player.map[shipx][shipy] = 12;
+
+          /* Without the Ship Purchase change the ship is not owned until it is boarded and left, so the check above
+             lets another be bought at once. With it the ship is owned as if docked in this harbor. */
+          if (change_ship_purchase == 'Y') {
+            player.ship_x = shipx;
+            player.ship_y = shipy;
+            player.ship_r = player.region;
+            }
           gotoxy(20,ndest+6); textcolor(14);
           txt_write("You will find you new ship in the harbor");
           textcolor(14); gotoxy(35,24); 

@@ -726,6 +726,7 @@ void special49() {
         delay(1000);
         }
       else {
+        msg = found_row(msg);
         player.lore[msg] = -1;
         display_msg(msg,'L');
         }
@@ -745,6 +746,7 @@ void special49() {
         delay(1000);
         }
       else {
+        msg = found_row(msg);
         player.gen[msg] = -1;
         display_msg(msg,'G');
         }
@@ -1017,6 +1019,12 @@ void special73() {
         o->charges = objects[i].charges;
         msg("Item glows briefly",15);
         return;
+        }
+
+      /* Without the Scroll of Charging change the search never moves on, and hangs */
+      if (change_scroll_charging == 'Y') {
+        i++;
+        if (objects[i].otype >= 999) break;
         }
       }
     msg("Fizzle",9);
@@ -1454,11 +1462,22 @@ void special101() {
     player.in_city = 'N';
     player.d_level = player.effect[PE_DLEVEL];
     player.dungeon_number = player.effect[PE_DUNGEON];
-    strcpy(player.d_name,links[player.dungeon_number].name);
-    player.diff = links[player.dungeon_number].diff;
-    player.land_x = links[player.dungeon_number].x;
-    player.land_y = links[player.dungeon_number].y;
-    player.region = links[player.dungeon_number].region;
+
+    /* The Gateway is dungeon 99, past the end of links[]. Without the Sun Stone Gateway change a return to it reads
+       links[99] for its name, difficulty and place. */
+    if (change_sun_stone_gateway == 'Y' && player.dungeon_number == GATEWAY_DUNGEON) {
+      set_gateway_dungeon();
+      player.land_x = GATEWAY_X;
+      player.land_y = GATEWAY_Y;
+      player.region = GATEWAY_REGION;
+      }
+    else {
+      strcpy(player.d_name,links[player.dungeon_number].name);
+      player.diff = links[player.dungeon_number].diff;
+      player.land_x = links[player.dungeon_number].x;
+      player.land_y = links[player.dungeon_number].y;
+      player.region = links[player.dungeon_number].region;
+      }
     used_sunstone = 'Y';
     }
   else {
@@ -1600,6 +1619,9 @@ void special105() {
     if (objects[i].otype == O_GACH) flag = ' ';
     if (objects[i].otype == O_FOOD) flag = ' ';
     if (objects[i].control2 < 0) flag = ' ';
+
+    /* Without the Item Deck change the draw can land on the table's EOL row, which passes every test above */
+    if (change_item_deck == 'Y' && objects[i].otype >= 999) flag = ' ';
     }
   item = objects[i];
   item.flags |= OF_IDENT;
@@ -1662,6 +1684,13 @@ void socketItem(OBJECT_REC* item,Int32 dir) {
     item->sockets[item->num_sockets-1] = 0;
     item->num_sockets--;
     }
+  }
+
+/* The Tripped card's hit die. Without the Tripped Card change it is the next class's, read past the table for a
+   Shaman. */
+static Int32 tripped_hitdie() {
+  if (change_tripped_card == 'Y') return classes[player.class-1].hitdie;
+  return classes[player.class].hitdie;
   }
 
 /* deck of many things */
@@ -1811,8 +1840,8 @@ void special109(OBJECT_REC* item) {
     case 20:
             showCard("Tripped","Lose 1 level");
             player.level--;
-            player.chp -= classes[player.class].hitdie;
-            player.mhp -= classes[player.class].hitdie;
+            player.chp -= tripped_hitdie();
+            player.mhp -= tripped_hitdie();
             if (player.level <= 0) player.chp = -1000;
             break;
     case 21:
@@ -2029,6 +2058,9 @@ void special(Int32 whichone,OBJECT_REC* item) {
     case 93:special93(); break;
     case 94:special94(); break;
     case 95:special95(item->control2);
+
+            /* Without the Bodily Health change the manual falls through into the Crown of Might */
+            if (change_bodily_health == 'Y') break;
     case 96:special96(); break;
     case 97:special97(); break;
     case 98:special98(); break;
@@ -2121,9 +2153,9 @@ void perform_effect(OBJECT_REC* obj) {
         stats.counts[trophies[i].control[2]]++;
       }
     if (trophies[i].criteria_type == TC_ITEM) {
-      if (obj->link == trophies[i].control[0]) stats.counts[trophies[i].control[2]]++;
+      if (obj->link == trophies[i].control[0]) stats.counts[trophy_counter(i,2)]++;
       if (trophies[i].control[3] > 0)
-        if (obj->link == trophies[i].control[3]) stats.counts[trophies[i].control[5]]++;
+        if (obj->link == trophies[i].control[3]) stats.counts[trophy_counter(i,5)]++;
       }
     if (trophies[i].criteria_type == TC_ITEMR) {
       if (obj->link >= trophies[i].control[0] && obj->link <= trophies[i].control[1]) {
@@ -2222,11 +2254,14 @@ void perform_effect(OBJECT_REC* obj) {
       }
     switch (spells[obj->control].effect) {
       case 1:do_blink();
+             if (change_blink_only == 'Y') break;
       case 2:player.effect[PE_PROT] = player.level * 8;
              player.effect[PE_APROT] = spells[obj->control].control;
              break;
       case 3:touch(spells[obj->control].control,spells[obj->control].special); break;
       case 4:missile(spells[obj->control].control,spells[obj->control].special,0); break;
+      case 5:if (change_teleport_spell == 'Y') teleport_spell();
+             break;
       case 6:do_sleep(); break;
       case 7:special(spells[obj->control].control,obj); break;
       case 8:fear(0); break;

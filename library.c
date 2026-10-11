@@ -19,7 +19,9 @@ static void library_display_msg(Int32 msg,char ext) {
   byte last;
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];
-  decode(general.message);
+
+  /* Without the Library Text change the plain message is enciphered, as if the tables were still stored encoded */
+  if (change_library_text != 'Y') decode(general.message);
   graphmode();
   display_scroll();
   x = 60; y = 60; size = 30;
@@ -38,6 +40,9 @@ static void library_display_msg(Int32 msg,char ext) {
      outtextxy(x,y,general.message);
      general.message[i] = last;
      i++;
+
+     /* Without the Library Lines change every line is drawn over the first */
+     if (change_library_lines == 'Y') y += 19;
      strcpy(general.message,general.message+i);
      }
    }
@@ -95,6 +100,7 @@ void library(char* name) {
             delay(1000);
             }
           else {
+            msg = found_row(msg);
             player.lore[msg] = -1;
             library_display_msg(msg,'L');
             }
@@ -127,6 +133,7 @@ void library(char* name) {
             delay(1000);
             }
           else {
+            msg = found_row(msg);
             player.gen[msg] = -1;
             library_display_msg(msg,'G');
             }

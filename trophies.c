@@ -173,9 +173,9 @@ void check_trophies() {
                        break;
         case TC_ITEM:
                       c = 1;
-                      if (stats.counts[trophies[i].control[2]] < trophies[i].control[1]) c = 0;
+                      if (stats.counts[trophy_counter(i,2)] < trophies[i].control[1]) c = 0;
                       if (trophies[i].control[3] > 0)
-                        if (stats.counts[trophies[i].control[5]] < trophies[i].control[4]) c = 0;
+                        if (stats.counts[trophy_counter(i,5)] < trophies[i].control[4]) c = 0;
                       if (c == 1) new_trophy(i);
                       break;
         case TC_DEF:

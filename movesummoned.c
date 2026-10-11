@@ -49,7 +49,10 @@ void move_summoned() {
     xdir = 0;
     ydir = 0;
     dir = find_path(x,y,player.x,player.y,'N');
-    if (dir == '5') dir = find_path(x,y,player.y,player.y,'Y');
+
+    /* Without the Summon Combat change the second try heads for (player.y, player.y) */
+    if (dir == '5' && change_summon_combat == 'Y') dir = find_path(x,y,player.x,player.y,'Y');
+    else if (dir == '5') dir = find_path(x,y,player.y,player.y,'Y');
     switch (dir) {
       case '1': xdir = -1; ydir = +1; break;
       case '2': ydir = +1; break;

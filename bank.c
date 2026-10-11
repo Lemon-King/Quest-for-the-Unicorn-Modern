@@ -77,6 +77,7 @@ void bank(char* name) {
       if (p_read(buffer) == 0) {
         sscanf(buffer,"%lf",&amt);
         } else amt = 0;
+      amt = typed_gold(amt);
       if (amt <= get_gold()) {
         player.bank += amt;
         sub_gold(amt);
@@ -95,6 +96,7 @@ void bank(char* name) {
       if (p_read(buffer) == 0) {
         sscanf(buffer,"%lf",&amt);
         } else amt = 0;
+      amt = typed_gold(amt);
       if (amt <= player.bank) {
         player.bank -= amt;
         add_gold(amt);
