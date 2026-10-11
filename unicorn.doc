@@ -288,29 +288,30 @@
 
        Character rules are fixed once the character is created:
 
-         Game mode            Normal, Heroic, Epic or Casual (see below)
-         Permadeath           A character that dies is lost (see below)
-         Dungeon depth        Levels in each dungeon, 2 to 10
-         Monster count        Monsters or groups per level, 10 to 60
-         Arena combat         Multi-monster arena combat
-         Dungeon scaling      Dungeon monsters scale to your level
-         Full party combat    Full damage between party and monsters
+         Game Mode            Normal, Heroic, Epic or Casual (see below)
+         Permadeath           Death is final (see below)
+         Dungeon Depth        Levels in each dungeon, 2 to 10
+         Monster Count        Spawn size for monsters or groups, 10 to 60
+         Arena Combat         On: multi-monster arena combat
+                              Off: only bosses
+         Dungeon Scaling      Monsters in dungeons scale to your level
+         Full Party Combat    Monsters and party members take full damage
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 
-         Auto target          Target the nearest monster automatically
-         Auto pickup gold     Pick up gold you walk over
-         Auto pickup torches  Pick up torches you walk over
-         Auto open doors      Open doors you bump into
-         Auto search walls    Search when you bump into a wall
-         Ranged delay (ms)    Delay for ranged attack flight
-         Hit delay (ms)       Delay for the successful hit effect
-         Trap delay (ms)      Delay for showing trap effects
-         Enhanced sprites     Show the tile under creatures and items
-         Music volume (%)     Volume of the background music, 0 to 100
+         Auto-Target          Target the nearest monster automatically
+         Auto-Pickup Gold     Pick up gold automatically
+         Auto-Pickup Torches  Pick up torches automatically
+         Auto-Open Doors      Doors open automatically
+         Auto-Search Walls    Search walls automatically
+         Ranged Delay (ms)    Ranged attack flight delay
+         Hit Delay (ms)       Successful hit effect delay
+         Trap Delay (ms)      Trap effects delay
+         Enhanced Sprites     Show the tile under creatures and items
+         Music Volume         Volume of the background music, 0% to 100%
 
-       Music volume is heard at once as it changes, and is saved in
+       Music Volume is heard at once as it changes, and is saved in
      unicorn.cfg as MusicVolume, so it applies to every character.  All
      the other options are saved with the character, so every saved
      game keeps its own options.  A game saved by an older version keeps
@@ -533,7 +534,7 @@
          Music is on by default; NoMusic or -nmu starts with it off.
          Ctrl+M - Turn the music off or back on.  Works on every
                   screen.
-         The Music volume preference (O) sets how loud it plays, from
+         The Music Volume preference (O) sets how loud it plays, from
          0 to 100 percent in steps of 10.  It is the game's slider in
          the Windows volume mixer, and is saved in unicorn.cfg.
 

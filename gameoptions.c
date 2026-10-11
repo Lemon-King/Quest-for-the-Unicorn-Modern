@@ -26,10 +26,12 @@
 #define LABEL_COLUMN    9
 #define VALUE_COLUMN   34
 
-/* config names the unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect */
+/* units follows a number's value; config names the unicorn.cfg key of a number kept there instead of in the save;
+   apply puts a new value into effect */
 typedef struct {
   char   label[24];
   char   help[80];
+  char   units[4];
   Int32  kind;
   char   rule;
   char*  flag;
@@ -51,56 +53,56 @@ static char* mode_names[NUM_MODES]  = { "Normal", "Heroic", "Epic", "Casual" };
 /* The first NUM_RULES rows are rules, fixed once the character is created. A switch with a casual value is held at
    it in Casual mode. */
 static OPTION_ROW option_rows[NUM_OPTIONS] = {
-  { .label = "Game mode",
-    .help  = "Heroic: monsters x2.  Epic: monsters x4.  Casual: no permadeath or scores",
+  { .label = "Game Mode",
+    .help  = "Heroic: monsters x2 | Epic: monsters x4 | Casual: no permadeath or scores",
     .kind  = OPT_MODE,   .rule = 'Y', .number = &heroicMode },
   { .label = "Permadeath",
-    .help  = "A character that dies is gone for good; its save is deleted",
+    .help  = "Death is final",
     .kind  = OPT_SWITCH, .rule = 'Y', .flag = &permadeath, .on = 'Y', .off = 'N', .casual = 'N' },
-  { .label = "Dungeon depth",
+  { .label = "Dungeon Depth",
     .help  = "Number of levels in each dungeon, from 2 to 10",
     .kind  = OPT_NUMBER, .rule = 'Y', .number = &bottom, .min = 2, .max = 10, .step = 1 },
-  { .label = "Monster count",
-    .help  = "Monsters or monster groups that can spawn on a level, from 10 to 60",
+  { .label = "Monster Count",
+    .help  = "Spawn size for monsters or monster groups, from 10 to 60",
     .kind  = OPT_NUMBER, .rule = 'Y', .number = &monster_count, .min = 10, .max = 60, .step = 5 },
-  { .label = "Arena combat",
-    .help  = "Multi-monster arena combat on higher levels; when off, only bosses",
+  { .label = "Arena Combat",
+    .help  = "On: Multi-monster arena combat | Off: only bosses",
     .kind  = OPT_SWITCH, .rule = 'Y', .flag = &no_arena, .on = 'N', .off = 'Y' },
-  { .label = "Dungeon scaling",
+  { .label = "Dungeon Scaling",
     .help  = "Monsters in dungeons scale to your level",
     .kind  = OPT_SWITCH, .rule = 'Y', .flag = &dungeon_scaling, .on = 'Y', .off = 'N' },
-  { .label = "Full party combat",
-    .help  = "Monsters and party members take full damage from each other",
+  { .label = "Full Party Combat",
+    .help  = "Monsters and party members take full damage",
     .kind  = OPT_SWITCH, .rule = 'Y', .flag = &party_combat_mode, .on = 'F', .off = 'R' },
-  { .label = "Auto target",
-    .help  = "Target the nearest monster automatically when aiming",
+  { .label = "Auto-Target",
+    .help  = "Target the nearest monster automatically",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &auto_target, .on = 'Y', .off = 'N' },
-  { .label = "Auto pickup gold",
-    .help  = "Pick up gold automatically when you walk over it",
+  { .label = "Auto-Pickup Gold",
+    .help  = "Pick up gold automatically",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &auto_pickup_gold, .on = 'Y', .off = 'N' },
-  { .label = "Auto pickup torches",
-    .help  = "Pick up torches automatically when you walk over them",
+  { .label = "Auto-Pickup Torches",
+    .help  = "Pick up torches automatically",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &auto_pickup_torch, .on = 'Y', .off = 'N' },
-  { .label = "Auto open doors",
-    .help  = "Open a door automatically when you bump into it",
+  { .label = "Auto-Open Doors",
+    .help  = "Doors open automatically",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &auto_open_doors, .on = 'Y', .off = 'N' },
-  { .label = "Auto search walls",
-    .help  = "Search automatically when you bump into a wall",
+  { .label = "Auto-Search Walls",
+    .help  = "Search walls automatically",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &auto_bump_walls, .on = 'Y', .off = 'N' },
-  { .label = "Ranged delay (ms)",
-    .help  = "Delay for the flight of ranged attacks",
+  { .label = "Ranged Delay (ms)",
+    .help  = "Ranged attack flight delay",
     .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_ranged, .min = 0, .max = 1000, .step = 5 },
-  { .label = "Hit delay (ms)",
-    .help  = "Delay for the successful hit effect",
+  { .label = "Hit Delay (ms)",
+    .help  = "Successful hit effect delay",
     .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_hit, .min = 0, .max = 1000, .step = 25 },
-  { .label = "Trap delay (ms)",
-    .help  = "Delay for showing trap effects",
+  { .label = "Trap Delay (ms)",
+    .help  = "Trap effects delay",
     .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_trap, .min = 0, .max = 1000, .step = 25 },
-  { .label = "Enhanced sprites",
+  { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .rule = 'N', .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },
-  { .label = "Music volume (%)",
-    .help  = "Volume of the background music, from 0 to 100; saved in unicorn.cfg",
+  { .label = "Music Volume",
+    .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .rule = 'N', .number = &music_volume, .min = 0, .max = 100, .step = 10,
     .config = "MusicVolume", .apply = set_music_volume }
   };
@@ -141,12 +143,15 @@ static Int32 next_option(Int32 i, Int32 dir, char rules_editable) {
 
 static void format_value(OPTION_ROW* row, char* text) {
   char flag;
+  char number[16];
   switch (row->kind) {
     case OPT_MODE:   sprintf(text, "%-8s", mode_name(*row->number)); break;
     case OPT_SWITCH: flag = is_held_by_mode(row) ? row->casual : *row->flag;
                      sprintf(text, "%-8s", (flag == row->on) ? "On" : "Off");
                      break;
-    case OPT_NUMBER: sprintf(text, "%-8d", *row->number); break;
+    case OPT_NUMBER: sprintf(number, "%d%s", *row->number, row->units);
+                     sprintf(text, "%-8s", number);
+                     break;
     }
   }
 
