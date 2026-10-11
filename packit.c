@@ -20,6 +20,10 @@ void pack_it(Int32 floor) {
   OBJECT_REC* it;
   slot = 1;
   pitem = player.map[player.x][player.y] - 1000;
+
+  /* Without the Lore Books change a lore square (2000-2999) is taken for floor item 1000 or more, past the end of
+     map_objects. That is the Portable Hole, so G or P on a lore book copied a hole item into the pack. */
+  if (change_lore_books == 'Y' && pitem >= 1000) return;
   it = &(player.map_objects[pitem]);
   if (it->otype == O_NONE) return;
   flag = ' ';

@@ -532,6 +532,12 @@
                               dungeon you visited, monsters and items
                               you dealt with are back, and an empty
                               stone sends you to the Northern Realm
+         Lore Books           Putting a lore book straight into your
+                              pack does nothing; read it with g as
+                              usual.  Off, that can copy an item from
+                              your Portable Hole into your pack and
+                              remove the book until you return to the
+                              level
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:

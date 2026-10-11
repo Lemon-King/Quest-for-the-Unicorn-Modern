@@ -1132,6 +1132,7 @@ LINK char               change_floor_items;
 LINK char               change_quest_state;
 LINK char               change_valley_of_fear;
 LINK char               change_sun_stone_fixes;
+LINK char               change_lore_books;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;

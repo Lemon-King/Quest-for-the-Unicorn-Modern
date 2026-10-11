@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      11
-#define NUM_CHANGES    52
+#define NUM_CHANGES    53
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -278,7 +278,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_valley_of_fear, .on = 'Y', .off = 'N', .key = "ValleyOfFear" },
   { .label = "Sun Stone Fixes",
     .help  = "The Sun Stone returns to the dungeon it holds; records only dungeon levels",
-    .kind  = OPT_SWITCH, .flag = &change_sun_stone_fixes, .on = 'Y', .off = 'N', .key = "SunStoneFixes" }
+    .kind  = OPT_SWITCH, .flag = &change_sun_stone_fixes, .on = 'Y', .off = 'N', .key = "SunStoneFixes" },
+  { .label = "Lore Books",
+    .help  = "G and P on a lore book do nothing, instead of copying a Portable Hole item",
+    .kind  = OPT_SWITCH, .flag = &change_lore_books, .on = 'Y', .off = 'N', .key = "LoreBooks" }
   };
 
 static Int32 mode_index(Int32 mode) {
