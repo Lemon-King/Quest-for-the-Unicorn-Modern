@@ -396,6 +396,7 @@ void load_options() {
       if (match(line, "DelayRanged ")) delay_ranged = atoi(next);
       if (match(line, "DelayHit ")) delay_hit = atoi(next);
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
+      if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
       }
     }
   }

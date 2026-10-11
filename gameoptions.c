@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       6
-#define NUM_OPTIONS    14
+#define NUM_OPTIONS    15
 
 #define RULES_LINE      3
 #define PREFS_LINE     11
@@ -87,7 +87,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_hit, .min = 0, .max = 1000, .step = 25 },
   { .label = "Trap delay (ms)",
     .help  = "Delay for showing trap effects",
-    .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_trap, .min = 0, .max = 1000, .step = 25 }
+    .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_trap, .min = 0, .max = 1000, .step = 25 },
+  { .label = "Enhanced sprites",
+    .help  = "Improves tile display for Sprites",
+    .kind  = OPT_SWITCH, .rule = 'N', .flag = &enhanced_sprites, .on = 'Y', .off = 'N' }
   };
 
 static Int32 mode_index(Int32 mode) {

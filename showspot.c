@@ -10,96 +10,74 @@
 
 #include "header.h"
 
-void show_spot(Int32 x,Int32 y) {
-  if (x < 1 || y < 1 || x > 100 || y > 100) return;
-  if (in_sight(x,y) != '*') return;
-  if (can_see() == 0) {
-    show_sprite(x-player.map_x,y-player.map_y,10);
-    return;
-    }
-  if (player.known[x][y] == 0) {
-    show_sprite(x-player.map_x,y-player.map_y,10);
-    return;
-    }
-  if (player.map[x][y] >= 1000 && player.map[x][y] < 2000) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-      show_sprite(x-player.map_x,y-player.map_y,player.map_objects[player.map[x][y]-1000].sprite);
-    }
-  else if (player.map[x][y] > 2000) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,88);
-    }
-  else if (player.map[x][y] < 0) {
-    if (player.monster[1][0-player.map[x][y]].sleep == 0) {
-      show_sprite(x-player.map_x,y-player.map_y,7);
-      show_sprite(x-player.map_x,y-player.map_y,
-                  player.monster[1][0-player.map[x][y]].sprite);
-      }
-    else
-      show_sprite(x-player.map_x,y-player.map_y,36);
-    }
-  else if (player.map[x][y]>=300 && player.map[x][y]<400) {
-    if (player.party[player.map[x][y]-300].sleep == 0) {
-      show_sprite(x-player.map_x,y-player.map_y,7);
-      show_sprite(x-player.map_x,y-player.map_y,player.party[player.map[x][y]-300].sprite);
-      }
-    else
-      show_sprite(x-player.map_x,y-player.map_y,36);
-    }
-  else if (player.map[x][y]>400 && player.map[x][y]<500)
-    if (player.monster[player.map[x][y]-400][a_mon].sleep == 0)
-      show_sprite(x-player.map_x,y-player.map_y,
-                  player.monster[player.map[x][y]-400][a_mon].sprite);
-    else
-      show_sprite(x-player.map_x,y-player.map_y,36);
-  else if (player.map[x][y] == 40) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,40);
-    }
-  else if (player.map[x][y] == 79) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,79);
-    }
-  else if (player.map[x][y] == 84) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,84);
-    }
-  else if (player.map[x][y] == S_SALE) {
-    show_sprite(x-player.map_x,y-player.map_y,S_GRASS);
-    show_sprite(x-player.map_x,y-player.map_y,S_SALE);
-    }
-  else if (player.map[x][y] == S_SOLD) {
-    show_sprite(x-player.map_x,y-player.map_y,S_GRASS);
-    show_sprite(x-player.map_x,y-player.map_y,S_SOLD);
-    }
-  else if (player.map[x][y] == 143) {
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,342);
-    }
-  else if (player.map[x][y] == 145) {                                   // Treasure forece field
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,359);
-    }
-  else if (player.map[x][y] == 901) {                 // Altar
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,315);
-    }
-  else if (player.map[x][y] == 902) {                 // Used Altar
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,316);
-    }
-  else if (player.map[x][y] >= 903 && player.map[x][y] <= 910) {                 // Runestones
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,player.map[x][y]-586);
-    }
-  else if (player.map[x][y] >= 950 && player.map[x][y] <= 970) {                 // Traps
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,330);
-    }
-  else if (player.map[x][y] == 536) {                                            // Gacha machine
-    show_sprite(x-player.map_x,y-player.map_y,7);
-    show_sprite(x-player.map_x,y-player.map_y,350);
-    }
-  else show_sprite(x-player.map_x,y-player.map_y,player.map[x][y]);
+static void show_tile(Int32 x,Int32 y,Int32 sprite) {
+  show_sprite(x-player.map_x,y-player.map_y,sprite);
   }
 
+/* The sprite of a thing lying on the floor, or 0 when the value is a tile of its own. */
+static Int32 placed_sprite(Int32 value) {
+  if (value >= 1000 && value < 2000) return player.map_objects[value-1000].sprite;
+  if (value > 2000) return 88;                                   /* Lore book            */
+  if (value >= 903 && value <= 910) return value - 586;           /* Runestones           */
+  if (value >= 950 && value <= 970) return 330;                   /* Traps                */
+  switch (value) {
+    case 40:     return 40;                                       /* Trap                 */
+    case 79:     return 79;                                       /* Chest                */
+    case 84:     return 84;                                       /* Torch                */
+    case 143:    return 342;                                      /* Summoned snake       */
+    case 145:    return 359;                                      /* Treasure force field */
+    case 536:    return 350;                                      /* Gacha machine        */
+    case 901:    return 315;                                      /* Altar                */
+    case 902:    return 316;                                      /* Used altar           */
+    case S_SALE: return S_SALE;
+    case S_SOLD: return S_SOLD;
+    }
+  return 0;
+  }
+
+/* Signs stand on grass. Anything else lies on stone, or with enhanced sprites on the level's floor. */
+static Int32 placed_floor(Int32 value) {
+  if (value == S_SALE || value == S_SOLD) return S_GRASS;
+  return (enhanced_sprites == 'Y') ? currentFloor : 7;
+  }
+
+/* The tile under a creature, from the map value it covered when it stepped there. */
+static Int32 ground_tile(Int32 under) {
+  if (placed_sprite(under) != 0) return placed_floor(under);
+  return under;
+  }
+
+/* Without enhanced sprites an awake creature stands on stone, unless it is an arena group,
+   and a sleeping one has no backdrop. */
+static void show_creature(Int32 x,Int32 y,NPC_REC* creature,char on_stone) {
+  if (enhanced_sprites == 'Y')
+    show_tile(x,y,ground_tile(creature->prev));
+  else if (creature->sleep == 0 && on_stone == 'Y')
+    show_tile(x,y,7);
+
+  show_tile(x,y,(creature->sleep == 0) ? creature->sprite : 36);
+  }
+
+void show_spot(Int32 x,Int32 y) {
+  Int32 value;
+  if (x < 1 || y < 1 || x > 100 || y > 100) return;
+  if (in_sight(x,y) != '*') return;
+  if (can_see() == 0 || player.known[x][y] == 0) {
+    show_tile(x,y,10);
+    return;
+    }
+
+  value = player.map[x][y];
+  if (value < 0)
+    show_creature(x,y,&player.monster[1][-value],'Y');
+  else if (value >= 300 && value < 400)
+    show_creature(x,y,&player.party[value-300],'Y');
+  else if (value > 400 && value < 500)
+    show_creature(x,y,&player.monster[value-400][a_mon],'N');
+  else if (placed_sprite(value) != 0) {
+    show_tile(x,y,placed_floor(value));
+    show_tile(x,y,placed_sprite(value));
+    }
+  else
+    show_tile(x,y,value);
+  }

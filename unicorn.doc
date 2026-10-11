@@ -304,6 +304,7 @@
          Ranged delay (ms)    Delay for ranged attack flight
          Hit delay (ms)       Delay for the successful hit effect
          Trap delay (ms)      Delay for showing trap effects
+         Enhanced sprites     Show the tile under creatures and items
 
        All of these options are saved with the character, so every saved
      game keeps its own options.  A game saved by an older version keeps

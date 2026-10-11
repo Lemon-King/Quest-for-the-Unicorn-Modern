@@ -260,6 +260,7 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayRanged %d", delay_ranged);          write_line(file, line);
   sprintf(line, "  DelayHit %d", delay_hit);                write_line(file, line);
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
+  sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
   sprintf(line, "  }");                                     write_line(file, line);
   }
 

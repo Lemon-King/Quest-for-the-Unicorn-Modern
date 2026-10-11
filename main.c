@@ -178,6 +178,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_ranged = 5;
   delay_hit = 200;
   delay_trap = 100;
+  enhanced_sprites = 'N';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
   process_config("unicorn");

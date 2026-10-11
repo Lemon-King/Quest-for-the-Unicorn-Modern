@@ -1069,6 +1069,7 @@ LINK char               party_combat_mode;
 LINK Int32                delay_ranged;
 LINK Int32                delay_hit;
 LINK Int32                delay_trap;
+LINK char               enhanced_sprites;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;

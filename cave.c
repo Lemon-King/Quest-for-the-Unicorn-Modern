@@ -1068,6 +1068,8 @@ void cave() {
               saveScreen();
               game_options();
               restoreScreen();
+              show_map();
+              show_player();
               takes_time = 'N';
               break;
         case 'h':healing(); break;
