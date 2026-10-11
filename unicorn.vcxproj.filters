@@ -651,6 +651,9 @@
     <ClCompile Include="school.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="scrolltext.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="selectsprite.c">
       <Filter>Display</Filter>
     </ClCompile>

@@ -18,8 +18,8 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      11
-#define NUM_CHANGES    53
+#define NUM_PREFS      12
+#define NUM_CHANGES    52
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -29,7 +29,8 @@
 #define RULES_LINE      2
 #define PREFS_LINE     11
 #define CHANGES_LINE    2
-#define HELP_LINE      23
+#define HELP_LINE      24
+#define KEYS_LINE      25
 #define LEFT_COLUMN     3
 #define RIGHT_COLUMN   42
 #define ARROW_INDENT    2
@@ -119,6 +120,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Floor Item Names",
     .help  = "Shows the name of the item you stand on, in the bottom right",
     .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },
+  { .label = "Gothic Scrolls",
+    .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
+    .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -168,9 +172,6 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Library Text",
     .help  = "Town libraries show messages in plain text instead of enciphered",
     .kind  = OPT_SWITCH, .flag = &change_library_text, .on = 'Y', .off = 'N', .key = "LibraryText" },
-  { .label = "Library Lines",
-    .help  = "Town libraries write each line of a message below the last, not over it",
-    .kind  = OPT_SWITCH, .flag = &change_library_lines, .on = 'Y', .off = 'N', .key = "LibraryLines" },
   { .label = "Arena Assassins",
     .help  = "Assassins keep their level in arena combat instead of restarting at 1",
     .kind  = OPT_SWITCH, .flag = &change_arena_assassins, .on = 'Y', .off = 'N', .key = "ArenaAssassins" },
@@ -469,7 +470,7 @@ static void draw_screen(char* title, char rules_editable) {
   draw_options(rules_editable);
 
   textcolor(3);
-  gotoxy(13, 24); txt_write("(8/2) Select   (4/6) Change   (TAB) Group   (ENTER) Done");
+  gotoxy(13, KEYS_LINE); txt_write("(8/2) Select   (4/6) Change   (TAB) Group   (ENTER) Done");
   }
 
 static void edit_options(char* title, char rules_editable) {

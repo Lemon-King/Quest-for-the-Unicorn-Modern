@@ -356,9 +356,6 @@
                               it gives the message after it
          Library Text         A town library shows its messages in plain
                               text.  Off, they come out enciphered
-         Library Lines        A town library writes each line of a
-                              message below the last.  Off, every line
-                              is written over the first
          Arena Assassins      An Assassin keeps its level in arena
                               combat.  Off, every turn in the arena
                               starts an Assassin over at level 1
@@ -553,6 +550,11 @@
          Enhanced Sprites     Show the tile under creatures and items
          Floor Item Names     Show the name of the item you stand on in the
                               bottom right, in its inventory colour
+         Gothic Scrolls       Write scrolls, lore and the library in
+                              Gothic instead of the hand-drawn scroll
+                              letters.  Either way each line is centred,
+                              and text too long for the scroll moves
+                              with Up/Down and PgUp/PgDn
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in

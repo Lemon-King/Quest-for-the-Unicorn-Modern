@@ -35,36 +35,9 @@ void display_scroll() {
   }
 
 void display_msg(Int32 msg,char ext) {
-  Int32 i;
-  Int32 x,y;
-//  Int32 space;
-  Int32 size;
-  char last;
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];
-  graphmode();
-  display_scroll();
-  x = 160; y = 160; size = 30;
-//  space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      outtextxy(x,y,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-  inkey();
+  scroll_text(general.message);
   show_screen();
   }
 
@@ -160,9 +133,6 @@ void special9() {
 
 void special10() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_LORE) + 1;
   general = lore[i];
@@ -182,38 +152,12 @@ void special10() {
         general.message[i] += 128;
     }
   saveScreen();
-  display_scroll();
-//  x = 120; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-/*
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      write_font(x,y,0,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      write_font(x,y,0,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-*/
-  inkey();
+  scroll_text(general.message);
   restoreScreen();
   }
 
 void special11() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_GENS) + 1;
   general = gen[i];
@@ -231,31 +175,7 @@ void special11() {
         general.message[i] += 128;
     }
   saveScreen();
-  display_scroll();
-//  x = 120; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-/*
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      write_font(x,y,0,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      write_font(x,y,0,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-*/
-  inkey();
-/*  show_screen(); */
+  scroll_text(general.message);
   restoreScreen();
   }
 
@@ -322,9 +242,6 @@ void special19() {
 
 void special20() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_GENS) + 1;
   general = gen[i];
@@ -335,12 +252,7 @@ void special20() {
   player.gen[i] = -1;
   add_skill(SK_LANG,1);
   saveScreen();
-  graphmode();
-  display_scroll();
-//  x = 160; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-  inkey();
+  scroll_text(general.message);
   restoreScreen();
   }
 
@@ -772,10 +684,6 @@ void special50() {
 
 void special51() {
   Int32 i;
-  Int32 x,y;
-//  Int32 space;
-  Int32 size;
-  char last;
   MESSAGE general;
   i = u_random(NO_OF_LORE) + 1;
   general = lore[i];
@@ -785,29 +693,7 @@ void special51() {
     }
   player.lore[i] = -1;
   add_skill(SK_LORE,1);
-  graphmode();
-  display_scroll();
-  x = 160; y = 160; size = 30;
-//  space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      outtextxy(x,y,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-  inkey();
+  scroll_text(general.message);
   }
 
 void special52() {
@@ -1077,10 +963,8 @@ void special79() {
   i = u_random(recipe_count);
   recipe_string(i,buffer);
   saveScreen();
-  display_scroll();
-  show_message(buffer);
   player.lore[RECIPE_BASE+i] = 1;
-  inkey();
+  scroll_text(buffer);
   restoreScreen();
   }
 
@@ -1967,10 +1851,8 @@ void special110(OBJECT_REC* item) {
   i = item->control2;
   recipe_string(i,buffer);
   saveScreen();
-  display_scroll();
-  show_message(buffer);
   player.lore[RECIPE_BASE+i] = 1;
-  inkey();
+  scroll_text(buffer);
   restoreScreen();
   }
 

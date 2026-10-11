@@ -12,41 +12,12 @@
 
 
 static void library_display_msg(Int32 msg,char ext) {
-  Int32 i;
-  Int32 x,y;
-//    Int32 space;
-  Int32 size;
-  byte last;
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];
 
   /* Without the Library Text change the plain message is enciphered, as if the tables were still stored encoded */
   if (change_library_text != 'Y') decode(general.message);
-  graphmode();
-  display_scroll();
-  x = 60; y = 60; size = 30;
-//    space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message)<size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-     i = size;
-     while (i > 0 && general.message[i] != ' ') i--;
-     last = general.message[i];
-     general.message[i] = 0;
-     outtextxy(x,y,general.message);
-     general.message[i] = last;
-     i++;
-
-     /* Without the Library Lines change every line is drawn over the first */
-     if (change_library_lines == 'Y') y += 19;
-     strcpy(general.message,general.message+i);
-     }
-   }
-  inkey();
+  scroll_text(general.message);
   } /* void library_display_msg(Int32 msg, char* ext) */
 
 static void show_top(char* name) {

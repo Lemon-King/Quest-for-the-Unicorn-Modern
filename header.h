@@ -1079,6 +1079,7 @@ LINK Int32                delay_hit;
 LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
+LINK char               gothic_scrolls;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
 LINK char               change_dalek_spawns;
@@ -1095,7 +1096,6 @@ LINK char               change_item_deck;
 LINK char               change_tripped_card;
 LINK char               change_lore_search;
 LINK char               change_library_text;
-LINK char               change_library_lines;
 LINK char               change_arena_assassins;
 LINK char               change_party_joining;
 LINK char               change_spell_targets;
@@ -1432,13 +1432,18 @@ extern void view(Int32 floor);
 
 /* writefont.c */
 extern void write_font(Int32 x,Int32 y,Int32 color,char* line);
+extern Int32 write_font_width(char* line);
 
 /* strokefont.c */
 extern STROKE_FONT* stroke_font_create(const byte* data,Int32 length);
 extern void stroke_font_draw(const STROKE_FONT* font,Int32 x,Int32 y,Int32 size,Int32 color,char* text);
+extern Int32 stroke_font_width(const STROKE_FONT* font,Int32 size,char* text);
 
 /* gothicfont.c */
 extern STROKE_FONT* gothic_font();
+
+/* scrolltext.c */
+extern void scroll_text(char* message);
 
 extern Int32 check_intrinsic(OBJECT_REC obj,Int32 intr);
 extern Int32 find_item_slot();
@@ -1456,7 +1461,6 @@ extern void msg(char* message,Int32 color);
 extern void crafting();
 extern void wizard();
 extern void show_gen(Int32 item);
-extern void show_message(char* message);
 extern void buy_house(Int32 hnum);
 extern void new_month();
 extern void auto_detect();
