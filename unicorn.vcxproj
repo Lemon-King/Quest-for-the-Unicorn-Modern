@@ -238,6 +238,7 @@
     <ClCompile Include="party.c" />
     <ClCompile Include="passable.c" />
     <ClCompile Include="pawn.c" />
+    <ClCompile Include="permadeath.c" />
     <ClCompile Include="pittrap.c" />
     <ClCompile Include="placeobject.c" />
     <ClCompile Include="poisontrap.c" />
@@ -256,6 +257,7 @@
     <ClCompile Include="removelandplayer.c" />
     <ClCompile Include="reversebyte.c" />
     <ClCompile Include="roottrap.c" />
+    <ClCompile Include="saveconfigvalue.c" />
     <ClCompile Include="savenew.c" />
     <ClCompile Include="savegear.c" />
     <ClCompile Include="savelevel.c" />

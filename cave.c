@@ -1048,12 +1048,10 @@ void cave() {
               break;
         case 'b':buy_item(&i); break;
         case 'S':
-              if (player.effect[PE_HEROIC] >= 0) exitf = 4;
-              else {
-                saveScreen();
-                save_new();
-                restoreScreen();
-                }
+              saveScreen();
+              save_new();
+              hold_save(loadname);
+              restoreScreen();
               break;
         case 'v':view(7); break;
         case 'V':soundon = (soundon == 'Y') ? 'N' : 'Y';

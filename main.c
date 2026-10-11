@@ -27,6 +27,7 @@ static void apply_character_config() {
 
   screen_width = width;
   screen_height = height;
+  set_music_volume();
   if (music != 'Y') stop_music();
   }
 
@@ -159,6 +160,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   loadgame = 0;
   bottom = 5;
   music = 'Y';
+  music_volume = 100;
   game_thread = 'Y';
   integer_scaling = 'N';
   heroicMode = 0;
@@ -179,6 +181,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_hit = 200;
   delay_trap = 100;
   enhanced_sprites = 'N';
+  permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
   process_config("unicorn");
@@ -280,6 +283,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     if (fkey_mode == 'G') printf("  Fkeys: Gear\n");
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
     printf("  Music: %c\n", music);
+    printf("  Music Volume: %d\n", music_volume);
     printf("  Game Thread: %c\n", game_thread);
     printf("  Integer Scaling: %c\n", integer_scaling);
     printf("Macros:\n");
@@ -306,6 +310,7 @@ void run_game(GAME_HOST* host) {
   num_hall_of_fame = 0;
   num_final_scores = 0;
   load_scores();
+  set_music_volume();
 
   /* Death and giving up return to the title screen; saving ends the program. */
   do {

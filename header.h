@@ -645,6 +645,7 @@ typedef struct {
   byte   class;
   Int32  time_played;
   char   mode;
+  char   permadeath;
   } SCORE_ENTRY;
 
 typedef struct {
@@ -1025,6 +1026,7 @@ LINK char               debugMSG[256];
 LINK Int32                hall_position;
 LINK Int32                death_position;
 LINK char               music;
+LINK Int32                music_volume;
 LINK char               game_thread;
 LINK char               integer_scaling;
 LINK Int32                target_x;
@@ -1070,6 +1072,7 @@ LINK Int32                delay_ranged;
 LINK Int32                delay_hit;
 LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
+LINK char               permadeath;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1206,6 +1209,7 @@ extern void flush();
 extern void play_music(Int32 song);
 extern void stop_music();
 extern void toggle_music();
+extern void set_music_volume();
 
 /* uchar.c */
 extern char* fix_name(STRING32 name);
@@ -1518,6 +1522,7 @@ extern Int32 fighting_final_boss(NPC_REC* mon);
 extern Int32 offhand_weapon();
 extern void show_time();
 extern void process_config(char* name);
+extern void save_config_value(char* name,char* key,Int32 value);
 extern Int32 process_option(char* pChar);
 extern void remember_option_defaults();
 extern void game_setup();
@@ -1554,6 +1559,9 @@ extern Int32 find_empty(Int32 cx,Int32 cy,Int32 range,Int32 floor,Int32* dx,Int3
 extern void move_summoned();
 extern Int32 find_target(Int32 x,Int32 y,Int32* tx,Int32* ty);
 extern void save_new();
+extern Int32 has_permadeath();
+extern void hold_save(char* name);
+extern void end_permadeath();
 extern void clear_game_data();
 extern char* next_word(char* buffer);
 extern byte match(char* buffer, char* test);

@@ -552,6 +552,9 @@
     <ClCompile Include="pawn.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="permadeath.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="pittrap.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -604,6 +607,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="roottrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="saveconfigvalue.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="savenew.c">

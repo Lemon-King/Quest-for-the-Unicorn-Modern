@@ -68,6 +68,7 @@ void save_scores() {
       fprintf(file,"    Class %d\n", hall_of_fame[i].class);
       fprintf(file,"    Time %d\n", hall_of_fame[i].time_played);
       fprintf(file,"    Mode %c\n", hall_of_fame[i].mode);
+      fprintf(file,"    Permadeath %c\n", hall_of_fame[i].permadeath);
       fprintf(file,"    }\n");
       }
   fprintf(file,"  }\n");
@@ -82,6 +83,7 @@ void save_scores() {
       fprintf(file,"    Class %d\n", final_scores[i].class);
       fprintf(file,"    Time %d\n", final_scores[i].time_played);
       fprintf(file,"    Mode %c\n", final_scores[i].mode);
+      fprintf(file,"    Permadeath %c\n", final_scores[i].permadeath);
       fprintf(file,"    }\n");
       }
   fprintf(file,"  }\n");
@@ -115,6 +117,7 @@ void clear_scores() {
     hall_of_fame[i].class = 0;
     hall_of_fame[i].time_played = 0;
     hall_of_fame[i].mode = 'N';
+    hall_of_fame[i].permadeath = 'Y';
     }
   for (i=0; i<MAX_FINAL_SCORES; i++) {
     strcpy(final_scores[i].name,"");
@@ -124,7 +127,14 @@ void clear_scores() {
     final_scores[i].class = 0;
     final_scores[i].time_played = 0;
     final_scores[i].mode = 'N';
+    final_scores[i].permadeath = 'Y';
     }
+  }
+
+/* Scores from before the Permadeath option were all made with it */
+static void mark_permadeath(SCORE_ENTRY* entries, Int32 count) {
+  Int32 i;
+  for (i=0; i<count; i++) entries[i].permadeath = 'Y';
   }
 
 void convert_600_to_new() {
@@ -186,6 +196,8 @@ void load_old_scores() {
     final_scores[i].time_played = score_entry_old.time_played;
     final_scores[i].mode = 'N';
     }
+  mark_permadeath(hall_of_fame, num_hall_of_fame);
+  mark_permadeath(final_scores, num_final_scores);
   fclose(sc_file);
   }
 
@@ -208,6 +220,8 @@ void load_scores_600() {
         fread(&(hall_of_fame[i]),sizeof(SCORE_ENTRY),1,sc_file);
       for (i=0; i<num_final_scores; i++)
         fread(&(final_scores[i]),sizeof(SCORE_ENTRY),1,sc_file);
+      mark_permadeath(hall_of_fame, num_hall_of_fame);
+      mark_permadeath(final_scores, num_final_scores);
       fclose(sc_file);
       }
     else if (score_version.version[0] == '6' && score_version.version[1] == '0' && score_version.version[2] == '1') {
@@ -222,6 +236,8 @@ void load_scores_600() {
         fread(&(hall_of_fame[i]),sizeof(SCORE_ENTRY),1,sc_file);
       for (i=0; i<num_final_scores; i++)
         fread(&(final_scores[i]),sizeof(SCORE_ENTRY),1,sc_file);
+      mark_permadeath(hall_of_fame, num_hall_of_fame);
+      mark_permadeath(final_scores, num_final_scores);
       fclose(sc_file);
       }
     else {
@@ -250,6 +266,7 @@ void load_scores_600() {
       hall_of_fame[i].cause = ' ';
       hall_of_fame[i].class = 0;
       hall_of_fame[i].mode = 'N';
+      hall_of_fame[i].permadeath = 'Y';
       }
     for (i=0; i<MAX_FINAL_SCORES; i++) {
       strcpy(final_scores[i].name,"");
@@ -258,6 +275,7 @@ void load_scores_600() {
       final_scores[i].cause = ' ';
       final_scores[i].class = 0;
       final_scores[i].mode = 'N';
+      final_scores[i].permadeath = 'Y';
       }
     save_scores();
     }
@@ -353,6 +371,7 @@ void load_scores() {
             next = next_word(line);
             class = atoi(next);
             if (class >= num_final_scores) num_final_scores = class + 1;
+            final_scores[class].permadeath = 'Y';
             flag2 = 0xff;
             while (flag2) {
               read_save_file(file, line);
@@ -363,6 +382,7 @@ void load_scores() {
               if (match(line, "Time ")) final_scores[class].time_played = atoi(next_word(line));
               if (match(line, "Cause ")) final_scores[class].cause = next_word(line)[0];
               if (match(line, "Mode ")) final_scores[class].mode = next_word(line)[0];
+              if (match(line, "Permadeath ")) final_scores[class].permadeath = next_word(line)[0];
               if (match(line, "}")) flag2 = 0;
               if (feof(file)) flag2 = 0;
               }
@@ -379,6 +399,7 @@ void load_scores() {
             next = next_word(line);
             class = atoi(next);
             if (class >= num_hall_of_fame) num_hall_of_fame = class + 1;
+            hall_of_fame[class].permadeath = 'Y';
             flag2 = 0xff;
             while (flag2) {
               read_save_file(file, line);
@@ -389,6 +410,7 @@ void load_scores() {
               if (match(line, "Time ")) hall_of_fame[class].time_played = atoi(next_word(line));
               if (match(line, "Cause ")) hall_of_fame[class].cause = next_word(line)[0];
               if (match(line, "Mode ")) hall_of_fame[class].mode = next_word(line)[0];
+              if (match(line, "Permadeath ")) hall_of_fame[class].permadeath = next_word(line)[0];
               if (match(line, "}")) flag2 = 0;
               if (feof(file)) flag2 = 0;
               }
@@ -414,7 +436,7 @@ void show_final_scores() {
   char buffer[34];
   textmode(3);
   textcolor(10); gotoxy(32,1); txt_write("Hall of Legends:"); textcolor(2);
-  gotoxy(1,2); txt_write(" Place   Name            Time                Class       Level           Exp");
+  gotoxy(1,2); txt_write(" Place   Name            Time                Class       Level           Exp  PD");
   if (hall_position < 0) first = 0;
   if (hall_position > 9) first = hall_position - 4;
   if (hall_position >=0 && hall_position < 10) first = 0;
@@ -436,10 +458,12 @@ void show_final_scores() {
       if (hall_of_fame[i+first].mode == 'E') textcolor(13);
       sprintf(buffer,"%12.0f",hall_of_fame[i+first].exp);
       gotoxy(65,i+3); txt_write(buffer);
+      if (i+first == hall_position) textcolor(11); else textcolor(14);
+      gotoxy(79,i+3); txt_write((hall_of_fame[i+first].permadeath == 'N') ? "N" : "Y");
       }
     }
   textcolor(10); gotoxy(30,13); txt_write("Hall of Remembrance:"); textcolor(2);
-  gotoxy(1,14); txt_write(" Place   Name              Time              Class       Level           Exp");
+  gotoxy(1,14); txt_write(" Place   Name              Time              Class       Level           Exp  PD");
   if (death_position < 0) first = 0;
   if (death_position > 9) first = death_position - 4;
   if (death_position >=0 && death_position < 10) first = 0;
@@ -467,6 +491,8 @@ void show_final_scores() {
       if (final_scores[i+first].mode == 'E') textcolor(13);
       sprintf(buffer,"%12.0f",final_scores[i+first].exp);
       gotoxy(65,i+15); txt_write(buffer);
+      if (i+first == death_position) textcolor(11); else textcolor(14);
+      gotoxy(79,i+15); txt_write((final_scores[i+first].permadeath == 'N') ? "N" : "Y");
       }
     }
   key = 0;

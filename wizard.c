@@ -1837,5 +1837,8 @@ void wizard() {
   game_edited = 'N';
   main_menu();
   restoreScreen();
-  if (game_edited == 'Y') player.effect[PE_HEROIC] = -1;
+  if (game_edited == 'Y') {
+    player.effect[PE_HEROIC] = -1;
+    end_permadeath();
+    }
   }

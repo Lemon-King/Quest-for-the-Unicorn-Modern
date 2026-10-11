@@ -212,6 +212,8 @@
                               (2x, 3x, ...), with black borders
          NoIntegerScaling     Fill the window, blending only the edges
                               between pixels.  The default
+         MusicVolume=percent  Volume of the background music, 0 to 100 in
+                              steps of 10.  The default is 100
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -287,6 +289,7 @@
        Character rules are fixed once the character is created:
 
          Game mode            Normal, Heroic, Epic or Casual (see below)
+         Permadeath           A character that dies is lost (see below)
          Dungeon depth        Levels in each dungeon, 2 to 10
          Monster count        Monsters or groups per level, 10 to 60
          Arena combat         Multi-monster arena combat
@@ -305,8 +308,11 @@
          Hit delay (ms)       Delay for the successful hit effect
          Trap delay (ms)      Delay for showing trap effects
          Enhanced sprites     Show the tile under creatures and items
+         Music volume (%)     Volume of the background music, 0 to 100
 
-       All of these options are saved with the character, so every saved
+       Music volume is heard at once as it changes, and is saved in
+     unicorn.cfg as MusicVolume, so it applies to every character.  All
+     the other options are saved with the character, so every saved
      game keeps its own options.  A game saved by an older version keeps
      its mode, depth, monster count and arena setting, and takes the other
      options from unicorn.cfg and the command line the first time it is
@@ -318,19 +324,19 @@
 
        Normal - This is the standard mode.  Players qualify for scores as
      well as rebirth.  Monsters are at the normal level.  Permadeath is
-     active in this mode.
+     on unless it is turned off on the New Game Options screen.
 
        Heroic - This is meant to give more of a challenge.  This mode also
      qualifies for scoring and rebirth.  Monsters are double the strength
      of those in normal mode.  When a score is recorded in the heroic mode
      the exp field will be shown in red to show that the score was obtained
-     in heroic mode.  Like normal, permadeath is active in this mode.
+     in heroic mode.  Like normal, permadeath can be turned off.
 
        Epic   - This is an even tougher game.  This mode qualifies for
      scoring and rebirth.  Monsters in this mode are 4 times stronger than
      those in normal mode.  When a score is recorded in the epic mode the
      exp field will be shown in purple to show that the score was obtained
-     in epic mode.  Like normal, permadeath is active in this mode.
+     in epic mode.  Like normal, permadeath can be turned off.
 
        Casual - This is meant for a more casual game.  In this mode
      permadeath is not active.  If you die you can reload from your last
@@ -340,9 +346,22 @@
        The mode is chosen on the New Game Options screen when the character
      is created, and is recorded in the character data.
 
+       Permadeath is chosen on the same screen.  With it, a character that
+     dies or quits is lost for good, since its save file is deleted.
+     Without it you can reload from your last save, and the character
+     still qualifies for scores and rebirth.  Casual mode never has
+     permadeath, and a character that becomes Casual loses it and keeps
+     its last save.  In the Hall of Legends and the Hall of Remembrance,
+     the PD column shows Y for a character with permadeath, N without.
+
        When a character dies or quits, its score is recorded and the game
      returns to the title screen to start a new character.  The game only
      closes after an exit with save.
+
+       S saves the game and play continues.  With permadeath the save is
+     held as a backup while the character plays, and is deleted when it
+     dies or quits, so the character can only be loaded again after an
+     exit with save (X).
 
      Upland Commands
      ===============
@@ -357,6 +376,7 @@
          i - Show inventory
          Q - Quit, no save
          X - Exit with save
+         S - Save and continue
          > - Enter dungeon or town
          e - Eat
          h - Hunt for food
@@ -404,7 +424,7 @@
          L - Show message log
          w - Say a Word of Power
          b - Buy an item (Must be standing near a merchant)
-         S - Save and exit
+         S - Save and continue
          R - Show player record
          O - Options
          H - Show icons
@@ -513,6 +533,9 @@
          Music is on by default; NoMusic or -nmu starts with it off.
          Ctrl+M - Turn the music off or back on.  Works on every
                   screen.
+         The Music volume preference (O) sets how loud it plays, from
+         0 to 100 percent in steps of 10.  It is the game's slider in
+         the Windows volume mixer, and is saved in unicorn.cfg.
 
      Maps
      ====

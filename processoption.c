@@ -141,6 +141,12 @@ Int32 process_option(char* pChar) {
            if (monster_count < 10) monster_count = 10;
            if (monster_count > 60) monster_count = 60;
            }
+    else if (_strnicmp(option,"MusicVolume=",12) == 0) {
+           music_volume = option_value(option);
+           if (music_volume < 0) music_volume = 0;
+           if (music_volume > 100) music_volume = 100;
+           music_volume = (music_volume + 5) / 10 * 10;
+           }
     else if (_strnicmp(option,"Width=",6) == 0) {
            screen_width = option_value(option);
            }

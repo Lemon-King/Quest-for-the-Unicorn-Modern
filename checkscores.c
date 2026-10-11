@@ -41,6 +41,7 @@ void final_score(char cause) {
       hall_of_fame[j].mode = 'N';
       if (player.effect[PE_HEROIC] == 2) hall_of_fame[j].mode = 'H';
       if (player.effect[PE_HEROIC] == 4) hall_of_fame[j].mode = 'E';
+      hall_of_fame[j].permadeath = has_permadeath() ? 'Y' : 'N';
       num_hall_of_fame++;
       save_scores();
       }
@@ -62,6 +63,7 @@ void final_score(char cause) {
       final_scores[j].mode = 'N';
       if (player.effect[PE_HEROIC] == 2) final_scores[j].mode = 'H';
       if (player.effect[PE_HEROIC] == 4) final_scores[j].mode = 'E';
+      final_scores[j].permadeath = has_permadeath() ? 'Y' : 'N';
       num_final_scores++;
       score_position = death_position;
       save_scores();

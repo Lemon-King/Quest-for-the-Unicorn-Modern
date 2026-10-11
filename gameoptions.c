@@ -17,15 +17,16 @@
 #define OPT_NUMBER      3
 
 #define NUM_MODES       4
-#define NUM_RULES       6
-#define NUM_OPTIONS    15
+#define NUM_RULES       7
+#define NUM_OPTIONS    17
 
-#define RULES_LINE      3
+#define RULES_LINE      2
 #define PREFS_LINE     11
-#define HELP_LINE      22
+#define HELP_LINE      23
 #define LABEL_COLUMN    9
 #define VALUE_COLUMN   34
 
+/* config names the unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -34,21 +35,28 @@ typedef struct {
   char*  flag;
   char   on;
   char   off;
+  char   casual;
   Int32* number;
   Int32  min;
   Int32  max;
   Int32  step;
   Int32  initial;
+  char*  config;
+  void   (*apply)();
   } OPTION_ROW;
 
 static Int32 mode_values[NUM_MODES] = { 0, 2, 4, -1 };
 static char* mode_names[NUM_MODES]  = { "Normal", "Heroic", "Epic", "Casual" };
 
-/* The first NUM_RULES rows are rules, fixed once the character is created. */
+/* The first NUM_RULES rows are rules, fixed once the character is created. A switch with a casual value is held at
+   it in Casual mode. */
 static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Game mode",
     .help  = "Heroic: monsters x2.  Epic: monsters x4.  Casual: no permadeath or scores",
     .kind  = OPT_MODE,   .rule = 'Y', .number = &heroicMode },
+  { .label = "Permadeath",
+    .help  = "A character that dies is gone for good; its save is deleted",
+    .kind  = OPT_SWITCH, .rule = 'Y', .flag = &permadeath, .on = 'Y', .off = 'N', .casual = 'N' },
   { .label = "Dungeon depth",
     .help  = "Number of levels in each dungeon, from 2 to 10",
     .kind  = OPT_NUMBER, .rule = 'Y', .number = &bottom, .min = 2, .max = 10, .step = 1 },
@@ -90,7 +98,11 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_NUMBER, .rule = 'N', .number = &delay_trap, .min = 0, .max = 1000, .step = 25 },
   { .label = "Enhanced sprites",
     .help  = "Improves tile display for Sprites",
-    .kind  = OPT_SWITCH, .rule = 'N', .flag = &enhanced_sprites, .on = 'Y', .off = 'N' }
+    .kind  = OPT_SWITCH, .rule = 'N', .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },
+  { .label = "Music volume (%)",
+    .help  = "Volume of the background music, from 0 to 100; saved in unicorn.cfg",
+    .kind  = OPT_NUMBER, .rule = 'N', .number = &music_volume, .min = 0, .max = 100, .step = 10,
+    .config = "MusicVolume", .apply = set_music_volume }
   };
 
 static Int32 mode_index(Int32 mode) {
@@ -104,7 +116,12 @@ char* mode_name(Int32 mode) {
   return mode_names[mode_index(mode)];
   }
 
+static Int32 is_held_by_mode(OPTION_ROW* row) {
+  return (row->casual != 0 && heroicMode < 0);
+  }
+
 static Int32 is_editable(Int32 i, char rules_editable) {
+  if (is_held_by_mode(&option_rows[i])) return 0;
   return (option_rows[i].rule != 'Y' || rules_editable == 'Y');
   }
 
@@ -123,9 +140,12 @@ static Int32 next_option(Int32 i, Int32 dir, char rules_editable) {
   }
 
 static void format_value(OPTION_ROW* row, char* text) {
+  char flag;
   switch (row->kind) {
     case OPT_MODE:   sprintf(text, "%-8s", mode_name(*row->number)); break;
-    case OPT_SWITCH: sprintf(text, "%-8s", (*row->flag == row->on) ? "On" : "Off"); break;
+    case OPT_SWITCH: flag = is_held_by_mode(row) ? row->casual : *row->flag;
+                     sprintf(text, "%-8s", (flag == row->on) ? "On" : "Off");
+                     break;
     case OPT_NUMBER: sprintf(text, "%-8d", *row->number); break;
     }
   }
@@ -144,6 +164,9 @@ static void change_option(OPTION_ROW* row, Int32 dir) {
          if (*row->number > row->max) *row->number = row->max;
          break;
     }
+
+  if (row->apply != NULL) row->apply();
+  if (row->config != NULL) save_config_value("unicorn",row->config,*row->number);
   }
 
 static void draw_option(Int32 i, char selected, char rules_editable) {
@@ -162,6 +185,11 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   gotoxy(VALUE_COLUMN, line); txt_write(text);
   }
 
+static void draw_options(char rules_editable) {
+  Int32 i;
+  for (i=0; i<NUM_OPTIONS; i++) draw_option(i, 'N', rules_editable);
+  }
+
 static void draw_help(Int32 i) {
   char text[80];
   sprintf(text, "%-76s", option_rows[i].help);
@@ -170,7 +198,6 @@ static void draw_help(Int32 i) {
   }
 
 static void draw_screen(char* title, char rules_editable) {
-  Int32 i;
   textmode(3);
   textcolor(12);
   gotoxy(41 - strlen(title) / 2, 1); txt_write(title);
@@ -178,7 +205,7 @@ static void draw_screen(char* title, char rules_editable) {
   textcolor(11);
   gotoxy(3, RULES_LINE); txt_write("Game Rules");
   gotoxy(3, PREFS_LINE); txt_write("Preferences");
-  for (i=0; i<NUM_OPTIONS; i++) draw_option(i, 'N', rules_editable);
+  draw_options(rules_editable);
 
   textcolor(3);
   gotoxy(20, 24); txt_write("(8/2) Select   (4/6) Change   (ENTER) Done");
@@ -186,6 +213,7 @@ static void draw_screen(char* title, char rules_editable) {
 
 static void edit_options(char* title, char rules_editable) {
   Int32 i;
+  Int32 dir;
   char  key;
   draw_screen(title, rules_editable);
   i = next_option(-1, 1, rules_editable);
@@ -198,9 +226,22 @@ static void edit_options(char* title, char rules_editable) {
     draw_option(i, 'N', rules_editable);
     if (key == '8') i = next_option(i, -1, rules_editable);
     if (key == '2') i = next_option(i, 1, rules_editable);
-    if (key == '4' || key == '-') change_option(&option_rows[i], -1);
-    if (key == '6' || key == '+' || key == '=') change_option(&option_rows[i], 1);
+
+    dir = 0;
+    if (key == '4' || key == '-') dir = -1;
+    if (key == '6' || key == '+' || key == '=') dir = 1;
+    if (dir != 0) {
+      change_option(&option_rows[i], dir);
+      draw_options(rules_editable);
+      }
     }
+  }
+
+/* Sets the switches Casual mode holds to their casual values */
+static void apply_mode_holds() {
+  Int32 i;
+  for (i=0; i<NUM_OPTIONS; i++)
+    if (is_held_by_mode(&option_rows[i])) *option_rows[i].flag = option_rows[i].casual;
   }
 
 /* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. */
@@ -212,9 +253,11 @@ void remember_option_defaults() {
     }
   }
 
+/* Rows kept in unicorn.cfg are saved as they change, so they keep their value. */
 static void restore_option_defaults() {
   Int32 i;
   for (i=0; i<NUM_OPTIONS; i++) {
+    if (option_rows[i].config != NULL) continue;
     if (option_rows[i].kind == OPT_SWITCH) *option_rows[i].flag = option_rows[i].initial;
       else *option_rows[i].number = option_rows[i].initial;
     }
@@ -231,6 +274,7 @@ void read_character_rules() {
 void game_setup() {
   restore_option_defaults();
   edit_options("New Game Options", 'Y');
+  apply_mode_holds();
   }
 
 void game_options() {

@@ -168,6 +168,7 @@ void temple(char* name) {
         if (player.effect[PE_HEROIC] == 0) player.effect[PE_HEROIC] = -1;
         if (player.effect[PE_HEROIC] == 2) player.effect[PE_HEROIC] = 0;
         if (player.effect[PE_HEROIC] == 4) player.effect[PE_HEROIC] = 2;
+        if (player.effect[PE_HEROIC] < 0) end_permadeath();
         }
       }
     show_top(name,allowed,&cost);

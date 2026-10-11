@@ -161,3 +161,12 @@ void toggle_music() {
   if (music == 'Y' && requested >= 0) play_music(requested);
   if (music == 'N') stop_music();
   }
+
+/* The GS Wavetable Synth plays in the game's own audio session, and the wave mapper's volume is that session's, so
+   no song needs to be open. Both channels get music_volume percent. */
+void set_music_volume() {
+  DWORD level;
+
+  level = (DWORD)(0xFFFF * music_volume / 100);
+  waveOutSetVolume((HWAVEOUT)(UINT_PTR)WAVE_MAPPER,(level << 16) | level);
+  }

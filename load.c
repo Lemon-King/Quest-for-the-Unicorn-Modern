@@ -386,6 +386,7 @@ void load_options() {
     if (_strnicmp(line, "}",1) == 0) flag = 0;
     if (flag) {
       next = next_word(line);
+      if (match(line, "Permadeath ")) permadeath = *next;
       if (match(line, "DungeonScaling ")) dungeon_scaling = *next;
       if (match(line, "PartyCombat ")) party_combat_mode = *next;
       if (match(line, "AutoTarget ")) auto_target = *next;
@@ -879,6 +880,10 @@ void load() {
     fclose(save_file);
     exit(1);
     }
+
+  /* Saves from before the Permadeath option have none; Casual never has permadeath anyway */
+  permadeath = 'Y';
+
   while (!eosf) {
     read_line(line);
     if (match(line, "Player {")) load_player();
@@ -900,11 +905,6 @@ void load() {
     }
   fclose(save_file);
   read_character_rules();
-#ifdef HC
-  if (player.effect[PE_HEROIC] >= 0) {
-    remove(backupname);
-    rename(filename, backupname);
-    }
-#endif
+  hold_save(loadname);
   }
 

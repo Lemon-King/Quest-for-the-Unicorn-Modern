@@ -731,15 +731,13 @@ void up_land() {
       case 'S':
           player.land_x = player.x;
           player.land_y = player.y;
-          if (player.effect[PE_HEROIC] >= 0) exitf = 4;
-          else {
-            save_new();
-            graphmode();
-            show_land();
-            show_sm_land();
-            show_side();
-            show_land_player();
-            }
+          save_new();
+          hold_save(loadname);
+          graphmode();
+          show_land();
+          show_sm_land();
+          show_side();
+          show_land_player();
           break;
       case 'u':land_use_item(); break;
       case 'v':view(player.map[x][y]); break;

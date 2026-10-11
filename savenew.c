@@ -250,6 +250,7 @@ void save_player(FILE* file) {
 void save_options(FILE* file) {
   char line[1024];
   sprintf(line, "Options {");                               write_line(file, line);
+  sprintf(line, "  Permadeath %c", permadeath);             write_line(file, line);
   sprintf(line, "  DungeonScaling %c", dungeon_scaling);    write_line(file, line);
   sprintf(line, "  PartyCombat %c", party_combat_mode);     write_line(file, line);
   sprintf(line, "  AutoTarget %c", auto_target);            write_line(file, line);
@@ -500,13 +501,14 @@ void save_new() {
   char  filename[1024];
   gotoxy(1,1); textcolor(14);
   strcpy(filename,"");
-  while (strlen(filename)<=1) {
+  while (strlen(filename)<=1 || strlen(filename) >= sizeof(backupname) - 4) {
     strcpy(filename,loadname);
     if (strlen(filename) == 0) strcpy(filename,player.name);
     gotoxy(1,1); textcolor(14);
     txt_write("Filename to save under (No Extension) ?");
     readln(filename);
     }
+  strcpy(loadname, filename);
   strcat(filename, ".sav");
   file = fopen(filename, "w");
   if (encrypt_save_file != 'N') fprintf(file, "%se\n",VERSION);
