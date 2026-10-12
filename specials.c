@@ -14,26 +14,6 @@
 Int32 gacha[2500];
 Int32 num_gacha;
 
-void display_scroll() {
-  graphmode();
-  setfillstyle(1,15);
-  bar(50,50,450,430);
-  setfillstyle(1,7);
-  bar(50,10,450,49);
-  bar(50,431,450,471);
-  setfillstyle(1,14);
-  bar(10,10,39,49);
-  bar(461,10,491,49);
-  bar(10,431,39,471);
-  bar(461,431,491,471);
-  setfillstyle(1,6);
-  bar(40,20,49,40);
-  bar(451,20,460,40);
-  bar(40,440,49,460);
-  bar(451,440,460,460);
-  settextstyle(4,0,3);
-  }
-
 void display_msg(Int32 msg,char ext) {
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];

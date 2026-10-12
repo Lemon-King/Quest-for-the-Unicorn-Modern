@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      16
+#define NUM_PREFS      17
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -156,6 +156,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
+  { .label = "Center Scroll",
+    .help  = "Shows scrolls in the middle of the screen",
+    .kind  = OPT_SWITCH, .flag = &center_scroll, .on = 'Y', .off = 'N' },
   { .label = "Cursor Menus",
     .help  = "Shop, party and new character menus pick with a cursor, like this screen",
     .kind  = OPT_SWITCH, .flag = &cursor_menus, .on = 'Y', .off = 'N' },

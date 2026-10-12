@@ -283,6 +283,7 @@ void save_options(FILE* file) {
   sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
+  sprintf(line, "  CenterScroll %c", center_scroll);        write_line(file, line);
   sprintf(line, "  CursorMenus %c", cursor_menus);          write_line(file, line);
   sprintf(line, "  TabMenu %c", tab_menu);                  write_line(file, line);
   save_gameplay_changes(file);

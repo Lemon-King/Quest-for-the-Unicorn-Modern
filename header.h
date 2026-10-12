@@ -1138,6 +1138,7 @@ LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
 LINK char               gothic_scrolls;
+LINK char               center_scroll;
 LINK char               cursor_menus;
 LINK char               show_mount;
 LINK char               class_sprites;
@@ -1283,7 +1284,6 @@ extern void travel(char* name);
 extern void bank(char* name);
 
 /* specials.c */
-extern void display_scroll();
 extern void perform_effect(OBJECT_REC* obj);
 extern void special(Int32 whichone,OBJECT_REC* item);
 extern void set_gateway_dungeon();

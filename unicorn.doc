@@ -634,6 +634,8 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
+         Center Scroll        Show scrolls in the middle of the screen.
+                              Off, they stand at its left, as before
          Cursor Menus         Choose in shops, the library, the
                               inventory, the party screen and a new
                               character's sex, race and class with a
