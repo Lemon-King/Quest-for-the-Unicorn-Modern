@@ -1657,6 +1657,7 @@ extern void enchant(Int32 ench,Int32 limit);
 extern void show_legends();
 extern void mutable(OBJECT_REC* it);
 extern Int32 item_color(OBJECT_REC* item);
+extern void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color);
 extern void itemColor(OBJECT_REC* item);
 extern Int32 passable(Int32 x,Int32 y,char monstPass,char doorPass);
 extern Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass);

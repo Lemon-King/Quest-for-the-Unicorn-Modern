@@ -169,9 +169,9 @@ void pawn(char* name, byte city) {
       }
     if (option>0 && option<11 && player.pawn[city][option].otype != O_NONE) {
       item = player.pawn[city][option];
-      gotoxy(15,19); textcolor(12);
-      sprintf(buffer,"Ah, a %s A fine selection!",item.name);
-      txt_write(buffer);
+      pawn_name(&item,buffer);
+      gotoxy(15,19);
+      write_named("Ah, a ",&item,buffer," A fine selection!",12);
       price = buy_price(item_cost(&item));
       if (haggle(price,item)) {
         for (i=option; i<10; i++) player.pawn[city][i] = player.pawn[city][i+1];
@@ -183,10 +183,9 @@ void pawn(char* name, byte city) {
       pItem = inventory(0);
       show_top(name,city,&menu);
       if (pItem != NULL && pItem->otype != O_NONE) {
-        gotoxy(15,19); textcolor(12);
+        gotoxy(15,19);
         price = rcs_trunc(item_cost(pItem) * 0.08);
-        sprintf(buffer,"To identify a %s",get_name(pItem));
-        txt_write(buffer);
+        write_named("To identify a ",pItem,get_name(pItem),"",12);
         gotoxy(15,20); textcolor(14);
         sprintf(buffer," will cost %.0f Gold",price);
         txt_write(buffer);
@@ -206,9 +205,8 @@ void pawn(char* name, byte city) {
             sub_gold(price);
             pItem->flags |= OF_IDENT;
             if (pItem->effect == E_MUTA) mutable_set_name(pItem);
-            gotoxy(15,22); textcolor(15);
-            sprintf(buffer,"It is a %s (press a key)",get_name(pItem));
-            txt_write(buffer);
+            gotoxy(15,22);
+            write_named("It is a ",pItem,get_name(pItem)," (press a key)",15);
             key = inkey();
             }
           }
@@ -256,10 +254,9 @@ void pawn(char* name, byte city) {
     if (option == 14)
       for (i=1; i<=32; i++)
         if (player.pack[i].otype != O_NONE && (player.pack[i].flags & OF_IDENT) == 0) {
-          gotoxy(15,19); textcolor(12);
+          gotoxy(15,19);
           price = rcs_trunc(item_cost(&(player.pack[i])) * 0.08);
-          sprintf(buffer,"To identify a %s",get_name(&(player.pack[i])));
-          txt_write(buffer);
+          write_named("To identify a ",&(player.pack[i]),get_name(&(player.pack[i])),"",12);
           gotoxy(15,20); textcolor(14);
           sprintf(buffer," will cost %.0f Gold",price);
           txt_write(buffer);
@@ -279,9 +276,8 @@ void pawn(char* name, byte city) {
               sub_gold(price);
               player.pack[i].flags |= OF_IDENT;
               if (player.pack[i].effect == E_MUTA) mutable_set_name(&(player.pack[i]));
-              gotoxy(15,22); textcolor(15);
-              sprintf(buffer,"It is a %s (press a key)",get_name(&(player.pack[i])));
-              txt_write(buffer);
+              gotoxy(15,22);
+              write_named("It is a ",&(player.pack[i]),get_name(&(player.pack[i]))," (press a key)",15);
               key = inkey();
               }
             }
@@ -299,9 +295,8 @@ void pawn(char* name, byte city) {
       if (pItem != NULL && pItem->otype != O_NONE) {
         price = sell_price(pItem);
 	if (price < 1) price = 1;
-        gotoxy(15,19); textcolor(12);
-        sprintf(buffer,"Ah, a %s",get_name(pItem));
-        txt_write(buffer);
+        gotoxy(15,19);
+        write_named("Ah, a ",pItem,get_name(pItem),"",12);
         gotoxy(15,21); textcolor(9);
         switch (u_random(5)) {
           case 0:txt_write("Its pretty dirty, I will give you ");

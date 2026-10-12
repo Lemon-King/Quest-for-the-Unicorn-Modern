@@ -34,19 +34,23 @@
 #define DO_SAVE          1
 #define DO_LOAD          2
 
-/* A command: what it says, the keys it types (the first returned, the rest queued), or Save or Load */
+/* A command: what it says, the keys it types (the first returned, the rest queued), or Save or Load. An item's name
+   in its label, from name_start on, shows in its rarity colour, name_color; 0 for none. */
 typedef struct {
   char  label[LABEL_LENGTH];
   char  keys[4];
   Int32 action;
   Int32 color;
   Int32 enabled;
+  Int32 name_start;
+  Int32 name_color;
   } COMMAND;
 
-/* A line of the menu: a command's label wraps onto as many as it needs */
+/* A line of the menu: a command's label wraps onto as many as it needs; offset is where in the label it starts */
 typedef struct {
   Int32 command;
   Int32 first;
+  Int32 offset;
   char  text[LABEL_WIDTH + 1];
   } COMMAND_LINE;
 
@@ -65,7 +69,7 @@ static const char  step_key[8] = { '8', '9', '6', '3', '2', '1', '4', '7' };
 static char* save_choices[3] = { "Overwrite", "Save as New", "Cancel" };
 static char* overwrite_choices[2] = { "Yes", "No" };
 
-static void add_line(COMMANDS* commands,Int32 first,char* text) {
+static void add_line(COMMANDS* commands,Int32 first,char* text,Int32 offset) {
   COMMAND_LINE* line;
 
   if (commands->line_count == MAX_LINES) return;
@@ -73,6 +77,7 @@ static void add_line(COMMANDS* commands,Int32 first,char* text) {
   line = &commands->lines[commands->line_count++];
   line->command = commands->count - 1;
   line->first = first;
+  line->offset = offset;
   sprintf(line->text,"%*s%s",first ? 0 : INDENT,"",text);
   }
 
@@ -84,32 +89,36 @@ static void wrap_label(COMMANDS* commands) {
   Int32 first;
   Int32 width;
   Int32 length;
+  Int32 start;
 
   strcpy(words,commands->list[commands->count - 1].label);
   strcpy(line,"");
   first = 1;
   width = LABEL_WIDTH;
+  start = 0;
 
   for (word=strtok(words," "); word != NULL; word=strtok(NULL," ")) {
     length = (Int32)strlen(line);
     if (length > 0 && length + 1 + (Int32)strlen(word) > width) {
-      add_line(commands,first,line);
+      add_line(commands,first,line,start);
       strcpy(line,"");
       length = 0;
       first = 0;
       width = LABEL_WIDTH - INDENT;
       }
-    if (length > 0) strcat(line," ");
+    if (length == 0) start = (Int32)(word - words);
+      else strcat(line," ");
     strncat(line,word,width - (Int32)strlen(line));
     }
 
-  add_line(commands,first,line);
+  add_line(commands,first,line,start);
   }
 
-static void add_command(COMMANDS* commands,char* label,char* keys,Int32 color) {
+/* Returns the command added, or NULL when the menu is full */
+static COMMAND* add_command(COMMANDS* commands,char* label,char* keys,Int32 color) {
   COMMAND* command;
 
-  if (commands->count == MAX_COMMANDS || commands->line_count == MAX_LINES) return;
+  if (commands->count == MAX_COMMANDS || commands->line_count == MAX_LINES) return NULL;
 
   command = &commands->list[commands->count++];
   sprintf(command->label,"%.*s",LABEL_LENGTH - 1,label);
@@ -117,8 +126,19 @@ static void add_command(COMMANDS* commands,char* label,char* keys,Int32 color) {
   command->action = DO_KEYS;
   command->color = color;
   command->enabled = 1;
+  command->name_start = 0;
+  command->name_color = 0;
 
   wrap_label(commands);
+  return command;
+  }
+
+/* Shows the item name that follows verb in a command's label in its rarity colour, name_color */
+static void color_item_name(COMMAND* command,char* verb,Int32 name_color) {
+  if (command == NULL || name_color == 0) return;
+
+  command->name_start = (Int32)strlen(verb) + 1;
+  command->name_color = name_color;
   }
 
 /* Save and Load are greyed out for a character with permadeath, whose save is held while it plays */
@@ -128,16 +148,20 @@ static void add_action(COMMANDS* commands,char* label,Int32 action) {
   commands->list[commands->count - 1].enabled = !has_permadeath();
   }
 
-/* "<verb> <name>", with the name the look command gives a square of this value */
-static void named_label(char* verb,Int32 value,char* label) {
+/* "<verb> <name>", with the name the look command gives a square of this value. Returns the rarity colour of an item's
+   name, or 0 for a square that holds no item. */
+static Int32 named_label(char* verb,Int32 value,char* label) {
   char  name[80];
   Int32 color;
   Int32 i;
 
+  color = 0;
   square_name(value,name,&color);
   sprintf(label,"%s %.60s",verb,name);
   for (i=0; label[i] != 0; i++)
     if (label[i] == '_') label[i] = ' ';
+
+  return color;
   }
 
 /* The map value of the square in direction d, or 0 off the map's edge */
@@ -177,13 +201,13 @@ static void add_aimed(COMMANDS* commands,char* label,char key,char aimed,Int32 d
   }
 
 /* A step onto the square in direction d, then the key that acts there, if one is needed */
-static void add_step(COMMANDS* commands,char* label,Int32 d,char then) {
+static COMMAND* add_step(COMMANDS* commands,char* label,Int32 d,char then) {
   char keys[3];
 
   keys[0] = step_key[d];
   keys[1] = then;
   keys[2] = 0;
-  add_command(commands,label,keys,CONTEXT_COLOR);
+  return add_command(commands,label,keys,CONTEXT_COLOR);
   }
 
 /* A creature beside you: talk to a friendly one, which t cannot reach beside a merchant, and attack the others by
@@ -212,6 +236,7 @@ static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
 /* Whatever stands or lies on the square in direction d */
 static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
   Int32 value;
+  Int32 color;
   char  label[80];
 
   value = value_beside(d);
@@ -220,8 +245,8 @@ static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
   if (value == 22 || value == 33) add_aimed(commands,"Open the door",'o',door_to_open(),d);
   if (value == 23) add_aimed(commands,"Close the door",'c',item_dir(23),d);
   if (value >= 1000 && value < 2000) {
-    named_label("Pack",value,label);
-    add_step(commands,label,d,'G');
+    color = named_label("Pack",value,label);
+    color_item_name(add_step(commands,label,d,'G'),"Pack",color);
     }
   if (value >= 2000 && value < 3000) {
     named_label("Read",value,label);
@@ -242,12 +267,13 @@ static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
 
 static void list_underfoot(COMMANDS* commands) {
   Int32 here;
+  Int32 color;
   char  label[80];
 
   here = player.map[player.x][player.y];
   if (here >= 1000 && here < 2000) {
-    named_label("Pack",here,label);
-    add_command(commands,label,"G",CONTEXT_COLOR);
+    color = named_label("Pack",here,label);
+    color_item_name(add_command(commands,label,"G",CONTEXT_COLOR),"Pack",color);
     }
   if (here >= 2000 && here < 3000) {
     named_label("Read",here,label);
@@ -389,12 +415,28 @@ static void show_panel(MENU* menu,char* heading) {
   draw_menu(menu);
   }
 
-/* A line of a command, with the keys it types on its first */
+/* The column in a line's text where the command's item name starts, or -1 when the line shows none of it */
+static Int32 name_column(COMMAND* command,COMMAND_LINE* text) {
+  Int32 indent;
+  Int32 at;
+
+  if (command->name_color == 0) return -1;
+
+  indent = text->first ? 0 : INDENT;
+  at = command->name_start - text->offset;
+  if (at < 0) at = 0;
+  if (indent + at >= (Int32)strlen(text->text)) return -1;
+
+  return indent + at;
+  }
+
+/* A line of a command, with the keys it types on its first, and an item's name in its rarity colour */
 static void draw_command(MENU* menu,Int32 row,Int32 line) {
   COMMANDS*     commands;
   COMMAND_LINE* text;
   COMMAND*      command;
   char          keys[3];
+  Int32         at;
 
   commands = menu->screen;
   text = &commands->lines[row];
@@ -402,6 +444,10 @@ static void draw_command(MENU* menu,Int32 row,Int32 line) {
   sprintf(keys,"%-2s",text->first ? command->keys : "");
 
   draw_menu_text_in(menu,line,text->text,keys,command->enabled ? command->color : 8);
+
+  at = name_column(command,text);
+  if (at >= 0)
+    list_text(&menu->rows,menu->value_column - menu_label_width(menu) + at,line,command->name_color,text->text + at);
   }
 
 /* Keeps the cursor on the first line of a command, with all its lines in sight: a step down onto a command's later

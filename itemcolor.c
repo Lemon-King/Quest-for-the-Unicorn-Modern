@@ -27,3 +27,13 @@ void itemColor(OBJECT_REC* item) {
   textcolor(item_color(item));
   }
 
+/* At the cursor: before and after in color, and between them the item's name in its rarity colour */
+void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color) {
+  textcolor(color);
+  txt_write(before);
+  itemColor(item);
+  txt_write(name);
+  textcolor(color);
+  txt_write(after);
+  }
+

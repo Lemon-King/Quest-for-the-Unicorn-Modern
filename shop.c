@@ -190,13 +190,14 @@ static void show_info(OBJECT_REC* item) {
   data_card(item);
   }
 
+/* The goods are known, so their names show in their rarity colours */
 static void buy(OBJECT_REC item) {
-  char buffer[80];
+  char name[80];
 
+  item.flags |= OF_IDENT;
   gotoxy(15,22); txt_write("                                                  ");
-  gotoxy(15,22); textcolor(12);
-  sprintf(buffer,"Ah, a %s A fine selection!",item.name);
-  txt_write(buffer);
+  gotoxy(15,22);
+  write_named("Ah, a ",&item,base_name(name,&item)," A fine selection!",12);
 
   haggle(buy_price(item_cost(&item)),item);
   }
