@@ -298,7 +298,7 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Eating the last bite of a food with e counts as a meal, as with u",
     .kind  = OPT_SWITCH, .flag = &change_last_bite, .on = 'Y', .off = 'N', .key = "LastBite" },
   { .label = "Floor Items",
-    .help  = "Packing a floor item frees its spot, and a full floor drops no bogus tile",
+    .help  = "Packed items and arena loot free their spots, and a full floor drops nothing",
     .kind  = OPT_SWITCH, .flag = &change_floor_items, .on = 'Y', .off = 'N', .key = "FloorItems" },
   { .label = "Quest State",
     .help  = "The compass keeps to dungeons you entered or heard of after a load too",

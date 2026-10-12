@@ -503,12 +503,13 @@
                               Off, it is not counted
          Floor Items          Putting an item from the floor straight
                               into your pack frees its place in the
-                              level's list of floor items, and when
-                              that list is full a slain monster drops
-                              nothing instead of an item.  Off, packed
-                              items keep their place, and a full list
-                              leaves a stray tile where the item should
-                              have been
+                              level's list of floor items, as does
+                              leaving an item on an arena's floor, and
+                              when that list is full a slain monster
+                              drops nothing instead of an item.  Off,
+                              packed and arena items keep their place,
+                              and a full list leaves a stray tile where
+                              the item should have been
          Quest State          The save remembers which dungeons you
                               have entered, so after a load the
                               compass still lists only the dungeons

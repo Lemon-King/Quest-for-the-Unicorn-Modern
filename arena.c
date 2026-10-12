@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define FLOOR_SLOTS  ((Int32)(sizeof(DUNGEON_OBJECTS) / sizeof(OBJECT_REC)))
+
 static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
   char flag;
   Int32  ex = 0,ey = 0;
@@ -516,6 +518,22 @@ static Int32 monsters_dead(void) {
   return -1;
   }
 
+/* Which floor-item slots are in use before the fight */
+static void note_floor_items(char* in_use) {
+  Int32 i;
+
+  for (i=0; i<FLOOR_SLOTS; i++)
+    in_use[i] = (player.map_objects[i].otype != O_NONE);
+  }
+
+/* Frees the slots the fight took: their items lay on the arena's map, which is gone */
+static void free_arena_items(char* in_use) {
+  Int32 i;
+
+  for (i=0; i<FLOOR_SLOTS; i++)
+    if (!in_use[i]) player.map_objects[i].otype = O_NONE;
+  }
+
 static void find_closest_mob(Int32* x,Int32* y) {
   Int32 dist;
   Int32 closestX;
@@ -556,6 +574,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   Int32 all_dead;
   Int32 arena_x;
   Int32 arena_y;
+  char  floor_items[FLOOR_SLOTS];
 
   /* ************************************** */
   /* ***** Actual start of Arena code ***** */
@@ -563,6 +582,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   arena_x = srcx;
   arena_y = srcy;
   all_dead = 0;
+  note_floor_items(floor_items);
   while (keypressed()) key=inkey();
   lastFloor = currentFloor;
   snakes = 0;
@@ -1054,6 +1074,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       player.known[x][y] = tmp_known[x][y];
       player.map[x][y] = tmp_map[x][y];
       }
+
+  /* Without the Floor Items change the items left on the arena's floor keep their slots */
+  if (change_floor_items == 'Y') free_arena_items(floor_items);
   player.x = hold_x;
   player.y = hold_y;
   player.map_x = hold_mapx;
