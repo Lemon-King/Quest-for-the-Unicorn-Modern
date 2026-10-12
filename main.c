@@ -193,6 +193,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   floor_item_names = 'Y';
   gothic_scrolls = 'N';
   improved_interface = 'Y';
+  improved_status = 'I';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);

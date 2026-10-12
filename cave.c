@@ -1073,6 +1073,7 @@ void cave() {
               restoreScreen();
               show_map();
               show_player();
+              show_side();
               takes_time = 'N';
               break;
         case 'h':healing(); break;

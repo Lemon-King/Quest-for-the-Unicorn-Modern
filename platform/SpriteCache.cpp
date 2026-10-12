@@ -18,4 +18,10 @@ const Image& SpriteCache::sprite(const char* const* xpm) {
   return images_.emplace(xpm, decoder_.decode(xpm)).first->second;
   }
 
+const Image& SpriteCache::halfSprite(const char* const* xpm) {
+  auto found = halves_.find(xpm);
+  if (found != halves_.end()) return found->second;
+  return halves_.emplace(xpm, sprite(xpm).halved()).first->second;
+  }
+
 }

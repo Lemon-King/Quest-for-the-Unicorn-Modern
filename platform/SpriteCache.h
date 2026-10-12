@@ -21,10 +21,12 @@ namespace platform {
 class SpriteCache {
   public:
     const Image& sprite(const char* const* xpm);
+    const Image& halfSprite(const char* const* xpm);
 
   private:
     XpmDecoder                                    decoder_;
     std::unordered_map<const char* const*, Image> images_;
+    std::unordered_map<const char* const*, Image> halves_;
   };
 
 }

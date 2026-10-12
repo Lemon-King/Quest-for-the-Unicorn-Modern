@@ -409,6 +409,7 @@ void load_options() {
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
+      if (match(line, "ImprovedStatus ")) improved_status = *next;
 
       /* Saves from before Improved Interface kept its menus as Cursor Menus */
       if (match(line, "CursorMenus ")) improved_interface = *next;

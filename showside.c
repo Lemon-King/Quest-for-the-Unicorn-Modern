@@ -10,6 +10,129 @@
 
 #include "header.h"
 
+#define STATUS_COUNT      12
+#define STATUS_ETHER      11
+#define STATUS_LINE        8
+#define STATUS_BASELINE   (STATUS_LINE * 11)     /* outtext_xy()'s baseline for the line */
+#define NO_STATUS_TILE    10
+
+/* A status: its letter, the colour of its icon's art, its icon, and whether the player has it */
+typedef struct {
+  char  letter;
+  Int32 color;
+  Int32 icon;
+  Int32 active;
+  } STATUS_MARK;
+
+/* The mode the status row was last drawn in */
+static char status_mode_drawn;
+
+static void read_statuses(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 ether;
+
+  ether = player.effect[PE_ETHER];
+
+  marks[0]  = (STATUS_MARK){ 'L', CLR_BROWN,      43, can_see() != 0 };
+  marks[1]  = (STATUS_MARK){ 'S', CLR_LIGHTBLUE,  47, player.effect[PE_PROT] != 0 };
+  marks[2]  = (STATUS_MARK){ 'P', CLR_WHITE,      46, player.effect[PE_POISON] != 0 };
+  marks[3]  = (STATUS_MARK){ 'H', CLR_WHITE,      50, has_intrinsic(A_SPD) != 0 };
+  marks[4]  = (STATUS_MARK){ 'G', CLR_YELLOW,     45, player.effect[PE_GIANT] != 0 };
+  marks[5]  = (STATUS_MARK){ 'V', CLR_BROWN,     325, has_intrinsic(A_LEV) != 0 };
+  marks[6]  = (STATUS_MARK){ 'F', CLR_LIGHTRED,   44, has_intrinsic(A_RFIR) != 0 };
+  marks[7]  = (STATUS_MARK){ 'C', CLR_WHITE,     354, has_intrinsic(A_RCLD) != 0 };
+  marks[8]  = (STATUS_MARK){ 'Z', CLR_YELLOW,    355, has_intrinsic(A_RELC) != 0 };
+  marks[9]  = (STATUS_MARK){ 'A', CLR_PURPLE,    356, has_intrinsic(A_RDRK) != 0 };
+  marks[10] = (STATUS_MARK){ 'M', CLR_WHITE,     357, has_intrinsic(A_RPSI) != 0 };
+
+  if (ether > 10) marks[STATUS_ETHER] = (STATUS_MARK){ 'E', CLR_WHITE, 48, 1 };
+    else marks[STATUS_ETHER] = (STATUS_MARK){ 'e', CLR_GRAY, 49, ether > 0 };
+  }
+
+static Int32 status_column(Int32 i) {
+  return TEXT_GRID_WIDTH - 24 + 2 * i;
+  }
+
+static Int32 icon_width() {
+  return (tile_width + 1) / 2;
+  }
+
+static Int32 icon_height() {
+  return (tile_height + 1) / 2;
+  }
+
+/* An icon is centred on its letter's 8x12 cell */
+static Int32 icon_left(Int32 i) {
+  return status_column(i) * 8 + 4 - icon_width() / 2;
+  }
+
+static Int32 icon_top() {
+  return STATUS_BASELINE - 10 + 6 - icon_height() / 2;
+  }
+
+/* The letters as 7.0.0 drew them: a space leaves the letter there */
+static void show_grey_letters(STATUS_MARK marks[STATUS_COUNT]) {
+  char  text[2];
+  Int32 i;
+
+  setcolor(7);
+  for (i=0; i<STATUS_COUNT; i++) {
+    text[0] = marks[i].active ? marks[i].letter : ' ';
+    text[1] = 0;
+    outtext_xy(status_column(i),STATUS_LINE,text);
+    }
+  }
+
+static void show_colored_letters(STATUS_MARK marks[STATUS_COUNT]) {
+  char  text[2];
+  Int32 i;
+
+  for (i=0; i<STATUS_COUNT; i++) {
+    text[0] = marks[i].active ? marks[i].letter : ' ';
+    text[1] = 0;
+    setcolor(marks[i].color);
+    outtextxyclr(status_column(i) * 8,STATUS_BASELINE,text);
+    }
+  }
+
+static void show_status_icons(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 i;
+
+  setfillstyle(1,0);
+  for (i=0; i<STATUS_COUNT; i++) {
+    bar(icon_left(i),icon_top(),icon_left(i) + icon_width(),icon_top() + icon_height());
+    if (marks[i].active) put_half_image(icon_left(i),icon_top(),select_sprite(marks[i].icon));
+    }
+  }
+
+/* Off, Color or Icons, as the Improved Status preference has it. A change of mode clears the row first: the icons
+   cover more than a letter's cell, and the grey letters never clear what was there. */
+static void show_status_row(STATUS_MARK marks[STATUS_COUNT]) {
+  if (improved_status != status_mode_drawn) {
+    setfillstyle(1,0);
+    bar(icon_left(0),icon_top(),icon_left(STATUS_COUNT - 1) + icon_width(),icon_top() + icon_height());
+    status_mode_drawn = improved_status;
+    }
+
+  switch (improved_status) {
+    case 'C': show_colored_letters(marks); break;
+    case 'I': show_status_icons(marks); break;
+    default:  show_grey_letters(marks); break;
+    }
+
+  /* Callers draw on in the grey 7.0.0 left set */
+  setcolor(7);
+  }
+
+/* The icons along the bottom of the screen. An ether icon stays until the screen is redrawn. */
+static void show_status_tiles(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 i;
+
+  for (i=0; i<STATUS_COUNT; i++) {
+    if (i == STATUS_ETHER && !marks[i].active) continue;
+    putimage(tile_width*i,screen_height-tile_height,select_sprite(marks[i].active ? marks[i].icon : NO_STATUS_TILE),0);
+    }
+  }
+
 void show_time() {
   setfillstyle(1,0);
   bar(screen_width-130,12,screen_width,23);
@@ -19,7 +142,8 @@ void show_time() {
   }
 
 void show_side() {
-  char buffer[80];
+  char        buffer[80];
+  STATUS_MARK marks[STATUS_COUNT];
   setfillstyle(1,0);
   bar(screen_width - 130,10,screen_width,100);
   settextstyle(0,0,1);
@@ -84,42 +208,13 @@ void show_side() {
   putimage(statusCol+175,statusLine,select_sprite((player.effect[PE_FIRE] != 0)?44:10),0);
   putimage(statusCol+210,statusLine,select_sprite((player.effect[PE_LEV] != 0)?325:10),0);
 */
-  setcolor(7);
-  if (can_see())                     outtext_xy(TEXT_GRID_WIDTH - 24,8,"L"); else outtext_xy(TEXT_GRID_WIDTH - 24,8," ");
-  if (player.effect[PE_PROT] != 0)   outtext_xy(TEXT_GRID_WIDTH - 22,8,"S"); else outtext_xy(TEXT_GRID_WIDTH - 22,8," ");
-  if (player.effect[PE_POISON] != 0) outtext_xy(TEXT_GRID_WIDTH - 20,8,"P"); else outtext_xy(TEXT_GRID_WIDTH - 20,8," ");
-  if (has_intrinsic(A_SPD))          outtext_xy(TEXT_GRID_WIDTH - 18,8,"H"); else outtext_xy(TEXT_GRID_WIDTH - 18,8," ");
-  if (player.effect[PE_GIANT] != 0)  outtext_xy(TEXT_GRID_WIDTH - 16,8,"G"); else outtext_xy(TEXT_GRID_WIDTH - 16,8," ");
-  if (has_intrinsic(A_LEV))          outtext_xy(TEXT_GRID_WIDTH - 14,8,"V"); else outtext_xy(TEXT_GRID_WIDTH - 14,8," ");
-  if (has_intrinsic(A_RFIR))         outtext_xy(TEXT_GRID_WIDTH - 12,8,"F"); else outtext_xy(TEXT_GRID_WIDTH - 12,8," ");
-  if (has_intrinsic(A_RCLD))         outtext_xy(TEXT_GRID_WIDTH - 10,8,"C"); else outtext_xy(TEXT_GRID_WIDTH - 10,8," ");
-  if (has_intrinsic(A_RELC))         outtext_xy(TEXT_GRID_WIDTH -  8,8,"Z"); else outtext_xy(TEXT_GRID_WIDTH -  8,8," ");
-  if (has_intrinsic(A_RDRK))         outtext_xy(TEXT_GRID_WIDTH -  6,8,"A"); else outtext_xy(TEXT_GRID_WIDTH -  6,8," ");
-  if (has_intrinsic(A_RPSI))         outtext_xy(TEXT_GRID_WIDTH -  4,8,"M"); else outtext_xy(TEXT_GRID_WIDTH -  4,8," ");
-  if (player.effect[PE_ETHER] > 0) {
-    if (player.effect[PE_ETHER] > 10) outtext_xy(TEXT_GRID_WIDTH - 2,8,"E"); else outtext_xy(TEXT_GRID_WIDTH - 2,8,"e");
-    } else outtext_xy(TEXT_GRID_WIDTH - 2,8," ");
+  read_statuses(marks);
+  show_status_row(marks);
   /*
   if (player.effect[PE_ETHER] > 10) show_sprite(21,2,49);
     else if (player.effect[PE_ETHER] > 0) show_sprite(21,2,48);
       else show_sprite(21,2,10);
       */
-  putimage(tile_width*0,screen_height-tile_height,select_sprite(can_see() ? 43 : 10),0);
-  putimage(tile_width*1,screen_height-tile_height,select_sprite((player.effect[PE_PROT] != 0) ? 47 : 10),0);
-  putimage(tile_width*2,screen_height-tile_height,select_sprite((player.effect[PE_POISON] != 0) ? 46 : 10),0);
-  putimage(tile_width*3,screen_height-tile_height,select_sprite((has_intrinsic(A_SPD)) ? 50 : 10),0);
-  putimage(tile_width*4,screen_height-tile_height,select_sprite((player.effect[PE_GIANT] != 0) ? 45 : 10),0);
-  putimage(tile_width*5,screen_height-tile_height,select_sprite((has_intrinsic(A_LEV)) ? 325 : 10),0);
-  putimage(tile_width*6,screen_height-tile_height,select_sprite((has_intrinsic(A_RFIR)) ? 44 : 10),0);
-  putimage(tile_width*7,screen_height-tile_height,select_sprite((has_intrinsic(A_RCLD)) ? 354 : 10),0);
-  putimage(tile_width*8,screen_height-tile_height,select_sprite((has_intrinsic(A_RELC)) ? 355 : 10),0);
-  putimage(tile_width*9,screen_height-tile_height,select_sprite((has_intrinsic(A_RDRK)) ? 356 : 10),0);
-  putimage(tile_width*10,screen_height-tile_height,select_sprite((has_intrinsic(A_RPSI)) ? 357 : 10),0);
-  if (player.effect[PE_ETHER] > 0) {
-    if (player.effect[PE_ETHER] > 10)  putimage(tile_width*11,screen_height-tile_height,select_sprite(48),0);
-    else if (player.effect[PE_ETHER] > 0)  putimage(tile_width*11,screen_height-tile_height,select_sprite(49),0);
-    else putimage(tile_width*11,screen_height-tile_height,select_sprite(10),0);
-
-    }
+  show_status_tiles(marks);
   }
 

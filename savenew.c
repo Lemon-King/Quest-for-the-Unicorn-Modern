@@ -284,6 +284,7 @@ void save_options(FILE* file) {
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
+  sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }

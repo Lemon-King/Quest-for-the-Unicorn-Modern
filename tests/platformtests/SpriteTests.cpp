@@ -118,10 +118,43 @@ void spritesMatchGdi(TestRunner& runner) {
     }
   }
 
+/* A 3x3 image halves to 2x2: a block averages its opaque pixels, an edge block holds two pixels or one, and a block
+   less than half opaque is transparent */
+void imageHalves(TestRunner& runner) {
+  platform::Image image(3, 3,
+                        {0xff0000, 0x0000ff, 0x00ff00,
+                         0x00ff00, 0x0000ff, 0xffffff,
+                         0x000000, 0x404040, 0x808080},
+                        {true, true,  false,
+                         true, false, false,
+                         true, false, true});
+  platform::Image half = image.halved();
+
+  runner.check(half.width() == 2 && half.height() == 2, "ImageHalves", "size should be 2x2");
+  runner.check(half.opaque(0, 0) && half.pixel(0, 0) == 0x555555, "ImageHalves", "pixel 0,0 should be #555555");
+  runner.check(!half.opaque(1, 0), "ImageHalves", "pixel 1,0 should be transparent");
+  runner.check(half.opaque(0, 1) && half.pixel(0, 1) == 0x000000, "ImageHalves", "pixel 0,1 should be #000000");
+  runner.check(half.opaque(1, 1) && half.pixel(1, 1) == 0x808080, "ImageHalves", "pixel 1,1 should be #808080");
+  }
+
+/* Every sprite halves to 13x14, and the cache keeps each half */
+void halfSprites(TestRunner& runner) {
+  platform::SpriteCache cache;
+  for (int32_t n = 1; n <= SPRITE_COUNT; n++) {
+    const platform::Image& half = cache.halfSprite(sprite(n));
+    runner.check(half.width() == 13 && half.height() == 14, "HalfSprites",
+                 "sprite " + std::to_string(n) + ": " + std::to_string(half.width()) + "x" +
+                 std::to_string(half.height()));
+    runner.check(&cache.halfSprite(sprite(n)) == &half, "HalfSprites", "sprite " + std::to_string(n) + " is not kept");
+    }
+  }
+
 }
 
 void runSpriteTests(TestRunner& runner) {
   allSpritesDecode(runner);
   spriteTransparency(runner);
   spritesMatchGdi(runner);
+  imageHalves(runner);
+  halfSprites(runner);
   }

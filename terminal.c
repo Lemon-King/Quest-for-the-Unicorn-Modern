@@ -246,6 +246,11 @@ void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
   canvas_sprite(screen,sprites,x,y,(const char* const*)img);
   }
 
+/* A sprite at half its size, each pixel the average of a 2x2 block */
+void put_half_image(Int32 x,Int32 y,char** img) {
+  canvas_half_sprite(screen,sprites,x,y,(const char* const*)img);
+  }
+
 void delay(Int32 tm) {
   present();
   host_sleep(host,tm);

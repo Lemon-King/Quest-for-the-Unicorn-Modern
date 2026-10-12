@@ -645,6 +645,11 @@
                               the commands you can use where you stand
                               with Tab (see Tab Menu).  Off, the game
                               looks and asks as it first did
+         Improved Status      Show the status indicators under your
+                              stats (see Status Indicators) as grey
+                              letters (Off), letters in the colours of
+                              their icons (Color), or the icons
+                              themselves at half size (Icons)
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -919,6 +924,10 @@
          M - The player has resistance to mind attacks
          E - The player is ethereal
          e - The player is ethereal, but the effect is about to run out
+
+       With the Improved Status preference these letters are drawn in the
+     colours of their icons, or the icons themselves are drawn at half size
+     in their place.  Off, the letters are grey.
 
      Macros
      ======

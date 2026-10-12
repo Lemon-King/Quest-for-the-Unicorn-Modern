@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      15
+#define NUM_PREFS      16
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -44,10 +44,10 @@
 #define VALUE_INDENT   31
 #define VALUE_WIDTH     7     /* the column after it holds a scrolling group's bar */
 
-/* units follows a number's value; strict is a switch's third value, after On; standard is a number's or mode's own
-   default, and initial the value a new game starts with, after unicorn.cfg and the command line; config names the
-   unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect; key names a
-   gameplay change in the save */
+/* units follows a number's value; strict is a switch's third value, after On; names replaces Off, On and Strict as a
+   switch's value names; standard is a number's or mode's own default, and initial the value a new game starts with,
+   after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there instead of in the
+   save; apply puts a new value into effect; key names a gameplay change in the save */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -57,6 +57,7 @@ typedef struct {
   char   on;
   char   off;
   char   strict;
+  char*  names[3];
   char   casual;
   Int32* number;
   Int32  min;
@@ -159,6 +160,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Improved Interface",
     .help  = "Cursor menus, item cards, rarity colours, centred scrolls and the TAB menu",
     .kind  = OPT_SWITCH, .flag = &improved_interface, .on = 'Y', .off = 'N' },
+  { .label = "Improved Status",
+    .help  = "Status row under your stats: grey letters, icon-coloured letters, or icons",
+    .kind  = OPT_SWITCH, .flag = &improved_status, .on = 'C', .off = 'N', .strict = 'I',
+    .names = { "Off", "Color", "Icons" } },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -451,10 +456,15 @@ static Int32 is_switch_on(OPTION_ROW* row, char flag) {
   }
 
 static char* switch_name(OPTION_ROW* row, char flag) {
-  if (flag == row->on) return "On";
-  if (row->strict != 0 && flag == row->strict) return "Strict";
+  static char* standard_names[3] = { "Off", "On", "Strict" };
+  char**       names;
 
-  return "Off";
+  names = (row->names[0] != NULL) ? row->names : standard_names;
+
+  if (flag == row->on) return names[1];
+  if (row->strict != 0 && flag == row->strict) return names[2];
+
+  return names[0];
   }
 
 /* Steps a switch through Off and On, then Strict when it has one, wrapping either way */
