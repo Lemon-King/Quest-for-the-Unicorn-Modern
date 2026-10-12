@@ -1104,7 +1104,9 @@
      chests, torches, lore, stairs and altars under you or a step away (a
      step away, the command steps there first).  On the upland it offers
      the town or dungeon you stand on or beside, and your ship.  The
-     common commands follow, then Save and Load.
+     common commands follow, then Save and Load.  A name too long for a
+     line, such as a shop's, carries on over the next, and the cursor
+     moves from command to command.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved

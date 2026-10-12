@@ -16,7 +16,10 @@
 #include <ctype.h>
 
 #define MAX_COMMANDS    48
+#define MAX_LINES      (MAX_COMMANDS * 4)
 #define LABEL_WIDTH     20
+#define LABEL_LENGTH    72
+#define INDENT           1     /* a label's later lines, under its first */
 #define NAME_LENGTH     20     /* of a save named with Save as New */
 #define PANEL_LEFT     215     /* from the right edge, where the log's lines start */
 #define PANEL_TOP      100
@@ -33,16 +36,25 @@
 
 /* A command: what it says, the keys it types (the first returned, the rest queued), or Save or Load */
 typedef struct {
-  char  label[LABEL_WIDTH + 1];
+  char  label[LABEL_LENGTH];
   char  keys[4];
   Int32 action;
   Int32 color;
   Int32 enabled;
   } COMMAND;
 
+/* A line of the menu: a command's label wraps onto as many as it needs */
 typedef struct {
-  COMMAND list[MAX_COMMANDS];
-  Int32   count;
+  Int32 command;
+  Int32 first;
+  char  text[LABEL_WIDTH + 1];
+  } COMMAND_LINE;
+
+typedef struct {
+  COMMAND      list[MAX_COMMANDS];
+  Int32        count;
+  COMMAND_LINE lines[MAX_LINES];
+  Int32        line_count;
   } COMMANDS;
 
 /* The eight squares around you, clockwise from north, with the key that steps there */
@@ -53,17 +65,60 @@ static const char  step_key[8] = { '8', '9', '6', '3', '2', '1', '4', '7' };
 static char* save_choices[3] = { "Overwrite", "Save as New", "Cancel" };
 static char* overwrite_choices[2] = { "Yes", "No" };
 
+static void add_line(COMMANDS* commands,Int32 first,char* text) {
+  COMMAND_LINE* line;
+
+  if (commands->line_count == MAX_LINES) return;
+
+  line = &commands->lines[commands->line_count++];
+  line->command = commands->count - 1;
+  line->first = first;
+  sprintf(line->text,"%*s%s",first ? 0 : INDENT,"",text);
+  }
+
+/* Breaks the newest command's label into lines at its spaces; a word too long for a line is cut */
+static void wrap_label(COMMANDS* commands) {
+  char  words[LABEL_LENGTH];
+  char  line[LABEL_WIDTH + 1];
+  char* word;
+  Int32 first;
+  Int32 width;
+  Int32 length;
+
+  strcpy(words,commands->list[commands->count - 1].label);
+  strcpy(line,"");
+  first = 1;
+  width = LABEL_WIDTH;
+
+  for (word=strtok(words," "); word != NULL; word=strtok(NULL," ")) {
+    length = (Int32)strlen(line);
+    if (length > 0 && length + 1 + (Int32)strlen(word) > width) {
+      add_line(commands,first,line);
+      strcpy(line,"");
+      length = 0;
+      first = 0;
+      width = LABEL_WIDTH - INDENT;
+      }
+    if (length > 0) strcat(line," ");
+    strncat(line,word,width - (Int32)strlen(line));
+    }
+
+  add_line(commands,first,line);
+  }
+
 static void add_command(COMMANDS* commands,char* label,char* keys,Int32 color) {
   COMMAND* command;
 
-  if (commands->count == MAX_COMMANDS) return;
+  if (commands->count == MAX_COMMANDS || commands->line_count == MAX_LINES) return;
 
   command = &commands->list[commands->count++];
-  sprintf(command->label,"%.*s",LABEL_WIDTH,label);
+  sprintf(command->label,"%.*s",LABEL_LENGTH - 1,label);
   strcpy(command->keys,keys);
   command->action = DO_KEYS;
   command->color = color;
   command->enabled = 1;
+
+  wrap_label(commands);
   }
 
 /* Save and Load are greyed out for a character with permadeath, whose save is held while it plays */
@@ -298,6 +353,7 @@ static void list_overworld(COMMANDS* commands) {
 
 static void list_commands(COMMANDS* commands) {
   commands->count = 0;
+  commands->line_count = 0;
 
   if (in_upland == 'Y') list_overworld(commands);
     else list_town_and_dungeon(commands);
@@ -333,15 +389,41 @@ static void show_panel(MENU* menu,char* heading) {
   draw_menu(menu);
   }
 
-/* A command, with the keys it types */
+/* A line of a command, with the keys it types on its first */
 static void draw_command(MENU* menu,Int32 row,Int32 line) {
-  COMMAND* command;
-  char     keys[3];
+  COMMANDS*     commands;
+  COMMAND_LINE* text;
+  COMMAND*      command;
+  char          keys[3];
 
-  command = &((COMMANDS*)menu->screen)->list[row];
-  sprintf(keys,"%-2s",command->keys);
+  commands = menu->screen;
+  text = &commands->lines[row];
+  command = &commands->list[text->command];
+  sprintf(keys,"%-2s",text->first ? command->keys : "");
 
-  draw_menu_text_in(menu,line,command->label,keys,command->enabled ? command->color : 8);
+  draw_menu_text_in(menu,line,text->text,keys,command->enabled ? command->color : 8);
+  }
+
+/* Keeps the cursor on the first line of a command, with all its lines in sight: a step down onto a command's later
+   line goes on to the next command, and any other move back to the first line of the command it reached */
+static void keep_on_command(MENU* menu,COMMANDS* commands,char key) {
+  Int32 row;
+  Int32 last;
+  Int32 scrolled;
+
+  row = menu->row;
+  if (key == '2')
+    while (row < commands->line_count && !commands->lines[row].first) row++;
+  if (row == commands->line_count) row = 0;
+  while (!commands->lines[row].first) row--;
+
+  last = row;
+  while (last + 1 < commands->line_count && !commands->lines[last + 1].first) last++;
+
+  menu->row = row;
+  scrolled = list_scroll_to(&menu->rows,last);
+  scrolled |= list_scroll_to(&menu->rows,row);
+  if (scrolled) draw_menu(menu);
   }
 
 /* A saved game and its character's level */
@@ -513,7 +595,7 @@ Int32 open_tab_menu(void) {
   char     text[sizeof(loadname) + 16];
 
   list_commands(&commands);
-  open_panel(&menu,commands.count,draw_command,&commands);
+  open_panel(&menu,commands.line_count,draw_command,&commands);
   show_panel(&menu,"Menu");
 
   result = 0;
@@ -521,9 +603,10 @@ Int32 open_tab_menu(void) {
   choosing = 1;
   while (choosing) {
     key = menu_key(&menu);
+    keep_on_command(&menu,&commands,key);
     if (key == 9 || key == 27) choosing = 0;
 
-    command = &commands.list[menu.row];
+    command = &commands.list[commands.lines[menu.row].command];
     if (key != 13 || !command->enabled) continue;
 
     if (command->action == DO_SAVE) {
