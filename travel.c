@@ -109,16 +109,7 @@ void travel(char* name) {
 
   shipx = -1;
   shipy = -1;
-  i = 0;
-  while (i >= 0) {
-    if (tr_ships[i].map == player.city) {
-      shipx = tr_ships[i].x;
-      shipy = tr_ships[i].y;
-      i = -99;
-      }
-    else if (tr_ships[i].map >= 99) i = -99;
-      else i++;
-    }
+  find_harbour(player.city,&shipx,&shipy);
   city = -1;
   i = 0;
   while (city == -1) {

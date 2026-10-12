@@ -206,6 +206,19 @@ static char valid(Int32 x,Int32 y) {
   return flag;
   } /* char valid(Int32 x,Int32 y) */
 
+/* valid() for the player on foot, while in a ship */
+static char valid_on_foot(Int32 x,Int32 y) {
+  char inship;
+  char flag;
+
+  inship = player.inship;
+  player.inship = ' ';
+  flag = valid(x,y);
+  player.inship = inship;
+
+  return flag;
+  }
+
 /*
 void adjust_player_map() {
   char changed;
@@ -238,6 +251,8 @@ void adjust_player_map() {
 static char move_land(Int32 dx,Int32 dy) {
   Int32 old_x,old_y;
   Int32 old_region;
+  Int32 blocked;
+  Int32 shore;
   char  moved;
 
   old_x = player.x;
@@ -248,10 +263,19 @@ static char move_land(Int32 dx,Int32 dy) {
   player.x = player.x+dx;
   player.y = player.y+dy;
   check_region();
-  if (valid(player.x,player.y) == ' ') {
+
+  /* With Ship Improvements a ship that runs into walkable shore twice puts the player ashore */
+  blocked = (valid(player.x,player.y) == ' ' && !sails_into_town(player.x,player.y));
+  shore = (blocked && player.inship != ' ' && player.region == old_region && valid_on_foot(player.x,player.y) == '*');
+  if (steps_ashore(old_x,old_y,dx,dy,shore)) {
+    blocked = 0;
+    show_spot(old_x,old_y);
+    }
+  if (blocked) {
     player.x = player.x-dx;
     player.y = player.y-dy;
     }
+  else walk_aboard();
   if (adjust_map() == 'Y') show_land();
   show_land_player();
 
@@ -432,12 +456,17 @@ static void hunt(void) {
   } /* void hunt() */
 
 static void land_go_ship(void) {
+  Int32 x,y;
+
   if (player.inship != ' ') {
+    x = player.x;
+    y = player.y;
+    dock_square(&x,&y);
     player.inship = ' ';
-    player.map[player.x][player.y] = 12;
-    show_spot(player.x,player.y);
-    player.ship_x = player.x;
-    player.ship_y = player.y;
+    player.map[x][y] = 12;
+    show_spot(x,y);
+    player.ship_x = x;
+    player.ship_y = y;
     player.ship_r = player.region;
     }
   else if (player.map[player.x][player.y] == 12) {
@@ -680,6 +709,7 @@ void up_land() {
   memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
   player.x = player.land_x;
   player.y = player.land_y;
+  ship_leaves_town();
   player.map_x = player.x-8;
   player.map_y = player.y-8;
   adjust_map();
@@ -805,6 +835,9 @@ void up_land() {
                break;
       default:turn = 'N';
       }
+
+    /* A ship sailed onto a town with a harbour enters it (Ship Improvements) */
+    if (sails_into_town(player.x,player.y)) enter_dungeon();
 
     /* Without the Free Upland Keys change every key passes a turn */
     if (change_free_upland_keys != 'Y') turn = 'Y';

@@ -181,10 +181,26 @@ void eat() {
   }
 */
 
+/* valid_move() for the player on foot, while in a ship. A forbidding square is not walked: testing it would wear it. */
+static Int32 walkable_on_foot(Int32 x,Int32 y) {
+  char inship;
+  char flag;
+
+  if (player.map[x][y] >= 600 && player.map[x][y] < 700) return 0;
+
+  inship = player.inship;
+  player.inship = ' ';
+  flag = valid_move(x,y);
+  player.inship = inship;
+
+  return (flag == '*');
+  }
+
 static void move(Int32 xdir,Int32 ydir) {
   Int32 x,y;
   Int32 previous;
   Int32 ex,ey;
+  Int32 blocked;
   last_target_x = 0;
   last_target_y = 0;
   remove_player();
@@ -205,10 +221,19 @@ static void move(Int32 xdir,Int32 ydir) {
     }
   player.x += xdir;
   player.y += ydir;
-  if (valid_move(player.x,player.y) == ' ') {
+
+  /* With Ship Improvements a ship that runs into walkable shore twice puts the player ashore, the ship in its dock */
+  blocked = (valid_move(player.x,player.y) == ' ');
+  if (steps_ashore(x,y,xdir,ydir,blocked && player.inship != ' ' && walkable_on_foot(player.x,player.y))) {
+    blocked = 0;
+    show_spot(x,y);
+    show_spot(player.ship_x,player.ship_y);
+    }
+  if (blocked) {
     player.x -= xdir;
     player.y -= ydir;
     }
+  else walk_aboard();
   if (player.map[player.x][player.y] < 0 &&
       (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
@@ -810,8 +835,9 @@ void cave() {
           player.x = links[i].sx;
           player.y = links[i].sy;
           i = -1;
-          } else i++; 
+          } else i++;
         }
+      ship_docks_in_town();
       stock_town(player.city);
       player.map_x = player.x-TILES_X/2;
       player.map_y = player.y-TILES_Y/2;

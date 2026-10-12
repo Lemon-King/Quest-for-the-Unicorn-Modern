@@ -120,7 +120,6 @@
     <ClCompile Include="displayabilities.c" />
     <ClCompile Include="dmgreduction.c" />
     <ClCompile Include="doblink.c" />
-    <ClCompile Include="dockedships.c" />
     <ClCompile Include="doexchange.c" />
     <ClCompile Include="doget.c" />
     <ClCompile Include="doheal.c" />
@@ -279,6 +278,7 @@
     <ClCompile Include="selectsprite.c" />
     <ClCompile Include="settitle.c" />
     <ClCompile Include="settrap.c" />
+    <ClCompile Include="ships.c" />
     <ClCompile Include="shop.c" />
     <ClCompile Include="showalign.c" />
     <ClCompile Include="showheadings.c" />

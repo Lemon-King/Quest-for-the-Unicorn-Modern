@@ -338,9 +338,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Nether Core",
     .help  = "Castle Eshter has one Nether Core at a time; Strict, none while you own one",
     .kind  = OPT_SWITCH, .flag = &change_nether_core, .on = 'Y', .off = 'N', .strict = 'S', .key = "NetherCore" },
-  { .label = "Docked Ships",
-    .help  = "A ship left in a town stays in its harbour instead of appearing at sea",
-    .kind  = OPT_SWITCH, .flag = &change_docked_ships, .on = 'Y', .off = 'N', .key = "DockedShips" }
+  { .label = "Ship Improvements",
+    .help  = "Ships sail into and out of port towns, stay in harbours, never cover a town",
+    .kind  = OPT_SWITCH, .flag = &change_ship_improvements, .on = 'Y', .off = 'N', .key = "ShipImprovements" }
   };
 
 static Int32 mode_index(Int32 mode) {

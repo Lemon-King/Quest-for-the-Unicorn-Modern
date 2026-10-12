@@ -198,9 +198,6 @@
     <ClCompile Include="doblink.c">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="dockedships.c">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="doexchange.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -673,6 +670,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="settrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ships.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="shop.c">

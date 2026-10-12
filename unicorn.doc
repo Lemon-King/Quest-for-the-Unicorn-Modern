@@ -588,14 +588,22 @@
                               character starts at Strict.  Off, every
                               visit while Eshter lives adds another
                               core
-         Docked Ships         A ship you leave in a town's harbour
-                              stays there, and is in the harbour each
-                              time you return; once sailed out, it is
-                              wherever you dock it.  Off, the overworld
-                              draws a ship left in a town at the
-                              harbour's square on the overworld's own
-                              map, out at sea or on a mountain, and the
-                              harbour stays empty
+         Ship Improvements    Your ship stays in a town's harbour and
+                              is there each time you return.  Sailing
+                              onto a town with a harbour (Radon,
+                              Marduk) docks you in it, and sailing out
+                              of the harbour brings you out on the
+                              water beside the town.  Walking onto your
+                              ship boards it, and moving twice towards
+                              land you can walk on steps ashore: on the
+                              coast, or at a town without a harbour,
+                              the ship waits on the water; in a harbour
+                              it goes back to the dock.  A ship never
+                              docks on a town.  Off, a ship left in a
+                              town appears on the overworld at sea or
+                              on a mountain, a ship docked on a town's
+                              square hides the town, and boarding and
+                              leaving a ship take E
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
