@@ -126,7 +126,7 @@ OBJECT_REC* unpack(Int32 slot) {
     if (cursor_menus == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,pack_action(&(player.pack[menu.row + 1]),slot));
-      if (key == 'M') unpack_top(inair,&menu);
+      if (key == STORAGE_MOVED) unpack_top(inair,&menu);
       row = menu.row % 16;
       col = menu.row / 16;
       }

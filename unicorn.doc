@@ -1086,6 +1086,12 @@
      into your inventory, or to store an item from your inventory in an
      empty slot, then the pack's other actions.
 
+       <S> sorts the pack, a house or the hole: by Name, Name Reverse,
+     Type (the kind of item, as its card names it), Rarity (the rarest
+     first) or Value (the most valuable first).  The items gather at the
+     top and the empty slots after them, and items whose rarity or value
+     you have not identified come after the rest.
+
      Tab Menu
      ========
        With the Tab Menu preference, <Tab> opens a menu of commands in the

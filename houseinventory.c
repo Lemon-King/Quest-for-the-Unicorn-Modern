@@ -119,7 +119,7 @@ void house_inventory(Int32 hnum) {
     if (cursor_menus == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,transfer_action(&(player.houses[hnum].inventory[menu.row])));
-      if (key == 'M') house_show_inventory(base,hnum,&in_air,&menu);
+      if (key == STORAGE_MOVED) house_show_inventory(base,hnum,&in_air,&menu);
       base = menu.row / 40 * 40;
       col = menu.row % 40 / 20;
       row = menu.row % 20;

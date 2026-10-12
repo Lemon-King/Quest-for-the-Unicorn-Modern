@@ -945,6 +945,8 @@ typedef struct {
   Int32       digits;
   } STORAGE;
 
+#define STORAGE_MOVED   'M'   /* storage_key(), storage_action(): items were moved or sorted, so draw them again */
+
 typedef struct {
   char      name[21];
   byte      age;
@@ -1636,6 +1638,7 @@ extern void make_assassin();
 extern Int32 check_class_change(Int32 class);
 
 extern void data_card(OBJECT_REC* it);
+extern char* item_kind(OBJECT_REC* item);
 extern void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line);
 extern void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom);
 extern void shorten_name(char* name,Int32 width);

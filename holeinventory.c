@@ -97,7 +97,7 @@ void hole_inventory() {
     if (cursor_menus == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,transfer_action(&(player.hole[menu.row])));
-      if (key == 'M') hole_show_inventory(base,&in_air,&menu);
+      if (key == STORAGE_MOVED) hole_show_inventory(base,&in_air,&menu);
       base = menu.row / 40 * 40;
       col = menu.row % 40 / 20;
       row = menu.row % 20;

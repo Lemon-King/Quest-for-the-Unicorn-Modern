@@ -77,6 +77,41 @@ void get_attribute_name(char* buffer,Int32 ench) {
   strcat(buffer,plus);
   }
 
+/* The kind of item, as its card names it; "" for none */
+char* item_kind(OBJECT_REC* item) {
+  switch (item->otype) {
+    case O_EDGE: return "Edge Weapon";
+    case O_BLNT: return "Blunt Weapon";
+    case O_ARMR: return "Armor";
+    case O_POTN: return "Potion";
+    case O_RING: return "Ring";
+    case O_STFF: return "Staff";
+    case O_WAND: return "Wand";
+    case O_FOOD: return "Food";
+    case O_MISC: return "Miscellaneous";
+    case O_SCRL: return "Scroll";
+    case O_NECK: return "Necklace";
+    case O_ROBE: return "Robe";
+    case O_BOOT: return "Boots";
+    case O_HELM: return "Helm";
+    case O_SHLD: return "Shield";
+    case O_BOOK: return "Book";
+    case O_POLE: return "Polearm";
+    case O_BOW : return "Missile";
+    case O_JEWL: return "Jewel";
+    case O_PROJ: return "Energy";
+    case O_DAGR: return "Dagger";
+    case O_CRFT: return "Craft Item";
+    case O_ALCH: return "Alcohol";
+    case O_CONS: return "Consumable";
+    case O_TRAP: return "Trap";
+    case O_THRN: return "Thrown";
+    case O_CARD: return "Card";
+    case O_GACH: return "Gacha";
+    }
+  return "";
+  }
+
 /* The card's text with the name at column and line: the kind and rarity under it, then what the item does, and its
    value at the foot */
 void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
@@ -91,36 +126,7 @@ void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
   gotoxy(column,line); txt_write(buffer);
   gotoxy(column,line+1);
   textcolor(7);
-  switch (item->otype) {
-    case O_EDGE: txt_write("Edge Weapon"); break;
-    case O_BLNT: txt_write("Blunt Weapon"); break;
-    case O_ARMR: txt_write("Armor"); break;
-    case O_POTN: txt_write("Potion"); break;
-    case O_RING: txt_write("Ring"); break;
-    case O_STFF: txt_write("Staff"); break;
-    case O_WAND: txt_write("Wand"); break;
-    case O_FOOD: txt_write("Food"); break;
-    case O_MISC: txt_write("Miscellaneous"); break;
-    case O_SCRL: txt_write("Scroll"); break;
-    case O_NECK: txt_write("Necklace"); break;
-    case O_ROBE: txt_write("Robe"); break;
-    case O_BOOT: txt_write("Boots"); break;
-    case O_HELM: txt_write("Helm"); break;
-    case O_SHLD: txt_write("Shield"); break;
-    case O_BOOK: txt_write("Book"); break;
-    case O_POLE: txt_write("Polearm"); break;
-    case O_BOW : txt_write("Missile"); break;
-    case O_JEWL: txt_write("Jewel"); break;
-    case O_PROJ: txt_write("Energy"); break;
-    case O_DAGR: txt_write("Dagger"); break;
-    case O_CRFT: txt_write("Craft Item"); break;
-    case O_ALCH: txt_write("Alcohol"); break;
-    case O_CONS: txt_write("Consumable"); break;
-    case O_TRAP: txt_write("Trap"); break;
-    case O_THRN: txt_write("Thrown"); break;
-    case O_CARD: txt_write("Card"); break;
-    case O_GACH: txt_write("Gacha"); break;
-    }
+  txt_write(item_kind(item));
   if (item->flags & OF_IDENT) {
     if (item->effect == E_LGCY) {
       strcpy(buffer,"Legacy");
