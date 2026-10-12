@@ -51,6 +51,20 @@ void draw_menu_keys(char* keys,Int32 line) {
   write_centred(line,3,keys);
   }
 
+/* Clears a menu's key tips while a sub menu or question shows, as they are not its keys */
+void hide_menu_keys(MENU* menu) {
+  char blank[81];
+
+  sprintf(blank,"%*s",(Int32)strlen(menu->keys),"");
+  draw_menu_keys(blank,menu->keys_line);
+  }
+
+/* A question centred in place of a menu's key tips */
+void show_menu_question(MENU* menu,Int32 color,char* question) {
+  hide_menu_keys(menu);
+  write_centred(menu->keys_line,color,question);
+  }
+
 void draw_menu(MENU* menu) {
   if (menu->keys != NULL) draw_menu_keys(menu->keys,menu->keys_line);
 

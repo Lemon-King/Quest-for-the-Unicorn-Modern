@@ -1309,6 +1309,8 @@ extern void draw_list_arrow(SCROLL_LIST* list,Int32 column,Int32 line,Int32 sele
 extern void fit_menu(MENU* menu,Int32 count);
 extern void write_centred(Int32 line,Int32 color,char* text);
 extern void draw_menu_keys(char* keys,Int32 line);
+extern void hide_menu_keys(MENU* menu);
+extern void show_menu_question(MENU* menu,Int32 color,char* question);
 extern void draw_menu(MENU* menu);
 extern Int32 menu_label_width(MENU* menu);
 extern void draw_menu_text(MENU* menu,Int32 line,char* label,char* value);
@@ -1622,6 +1624,9 @@ extern Int32 check_class_change(Int32 class);
 
 extern void data_card(OBJECT_REC* it);
 extern void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line);
+extern void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom);
+extern void shorten_name(char* name,Int32 width);
+extern void list_item_name(OBJECT_REC* item,Int32 width,char* name);
 extern char* base_name(char* buffer,OBJECT_REC* item);
 
 extern Int32 get_skill(Int32 num);

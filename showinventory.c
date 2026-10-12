@@ -10,6 +10,28 @@
 
 #include "header.h"
 
+/* Cuts a name longer than width to width, then adds "..." */
+void shorten_name(char* name,Int32 width) {
+  if ((Int32)strlen(name) > width) {
+    name[width] = 0;
+    strcat(name,"...");
+    }
+  }
+
+/* An item's name for a list, cut to width with its "...", or blank for no item */
+void list_item_name(OBJECT_REC* item,Int32 width,char* name) {
+  Int32 end;
+
+  strcpy(name,"");
+  if (item->otype != O_NONE) strcpy(name,get_name(item));
+
+  end = (Int32)strlen(name);
+  while (end > 0 && name[end - 1] == ' ') end--;
+  name[end] = 0;
+
+  shorten_name(name,width - 3);
+  }
+
 void show_inventory(OBJECT_REC* item) {
   Int32 i;
   char buffer[256];
@@ -20,10 +42,7 @@ void show_inventory(OBJECT_REC* item) {
       txt_write("                                                ");
       gotoxy(25,3);
       strcpy(buffer,get_name(item));
-      if (strlen(buffer) > 40) {
-        buffer[40] = 0;
-        strcat(buffer,"...");
-        }
+      shorten_name(buffer,40);
       txt_write(buffer);
       } 
     else txt_write("                                                ");
@@ -34,10 +53,7 @@ void show_inventory(OBJECT_REC* item) {
         txt_write("                                                ");
         gotoxy(25,i);
         strcpy(buffer,get_name(&(player.invent[i-3])));
-        if (strlen(buffer) > 40) {
-          buffer[40] = 0;
-          strcat(buffer,"...");
-          }
+        shorten_name(buffer,40);
         txt_write(buffer);
 //        txt_write(get_name(&(player.invent[i-3])));
         }

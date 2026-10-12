@@ -13,8 +13,6 @@
 #define SHOP_ROWS      18
 #define SHOP_KEYS      "(8/2) Select   (ENTER) Buy   (I) Info   (ESC) Leave"
 #define CARD_KEYS      "(8/2) Select   (ENTER) Buy   (ESC) Leave"
-#define CARD_COLUMN    48
-#define CARD_WIDTH     33
 
 /* The item's name in the list, with its charges when they fit in width */
 static void goods_name(Int32 i,Int32 width,char* name) {
@@ -222,20 +220,13 @@ static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
 /* The selected item's card beside the list, as (I) shows it */
 static void show_card(MENU* menu) {
   OBJECT_REC item;
-  char       blank[CARD_WIDTH + 1];
-  Int32      line;
 
-  sprintf(blank,"%*s",CARD_WIDTH,"");
-  for (line=menu->rows.line + 1; line<=menu->rows.line + menu->rows.shown; line++) {
-    gotoxy(CARD_COLUMN,line);
-    txt_write(blank);
+  if (n_shop_items > 0) {
+    item = shop_items[menu->row];
+    item.flags |= OF_IDENT;
     }
 
-  if (n_shop_items == 0) return;
-
-  item = shop_items[menu->row];
-  item.flags |= OF_IDENT;
-  draw_item_card(&item,CARD_COLUMN,menu->rows.line + 1);
+  draw_card_panel((n_shop_items > 0) ? &item : NULL,menu->rows.line + 1,menu->rows.line + menu->rows.shown);
   }
 
 static void show_menu_screen(char* name,MENU* menu) {

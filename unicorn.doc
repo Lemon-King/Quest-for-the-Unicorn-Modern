@@ -634,12 +634,13 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
-         Cursor Menus         Choose in shops, the library, the party
-                              screen and a new character's sex, race and
-                              class with a cursor, as on the options
-                              screen, and answer their questions from a
-                              menu (see Item Merchants).  Off, they choose
-                              by letter or number and answer with Y or N
+         Cursor Menus         Choose in shops, the library, the
+                              inventory, the party screen and a new
+                              character's sex, race and class with a
+                              cursor, as on the options screen, and
+                              answer their questions from a menu (see
+                              Item Merchants).  Off, they choose by
+                              letter or number and answer with Y or N
          Tab Menu             Tab opens a menu of the commands you can use
                               where you stand (see Tab Menu)
          Music Volume         Volume of the background music, 0% to 100%
@@ -1063,6 +1064,20 @@
      travel agency, a search at the library, joining the Cavaliers and
      training a party member.  The game mode after rebirth, the library's
      kind of search and a party member's orders are chosen the same way.
+
+       The inventory lists what you carry with the cursor and shows the
+     selected item's info card on the right.  <Enter> opens a short menu
+     of what to do with it: choose it for the command that opened the
+     inventory, put it in your pack, swap it with an item from your pack
+     (or equip one into an empty slot), or swap it with the item on the
+     ground when that fits the slot.  <P>, <T> and <X> still work too.
+
+       The pack is one numbered list of its 32 slots, with the card beside
+     it.  <Enter> offers to equip the item (or take or choose it, for what
+     opened the pack), to pick it up into the air, put the item in the air
+     down or swap the two, to move it to another slot, or to cancel.
+     Moving asks for the slot with the cursor, and swaps the item with
+     whatever is there.  <Space>, <X> and <I> still work too.
 
      Tab Menu
      ========

@@ -10,6 +10,9 @@
 
 #include "header.h"
 
+#define CARD_COLUMN    48
+#define CARD_WIDTH     33
+
 void get_attribute_name(char* buffer,Int32 ench) {
   char plus[255];
   strcpy(buffer,"");
@@ -421,6 +424,20 @@ void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
     gotoxy(column,line+11);
     txt_write(buffer);
     }
+  }
+
+/* The card of the item selected in a list, on the right of lines top to bottom; blank for no item */
+void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom) {
+  char  blank[CARD_WIDTH + 1];
+  Int32 line;
+
+  sprintf(blank,"%*s",CARD_WIDTH,"");
+  for (line=top; line<=bottom; line++) {
+    gotoxy(CARD_COLUMN,line);
+    txt_write(blank);
+    }
+
+  if (item != NULL && item->otype != O_NONE) draw_item_card(item,CARD_COLUMN,top);
   }
 
 void data_card(OBJECT_REC* item) {

@@ -119,20 +119,6 @@ static void show_member_stats(Int32 member) {
   txt_write(buffer);
   }
 
-/* Clears the key tips while a sub menu shows, as they are not its keys */
-static void hide_keys(MENU* menu) {
-  char blank[81];
-
-  sprintf(blank,"%*s",(Int32)strlen(menu->keys),"");
-  draw_menu_keys(blank,menu->keys_line);
-  }
-
-/* A question centred in place of the key tips */
-static void show_question(MENU* menu,Int32 color,char* question) {
-  hide_keys(menu);
-  write_centred(menu->keys_line,color,question);
-  }
-
 static void show_member(Int32 member,MENU* menu) {
   Int32  i;
   char key;
@@ -157,7 +143,7 @@ static void show_member(Int32 member,MENU* menu) {
         key = ' ';
         if (cursor_menus == 'Y') {
           write_centred(25,14,buffer);
-          show_question(menu,14,training);
+          show_menu_question(menu,14,training);
           key = ask_action(0,menu->keys_line + 1,14,"Train","Cancel",0);
           draw_menu_keys(menu->keys,menu->keys_line);
           }
@@ -197,7 +183,7 @@ static void show_member(Int32 member,MENU* menu) {
 static char pick_orders(Int32 member,MENU* menu) {
   Int32 row;
 
-  hide_keys(menu);
+  hide_menu_keys(menu);
   row = ask_choice(0,menu->keys_line,10,order_names,NUM_ORDERS,(player.party[member].special & MS_EVADE) ? 1 : 0);
   draw_menu_keys(menu->keys,menu->keys_line);
 
@@ -240,7 +226,7 @@ static void swap_members(Int32 i,Int32 j,MENU* menu) {
 static Int32 pick_member(MENU* menu,char* question) {
   Int32 row;
 
-  show_question(menu,10,question);
+  show_menu_question(menu,10,question);
   row = menu_choice(menu);
   draw_menu_keys(menu->keys,menu->keys_line);
 
