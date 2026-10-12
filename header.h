@@ -1137,6 +1137,8 @@ LINK char               change_hunting_skill;
 LINK char               change_free_upland_keys;
 LINK char               change_shaman_legendaries;
 LINK char               change_platinum_dragon_mount;
+LINK char               change_town_completion;
+LINK char               change_town_trophy;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1477,6 +1479,7 @@ extern void show_stats();
 
 extern void check_trophies();
 extern void show_trophies();
+extern void quest_progress(Int32 criteria,Int32* done,Int32* total);
 
 extern void recipe_string(Int32 num,char* buffer);
 

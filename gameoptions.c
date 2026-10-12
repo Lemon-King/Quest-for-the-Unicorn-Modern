@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    56
+#define NUM_CHANGES    58
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -323,7 +323,13 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_shaman_legendaries, .on = 'Y', .off = 'N', .key = "ShamanLegendaries" },
   { .label = "Platinum Dragon Mount",
     .help  = "A Platinum Dragon bought at the stable is a flying mount like other dragons",
-    .kind  = OPT_SWITCH, .flag = &change_platinum_dragon_mount, .on = 'Y', .off = 'N', .key = "PlatinumDragonMount" }
+    .kind  = OPT_SWITCH, .flag = &change_platinum_dragon_mount, .on = 'Y', .off = 'N', .key = "PlatinumDragonMount" },
+  { .label = "Town Completion",
+    .help  = "Entering a town marks it complete, so the Completionist trophy can be won",
+    .kind  = OPT_SWITCH, .flag = &change_town_completion, .on = 'Y', .off = 'N', .key = "TownCompletion" },
+  { .label = "Town Trophy",
+    .help  = "Completionist counts dungeons only; visiting every town earns Sightseer",
+    .kind  = OPT_SWITCH, .flag = &change_town_trophy, .on = 'Y', .off = 'N', .key = "TownTrophy" }
   };
 
 static Int32 mode_index(Int32 mode) {

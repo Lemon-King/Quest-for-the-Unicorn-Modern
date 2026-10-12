@@ -301,6 +301,10 @@ static void enter_dungeon(void) {
       player.in_city = 'Y';
       player.city = link.diff;
       player.dungeon_number = x-1;
+
+      /* Without the Town Completion change nothing marks a town complete, so the Completionist trophy, which wants
+         every row of links[] complete, can never be won */
+      if (change_town_completion == 'Y') player.quests[player.dungeon_number] = 'Y';
       }
     }
   if (player.map[player.x][player.y] == 11) {

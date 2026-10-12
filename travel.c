@@ -34,6 +34,9 @@ static void new_town(Int32 where) {
   player.x = links[where].sx;
   player.y = links[where].sy;
   strcpy(player.d_name,links[where].name);
+
+  /* A town reached by ship is entered too (see enter_dungeon() in upland.c) */
+  if (change_town_completion == 'Y') player.quests[where] = 'Y';
   copyMap(&player.map,player.city);
 //#ifdef MINGW
 //    m_file = open("temp01.$$$",O_RDONLY | O_BINARY);

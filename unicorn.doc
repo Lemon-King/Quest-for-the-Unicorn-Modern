@@ -561,6 +561,16 @@
                               stable carries you and flies, like the
                               other dragons.  Off, it joins your party
                               but is no mount
+         Town Completion      Entering a town, on foot or by ship, marks
+                              it complete in the Quest Log, so the
+                              Completionist trophy can be won.  Off,
+                              towns are never complete and the trophy
+                              cannot be won
+         Town Trophy          Completionist counts only the dungeons,
+                              and visiting every town earns a trophy of
+                              its own, Sightseer (towns are marked by
+                              Town Completion).  Off, Completionist
+                              wants the towns too
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:

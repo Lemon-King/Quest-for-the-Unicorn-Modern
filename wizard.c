@@ -654,14 +654,8 @@ static void view_trophy(Int32 num) {
           }
         break;
       case TC_QUESTS:
-        count = 0;
-        count2 = 0;
-        i = 0;
-        while (links[i].region < 90) {
-          if (player.quests[i] == 'Y') count++;
-          count2++;
-          i++;
-          }
+      case TC_TOWNS:
+        quest_progress(trophies[num].criteria_type,&count,&count2);
         sprintf(buffer,"Progress: %d/%d",count,count2);
         gotoxy(ox+2,line++); txt_write(buffer);
         break;

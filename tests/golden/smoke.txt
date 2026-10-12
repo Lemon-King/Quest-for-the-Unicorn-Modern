@@ -1,4 +1,4 @@
-Trophy Count: 103
+Trophy Count: 104
 Object Count: 1200
   Common     : 116
   Uncommon   : 232

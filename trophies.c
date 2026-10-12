@@ -65,9 +65,35 @@ void new_trophy(Int32 num) {
   restoreScreen();
   }
 
+/* Whether a row of links[] counts toward a TC_QUESTS or TC_TOWNS trophy: without the Town Trophy change
+   Completionist wants every row, the towns included; with it the dungeons, and Sightseer the towns */
+static char counts_toward(Int32 criteria,Int32 row) {
+  if (criteria == TC_TOWNS) return (links[row].typ == 5) ? 'Y' : 'N';
+  if (change_town_trophy == 'Y' && links[row].typ == 5) return 'N';
+
+  return 'Y';
+  }
+
+/* How many rows of links[] the trophy counts, and how many of them are complete */
+void quest_progress(Int32 criteria,Int32* done,Int32* total) {
+  Int32 row;
+
+  *done = 0;
+  *total = 0;
+
+  for (row=0; links[row].region < 90; row++) {
+    if (counts_toward(criteria,row) == 'N') continue;
+
+    (*total)++;
+    if (player.quests[row] == 'Y') (*done)++;
+    }
+  }
+
 void check_trophies() {
   Int32 i,c,j;
   Int32 mask;
+  Int32 needed;
+  Int32 done,total;
   OBJECT_REC* item;
   i = 0;
   while (trophies[i].criteria_type < 999) {
@@ -233,21 +259,22 @@ void check_trophies() {
                        if (get_skill(trophies[i].control[0]) >= trophies[i].control[1]) new_trophy(i);
                        break;
         case TC_TROPHY:
-                       if (stats.num_trophies == (trophy_count-1)) {
+                       /* Without the Town Trophy change the towns' trophy cannot be won, so it is not wanted */
+                       needed = trophy_count - 1;
+                       if (change_town_trophy != 'Y') needed--;
+                       if (stats.num_trophies == needed) {
                          new_trophy(i);
                          item = find_linked_item(502);
                          if (item != NULL) inventory(item);
                          }
                        break;
         case TC_QUESTS:
-                       c = 1;
-                       j = 0;
-                       while (j >= 0) {
-                         if (player.quests[j] != 'Y') c = 0;
-                         j++;
-                         if (links[j].region > 90) j = -1;
-                         }
-                       if (c == 1) new_trophy(i);
+                       quest_progress(TC_QUESTS,&done,&total);
+                       if (done == total) new_trophy(i);
+                       break;
+        case TC_TOWNS:
+                       quest_progress(TC_TOWNS,&done,&total);
+                       if (change_town_trophy == 'Y' && done == total) new_trophy(i);
                        break;
         case TC_CARDS:
                        if (stats.counts[trophies[i].control[0]] == trophies[i].control[1]) new_trophy(i);
