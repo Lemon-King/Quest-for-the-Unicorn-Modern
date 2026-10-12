@@ -17,19 +17,24 @@ static void draw_spell(Int32 i,Int32 line) {
   Int32 j;
   Int32 col;
   char buffer[80];
-  char buffer2[80];
+  char name[80];
+
   col = 12;
-  strcpy(buffer2,shop_items[i].name);
-  for (j=0; j<strlen(buffer2); j++)
-    if (buffer2[j] == '_') buffer2[j] = ' ';
+  strcpy(name,shop_items[i].name);
+  for (j=0; j<strlen(name); j++)
+    if (name[j] == '_') name[j] = ' ';
+
   gotoxy(col,line);
   sprintf(buffer,"%3d",i+1);
   txt_write(buffer);
+
   gotoxy(col+5,line);
   sprintf(buffer,"%s:%d",classes[spells[shop_items[i].control].allign-1].name,spells[shop_items[i].control].level);
   txt_write(buffer);
+
   gotoxy(col+20,line);
-  txt_write(buffer2);
+  txt_write(name);
+
   gotoxy(col+50,line);
   sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
   txt_write(buffer);
@@ -38,16 +43,19 @@ static void draw_spell(Int32 i,Int32 line) {
 static void draw_item(Int32 i,Int32 line) {
   Int32 j;
   char buffer[80];
-  char buffer2[80];
-  gotoxy(18,line);
-  strcpy(buffer2,shop_items[i].name);
+  char name[80];
+
+  strcpy(name,shop_items[i].name);
   if (shop_items[i].charges > 0) {
     sprintf(buffer," [%d]",shop_items[i].charges);
-    strcat(buffer2,buffer);
+    strcat(name,buffer);
     }
-  for (j=0; j<strlen(buffer2); j++)
-    if (buffer2[j] == '_') buffer2[j] = ' ';
-  txt_write(buffer2);
+  for (j=0; j<strlen(name); j++)
+    if (name[j] == '_') name[j] = ' ';
+
+  gotoxy(18,line);
+  txt_write(name);
+
   gotoxy(55,line);
   sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
   txt_write(buffer);
@@ -62,13 +70,16 @@ static void draw_goods(Int32 shop_type,Int32 i,Int32 line) {
     else draw_item(i,line);
   }
 
+/* A page of the goods, each lettered for the key that selects it */
 static void show_items(Int32 shop_type,Int32 offset,Int32 page_size) {
   Int32 count;
   Int32 i;
   char buffer[8];
+
   textcolor(14);
   count = n_shop_items - offset;
   if (count > page_size) count = page_size;
+
   for (i=0; i<count; i++) {
     draw_goods(shop_type,i+offset,i+3);
     sprintf(buffer,"%c)",i+'a');
@@ -114,11 +125,14 @@ static void show_top_spell(char* name,Int32 offset,Int32 page_size) {
   txt_write(buffer);
   }
 
+/* The shop's name over its goods and your gold below them */
 static void show_frame(char* name) {
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   textcolor(14); gotoxy(35,25);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -168,10 +182,12 @@ static void show_info(OBJECT_REC* item) {
 
 static void buy(OBJECT_REC item) {
   char buffer[80];
+
   gotoxy(15,22); txt_write("                                                  ");
   gotoxy(15,22); textcolor(12);
   sprintf(buffer,"Ah, a %s A fine selection!",item.name);
   txt_write(buffer);
+
   haggle(buy_price(item_cost(&item)),item);
   }
 

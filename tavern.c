@@ -133,6 +133,7 @@ static void fare_price(Int32 i,Int32 width,char* text) {
 
 static void draw_fare(MENU* menu,Int32 row,Int32 line) {
   char price[16];
+
   fare_price(row,5,price);
   draw_menu_text(menu,line,fare[row].name,price);
   }
@@ -144,15 +145,18 @@ static void show_numbered(void) {
   char  left[48];
   char  right[48];
   char  buffer[100];
+
   gotoxy(5,3); textcolor(14);
   for (i=0; i<6; i++) {
     fare_price(i,1,price);
     sprintf(left,"%d> %-26s%s",i+1,fare[i].name,price);
+
     if (i + 6 < NUM_FARE) {
       fare_price(i+6,5,price);
       sprintf(right,"  %2d> %-27s%s",i+7,fare[i+6].name,price);
       }
     else sprintf(right,"%38s","");
+
     sprintf(buffer,"%s%s%s",(i == 0) ? "" : "    ",left,right);
     txt_writeln(buffer);
     }
@@ -160,11 +164,14 @@ static void show_numbered(void) {
 
 static void show_top(char* name,MENU* menu) {
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   if (cursor_menus == 'Y') draw_menu(menu);
     else show_numbered();
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

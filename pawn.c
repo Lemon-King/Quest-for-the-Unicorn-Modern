@@ -24,6 +24,7 @@ typedef struct {
 
 static void pawn_name(OBJECT_REC* item,char* name) {
   Int32 j;
+
   strcpy(name,item->name);
   for (j=0; j<strlen(name); j++)
     if (name[j] == '_') name[j] = ' ';
@@ -34,6 +35,7 @@ static void draw_pawn_row(MENU* menu,Int32 row,Int32 line) {
   OBJECT_REC* item;
   char        name[80];
   char        price[16];
+
   pawn = menu->screen;
   if (row < pawn->count) {
     item = &(player.pawn[pawn->city][pawn->slots[row]]);
@@ -44,13 +46,16 @@ static void draw_pawn_row(MENU* menu,Int32 row,Int32 line) {
   else draw_menu_text(menu,line,trades[row - pawn->count],"");
   }
 
+/* Lists the items for sale, which change as they are bought, then draws the menu */
 static void show_menu(MENU* menu) {
   PAWN_MENU* pawn;
   Int32      i;
+
   pawn = menu->screen;
   pawn->count = 0;
   for (i=1; i<=10; i++)
     if (player.pawn[pawn->city][i].otype != O_NONE) pawn->slots[pawn->count++] = i;
+
   fit_menu(menu,pawn->count + NUM_TRADES);
   draw_menu(menu);
   }
@@ -59,8 +64,10 @@ static void show_menu(MENU* menu) {
 static Int32 pick_option(MENU* menu) {
   PAWN_MENU* pawn;
   Int32      row;
+
   pawn = menu->screen;
   row = menu_choice(menu);
+
   if (row < 0) return 0;
   if (row < pawn->count) return pawn->slots[row];
   return 11 + row - pawn->count;
@@ -71,9 +78,11 @@ static void show_top(char* name,byte city,MENU* menu) {
   Int32 pos;
   char buffer[80];
   char buffer2[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   textcolor(14);
   if (cursor_menus == 'Y') show_menu(menu);
   else {
@@ -95,6 +104,7 @@ static void show_top(char* name,byte city,MENU* menu) {
       gotoxy(22,14+i); txt_write(buffer);
       }
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

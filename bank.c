@@ -59,6 +59,7 @@ static void show_top(char* name,MENU* menu) {
       gotoxy(60,l); txt_write(buffer);
       }
     }
+
   textcolor(14);
   if (cursor_menus == 'Y') draw_menu(menu);
   else {
@@ -69,6 +70,7 @@ static void show_top(char* name,MENU* menu) {
     gotoxy(34,16); txt_write("<ESC> Leave");
     gotoxy(37,17); txt_write("Option ?");
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

@@ -40,6 +40,7 @@ static char* service_names[NUM_SERVICES] = {
 
 static double alignment_cost(void) {
   double cost;
+
   cost = player.align;
   return 500*(100-cost);
   }
@@ -55,6 +56,7 @@ static void service_price(char service,char* text) {
 /* The keys of the services offered, in order. Returns how many. */
 static Int32 offered_services(char allowed,char* services) {
   Int32 count;
+
   count = 0;
   services[count++] = '1';
   services[count++] = '2';
@@ -63,12 +65,14 @@ static Int32 offered_services(char allowed,char* services) {
   if (allowed == 'Y') services[count++] = '5';
   if (player.gateway == 'F' && player.effect[PE_HEROIC] >= 0) services[count++] = '6';
   if (player.effect[PE_HEROIC] >= 0) services[count++] = '7';
+
   return count;
   }
 
 static void draw_service(MENU* menu,Int32 row,Int32 line) {
   char service;
   char price[16];
+
   service = ((char*)menu->screen)[row];
   service_price(service,price);
   draw_menu_text(menu,line,service_names[service - '1'],price);
@@ -78,6 +82,7 @@ static void show_numbered(char* services,Int32 count) {
   Int32 i;
   Int32 line;
   char buffer[80];
+
   line = 3;
   for (i=0; i<count; i++) {
     sprintf(buffer,"%c> %s",services[i],service_names[services[i] - '1']);
@@ -86,27 +91,30 @@ static void show_numbered(char* services,Int32 count) {
     gotoxy(51,line); txt_write(buffer);
     line++;
     }
+
   gotoxy(27,line++); txt_write("<ESC> Leave");
   line++;
   gotoxy(30,line); txt_write("Option ?");
   }
 
+/* The menu's screen holds the keys of the services offered */
 static void show_top(char* name,char allowed,double* cost,MENU* menu) {
   char buffer[80];
-  char services[NUM_SERVICES];
   Int32 count;
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   textcolor(14);
   *cost = alignment_cost();
-  count = offered_services(allowed,services);
+  count = offered_services(allowed,menu->screen);
   if (cursor_menus == 'Y') {
-    memcpy(menu->screen,services,count);
     fit_menu(menu,count);
     draw_menu(menu);
     }
-  else show_numbered(services,count);
+  else show_numbered(menu->screen,count);
+
   textcolor(15); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -115,6 +123,7 @@ static void show_top(char* name,char allowed,double* cost,MENU* menu) {
 /* The key of the service picked, or ESC */
 static char pick_service(MENU* menu) {
   Int32 row;
+
   row = menu_choice(menu);
   return (row >= 0) ? ((char*)menu->screen)[row] : 27;
   }

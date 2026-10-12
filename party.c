@@ -16,18 +16,22 @@ static void draw_member(MENU* menu,Int32 row,Int32 line) {
   NPC_REC* member;
   char     label[48];
   char     value[16];
+
   member = &(player.party[row + 1]);
   sprintf(label,"%2d: %s",row + 1,(member->hp != 0) ? member->name : "");
   if (member->hp != 0) sprintf(value,"%2d    %3d",member->level,member->hp);
     else sprintf(value,"%9s","");
+
   draw_menu_text(menu,line,label,value);
   }
 
 static void party_show_top(MENU* menu) {
   Int32  i;
   char buffer[80];
+
   gotoxy(24,1); textcolor(2);
   txt_write("  #  Name               Lvl     Hp");
+
   if (cursor_menus == 'Y') draw_menu(menu);
   else {
     for (i=1; i<=5; i++) {
@@ -45,6 +49,7 @@ static void party_show_top(MENU* menu) {
         }
       }
     }
+
   gotoxy(40,9); textcolor(14);
   txt_write("P");
   gotoxy(30,10); if (player.party[1].hp != 0) textcolor(14); else textcolor(8);
@@ -164,25 +169,30 @@ static void show_member(Int32 member,MENU* menu) {
 
 static void set_orders(Int32 member) {
   char key;
+
   gotoxy(20,14); textcolor(10);
   txt_write("<A>ttack, or <E>vade ?");
   key = ' ';
   while (key != 'a' && key != 'e') key = inkey();
+
   switch (key) {
     case 'a':player.party[member].special &= (~MS_EVADE);
              break;
     case 'e':player.party[member].special |= MS_EVADE;
              break;
     }
+
   gotoxy(20,14); textcolor(10);
   txt_write("                          ");
   }
 
 static void swap_members(Int32 i,Int32 j,MENU* menu) {
   NPC_REC ptemp;
+
   ptemp = player.party[i];
   player.party[i] = player.party[j];
   player.party[j] = ptemp;
+
   party_show_top(menu);
   }
 
@@ -190,11 +200,14 @@ static void swap_members(Int32 i,Int32 j,MENU* menu) {
 static Int32 pick_member(MENU* menu,char* question) {
   char  blank[48];
   Int32 row;
+
   gotoxy(20,14); textcolor(10);
   txt_write(question);
   row = menu_choice(menu);
+
   sprintf(blank,"%*s",(Int32)strlen(question),"");
   gotoxy(20,14); txt_write(blank);
+
   return row + 1;
   }
 
@@ -202,6 +215,7 @@ static Int32 pick_member(MENU* menu,char* question) {
 static void party_command(MENU* menu,char key) {
   Int32 member;
   Int32 other;
+
   if (key == 13 && player.party[menu->row + 1].hp != 0) show_member(menu->row + 1,menu);
   if (key == 'd' && player.in_city == 'Y') {
     member = pick_member(menu,"Dismiss who ?");
@@ -227,12 +241,14 @@ void party() {
   char key;
   MENU menu = { .rows = { .count = 5, .shown = 5, .line = 2 }, .column = 21, .value_column = 49, .color = 14,
                 .keys = PARTY_KEYS, .keys_line = 13, .draw_row = draw_member };
+
   saveScreen();
   textmode(3); party_show_top(&menu);
   if (cursor_menus != 'Y') {
     gotoxy(10,13); textcolor(3);
     txt_write("<D>ismiss, <1-5>Statistics, <C>hange order, <O>orders, <Q>uit");
     }
+
   key = ' ';
   while (key != 'q') {
     key = (cursor_menus == 'Y') ? menu_key(&menu) : inkey();

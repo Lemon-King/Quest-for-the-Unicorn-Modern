@@ -22,6 +22,7 @@ typedef struct {
 static void draw_trip(MENU* menu,Int32 row,Int32 line) {
   TRIPS* trips;
   char   price[16];
+
   trips = menu->screen;
   if (row < trips->count) {
     sprintf(price,"%4d",trips->cost[row + 1]);
@@ -172,6 +173,7 @@ void travel(char* name) {
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   textcolor(14);
   if (cursor_menus == 'Y') draw_menu(&menu);
   else {
@@ -190,6 +192,7 @@ void travel(char* name) {
         gotoxy(49,11); txt_write("2500");
       }
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

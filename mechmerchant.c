@@ -28,6 +28,7 @@ static double mech_price(OBJECT_REC* item) {
 static void draw_mech_row(MENU* menu,Int32 row,Int32 line) {
   MECH_MENU* mech;
   char       price[16];
+
   mech = menu->screen;
   if (row < mech->count) {
     sprintf(price,"%6.0f",mech_price(&(mech->items[row])));
@@ -40,8 +41,10 @@ static void draw_mech_row(MENU* menu,Int32 row,Int32 line) {
 static Int32 pick_option(MENU* menu) {
   MECH_MENU* mech;
   Int32      row;
+
   mech = menu->screen;
   row = menu_choice(menu);
+
   if (row < 0) return 0;
   if (row < mech->count) return row + 1;
   return 11 + row - mech->count;
@@ -52,9 +55,11 @@ static void show_top(OBJECT_REC* items,MENU* menu) {
   Int32 pos;
   char buffer[80];
   char buffer2[80];
+
   textmode(3); gotoxy(33,1); textcolor(11);
   sprintf(buffer,"Mech-Merchant");
   txt_write(buffer);
+
   textcolor(14);
   if (cursor_menus == 'Y') draw_menu(menu);
   else {
@@ -76,6 +81,7 @@ static void show_top(OBJECT_REC* items,MENU* menu) {
       gotoxy(22,14+i); txt_write(buffer);
       }
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

@@ -61,6 +61,7 @@ static Int32 class_price(Int32 cls) {
 
 static void draw_course(MENU* menu,Int32 row,Int32 line) {
   char price[16];
+
   sprintf(price,"%7d",class_price(row));
   draw_menu_text(menu,line,school_classes[row].name,price);
   }
@@ -68,9 +69,11 @@ static void draw_course(MENU* menu,Int32 row,Int32 line) {
 static void show_top(char* name,MENU* menu) {
   Int32 i;
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   gotoxy(1,3); textcolor(14);
   if (cursor_menus == 'Y') draw_menu(menu);
   else {
@@ -80,6 +83,7 @@ static void show_top(char* name,MENU* menu) {
       txt_writeln(buffer);
       }
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

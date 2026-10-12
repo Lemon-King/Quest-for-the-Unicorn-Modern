@@ -47,6 +47,7 @@ static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost,M
     gotoxy(27,12); txt_write("<ESC> Leave");
     gotoxy(30,13); txt_write("Option ?");
     }
+
   textcolor(15); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);

@@ -84,13 +84,16 @@ static void open_choices(MENU* menu,Int32 count,void (*draw_row)(MENU* menu,Int3
 /* The key that picks the row chosen in the numbered list it replaces; ESC does not back out */
 static char choose(MENU* menu) {
   char key;
+
   key = 27;
   while (key == 27) key = menu_number(menu);
+
   return key;
   }
 
 static void clear_choice_keys(void) {
   char text[81];
+
   sprintf(text,"%80s","");
   gotoxy(1,KEYS_LINE); txt_write(text);
   }
@@ -98,13 +101,16 @@ static void clear_choice_keys(void) {
 static char choose_sex(void) {
   MENU menu;
   char key;
+
   textcolor(14); gotoxy(10,3); txt_write("_");
   textcolor(9); gotoxy(5,CHOICE_LINE); txt_write("Character Sex:");
   open_choices(&menu,2,draw_sex,NULL);
   key = choose(&menu);
+
   gotoxy(5,CHOICE_LINE); txt_write("              ");
   gotoxy(8,CHOICE_LINE + 1); txt_write("      ");
   gotoxy(8,CHOICE_LINE + 2); txt_write("      ");
+
   return (key == '2') ? 'F' : 'M';
   }
 

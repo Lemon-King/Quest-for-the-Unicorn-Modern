@@ -30,6 +30,7 @@ static MOUNT_REC mounts_for_sale[NUM_MOUNTS] = {
 
 static void draw_mount(MENU* menu,Int32 row,Int32 line) {
   char price[16];
+
   sprintf(price,"%6d",mounts_for_sale[row].cost);
   draw_menu_text(menu,line,mounts_for_sale[row].name,price);
   }
@@ -37,9 +38,11 @@ static void draw_mount(MENU* menu,Int32 row,Int32 line) {
 static void show_top(char* name,MENU* menu) {
   Int32 i;
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   textcolor(14);
   if (cursor_menus == 'Y') draw_menu(menu);
   else {
@@ -52,6 +55,7 @@ static void show_top(char* name,MENU* menu) {
     gotoxy(27,10); txt_write("0> Leave");
     gotoxy(30,12); txt_write("Option ?");
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
