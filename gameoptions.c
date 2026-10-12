@@ -44,8 +44,9 @@
 #define VALUE_INDENT   31
 #define VALUE_WIDTH     7     /* the column after it holds a scrolling group's bar */
 
-/* units follows a number's value; strict is a switch's third value, after On; names replaces Off, On and Strict as a
-   switch's value names; standard is a number's or mode's own default, and initial the value a new game starts with,
+/* units follows a number's value; strict is a switch's third value, after On, and extra a fourth, after Strict, which
+   needs names; names replaces Off, On, Strict and the fourth as a switch's value names; standard is a number's or
+   mode's own default, and initial the value a new game starts with,
    after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there instead of in the
    save; apply puts a new value into effect; key names a gameplay change in the save; needs is a preference that must
    be On for this one to change */
@@ -58,7 +59,8 @@ typedef struct {
   char   on;
   char   off;
   char   strict;
-  char*  names[3];
+  char   extra;
+  char*  names[4];
   char   casual;
   Int32* number;
   Int32  min;
@@ -357,8 +359,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Ships sail into and out of port towns, stay in harbours, never cover a town",
     .kind  = OPT_SWITCH, .flag = &change_ship_improvements, .on = 'Y', .off = 'N', .key = "ShipImprovements" },
   { .label = "Rarity Fix",
-    .help  = "Packing an item (G) counts its rarity as getting it (g) and its card do",
-    .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'Y', .off = 'N', .key = "RarityFix" }
+    .help  = "Pickups count rarity alike: A as g and its card, B as G, C as B with 5 ultra",
+    .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'A', .off = 'N', .strict = 'B', .extra = 'C',
+    .names = { "Off", "Band A", "Band B", "Band C" }, .key = "RarityFix" }
   };
 
 static Int32 mode_index(Int32 mode) {
@@ -462,9 +465,12 @@ static Int32 first_editable(char rules_editable) {
   return 0;
   }
 
-/* A switch is on at On, and at its strict value if it has one */
+/* A switch is on at On, and at its strict and extra values if it has them */
 static Int32 is_switch_on(OPTION_ROW* row, char flag) {
-  return (flag == row->on || (row->strict != 0 && flag == row->strict));
+  if (row->strict != 0 && flag == row->strict) return 1;
+  if (row->extra != 0 && flag == row->extra) return 1;
+
+  return (flag == row->on);
   }
 
 static char* switch_name(OPTION_ROW* row, char flag) {
@@ -475,20 +481,24 @@ static char* switch_name(OPTION_ROW* row, char flag) {
 
   if (flag == row->on) return names[1];
   if (row->strict != 0 && flag == row->strict) return names[2];
+  if (row->extra != 0 && flag == row->extra) return names[3];
 
   return names[0];
   }
 
-/* Steps a switch through Off and On, then Strict when it has one, wrapping either way */
+/* Steps a switch through Off and On, then Strict and the fourth value when it has them, wrapping either way */
 static char next_switch_value(OPTION_ROW* row, Int32 dir) {
-  char  values[3];
+  char  values[4];
   Int32 count;
   Int32 i;
 
   values[0] = row->off;
   values[1] = row->on;
   values[2] = row->strict;
-  count = (row->strict != 0) ? 3 : 2;
+  values[3] = row->extra;
+  count = 2;
+  if (row->strict != 0) count++;
+  if (row->extra != 0) count++;
 
   i = 0;
   while (i < count && values[i] != *row->flag) i++;
@@ -660,12 +670,13 @@ void remember_built_in_defaults() {
     if (option_rows[i].kind != OPT_SWITCH) option_rows[i].standard = *option_rows[i].number;
   }
 
-/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start On,
-   or Strict where they have it. */
+/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start at
+   their last value: On, or Strict or the fourth where they have it. */
 void remember_option_defaults() {
   Int32 i;
   for (i=0; i<NUM_OPTIONS; i++) {
-    if (is_gameplay_change(i) && option_rows[i].strict != 0) option_rows[i].initial = option_rows[i].strict;
+    if (is_gameplay_change(i) && option_rows[i].extra != 0) option_rows[i].initial = option_rows[i].extra;
+      else if (is_gameplay_change(i) && option_rows[i].strict != 0) option_rows[i].initial = option_rows[i].strict;
       else if (is_gameplay_change(i)) option_rows[i].initial = option_rows[i].on;
       else option_rows[i].initial = option_value(&option_rows[i]);
     }

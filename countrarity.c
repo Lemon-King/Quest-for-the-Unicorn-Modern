@@ -40,13 +40,25 @@ static const RARITY_BAND pack_bands[NUM_BANDS] = {
   { STAT_ULTRA_RARES,    0,         4 }
   };
 
-/* key is the one that picked the item up, g or G. Each counts by its own bands, or with the Rarity Fix change both by
-   g's. */
+/* Rarity Fix's Band C: packing's bands, with a rarity of 5 ultra rare */
+static const RARITY_BAND band_c[NUM_BANDS] = {
+  { STAT_COMMONS,     2500, INT32_MAX },
+  { STAT_UNCOMMONS,    100,      2500 },
+  { STAT_RARES,         50,       100 },
+  { STAT_VERY_RARES,     5,        50 },
+  { STAT_ULTRA_RARES,    0,         5 }
+  };
+
+/* key is the one that picked the item up, g or G. Without the Rarity Fix change each counts by its own bands; Band A
+   counts both by g's, Band B both by G's, and Band C both by Band C's. */
 void count_rarity(OBJECT_REC* item,char key) {
   const RARITY_BAND* bands;
   Int32              i;
 
-  bands = (key == 'g' || change_rarity_fix == 'Y') ? get_bands : pack_bands;
+  bands = (key == 'g') ? get_bands : pack_bands;
+  if (change_rarity_fix == 'A') bands = get_bands;
+  if (change_rarity_fix == 'B') bands = pack_bands;
+  if (change_rarity_fix == 'C') bands = band_c;
 
   for (i=0; i<NUM_BANDS; i++)
     if (item->rarity > bands[i].above && item->rarity <= bands[i].most) stats.counts[bands[i].tally]++;
