@@ -93,6 +93,17 @@ void square_name(Int32 value,char* name,Int32* color) {
     }
   }
 
+/* With the Improved Interface preference an overworld town or dungeon square is named as the place it leads to */
+static void name_place(Int32 x,Int32 y,char* name) {
+  char* place;
+
+  if (improved_interface != 'Y' || in_upland != 'Y') return;
+  if (player.map[x][y] != 5 && player.map[x][y] != 11) return;
+
+  place = link_name(player.region,x,y);
+  if (place != NULL) strcpy(name,place);
+  }
+
 void view(Int32 floor) {
   Int32  i = 0,x,y;
   Int32  key;
@@ -162,6 +173,7 @@ void view(Int32 floor) {
     if (los(player.x,player.y,x+player.map_x,y+player.map_y,'Y')) {
       color = CLR_YELLOW;
       square_name(player.map[x+player.map_x][y+player.map_y],buffer,&color);
+      name_place(x+player.map_x,y+player.map_y,buffer);
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||
         (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||
         (player.map[x+player.map_x][y+player.map_y] > 399 && player.map[x+player.map_x][y+player.map_y] < 500)) {

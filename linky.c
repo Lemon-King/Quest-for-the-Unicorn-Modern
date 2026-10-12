@@ -23,3 +23,13 @@ Int32 link_y(Int32 i) {
 
   return links[i].y;
   }
+
+/* The name of the town or dungeon at x,y on region's overworld map, or NULL */
+char* link_name(Int32 region,Int32 x,Int32 y) {
+  Int32 i;
+
+  for (i=0; links[i].region < 90; i++)
+    if (links[i].region == region && links[i].x == x && link_y(i) == y) return links[i].name;
+
+  return NULL;
+  }

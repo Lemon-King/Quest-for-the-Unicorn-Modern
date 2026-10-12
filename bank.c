@@ -19,19 +19,6 @@ static void draw_account_option(MENU* menu,Int32 row,Int32 line) {
   draw_menu_text(menu,line,account_options[row],"");
   }
 
-static char* find_name(Int32 r,Int32 x,Int32 y) {
-  Int32 i;
-  i = 0;
-  while (i >= 0) {
-    if (links[i].region == r &&
-        links[i].x == x &&
-        links[i].y == y) return links[i].name;
-    i++;
-    if (links[i].region > 90) i = -1;
-    }
-  return NULL;
-  }
-
 static void show_top(char* name,MENU* menu) {
   Int32 i;
   Int32 l;
@@ -48,7 +35,7 @@ static void show_top(char* name,MENU* menu) {
   l = 8; textcolor(2);
   for (i=0; i<5; i++) {
     if (player.houses[i].region != 0) {
-      gotoxy(15,l); txt_write(find_name(player.houses[i].region,
+      gotoxy(15,l); txt_write(link_name(player.houses[i].region,
                                         player.houses[i].rx,
                                         player.houses[i].ry));
       sprintf(buffer,"%.0f",player.houses[i].mortgage);

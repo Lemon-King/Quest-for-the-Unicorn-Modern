@@ -1298,6 +1298,7 @@ extern Int32 trophy_counter(Int32 trophy,Int32 slot);
 extern void tick_polymorph(void);
 extern char is_valley_of_fear(Int32 i);
 extern Int32 link_y(Int32 i);
+extern char* link_name(Int32 region,Int32 x,Int32 y);
 extern void show_floor_item(void);
 extern Int32 ship_region(void);
 extern void track_ship(void);
