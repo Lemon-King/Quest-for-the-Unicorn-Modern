@@ -53,6 +53,7 @@ LINK Int32 NO_OF_MONSTERS;
 #define GATEWAY_X             80
 #define GATEWAY_Y             78
 #define MESSAGE_HEIGHT        12
+#define MAX_MSG               60              /* Lines the message log keeps; NUM_MSG never shows more */
 
 
 /*
@@ -1004,8 +1005,8 @@ LINK char               restock;
 LINK char               loadname[80];
 LINK char               backupname[80];
 LINK char               graphics;
-LINK char               messages[60][80];
-LINK Int32                msg_clr[60];
+LINK char               messages[MAX_MSG][80];
+LINK Int32                msg_clr[MAX_MSG];
 LINK STATS_REC          stats;
 LINK Int32                recipe_start;
 LINK Int32                heroicMode;

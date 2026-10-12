@@ -220,6 +220,9 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   smap_offset_x = screen_width - 219;
   smap_offset_y = screen_height - 239;
   NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
+
+  /* A canvas over 1100 pixels tall has room for more lines than the log keeps; past them it wrote over the spellbook */
+  if (NUM_MSG > MAX_MSG) NUM_MSG = MAX_MSG;
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;
   trophy_count = 0;
