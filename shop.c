@@ -12,6 +12,25 @@
 
 #define SHOP_ROWS      18
 #define SHOP_KEYS      "(8/2) Select   (ENTER) Buy   (I) Info   (ESC) Leave"
+#define CARD_KEYS      "(8/2) Select   (ENTER) Buy   (ESC) Leave"
+#define CARD_COLUMN    48
+#define CARD_WIDTH     33
+
+/* The item's name in the list, with its charges when they fit in width */
+static void goods_name(Int32 i,Int32 width,char* name) {
+  Int32 j;
+  char buffer[16];
+
+  strcpy(name,shop_items[i].name);
+  sprintf(buffer," [%d]",shop_items[i].charges);
+  if (shop_items[i].charges > 0 && (Int32)(strlen(name) + strlen(buffer)) <= width) strcat(name,buffer);
+  for (j=0; j<strlen(name); j++)
+    if (name[j] == '_') name[j] = ' ';
+  }
+
+static void goods_price(Int32 i,char* price) {
+  sprintf(price,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
+  }
 
 static void draw_spell(Int32 i,Int32 line) {
   Int32 j;
@@ -36,29 +55,22 @@ static void draw_spell(Int32 i,Int32 line) {
   txt_write(name);
 
   gotoxy(col+50,line);
-  sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
+  goods_price(i,buffer);
   txt_write(buffer);
   }
 
 static void draw_item(Int32 i,Int32 line) {
-  Int32 j;
-  char buffer[80];
   char name[80];
+  char price[16];
 
-  strcpy(name,shop_items[i].name);
-  if (shop_items[i].charges > 0) {
-    sprintf(buffer," [%d]",shop_items[i].charges);
-    strcat(name,buffer);
-    }
-  for (j=0; j<strlen(name); j++)
-    if (name[j] == '_') name[j] = ' ';
+  goods_name(i,sizeof(name) - 1,name);
+  goods_price(i,price);
 
   gotoxy(18,line);
   txt_write(name);
 
   gotoxy(55,line);
-  sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
-  txt_write(buffer);
+  txt_write(price);
   }
 
 /* Item i's row, covering the row before it */
@@ -191,9 +203,39 @@ static void buy(OBJECT_REC item) {
   haggle(buy_price(item_cost(&item)),item);
   }
 
+/* A row of the goods: a spell as without the preference, an item by its name and price */
 static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
-  textcolor(menu->color);
-  draw_goods(*(Int32*)menu->screen,row,line);
+  char name[80];
+  char price[16];
+
+  if (*(Int32*)menu->screen == SHOP_SPEL) {
+    textcolor(menu->color);
+    draw_goods(SHOP_SPEL,row,line);
+    return;
+    }
+
+  goods_name(row,menu_label_width(menu),name);
+  goods_price(row,price);
+  draw_menu_text(menu,line,name,price);
+  }
+
+/* The selected item's card beside the list, as (I) shows it */
+static void show_card(MENU* menu) {
+  OBJECT_REC item;
+  char       blank[CARD_WIDTH + 1];
+  Int32      line;
+
+  sprintf(blank,"%*s",CARD_WIDTH,"");
+  for (line=menu->rows.line + 1; line<=menu->rows.line + menu->rows.shown; line++) {
+    gotoxy(CARD_COLUMN,line);
+    txt_write(blank);
+    }
+
+  if (n_shop_items == 0) return;
+
+  item = shop_items[menu->row];
+  item.flags |= OF_IDENT;
+  draw_item_card(&item,CARD_COLUMN,menu->rows.line + 1);
   }
 
 static void show_menu_screen(char* name,MENU* menu) {
@@ -202,23 +244,36 @@ static void show_menu_screen(char* name,MENU* menu) {
   ask_which();
   }
 
-/* The shop with the Cursor Menus preference: the goods are one list, without letters */
+/* The shop with the Cursor Menus preference: the goods are one list, without letters. Items are listed on the left,
+   with the selected one's card on the right; spells keep their wide rows and show their card with (I). */
 static void shop_menu(char* name,Int32 shop_type) {
-  MENU menu = { .rows = { .shown = SHOP_ROWS, .line = 2 }, .color = 14, .keys = SHOP_KEYS, .keys_line = 24,
-                .draw_row = draw_goods_row, .screen = &shop_type };
-  char key;
+  MENU  menu = { .rows = { .shown = SHOP_ROWS, .line = 2 }, .color = 14, .keys = SHOP_KEYS, .keys_line = 24,
+                 .draw_row = draw_goods_row, .screen = &shop_type };
+  Int32 cards;
+  char  key;
 
-  menu.column = (shop_type == SHOP_SPEL) ? 8 : 14;
-  menu.rows.more_column = (shop_type == SHOP_SPEL) ? 62 : 55;
+  cards = (shop_type != SHOP_SPEL);
+  if (cards) {
+    menu.column = 2;
+    menu.value_column = 39;
+    menu.rows.more_column = 39;
+    menu.keys = CARD_KEYS;
+    }
+  else {
+    menu.column = 8;
+    menu.rows.more_column = 62;
+    }
+
   fit_menu(&menu,n_shop_items);
   show_menu_screen(name,&menu);
 
   key = 0;
   while (key != 27 && key != '0') {
+    if (cards) show_card(&menu);
     key = menu_key(&menu);
     if (n_shop_items == 0) continue;
 
-    if (key == 'I') {
+    if (key == 'I' && !cards) {
       show_info(&(shop_items[menu.row]));
       show_menu_screen(name,&menu);
       }

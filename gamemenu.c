@@ -344,10 +344,6 @@ static void draw_command(MENU* menu,Int32 row,Int32 line) {
   draw_menu_text_in(menu,line,command->label,keys,command->enabled ? command->color : 8);
   }
 
-static void draw_choice(MENU* menu,Int32 row,Int32 line) {
-  draw_menu_text(menu,line,((char**)menu->screen)[row],"");
-  }
-
 /* A saved game and its character's level */
 static void draw_game(MENU* menu,Int32 row,Int32 line) {
   SAVED_GAME* game;
@@ -388,7 +384,7 @@ static Int32 confirm_overwrite(char* name) {
   char heading[LABEL_WIDTH + 8];
 
   sprintf(heading,"Overwrite %.*s?",LABEL_WIDTH - 10,name);
-  open_panel(&menu,2,draw_choice,overwrite_choices);
+  open_panel(&menu,2,draw_menu_choice,overwrite_choices);
   menu.row = 1;
   show_panel(&menu,heading);
 
@@ -467,7 +463,7 @@ static Int32 save_choice(char* heading) {
   char  name[sizeof(loadname)];
   Int32 row;
 
-  open_panel(&menu,3,draw_choice,save_choices);
+  open_panel(&menu,3,draw_menu_choice,save_choices);
   row = -2;
   while (row == -2) {
     show_panel(&menu,heading);

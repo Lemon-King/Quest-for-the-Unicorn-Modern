@@ -1307,12 +1307,18 @@ extern void draw_list_more(SCROLL_LIST* list);
 extern Int32 list_arrow_width(SCROLL_LIST* list);
 extern void draw_list_arrow(SCROLL_LIST* list,Int32 column,Int32 line,Int32 selected);
 extern void fit_menu(MENU* menu,Int32 count);
+extern void write_centred(Int32 line,Int32 color,char* text);
+extern void draw_menu_keys(char* keys,Int32 line);
 extern void draw_menu(MENU* menu);
+extern Int32 menu_label_width(MENU* menu);
 extern void draw_menu_text(MENU* menu,Int32 line,char* label,char* value);
 extern void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color);
+extern void draw_menu_choice(MENU* menu,Int32 row,Int32 line);
 extern char menu_key(MENU* menu);
 extern Int32 menu_choice(MENU* menu);
 extern char menu_number(MENU* menu);
+extern Int32 ask_choice(Int32 column,Int32 line,Int32 color,char** choices,Int32 count,Int32 row);
+extern char ask_action(Int32 column,Int32 line,Int32 color,char* action,char* cancel,Int32 row);
 extern Int32 open_tab_menu(void);
 extern Int32 merchant_beside(void);
 extern void clear_messages(void);
@@ -1615,6 +1621,7 @@ extern void make_assassin();
 extern Int32 check_class_change(Int32 class);
 
 extern void data_card(OBJECT_REC* it);
+extern void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line);
 extern char* base_name(char* buffer,OBJECT_REC* item);
 
 extern Int32 get_skill(Int32 num);

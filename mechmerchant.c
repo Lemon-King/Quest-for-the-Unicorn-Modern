@@ -174,9 +174,12 @@ void mech_merchant() {
           key = inkey();
           }
         else {
-          gotoxy(15,21); textcolor(10);
-          txt_write("Do you wish to identify it ? ");
-          key = inkey();
+          if (cursor_menus == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
+          else {
+            gotoxy(15,21); textcolor(10);
+            txt_write("Do you wish to identify it ? ");
+            key = inkey();
+            }
           if (key == 'y' || key == 'Y') {
             sub_gold(price);
             pItem->flags |= OF_IDENT;
@@ -205,11 +208,14 @@ void mech_merchant() {
           gotoxy(22,20);
           sprintf(buffer,"I offer you %.0f",price);
           txt_write(buffer);
-          gotoxy(22,21); textcolor(15);
-          txt_write("Do you wish to sell ?");
-          key = inkey();
-          while (key != 'Y' && key != 'y' &&
-                 key != 'N' && key != 'n') key = inkey();
+          if (cursor_menus == 'Y') key = ask_action(22,21,15,"Sell","Keep",1);
+          else {
+            gotoxy(22,21); textcolor(15);
+            txt_write("Do you wish to sell ?");
+            key = inkey();
+            while (key != 'Y' && key != 'y' &&
+                   key != 'N' && key != 'n') key = inkey();
+            }
           if (key == 'Y' || key == 'y') {
             player.pack[i].otype = O_NONE;
             add_gold(price);
@@ -241,9 +247,12 @@ void mech_merchant() {
             key=inkey();
             }
           else {
-            gotoxy(15,21); textcolor(10);
-            txt_write("Do you wish to identify it ? ");
-            key = inkey();
+            if (cursor_menus == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
+            else {
+              gotoxy(15,21); textcolor(10);
+              txt_write("Do you wish to identify it ? ");
+              key = inkey();
+              }
             if (key == 'y' || key == 'Y') {
               sub_gold(price);
               player.pack[i].flags |= OF_IDENT;
@@ -286,8 +295,11 @@ void mech_merchant() {
           }
         sprintf(buffer,"%.0f",price);
         txt_write(buffer);
-        gotoxy(15,22); txt_write("Do you wish to sell it ?");
-        key = inkey();
+        if (cursor_menus == 'Y') key = ask_action(15,22,9,"Sell","Keep",0);
+        else {
+          gotoxy(15,22); txt_write("Do you wish to sell it ?");
+          key = inkey();
+          }
         if (key == 'Y' || key == 'y') {
           add_gold(price);
           pItem->otype = O_NONE;

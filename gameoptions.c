@@ -571,9 +571,7 @@ static void draw_screen(char* title, char rules_editable) {
   Int32 g;
 
   textmode(3);
-  textcolor(12);
-  gotoxy(41 - strlen(title) / 2, 1);
-  txt_write(title);
+  write_centred(1,12,title);
 
   textcolor(11);
   for (g=0; g<NUM_GROUPS; g++) {

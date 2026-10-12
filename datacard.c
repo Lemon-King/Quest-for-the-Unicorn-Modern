@@ -74,25 +74,19 @@ void get_attribute_name(char* buffer,Int32 ench) {
   strcat(buffer,plus);
   }
 
-void data_card(OBJECT_REC* item) {
-  Int32 i;
-  char key;
+/* The card's text with the name at column and line: the kind and rarity under it, then what the item does, and its
+   value at the foot */
+void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
   char buffer[128];
   char buffer2[128];
-  Int32 line;
+  Int32 fact;
   Int32 control;
   Int32 amount;
   double price;
-  if (item->otype == O_NONE) return;
   base_name(buffer,item);
-  textcolor(7); gotoxy(20,5);   txt_write("+--------------------------------+");
-  textcolor(7); gotoxy(20,18);  txt_write("+--------------------------------+");
-  for (i=6; i<18; i++) {
-    textcolor(7); gotoxy(20,i); txt_write("|                                |");
-    }
   itemColor(item);
-  gotoxy(22,6); txt_write(buffer);
-  gotoxy(22,7);
+  gotoxy(column,line); txt_write(buffer);
+  gotoxy(column,line+1);
   textcolor(7);
   switch (item->otype) {
     case O_EDGE: txt_write("Edge Weapon"); break;
@@ -127,22 +121,22 @@ void data_card(OBJECT_REC* item) {
   if (item->flags & OF_IDENT) {
     if (item->effect == E_LGCY) {
       strcpy(buffer,"Legacy");
-      gotoxy(44,7); txt_write(buffer);
+      gotoxy(column+22,line+1); txt_write(buffer);
       }
     else {
-      if (abs(item->rarity) > 2500) { gotoxy(46,7);                             txt_write("Common"); }
-      if (abs(item->rarity) > 500 && abs(item->rarity) <= 2500) { gotoxy(44,7); txt_write("Uncommon"); }
-      if (abs(item->rarity) > 100 && abs(item->rarity) <= 500) { gotoxy(48,7);  txt_write("Rare"); }
-      if (abs(item->rarity) > 5 && abs(item->rarity) <= 100) { gotoxy(43,7);   txt_write("Very Rare"); }
-      if (abs(item->rarity) > 0 && abs(item->rarity) <= 5) { gotoxy(42,7);     txt_write("Ultra Rare"); }
+      if (abs(item->rarity) > 2500) { gotoxy(column+24,line+1);                             txt_write("Common"); }
+      if (abs(item->rarity) > 500 && abs(item->rarity) <= 2500) { gotoxy(column+22,line+1); txt_write("Uncommon"); }
+      if (abs(item->rarity) > 100 && abs(item->rarity) <= 500) { gotoxy(column+26,line+1);  txt_write("Rare"); }
+      if (abs(item->rarity) > 5 && abs(item->rarity) <= 100) { gotoxy(column+21,line+1);   txt_write("Very Rare"); }
+      if (abs(item->rarity) > 0 && abs(item->rarity) <= 5) { gotoxy(column+20,line+1);     txt_write("Ultra Rare"); }
       }
     }
   else {
-    gotoxy(45,7); txt_write("Unknown");
+    gotoxy(column+23,line+1); txt_write("Unknown");
     }
 
   if (item->flags & OF_IDENT) {
-    line = 8;
+    fact = line + 2;
     strcpy(buffer,"");
     switch (item->otype) {
       case O_EDGE:
@@ -160,17 +154,21 @@ void data_card(OBJECT_REC* item) {
                    break;
       }
     if (strlen(buffer) > 0) {
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     strcpy(buffer,"");
     switch (item->effect) {
-      case E_SPEL:sprintf(buffer,"%s Lvl: %d Mana: %d",classes[spells[item->control].allign-1].name,
-                                                       spells[item->control].level,
-                                                       spells[item->control].mana);
-                  gotoxy(22,line++);
+      case E_SPEL:sprintf(buffer,"Class: %s",classes[spells[item->control].allign-1].name);
+                  gotoxy(column,fact++);
                   txt_write(buffer);
-                  show_spell(item->control,20,7,line+1);
+                  sprintf(buffer,"Level: %d",spells[item->control].level);
+                  gotoxy(column,fact++);
+                  txt_write(buffer);
+                  sprintf(buffer,"Mana: %d",spells[item->control].mana);
+                  gotoxy(column,fact++);
+                  txt_write(buffer);
+                  show_spell(item->control,column-2,line+1,fact+1);
                   textcolor(7);
                   strcpy(buffer,"");
                   break;
@@ -318,7 +316,7 @@ void data_card(OBJECT_REC* item) {
 
 
     if (strlen(buffer) > 0) {
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->effect == E_INTR) {
@@ -366,7 +364,7 @@ void data_card(OBJECT_REC* item) {
         case 41: strcpy(buffer,"Resist Poison"); break;
         case 42: strcpy(buffer,"Walk on Water"); break;
         }
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 0) {
@@ -374,7 +372,7 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[0]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 1) {
@@ -382,7 +380,7 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[1]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 2) {
@@ -390,14 +388,14 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[2]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_enchantments > 0) {
       if (item->enchantments[0] != 0) {
         get_attribute_name(buffer2,item->enchantments[0]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
@@ -405,7 +403,7 @@ void data_card(OBJECT_REC* item) {
       if (item->enchantments[1] != 0) {
         get_attribute_name(buffer2,item->enchantments[1]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
@@ -413,16 +411,28 @@ void data_card(OBJECT_REC* item) {
       if (item->enchantments[2] != 0) {
         get_attribute_name(buffer2,item->enchantments[2]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
     price = item->cost;
     if (item->charges > 0) price += (item->charges * item->costp);
     sprintf(buffer,"Base Value: %.0f gold",price);
-    gotoxy(22,17);
+    gotoxy(column,line+11);
     txt_write(buffer);
     }
+  }
+
+void data_card(OBJECT_REC* item) {
+  Int32 i;
+  char key;
+  if (item->otype == O_NONE) return;
+  textcolor(7); gotoxy(20,5);   txt_write("+--------------------------------+");
+  textcolor(7); gotoxy(20,18);  txt_write("+--------------------------------+");
+  for (i=6; i<18; i++) {
+    textcolor(7); gotoxy(20,i); txt_write("|                                |");
+    }
+  draw_item_card(item,22,6);
   key = 0;
   while (key != 13 && key != 27) key = inkey();
   }

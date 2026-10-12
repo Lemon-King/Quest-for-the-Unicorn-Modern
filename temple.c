@@ -10,6 +10,23 @@
 
 #include "header.h"
 
+#define NUM_MODES       3
+
+/* Picked by 'N', 'H' and 'E' without the Cursor Menus preference */
+static char* mode_names[NUM_MODES] = { "Normal", "Heroic", "Epic" };
+
+/* The key of the game mode picked with the cursor; ESC picks none */
+static char pick_mode(void) {
+  Int32 row;
+
+  gotoxy(10,16); txt_write("Select game mode:");
+
+  row = -1;
+  while (row < 0) row = ask_choice(12,17,7,mode_names,NUM_MODES,0);
+
+  return "NHE"[row];
+  }
+
 void rebirth() {
   char key;
   clrscr();
@@ -18,8 +35,11 @@ void rebirth() {
   gotoxy(10,11); txt_write("and your world grows dark.  You hear a voice in the void, ");
   gotoxy(10,12); txt_write("\"You are reborn, your journey begins anew.\"");
   textcolor(7);
-  gotoxy(10,16); txt_write("Select game mode: <N>ormal, <H>eroic, <E>pic: ");
   key = ' ';
+  if (cursor_menus == 'Y') key = pick_mode();
+  else {
+    gotoxy(10,16); txt_write("Select game mode: <N>ormal, <H>eroic, <E>pic: ");
+    }
   while (key != 'N' && key != 'H' && key != 'E') {
     key = inkey();
     if (key == 'n') key = 'N';
@@ -195,11 +215,14 @@ void temple(char* name) {
         if (cost > get_gold()) {
           gotoxy(27,14); textcolor(12); txt_write("You do not have enough gold!!!");
           } else {
-          gotoxy(27,15); textcolor(11); txt_write("Do you wish to uncurse it? (Y/N)");
-          while (key != 'Y' && key != 'N') {
-            key = inkey();
-            if (key == 'n') key = 'N';
-            if (key == 'y') key = 'Y';
+          if (cursor_menus == 'Y') key = ask_action(27,15,11,"Remove the Curse","Leave it",0);
+          else {
+            gotoxy(27,15); textcolor(11); txt_write("Do you wish to uncurse it? (Y/N)");
+            while (key != 'Y' && key != 'N') {
+              key = inkey();
+              if (key == 'n') key = 'N';
+              if (key == 'y') key = 'Y';
+              }
             }
           if (key == 'Y') {
             item->plus = 0;
@@ -220,12 +243,15 @@ void temple(char* name) {
       }
     if (player.gateway == 'F' && player.effect[PE_HEROIC] >=0 && key == '6') {
       textcolor(12); gotoxy(22,14); txt_write("WARNING! Rebirth will clear your game!");
-      textcolor(15); gotoxy(18,16); txt_write("Do you wish to perform the Ritual of Rebirth?");
       key = ' ';
-      while (key != 'Y' && key != 'N') {
-        key = inkey();
-        if (key == 'n') key = 'N';
-        if (key == 'y') key = 'Y';
+      if (cursor_menus == 'Y') key = ask_action(18,16,15,"Perform the Ritual of Rebirth","Cancel",1);
+      else {
+        textcolor(15); gotoxy(18,16); txt_write("Do you wish to perform the Ritual of Rebirth?");
+        while (key != 'Y' && key != 'N') {
+          key = inkey();
+          if (key == 'n') key = 'N';
+          if (key == 'y') key = 'Y';
+          }
         }
       if (key == 'Y') { rebirth(); exitf = 7; key = '0'; }
       }
@@ -233,11 +259,14 @@ void temple(char* name) {
       if (player.effect[PE_HEROIC] == 0) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Casual!"); }
       if (player.effect[PE_HEROIC] == 2) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Normal!"); }
       if (player.effect[PE_HEROIC] == 4) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Heroic!"); }
-      textcolor(15); gotoxy(18,16); txt_write("Do you wish to become one with nature?");
-      while (key != 'Y' && key != 'N') {
-        key = inkey();
-        if (key == 'n') key = 'N';
-        if (key == 'y') key = 'Y';
+      if (cursor_menus == 'Y') key = ask_action(18,16,15,"Become one with Nature","Cancel",1);
+      else {
+        textcolor(15); gotoxy(18,16); txt_write("Do you wish to become one with nature?");
+        while (key != 'Y' && key != 'N') {
+          key = inkey();
+          if (key == 'n') key = 'N';
+          if (key == 'y') key = 'Y';
+          }
         }
       if (key == 'Y') {
         if (player.effect[PE_HEROIC] == 0) player.effect[PE_HEROIC] = -1;

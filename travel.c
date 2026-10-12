@@ -249,8 +249,11 @@ void travel(char* name) {
       gotoxy(20,ndest+6); textcolor(14);
       sprintf(buffer,"A trip to %s will cost %d",dest[option],cost[option]);
       txt_write(buffer);
-      gotoxy(20,ndest+7); txt_write("Do you wish to go ?");
-      key = inkey();
+      if (cursor_menus == 'Y') key = ask_action(20,ndest+7,14,"Take the trip","Cancel",0);
+      else {
+        gotoxy(20,ndest+7); txt_write("Do you wish to go ?");
+        key = inkey();
+        }
       if (key == 'N' || key == 'n') {
         gotoxy(20,ndest+6); textcolor(14);
         txt_write("                                                  ");

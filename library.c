@@ -10,6 +10,19 @@
 
 #include "header.h"
 
+#define NUM_SEARCHES    3
+
+/* Picked by 'L', 'G' and 'Q' without the Cursor Menus preference */
+static char* search_names[NUM_SEARCHES] = { "Search for Lore", "Search for General Information", "Leave" };
+
+/* The key of the search picked with the cursor, or 'Q' for ESC */
+static char pick_search(void) {
+  Int32 row;
+
+  row = ask_choice(10,5,14,search_names,NUM_SEARCHES,0);
+
+  return (row >= 0) ? "LGQ"[row] : 'Q';
+  }
 
 static void library_display_msg(Int32 msg,char ext) {
   MESSAGE general;
@@ -27,11 +40,14 @@ static void show_top(char* name) {
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
   textcolor(14);
-  gotoxy(10,5);
-  txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+  if (cursor_menus != 'Y') {
+    gotoxy(10,5);
+    txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+    }
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
+  if (cursor_menus == 'Y') draw_menu_keys(MENU_KEYS,25);
   } /* void show_top()() */
 
 void library(char* name) {
@@ -43,12 +59,15 @@ void library(char* name) {
   flag = ' ';
   while (flag == ' ') {
     show_top(name);
-    key = inkey();
+    key = (cursor_menus == 'Y') ? pick_search() : inkey();
     if (key == 'Q' || key == 'q') flag = '*';
     if (key == 'L' || key == 'l') {
-      gotoxy(10,7); textcolor(3);
-      txt_write("Cost of Lore search is 500 Gold Pieces, Continue Search ?");
-      key = inkey();
+      if (cursor_menus == 'Y') key = ask_action(10,7,3,"Pay 500 gold to search","Cancel",0);
+      else {
+        gotoxy(10,7); textcolor(3);
+        txt_write("Cost of Lore search is 500 Gold Pieces, Continue Search ?");
+        key = inkey();
+        }
       if (key == 'Y' || key == 'y') {
         if (get_gold()<500) {
           gotoxy(10,9); textcolor(12);
@@ -79,9 +98,12 @@ void library(char* name) {
         }
       }
     else if (key == 'G' || key == 'g') {
-      gotoxy(10,7); textcolor(3);
-      txt_write("Cost of General search is 100 Gold Pieces, Continue Search ?");
-      key = inkey();
+      if (cursor_menus == 'Y') key = ask_action(10,7,3,"Pay 100 gold to search","Cancel",0);
+      else {
+        gotoxy(10,7); textcolor(3);
+        txt_write("Cost of General search is 100 Gold Pieces, Continue Search ?");
+        key = inkey();
+        }
       if (key == 'Y' || key == 'y') {
         if (get_gold()<100) {
           gotoxy(10,9); textcolor(12);

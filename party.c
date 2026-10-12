@@ -11,6 +11,10 @@
 #include "header.h"
 
 #define PARTY_KEYS "<8/2>Select, <ENTER>Statistics, <D>ismiss, <C>hange order, <O>rders, <Q>uit"
+#define NUM_ORDERS 2
+
+/* Picked by 'a' and 'e' without the Cursor Menus preference */
+static char* order_names[NUM_ORDERS] = { "Attack", "Evade" };
 
 static void draw_member(MENU* menu,Int32 row,Int32 line) {
   NPC_REC* member;
@@ -115,11 +119,26 @@ static void show_member_stats(Int32 member) {
   txt_write(buffer);
   }
 
+/* Clears the key tips while a sub menu shows, as they are not its keys */
+static void hide_keys(MENU* menu) {
+  char blank[81];
+
+  sprintf(blank,"%*s",(Int32)strlen(menu->keys),"");
+  draw_menu_keys(blank,menu->keys_line);
+  }
+
+/* A question centred in place of the key tips */
+static void show_question(MENU* menu,Int32 color,char* question) {
+  hide_keys(menu);
+  write_centred(menu->keys_line,color,question);
+  }
+
 static void show_member(Int32 member,MENU* menu) {
   Int32  i;
   char key;
   char flag;
   char buffer[80];
+  char training[80];
   double cost;
 
   flag = ' ';
@@ -133,17 +152,24 @@ static void show_member(Int32 member,MENU* menu) {
     if (player.in_city == 'Y') {
       cost = (needed(player.party[member].level + 1) - player.party[member].exp);
       if (cost <= get_gold()) {
-        gotoxy(20,23);
-        sprintf(buffer,"Training to next level will cost %.0f Gold",cost);
-        txt_write(buffer);
-        gotoxy(20,24); txt_write("Do you wish to train member ?");
+        sprintf(training,"Training to next level will cost %.0f Gold",cost);
         sprintf(buffer,"Gold=%d",get_gold());
-        gotoxy(34,25); txt_write(buffer);
         key = ' ';
-        while (key != 'Y' && key != 'N') {
-          key = inkey();
-          if (key == 'n') key = 'N';
-          if (key == 'y') key = 'Y';
+        if (cursor_menus == 'Y') {
+          write_centred(25,14,buffer);
+          show_question(menu,14,training);
+          key = ask_action(0,menu->keys_line + 1,14,"Train","Cancel",0);
+          draw_menu_keys(menu->keys,menu->keys_line);
+          }
+        else {
+          gotoxy(20,23); txt_write(training);
+          gotoxy(20,24); txt_write("Do you wish to train member ?");
+          gotoxy(34,25); txt_write(buffer);
+          while (key != 'Y' && key != 'N') {
+            key = inkey();
+            if (key == 'n') key = 'N';
+            if (key == 'y') key = 'Y';
+            }
           }
         if (key == 'Y') {
           player.party[member].exp += cost + 1;
@@ -167,13 +193,27 @@ static void show_member(Int32 member,MENU* menu) {
     }
   }
 
-static void set_orders(Int32 member) {
+/* The key of the orders picked with the cursor, which starts on the member's own; ESC keeps them */
+static char pick_orders(Int32 member,MENU* menu) {
+  Int32 row;
+
+  hide_keys(menu);
+  row = ask_choice(0,menu->keys_line,10,order_names,NUM_ORDERS,(player.party[member].special & MS_EVADE) ? 1 : 0);
+  draw_menu_keys(menu->keys,menu->keys_line);
+
+  return (row >= 0) ? "ae"[row] : 0;
+  }
+
+static void set_orders(Int32 member,MENU* menu) {
   char key;
 
-  gotoxy(20,14); textcolor(10);
-  txt_write("<A>ttack, or <E>vade ?");
   key = ' ';
-  while (key != 'a' && key != 'e') key = inkey();
+  if (cursor_menus == 'Y') key = pick_orders(member,menu);
+  else {
+    gotoxy(20,14); textcolor(10);
+    txt_write("<A>ttack, or <E>vade ?");
+    while (key != 'a' && key != 'e') key = inkey();
+    }
 
   switch (key) {
     case 'a':player.party[member].special &= (~MS_EVADE);
@@ -198,15 +238,11 @@ static void swap_members(Int32 i,Int32 j,MENU* menu) {
 
 /* The member picked with the cursor after the question, or 0 when ESC backs out */
 static Int32 pick_member(MENU* menu,char* question) {
-  char  blank[48];
   Int32 row;
 
-  gotoxy(20,14); textcolor(10);
-  txt_write(question);
+  show_question(menu,10,question);
   row = menu_choice(menu);
-
-  sprintf(blank,"%*s",(Int32)strlen(question),"");
-  gotoxy(20,14); txt_write(blank);
+  draw_menu_keys(menu->keys,menu->keys_line);
 
   return row + 1;
   }
@@ -218,19 +254,19 @@ static void party_command(MENU* menu,char key) {
 
   if (key == 13 && player.party[menu->row + 1].hp != 0) show_member(menu->row + 1,menu);
   if (key == 'd' && player.in_city == 'Y') {
-    member = pick_member(menu,"Dismiss who ?");
+    member = pick_member(menu,"Dismiss who?");
     if (member > 0) {
       player.party[member].hp = 0;
       party_show_top(menu);
       }
     }
   if (key == 'o') {
-    member = pick_member(menu,"Change whos orders ?");
-    if (member > 0) set_orders(member);
+    member = pick_member(menu,"Change who's orders?");
+    if (member > 0) set_orders(member,menu);
     }
   if (key == 'c') {
-    member = pick_member(menu,"Change whos position ?");
-    other = (member > 0) ? pick_member(menu,"Change to what position ?") : 0;
+    member = pick_member(menu,"Change who's position?");
+    other = (member > 0) ? pick_member(menu,"Change to what position?") : 0;
     if (other > 0) swap_members(member,other,menu);
     }
   }
@@ -296,7 +332,7 @@ void party() {
                  case '4':i = 4; break;
                  case '5':i = 5; break;
                  }
-               set_orders(i);
+               set_orders(i,&menu);
                break;
       case 'c':gotoxy(20,14); textcolor(10);
                txt_write("Change whos position ?");

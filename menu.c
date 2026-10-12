@@ -13,6 +13,8 @@
 
 #include "header.h"
 
+#define CENTRE_COLUMN   41    /* text starting half its length before this is centred on the 80 columns */
+
 /* The label's column, a space after the arrow */
 static Int32 label_column(MENU* menu) {
   return menu->column + list_arrow_width(&menu->rows) + 1;
@@ -38,14 +40,26 @@ void fit_menu(MENU* menu,Int32 count) {
   if (menu->rows.top < 0) menu->rows.top = 0;
   }
 
+void write_centred(Int32 line,Int32 color,char* text) {
+  textcolor(color);
+  gotoxy(CENTRE_COLUMN - (Int32)strlen(text) / 2,line);
+  txt_write(text);
+  }
+
+/* The keys a menu takes, centred on line */
+void draw_menu_keys(char* keys,Int32 line) {
+  write_centred(line,3,keys);
+  }
+
 void draw_menu(MENU* menu) {
-  if (menu->keys != NULL) {
-    textcolor(3);
-    gotoxy(41 - (Int32)strlen(menu->keys) / 2,menu->keys_line);
-    txt_write(menu->keys);
-    }
+  if (menu->keys != NULL) draw_menu_keys(menu->keys,menu->keys_line);
 
   draw_shown_rows(menu);
+  }
+
+/* The columns a label has before its value */
+Int32 menu_label_width(MENU* menu) {
+  return menu->value_column - label_column(menu);
   }
 
 /* A row's label after the arrow, padded or cut to its value so the row covers the one it replaces, then the value */
@@ -53,7 +67,7 @@ void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color
   char  text[81];
   Int32 width;
 
-  width = menu->value_column - label_column(menu);
+  width = menu_label_width(menu);
   sprintf(text,"%-*.*s",width,width,label);
 
   list_text(&menu->rows,label_column(menu),line,color,text);
@@ -62,6 +76,11 @@ void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color
 
 void draw_menu_text(MENU* menu,Int32 line,char* label,char* value) {
   draw_menu_text_in(menu,line,label,value,menu->color);
+  }
+
+/* A row of a menu whose screen is its labels */
+void draw_menu_choice(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,((char**)menu->screen)[row],"");
   }
 
 /* Shows the cursor and reads a key, moving the cursor for the keys that move it. Returns the key. */
@@ -112,4 +131,40 @@ char menu_number(MENU* menu) {
   row = menu_choice(menu);
 
   return (row >= 0) ? (char)('1' + row) : 27;
+  }
+
+/* Asks with the choices as a menu from column and line down, in place of a question, and erases them once one is
+   picked; column 0 centres the menu. The cursor starts on row. Returns the row picked, or -1 for ESC. */
+Int32 ask_choice(Int32 column,Int32 line,Int32 color,char** choices,Int32 count,Int32 row) {
+  MENU  menu = { .rows = { .shown = count, .line = line - 1 }, .row = row, .column = column, .color = color,
+                 .draw_row = draw_menu_choice, .screen = choices };
+  char  blank[81];
+  Int32 width;
+  Int32 i;
+
+  width = 0;
+  for (i=0; i<count; i++)
+    if ((Int32)strlen(choices[i]) > width) width = (Int32)strlen(choices[i]);
+
+  if (column == 0) menu.column = CENTRE_COLUMN - (list_arrow_width(&menu.rows) + 1 + width) / 2;
+  menu.value_column = label_column(&menu) + width;
+  fit_menu(&menu,count);
+  draw_menu(&menu);
+
+  row = menu_choice(&menu);
+
+  sprintf(blank,"%*s",menu.value_column - menu.column,"");
+  for (i=0; i<count; i++) list_text(&menu.rows,menu.column,line + i,color,blank);
+
+  return row;
+  }
+
+/* The key a Y/N question would read: 'Y' when the action is picked, 'N' for cancel or ESC */
+char ask_action(Int32 column,Int32 line,Int32 color,char* action,char* cancel,Int32 row) {
+  char* choices[2];
+
+  choices[0] = action;
+  choices[1] = cancel;
+
+  return (ask_choice(column,line,color,choices,2,row) == 0) ? 'Y' : 'N';
   }
