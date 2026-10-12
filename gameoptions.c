@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      17
-#define NUM_CHANGES    61
+#define NUM_CHANGES    62
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -355,7 +355,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_nether_core, .on = 'Y', .off = 'N', .strict = 'S', .key = "NetherCore" },
   { .label = "Ship Improvements",
     .help  = "Ships sail into and out of port towns, stay in harbours, never cover a town",
-    .kind  = OPT_SWITCH, .flag = &change_ship_improvements, .on = 'Y', .off = 'N', .key = "ShipImprovements" }
+    .kind  = OPT_SWITCH, .flag = &change_ship_improvements, .on = 'Y', .off = 'N', .key = "ShipImprovements" },
+  { .label = "Rarity Fix",
+    .help  = "Packing an item (G) counts its rarity as getting it (g) and its card do",
+    .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'Y', .off = 'N', .key = "RarityFix" }
   };
 
 static Int32 mode_index(Int32 mode) {

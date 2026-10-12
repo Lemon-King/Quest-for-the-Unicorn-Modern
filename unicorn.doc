@@ -604,6 +604,14 @@
                               on a mountain, a ship docked on a town's
                               square hides the town, and boarding and
                               leaving a ship take E
+         Rarity Fix           Packing an item from the floor with G
+                              counts it towards your finds (the Eye
+                              for Treasure, Treasure Hunter and Lucky!
+                              trophies and the statistics) by the
+                              rarity its card names, as picking it up
+                              with g does.  Off, packing counts some
+                              items as commoner than their card says,
+                              and some not at all
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:

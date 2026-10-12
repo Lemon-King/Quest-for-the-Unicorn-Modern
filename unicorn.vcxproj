@@ -110,6 +110,7 @@
     <ClCompile Include="convertrecipe.c" />
     <ClCompile Include="converttime.c" />
     <ClCompile Include="copymap.c" />
+    <ClCompile Include="countrarity.c" />
     <ClCompile Include="crafting.c" />
     <ClCompile Include="darttrap.c" />
     <ClCompile Include="datacard.c" />

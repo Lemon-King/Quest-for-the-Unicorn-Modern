@@ -437,11 +437,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
   if (it != NULL) {
     if ((it->flags & OF_COUNTED) == 0) {
       if (it->otype == O_CARD) stats.counts[it->control] |= (1 << it->control2);
-      if (it->rarity > 2500) stats.counts[STAT_COMMONS]++;
-      if (it->rarity > 500 && it->rarity <= 2500) stats.counts[STAT_UNCOMMONS]++;
-      if (it->rarity > 100 && it->rarity <= 500) stats.counts[STAT_RARES]++;
-      if (it->rarity > 5 && it->rarity <= 100) stats.counts[STAT_VERY_RARES]++;
-      if (it->rarity > 0 && it->rarity <= 5) stats.counts[STAT_ULTRA_RARES]++;
+      count_rarity(it,'g');
 
       if (it->effect != E_MUTA && it->level >= 0 && it->plus >= 0) {
         if (it->rarity > 2500) it->flags |= OF_IDENT;

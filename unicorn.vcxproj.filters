@@ -168,6 +168,9 @@
     <ClCompile Include="copymap.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="countrarity.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="crafting.c">
       <Filter>Game</Filter>
     </ClCompile>
