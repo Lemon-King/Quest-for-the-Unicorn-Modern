@@ -617,6 +617,10 @@
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
          Enhanced Sprites     Show the tile under creatures and items
+         Show Mount           On the overworld, show the mount you ride
+                              in place of your own figure: the first
+                              flying mount in your party when you fly,
+                              otherwise the first mount
          Floor Item Names     Show the name of the item you stand on in the
                               bottom right, in its inventory colour
          Gothic Scrolls       Write scrolls, lore and the library in

@@ -187,6 +187,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_hit = 200;
   delay_trap = 100;
   enhanced_sprites = 'N';
+  show_mount = 'Y';
   floor_item_names = 'Y';
   gothic_scrolls = 'N';
   cursor_menus = 'Y';
