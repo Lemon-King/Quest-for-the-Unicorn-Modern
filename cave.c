@@ -1423,7 +1423,7 @@ void cave() {
       }
     show_floor_item();
     }
-  hide_floor_item();
+  hide_bottom_name();
   /* ************************************ */
   /* ***** End of main dungeon loop ***** */
   /* ************************************ */

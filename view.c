@@ -13,6 +13,7 @@
 void view(Int32 floor) {
   Int32  i = 0,x,y;
   Int32  key;
+  Int32  color;
   char buffer[255];
 /*
   char mflag;
@@ -32,8 +33,8 @@ void view(Int32 floor) {
   x = target_x;
   y = target_y;
 */
-  hide_floor_item();
-  setcolor(15);
+  hide_bottom_name();
+  color = 15;
   msg("Press <ESC> to end view mode",15);
   x = player.x - player.map_x;
   y = player.y - player.map_y;
@@ -75,9 +76,8 @@ void view(Int32 floor) {
 
       }
     show_sprite(x,y,100);
-    outtextxyclr(screen_width-160, screen_height-15,"                                      ");
     if (los(player.x,player.y,x+player.map_x,y+player.map_y,'Y')) {
-      setcolor(CLR_YELLOW);
+      color = CLR_YELLOW;
       strcpy(buffer,"");
     if (player.map[x+player.map_x][y+player.map_y] >= 600 && player.map[x+player.map_x][y+player.map_y] <= 699) strcpy(buffer,"Forbidding");
     else if (player.map[x+player.map_x][y+player.map_y] >= 700 && player.map[x+player.map_x][y+player.map_y] <= 799) strcpy(buffer,"Phase Door");
@@ -154,7 +154,7 @@ void view(Int32 floor) {
       strcpy(buffer,"Lore Book");
     else if (player.map[x+player.map_x][y+player.map_y] >= 1000) {
       strcpy(buffer,get_name(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
-      setcolor(item_color(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
+      color = item_color(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000]));
       }
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||
         (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||
@@ -245,11 +245,10 @@ void view(Int32 floor) {
         }
       }
       } else strcpy(buffer,"Out of sight");
-    if (strlen(buffer) > 38) buffer[38] = 0;
-    outtextxyclr(screen_width-160, screen_height-15,buffer);
+    show_bottom_name(buffer,color);
     flush();
     }
-  outtextxyclr(screen_width-160, screen_height-15,"                                      ");
+  hide_bottom_name();
   show_spot(x + player.map_x,y + player.map_y);
   show_player();
   }

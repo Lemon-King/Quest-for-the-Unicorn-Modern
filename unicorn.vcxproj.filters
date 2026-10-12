@@ -75,6 +75,9 @@
     <ClCompile Include="blindtrap.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="bottomname.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="builddungeon.c">
       <Filter>Game</Filter>
     </ClCompile>

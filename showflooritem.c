@@ -10,30 +10,12 @@
 
 #include "header.h"
 
-#define NAME_WIDTH  38                /* view mode's longest name; 20 fit where it starts */
-
-static char shown = 'N';
-
-/* Clears the floor item's name if one is showing */
-void hide_floor_item(void) {
-  char blank[NAME_WIDTH+1];
-
-  if (shown != 'Y') return;
-
-  sprintf(blank, "%*s", NAME_WIDTH, "");
-  outtextxyclr(screen_width - 8*NAME_WIDTH, screen_height-15, blank);
-  shown = 'N';
-  }
-
-/* The name of the item the player stands on, in its inventory colour, where view mode shows names. A long name moves
-   left to end at the screen's edge. */
+/* The name of the item the player stands on, in its inventory colour, where view mode shows names */
 void show_floor_item(void) {
   Int32       value;
-  Int32       x;
   OBJECT_REC* item;
-  char        buffer[NAME_WIDTH+1];
 
-  hide_floor_item();
+  hide_bottom_name();
   if (floor_item_names != 'Y') return;
 
   value = player.map[player.x][player.y];
@@ -42,13 +24,5 @@ void show_floor_item(void) {
   item = &(player.map_objects[value-1000]);
   if (item->otype == O_NONE) return;
 
-  strncpy(buffer, get_name(item), NAME_WIDTH);
-  buffer[NAME_WIDTH] = 0;
-
-  x = screen_width - 160;
-  if (x + 8*(Int32)strlen(buffer) > screen_width) x = screen_width - 8*(Int32)strlen(buffer);
-
-  setcolor(item_color(item));
-  outtextxyclr(x, screen_height-15, buffer);
-  shown = 'Y';
+  show_bottom_name(get_name(item), item_color(item));
   }

@@ -1047,7 +1047,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       }
     show_floor_item();
     } /* while (exitf == 0) */
-  hide_floor_item();
+  hide_bottom_name();
   exitf = 0;
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {

@@ -79,6 +79,7 @@
     <ClCompile Include="bank.c" />
     <ClCompile Include="blind.c" />
     <ClCompile Include="blindtrap.c" />
+    <ClCompile Include="bottomname.c" />
     <ClCompile Include="builddungeon.c" />
     <ClCompile Include="buyhouse.c" />
     <ClCompile Include="buyprice.c" />
