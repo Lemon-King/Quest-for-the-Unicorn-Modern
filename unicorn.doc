@@ -1135,14 +1135,24 @@
      the list scrolls like the options screen, and <Enter> runs the
      command, which types the keys shown beside it.  At the top, in green,
      is everything around you: the merchant or house beside you, each
-     creature beside you to talk to or attack, each door to open or close,
-     and the items, chests, torches, lore, stairs and altars under you or
-     a step away (a step away, the command steps there first).  On the
-     upland it offers the town or dungeon you stand on or beside, by its
-     name, and your ship.  The common commands follow, then Save and Load.
-     A name too long for a line, such as a shop's, carries on over the
-     next, and the cursor moves from command to command.  Off, <Tab> is
-     not one of the game's commands, as before.
+     creature beside you to talk to, attack or ask to join, each door to
+     open, close or jam, and the items, chests, torches, lore, stairs and
+     altars under you or a step away (a step away, the command steps there
+     first).  Pick Up puts an item in your pack, as <G> does, or takes it
+     up as <g> does when only that counts it or the pack is full: a
+     trading card joins your collection, and a dungeon's treasure on its
+     last level completes the quest.  On the upland it offers the town or
+     dungeon you stand on or beside, by its name, and your ship.  The
+     common commands follow, then Save, Load, and Save and Exit.  A name
+     too long for a line, such as a shop's, carries on over the next, and
+     the cursor moves from command to command.  Off, <Tab> is not one of
+     the game's commands, as before.
+
+       Some commands show only when they can be used: Fire when your main
+     hand holds a bow, wand or energy weapon, Throw for a dagger or
+     throwing weapon in either hand, Heal when you are wounded, Transcribe
+     a spell when you carry a spell scroll, and Say a Word of Power when
+     a word may be said.
 
        Spells, in a town or dungeon when you know a spell, asks for one
      to cast as <m> does.  With the Easy Spells preference it lists the
@@ -1155,7 +1165,8 @@
      for a name, and asks Yes or No before replacing a game already saved
      under it.  Load saves the same way, then lists the saved games, the
      newest first, and the one you pick starts at once.  For a character
-     with permadeath both are greyed out.
+     with permadeath both are greyed out.  Save and Exit saves and leaves
+     the game, as <X> does.
 
      Persistant Dungeons
      ===================
@@ -1213,6 +1224,13 @@
 
        When using any of these commands you will receive a prompt for which
      gear slot is to be used, 0 through 9.
+
+       With the Improved Interface preference, <G> in the inventory shows
+     the ten gear slots beside your equipment.  The slot under the cursor
+     shows what it keeps in place of your equipment, an item you no
+     longer carry in grey, and <Enter> equips the slot, or just its
+     weapons, or saves your gear, or just your weapons, into it.  <G> or
+     <ESC> goes back to the inventory.
 
      Charged Throwables
      ==================

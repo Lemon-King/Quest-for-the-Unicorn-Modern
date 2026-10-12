@@ -9,13 +9,14 @@
 */
 
 /* The Tab Menu, for the Improved Interface preference: in the box that shows the log, the commands for where you
-   stand, then the common ones, then Save and Load. A command types its keys into the game, as if pressed. */
+   stand, then the common ones, then Save, Load and Save and Exit. A command types its keys into the game, as if
+   pressed. */
 
 #include "header.h"
 
 #include <ctype.h>
 
-#define MAX_COMMANDS    48     /* in the menu itself */
+#define MAX_COMMANDS    64     /* in the menu itself */
 #define LINES_EACH       4     /* lines a label may wrap onto */
 #define LABEL_WIDTH     20
 #define LABEL_LENGTH    72
@@ -176,20 +177,34 @@ static void add_spells(COMMANDS* commands) {
   if (command != NULL && easy_spells == 'Y') command->action = DO_SPELLS;
   }
 
+/* "<verb> <name>", with any underscores in the name as spaces */
+static void verb_label(char* verb,char* name,char* label) {
+  Int32 i;
+
+  sprintf(label,"%s %.60s",verb,name);
+  for (i=0; label[i] != 0; i++)
+    if (label[i] == '_') label[i] = ' ';
+  }
+
 /* "<verb> <name>", with the name the look command gives a square of this value. Returns the rarity colour of an item's
    name, or 0 for a square that holds no item. */
 static Int32 named_label(char* verb,Int32 value,char* label) {
   char  name[80];
   Int32 color;
-  Int32 i;
 
   color = 0;
   square_name(value,name,&color);
-  sprintf(label,"%s %.60s",verb,name);
-  for (i=0; label[i] != 0; i++)
-    if (label[i] == '_') label[i] = ' ';
+  verb_label(verb,name,label);
 
   return color;
+  }
+
+/* "<verb> <item>", with the item's name in its rarity colour */
+static void add_item_command(COMMANDS* commands,char* verb,OBJECT_REC* item,char* keys) {
+  char label[LABEL_LENGTH];
+
+  verb_label(verb,get_name(item),label);
+  color_item_name(add_command(commands,label,keys,COMMON_COLOR),verb,item_color(item));
   }
 
 /* The square in direction d, as x,y; returns 0 off the map's edge */
@@ -244,8 +259,43 @@ static COMMAND* add_step(COMMANDS* commands,char* label,Int32 d,char then) {
   return add_command(commands,label,keys,CONTEXT_COLOR);
   }
 
-/* A creature beside you: talk to a friendly one, which t cannot reach beside a merchant, and attack the others by
-   stepping into them */
+/* The key Pick Up types: g, which takes the item through the inventory, for what only its first pickup there counts
+   (a dungeon's quest treasure completes the quest, a trading card joins the collection) and to hold an item when the
+   pack is full; G packs anything else */
+static char pick_up_key(OBJECT_REC* item) {
+  if (item->otype == O_CARD || pack_count() == PACK_SLOTS) return 'g';
+
+  /* The Gateway has no row in links[] for is_quest_treasure() to read */
+  if (player.dungeon_number != GATEWAY_DUNGEON && is_quest_treasure(item)) return 'g';
+
+  return 'G';
+  }
+
+/* "Pick Up <item>" for the floor item of this map value, a step away in direction d, or underfoot when d is -1 */
+static void add_pick_up(COMMANDS* commands,Int32 value,Int32 d) {
+  COMMAND* command;
+  char     label[80];
+  char     keys[2];
+  Int32    color;
+
+  keys[0] = pick_up_key(&(player.map_objects[value - 1000]));
+  keys[1] = 0;
+  color = named_label("Pick Up",value,label);
+
+  if (d >= 0) command = add_step(commands,label,d,keys[0]);
+    else command = add_command(commands,label,keys,CONTEXT_COLOR);
+  color_item_name(command,"Pick Up",color);
+  }
+
+/* A pacified creature, or a friendly one not yet asked, which j may ask to join the party */
+static Int32 may_join(NPC_REC* creature) {
+  if ((creature->special2 & M2_PACIFIED) != 0) return 1;
+
+  return ((creature->special & MS_FRIENDLY) != 0 && (creature->special & MS_JOIN) == 0);
+  }
+
+/* A creature beside you: talk to a friendly one, which t cannot reach beside a merchant, attack the others by stepping
+   into them, and ask one that may join */
 static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
   NPC_REC* creature;
   char     label[80];
@@ -255,22 +305,25 @@ static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
   if (creature == NULL) return;
 
   if ((creature->special & MS_FRIENDLY) != 0) {
-    if (!can_talk) return;
     sprintf(label,"Talk to %s",creature->name);
-    add_aimed(commands,label,'t',item_dir(-1),d);
-    return;
+    if (can_talk) add_aimed(commands,label,'t',item_dir(-1),d);
+    }
+  else {
+    sprintf(label,"Attack %s",creature->name);
+    keys[0] = step_key[d];
+    keys[1] = 0;
+    add_command(commands,label,keys,CONTEXT_COLOR);
     }
 
-  sprintf(label,"Attack %s",creature->name);
-  keys[0] = step_key[d];
-  keys[1] = 0;
-  add_command(commands,label,keys,CONTEXT_COLOR);
+  if (may_join(creature)) {
+    sprintf(label,"Ask %s to join",creature->name);
+    add_aimed(commands,label,'j',item_dir(-1),d);
+    }
   }
 
 /* Whatever stands or lies on the square in direction d */
 static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
   Int32 value;
-  Int32 color;
   char  label[80];
 
   value = value_beside(d);
@@ -278,10 +331,11 @@ static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
   if (value < 0) add_creature(commands,d,can_talk);
   if (value == 22 || value == 33) add_aimed(commands,"Open the door",'o',door_to_open(),d);
   if (value == 23) add_aimed(commands,"Close the door",'c',item_dir(23),d);
-  if (value >= 1000 && value < 2000) {
-    color = named_label("Pack",value,label);
-    color_item_name(add_step(commands,label,d,'G'),"Pack",color);
-    }
+
+  /* J always asks which way, and jams only a closed door north, south, east or west */
+  if (value == 22 && d % 2 == 0) add_aimed(commands,"Jam the door",'J',' ',d);
+
+  if (value >= 1000 && value < 2000) add_pick_up(commands,value,d);
   if (value >= 2000 && value < 3000) {
     named_label("Read",value,label);
     add_step(commands,label,d,'g');
@@ -301,14 +355,10 @@ static void list_beside(COMMANDS* commands,Int32 d,Int32 can_talk) {
 
 static void list_underfoot(COMMANDS* commands) {
   Int32 here;
-  Int32 color;
   char  label[80];
 
   here = player.map[player.x][player.y];
-  if (here >= 1000 && here < 2000) {
-    color = named_label("Pack",here,label);
-    color_item_name(add_command(commands,label,"G",CONTEXT_COLOR),"Pack",color);
-    }
+  if (here >= 1000 && here < 2000) add_pick_up(commands,here,-1);
   if (here >= 2000 && here < 3000) {
     named_label("Read",here,label);
     add_command(commands,label,"g",CONTEXT_COLOR);
@@ -340,12 +390,46 @@ static void list_surroundings(COMMANDS* commands) {
   for (d=0; d<8; d++) list_beside(commands,d,shop < 0);
   }
 
+/* A bow, wand or projected energy weapon in the main hand, which f fires */
+static Int32 can_fire(void) {
+  Int32 type;
+
+  type = player.invent[I_RHND].otype;
+
+  return (type == O_BOW || type == O_WAND || type == O_PROJ);
+  }
+
+/* A dagger or throwing weapon, which - and = throw from the left and right hands */
+static Int32 is_thrown(OBJECT_REC* item) {
+  return (item->otype == O_DAGR || item->otype == O_THRN);
+  }
+
+static Int32 holds_spell_scroll(void) {
+  Int32 i;
+
+  for (i=I_RHND; i<=I_HELM; i++)
+    if (player.invent[i].otype == O_SCRL && player.invent[i].effect == E_SPEL) return 1;
+
+  return 0;
+  }
+
+/* The commands your gear, spells and wounds allow */
+static void list_abilities(COMMANDS* commands) {
+  if (knows_a_spell()) add_spells(commands);
+  if (can_fire()) add_item_command(commands,"Fire",&(player.invent[I_RHND]),"f");
+  if (is_thrown(&(player.invent[I_LHND]))) add_item_command(commands,"Throw",&(player.invent[I_LHND]),"-");
+  if (is_thrown(&(player.invent[I_RHND]))) add_item_command(commands,"Throw",&(player.invent[I_RHND]),"=");
+  if (player.chp < player.mhp) add_command(commands,"Heal","h",COMMON_COLOR);
+  if (holds_spell_scroll()) add_command(commands,"Transcribe a spell","x",COMMON_COLOR);
+  if (word_counter == 0 && player.gateway != '*') add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
+  }
+
 static void list_town_and_dungeon(COMMANDS* commands) {
   list_surroundings(commands);
 
   add_command(commands,"Inventory","i",COMMON_COLOR);
   add_command(commands,"Use an item","u",COMMON_COLOR);
-  if (knows_a_spell()) add_spells(commands);
+  list_abilities(commands);
   add_command(commands,"Eat","e",COMMON_COLOR);
   if (player.in_city != 'Y') {
     add_command(commands,"Search","s",COMMON_COLOR);
@@ -428,6 +512,7 @@ static void list_commands(COMMANDS* commands) {
 
   add_action(commands,"Save",DO_SAVE);
   add_action(commands,"Load",DO_LOAD);
+  add_command(commands,"Save and Exit","X",COMMON_COLOR);
   }
 
 /* The log's box as a list: its first line holds the heading, its last the "more v" marker */

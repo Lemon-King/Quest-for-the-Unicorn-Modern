@@ -259,6 +259,8 @@ LINK Int32 NO_OF_MONSTERS;
 #define I_BOOT               18
 #define I_HELM               19
 
+#define PACK_SLOTS           32              /* pack[1] to pack[32] */
+
 /* Object effects */
 #define E_NONE                0
 #define E_HEAL                1
@@ -1434,6 +1436,8 @@ extern void print_rec();
 /* uinvent.c */
 extern char* get_name(OBJECT_REC* item);
 extern OBJECT_REC* inventory(OBJECT_REC* item);
+extern Int32 pack_count(void);
+extern Int32 is_quest_treasure(OBJECT_REC* item);
 extern char inv_valid(OBJECT_REC* item,Int32 line);
 extern void show_inventory(OBJECT_REC* item);
 extern void compress();
@@ -1785,6 +1789,7 @@ extern void save_level();
 extern void load_level();
 extern void save_gear(char weapons_only,Int32 slot);
 extern void load_gear(char weapons_only,Int32 slot);
+extern OBJECT_REC* find_gear(char* name);
 extern char item_dir(Int32 item);
 extern void help_item(char* msg,Int32 col_width,Int32 num_rows,Int32 indent);
 extern void convert_recipe(OBJECT_REC* item);
