@@ -548,19 +548,31 @@ static void join(Int32 i) {
   check_mount();
   } /* void join() */
 
+/* Whether the player stands beside shops[i]'s counter. A shop belongs to the town at its region and overworld square;
+   the village shops are listed under region 0 at (0,0) instead, and a village keeps the overworld region and square it
+   was entered from, so without the Village Shops change they never open. */
+static char beside_shop(Int32 i) {
+  char here;
+
+  if (change_village_shops == 'Y' && in_village() == 'Y') here = (shops[i].region == 0) ? 'Y' : 'N';
+    else here = (player.region == shops[i].region &&
+                 player.land_x == shops[i].rx &&
+                 player.land_y == shops[i].ry) ? 'Y' : 'N';
+  if (here == 'N') return 'N';
+
+  return (player.x >= shops[i].cx-1 &&
+          player.x <= shops[i].cx+1 &&
+          player.y >= shops[i].cy-1 &&
+          player.y <= shops[i].cy+1) ? 'Y' : 'N';
+  }
+
 static Int32 is_merchant(void) {
   Int32 flag;
   Int32 i;
   flag = -1;
   i = 0;
   while (flag == -1) {
-    if (player.region == shops[i].region &&
-        player.land_x == shops[i].rx &&
-        player.land_y == shops[i].ry &&
-        player.x >= shops[i].cx-1 &&
-        player.x <= shops[i].cx+1 &&
-        player.y >= shops[i].cy-1 &&
-        player.y <= shops[i].cy+1) flag = i;
+    if (beside_shop(i) == 'Y') flag = i;
     if (shops[i].shoptype == 999) flag = -2;
     i++;
     }
@@ -653,13 +665,7 @@ static void buy_item(Int32* i) {
   flag = -1;
   *i = 0;
   while (flag == -1) {
-    if (player.region == shops[*i].region &&
-        player.land_x == shops[*i].rx &&
-        player.land_y == shops[*i].ry &&
-        player.x >= shops[*i].cx-1 &&
-        player.x <= shops[*i].cx+1 &&
-        player.y >= shops[*i].cy-1 &&
-        player.y <= shops[*i].cy+1) flag = *i;
+    if (beside_shop(*i) == 'Y') flag = *i;
     if (shops[*i].shoptype == 999) flag = -2;
     (*i)++;
     }

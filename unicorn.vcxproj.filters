@@ -399,6 +399,9 @@
     <ClCompile Include="inventory.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="invillage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="invvalid.c">
       <Filter>Game</Filter>
     </ClCompile>

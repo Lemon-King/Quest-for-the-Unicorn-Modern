@@ -181,6 +181,10 @@ void shop(char* name,Int32 shop_type) {
     case SHOP_RECP: get_shop_recipes(); break;
     }
 
+  /* With the Village Shops change a village's weapons and armour are only levels 1 and 2 */
+  if (change_village_shops == 'Y' && in_village() == 'Y' && (shop_type == SHOP_WEAP || shop_type == SHOP_ARMR))
+    limit_shop_items(2);
+
   page_size = 18;
   offset = 0;
   show_top(name,shop_type,offset,page_size);

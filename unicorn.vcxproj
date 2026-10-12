@@ -187,6 +187,7 @@
     <ClCompile Include="inroom.c" />
     <ClCompile Include="insight.c" />
     <ClCompile Include="inventory.c" />
+    <ClCompile Include="invillage.c" />
     <ClCompile Include="invvalid.c" />
     <ClCompile Include="intrinsiccount.c" />
     <ClCompile Include="isweapon.c" />

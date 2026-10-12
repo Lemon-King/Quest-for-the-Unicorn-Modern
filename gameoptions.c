@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    58
+#define NUM_CHANGES    59
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -329,7 +329,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_town_completion, .on = 'Y', .off = 'N', .key = "TownCompletion" },
   { .label = "Town Trophy",
     .help  = "Completionist counts dungeons only; visiting every town earns Sightseer",
-    .kind  = OPT_SWITCH, .flag = &change_town_trophy, .on = 'Y', .off = 'N', .key = "TownTrophy" }
+    .kind  = OPT_SWITCH, .flag = &change_town_trophy, .on = 'Y', .off = 'N', .key = "TownTrophy" },
+  { .label = "Village Shops",
+    .help  = "Village merchants sell; their weapons and armour are only levels 1 and 2",
+    .kind  = OPT_SWITCH, .flag = &change_village_shops, .on = 'Y', .off = 'N', .key = "VillageShops" }
   };
 
 static Int32 mode_index(Int32 mode) {

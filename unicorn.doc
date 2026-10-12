@@ -572,6 +572,10 @@
                               its own, Sightseer (towns are marked by
                               Town Completion).  Off, Completionist
                               wants the towns too
+         Village Shops        Every village's four merchants trade:
+                              weapons and armour of levels 1 and 2,
+                              supplies, and an inn.  Off, they never
+                              open
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
