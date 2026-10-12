@@ -1136,6 +1136,7 @@ LINK char               change_lore_books;
 LINK char               change_hunting_skill;
 LINK char               change_free_upland_keys;
 LINK char               change_shaman_legendaries;
+LINK char               change_platinum_dragon_mount;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
