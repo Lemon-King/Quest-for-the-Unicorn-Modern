@@ -13,6 +13,17 @@
 #define SHOP_ROWS      18
 #define SHOP_KEYS      "(8/2) Select   (ENTER) Buy   (I) Info   (ESC) Leave"
 #define CARD_KEYS      "(8/2) Select   (ENTER) Buy   (ESC) Leave"
+#define GOODS_COLOR    14
+
+/* Goods i as the shop knows it, identified, so its name shows in its rarity colour */
+static OBJECT_REC known_goods(Int32 i) {
+  OBJECT_REC item;
+
+  item = shop_items[i];
+  item.flags |= OF_IDENT;
+
+  return item;
+  }
 
 /* The item's name in the list, with its charges when they fit in width */
 static void goods_name(Int32 i,Int32 width,char* name) {
@@ -31,11 +42,13 @@ static void goods_price(Int32 i,char* price) {
   }
 
 static void draw_spell(Int32 i,Int32 line) {
+  OBJECT_REC known;
   Int32 j;
   Int32 col;
   char buffer[80];
   char name[80];
 
+  known = known_goods(i);
   col = 12;
   strcpy(name,shop_items[i].name);
   for (j=0; j<strlen(name); j++)
@@ -50,7 +63,7 @@ static void draw_spell(Int32 i,Int32 line) {
   txt_write(buffer);
 
   gotoxy(col+20,line);
-  txt_write(name);
+  write_named("",&known,name,"",GOODS_COLOR);
 
   gotoxy(col+50,line);
   goods_price(i,buffer);
@@ -58,14 +71,16 @@ static void draw_spell(Int32 i,Int32 line) {
   }
 
 static void draw_item(Int32 i,Int32 line) {
+  OBJECT_REC known;
   char name[80];
   char price[16];
 
+  known = known_goods(i);
   goods_name(i,sizeof(name) - 1,name);
   goods_price(i,price);
 
   gotoxy(18,line);
-  txt_write(name);
+  write_named("",&known,name,"",GOODS_COLOR);
 
   gotoxy(55,line);
   txt_write(price);
@@ -190,11 +205,11 @@ static void show_info(OBJECT_REC* item) {
   data_card(item);
   }
 
-/* The goods are known, so their names show in their rarity colours */
-static void buy(OBJECT_REC item) {
-  char name[80];
+static void buy(Int32 i) {
+  OBJECT_REC item;
+  char       name[80];
 
-  item.flags |= OF_IDENT;
+  item = known_goods(i);
   gotoxy(15,22); txt_write("                                                  ");
   gotoxy(15,22);
   write_named("Ah, a ",&item,base_name(name,&item)," A fine selection!",12);
@@ -204,8 +219,9 @@ static void buy(OBJECT_REC item) {
 
 /* A row of the goods: a spell as without the preference, an item by its name and price */
 static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
-  char name[80];
-  char price[16];
+  OBJECT_REC known;
+  char       name[80];
+  char       price[16];
 
   if (*(Int32*)menu->screen == SHOP_SPEL) {
     textcolor(menu->color);
@@ -213,19 +229,17 @@ static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
     return;
     }
 
+  known = known_goods(row);
   goods_name(row,menu_label_width(menu),name);
   goods_price(row,price);
-  draw_menu_text(menu,line,name,price);
+  draw_menu_item(menu,line,name,item_color(&known),price);
   }
 
 /* The selected item's card beside the list, as (I) shows it */
 static void show_card(MENU* menu) {
   OBJECT_REC item;
 
-  if (n_shop_items > 0) {
-    item = shop_items[menu->row];
-    item.flags |= OF_IDENT;
-    }
+  if (n_shop_items > 0) item = known_goods(menu->row);
 
   draw_card_panel((n_shop_items > 0) ? &item : NULL,menu->rows.line + 1,menu->rows.line + menu->rows.shown);
   }
@@ -270,7 +284,7 @@ static void shop_menu(char* name,Int32 shop_type) {
       show_menu_screen(name,&menu);
       }
     if (key == 13) {
-      buy(shop_items[menu.row]);
+      buy(menu.row);
       show_menu_screen(name,&menu);
       }
     }
@@ -395,7 +409,7 @@ void shop(char* name,Int32 shop_type) {
       ask_which();
       }
     if (key == 13) {
-      buy(shop_items[offset+line]);
+      buy(offset+line);
       show_top(name,shop_type,offset,page_size);
       show_arrows(shop_type,line);
       ask_which();

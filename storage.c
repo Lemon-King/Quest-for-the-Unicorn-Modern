@@ -66,15 +66,13 @@ static void move_stored_item(MENU* menu) {
   STORAGE*   storage;
   OBJECT_REC temp;
   char       name[128];
-  char       question[160];
   Int32      from;
   Int32      to;
 
   storage = menu->screen;
   from = menu->row;
   list_item_name(&(storage->slots[from]),MORE_COLUMN,name);
-  sprintf(question,"Move %s to which slot?",name);
-  show_menu_question(menu,15,question);
+  show_item_question(menu,15,"Move ",&(storage->slots[from]),name," to which slot?");
 
   to = menu_choice(menu);
   if (to >= 0) {

@@ -65,6 +65,16 @@ void show_menu_question(MENU* menu,Int32 color,char* question) {
   write_centred(menu->keys_line,color,question);
   }
 
+/* A question about an item, centred in place of a menu's key tips, with only the item's name in its rarity colour */
+void show_item_question(MENU* menu,Int32 color,char* before,OBJECT_REC* item,char* name,char* after) {
+  Int32 length;
+
+  length = (Int32)(strlen(before) + strlen(name) + strlen(after));
+  hide_menu_keys(menu);
+  gotoxy(CENTRE_COLUMN - length / 2,menu->keys_line);
+  write_named(before,item,name,after,color);
+  }
+
 void draw_menu(MENU* menu) {
   if (menu->keys != NULL) draw_menu_keys(menu->keys,menu->keys_line);
 
@@ -77,15 +87,24 @@ Int32 menu_label_width(MENU* menu) {
   }
 
 /* A row's label after the arrow, padded or cut to its value so the row covers the one it replaces, then the value */
-void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color) {
+static void draw_row_text(MENU* menu,Int32 line,char* label,Int32 label_color,char* value,Int32 value_color) {
   char  text[81];
   Int32 width;
 
   width = menu_label_width(menu);
   sprintf(text,"%-*.*s",width,width,label);
 
-  list_text(&menu->rows,label_column(menu),line,color,text);
-  list_text(&menu->rows,menu->value_column,line,color,value);
+  list_text(&menu->rows,label_column(menu),line,label_color,text);
+  list_text(&menu->rows,menu->value_column,line,value_color,value);
+  }
+
+void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color) {
+  draw_row_text(menu,line,label,color,value,color);
+  }
+
+/* A row naming an item: the name in its rarity colour, name_color, and the value in the menu's colour */
+void draw_menu_item(MENU* menu,Int32 line,char* name,Int32 name_color,char* value) {
+  draw_row_text(menu,line,name,name_color,value,menu->color);
   }
 
 void draw_menu_text(MENU* menu,Int32 line,char* label,char* value) {

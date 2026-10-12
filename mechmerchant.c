@@ -32,7 +32,7 @@ static void draw_mech_row(MENU* menu,Int32 row,Int32 line) {
   mech = menu->screen;
   if (row < mech->count) {
     sprintf(price,"%6.0f",mech_price(&(mech->items[row])));
-    draw_menu_text(menu,line,get_name(&(mech->items[row])),price);
+    draw_menu_item(menu,line,get_name(&(mech->items[row])),item_color(&(mech->items[row])),price);
     }
   else draw_menu_text(menu,line,trades[row - mech->count],"");
   }
@@ -68,8 +68,8 @@ static void show_top(OBJECT_REC* items,MENU* menu) {
       if (items[i].otype != O_NONE) {
         gotoxy(22,pos+2);
         strcpy(buffer2, get_name(&(items[i])));
-        sprintf(buffer,"%2d  %s",pos,buffer2);
-        txt_write(buffer);
+        sprintf(buffer,"%2d  ",pos);
+        write_named(buffer,&(items[i]),buffer2,"",14);
         gotoxy(50,pos+2);
         sprintf(buffer,"%6.0f",mech_price(&(items[i])));
         txt_write(buffer);

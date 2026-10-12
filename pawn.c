@@ -41,7 +41,7 @@ static void draw_pawn_row(MENU* menu,Int32 row,Int32 line) {
     item = &(player.pawn[pawn->city][pawn->slots[row]]);
     pawn_name(item,name);
     sprintf(price,"%6.0f",buy_price(item_cost(item)));
-    draw_menu_text(menu,line,name,price);
+    draw_menu_item(menu,line,name,item_color(item),price);
     }
   else draw_menu_text(menu,line,trades[row - pawn->count],"");
   }
@@ -91,8 +91,8 @@ static void show_top(char* name,byte city,MENU* menu) {
       if (player.pawn[city][i].otype != O_NONE) {
         gotoxy(22,pos+2);
         pawn_name(&(player.pawn[city][i]),buffer2);
-        sprintf(buffer,"%2d  %s",pos,buffer2);
-        txt_write(buffer);
+        sprintf(buffer,"%2d  ",pos);
+        write_named(buffer,&(player.pawn[city][i]),buffer2,"",14);
         gotoxy(50,i+2);
         sprintf(buffer,"%6.0f",buy_price(item_cost(&(player.pawn[city][i]))));
         txt_write(buffer);
