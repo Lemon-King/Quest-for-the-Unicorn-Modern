@@ -1,5 +1,5 @@
                               Quest for the Unicorn
-                                      v 7.0
+                                      v 7.1
                                     4/7/2017
                                        by
                                    Mike Riley
@@ -297,275 +297,44 @@
          Game Mode            Normal, Heroic, Epic or Casual (see below)
          Permadeath           Death is final (see below)
          Dungeon Depth        Levels in each dungeon, 2 to 10
+         Dungeon Scaling      Monsters in dungeons scale to your level
          Monster Count        Spawn size for monsters or groups, 10 to 60
          Arena Combat         On: multi-monster arena combat
                               Off: only bosses
-         Dungeon Scaling      Monsters in dungeons scale to your level
          Full Party Combat    Monsters and party members take full damage
 
        Gameplay changes are listed to the right of the rules.  Each one
      changes how the original game plays, most often to fix a bug.  Like
      the rules, they are chosen on the New Game Options screen and are
      fixed once the character is created.  A new character starts with
-     every change On, and Nether Core at Strict; Off plays as the
+     every change On, and Castle Treasure at Strict; Off plays as the
      original game.  A game saved before a change existed keeps it Off.
      The list scrolls, and "more" marks changes above or below what
      fits on the screen.
 
-         Eshter Spawns        Eshter, the final boss, waits on the fifth
-                              level of the Gateway.  Off, Eshter never
-                              appears, so the game cannot be won
-         Dalek Spawns         Daleks guard the Tardis on the bottom level
-                              of the Den of Horror.  Off, they never
-                              appear
-         Elemental Weapon Damage
-                              A weapon whose physical and elemental
-                              damage are equal deals that damage.  Off,
-                              it deals none
-         Scroll of Charging   Restores the chosen item's charges.  Off,
-                              the game freezes
-         No Negative Amounts  A negative amount typed at a bank, a house
-                              sale or the dice table counts as 0, which
-                              at the dice table means leaving.  Off, it
-                              adds gold
-         Teleport Spell       Moves you to a random spot on a dungeon
-                              level, and fizzles in towns, the upland,
-                              the arena and the Realm of Eshter.  Off,
-                              it spends mana and does nothing
-         Blink Only Blinks    Blink only moves you.  Off, it also casts
-                              Protection
-         Blink Landing        Blink leaves you where it lands.  Off, a
-                              blink near the right or bottom edge of a
-                              level can put you in a wall
-         Sleep Traps          A sleep trap puts you to sleep.  Off, it
-                              never springs
-         Tardis Saves         A save keeps your Tardis destinations.  Off,
-                              loading a game saved with a destination
-                              programmed loses the destinations and the
-                              messages and lore you have read, and in a
-                              town or dungeon puts you at a destination's
-                              coordinates
-         Tardis Descriptions  A Tardis description stops at 31
-                              characters.  Off, a longer one overruns
-                              the game's memory
-         Item Deck            The Item Deck never gives the broken "EOL"
-                              item.  Off, it occasionally does
-         Tripped Card         The Deck of Many Things' Tripped card
-                              takes your own class's hit die.  Off, it
-                              takes the next class's, and a Shaman's is
-                              read from outside the game's data
-         Lore Search          A library or computer search shows and
-                              teaches the message that matched.  Off,
-                              it gives the message after it
-         Library Text         A town library shows its messages in plain
-                              text.  Off, they come out enciphered
-         Arena Assassins      An Assassin keeps its level in arena
-                              combat.  Off, every turn in the arena
-                              starts an Assassin over at level 1
-         Party Joining        A creature that joins your party gets its
-                              party attack, defense and mana.  Off, it
-                              keeps its own, and the party values go to
-                              another slot, often past the party and
-                              into your own data
-         Spell Targets        Blind, sleep and drain spells, and spells
-                              your ring reflects, affect the creature
-                              they hit.  Off, outside the arena they
-                              miss it and change some other record
-         Blast Spells         Nuke, Nova, Word of God, Blizzard,
-                              Conflagration and Electrical Nova spare
-                              anti-magic creatures and cost alignment
-                              only when they hit a friend.  Off, they
-                              hurt most anti-magic creatures, cost
-                              alignment for almost any creature, and
-                              scramble the abilities of those hit
-         Spell Kills          A creature killed by a blast, Super Nova,
-                              Armageddon, a drain or a reflected spell
-                              counts as a kill, can drop loot, and its
-                              exp is shared as for any kill.  Off, you
-                              only get its exp, and killing Eshter this
-                              way does not win the game
-         Thrown Weapons       Thrown rocks and stars that land on an
-                              item do nothing.  Off, the game crashes
-         Poison Kills         A creature that poison kills leaves the
-                              map, and drops its loot, where it died.
-                              Off, it stays standing there, dead, and
-                              the ground under you is changed instead
-         Temple Uncurse       Leaving a temple's Remove Curse without
-                              choosing an item returns to its menu.
-                              Off, the game crashes
-         Ship Purchase        A ship bought from a travel agency is
-                              yours at once, docked in that harbor, so
-                              a second is refused.  Off, it counts as
-                              yours only once you board it and step off,
-                              and each purchase before then costs 2500
-         Pack Weight          The item in the last pack slot counts
-                              toward the weight you carry.  Off, it
-                              weighs nothing
-         Possessions          An item you used up, threw or sold no
-                              longer counts as yours when treasure is
-                              chosen.  Off, until you save and reload,
-                              a unique item you no longer have will not
-                              drop again, and items that need another
-                              item still drop after it is gone
-         Manual of Bodily Health
-                              The Manual of Bodily Health only adds to
-                              your hit points.  Off, it also uses the
-                              Crown of Might, saying the Triad is
-                              incomplete or, with the Triad on, giving
-                              the crown's powers for free
-         Compass              The compass points the right way to and
-                              from the easternmost regions.  Off, it
-                              places them at the west end of the next
-                              row of regions, and can point the wrong
-                              way
-         Gateway Exit         Leaving the Gateway ends its rules, and
-                              its entrance shows again.  Off, every
-                              dungeon after it is built as the Gateway,
-                              until the game is won
+         World Seed           A new world picks from 2 billion dungeon
+                              layouts.  Off, from only 32,767
          New Game Dungeon     A new character's first visit to the
                               Temple of the Forest builds its levels.
                               Off, if it is the first dungeon entered,
                               its levels are empty and you stand in a
                               corner of nothing
-         Words of Power       Rising by a word of power from the first
-                              level of a dungeon takes you out of it,
-                              as the stairs do, and words that sink you,
-                              to the next level or to the bottom, do
-                              nothing in a town.  Off, rising from a
-                              first level freezes the game, and sinking
-                              in a town drops you onto a level of the
-                              last dungeon you were in, or freezes the
-                              game if there is none
-         Sun Stone            Returning to a dungeon by Sun Stone leaves
-                              its levels as they were.  Off, a return to
-                              level 2 or deeper saves the town you came
-                              from over the level above
-         Sun Stone Gateway    A Sun Stone used in the Gateway brings you
-                              back to the Gateway.  Off, the return reads
-                              a place past the end of the game's list,
-                              and leaving the dungeon again can crash
-                              the game
-         Upland Quit          Q in the upland asks before ending the
-                              character, as it does in towns and
-                              dungeons.  Off, it quits at once
-         Ranged Damage        An arrow or thrown weapon rolls for a
-                              critical hit once, and its damage counts
-                              once in your statistics.  Off, it can
-                              critical twice, for four times the damage,
-                              and every hit is counted twice
-         Summon Combat        A monster fighting your summoned creature
-                              hits with its own attack against the
-                              creature's defense, arena monsters go for
-                              it and cannot walk over it, and it finds
-                              its way back to you.  Off, a monster aims
-                              at the wrong defense and hits with the
-                              creature's own attack, and the creature
-                              can lose its way
-         House Storage        A house's storage shows all of its 500
-                              slots, on 13 pages, and you cannot leave
-                              a full house with an item In Air.  Off,
-                              the last 20 slots never show, and an item
-                              In Air is lost when you leave a full house
-         House Buying         Owning a house never stops you buying
-                              another.  Off, owning Goldville as your
-                              first house, Radon as your second,
-                              Nichorville as your third or Talfharin as
-                              your fourth stops every later purchase
-         Shop Boots and Wands Armor shops sell cloth, leather and copper
-                              boots, and magic shops sell the Wands of
-                              Pine, Ceder and Redwood.  Off, no shop
-                              sells boots or wands
-         Arena Exit           ENTER or ESC leaves an arena fight once
-                              every monster is dead.  Off, the only way
-                              out is to walk off the arena's edge
-         Arena Decorations    Trees, rocks and other scenery in an
-                              upland arena land only on open ground.
-                              Off, scenery can land on a monster, which
-                              then cannot be fought, or on a party
-                              member, which sits out the fight
-         Arena Monk Fear      Monks cannot be frightened in the arena
-                              from level 11, as in dungeons.  Off, not
-                              until level 14
-         Mind Shield          A Potion or Scroll of Mind Shield wears
-                              off like the other resistances.  Off, it
-                              lasts forever
-         Meat and Potatoes    The Meat and Potatoes trophy counts the
-                              meat you eat, and meat counts once as a
-                              meal.  Off, meat counts twice as a meal
-                              and 100 potatoes alone earn the trophy
-         World Seed           A new world picks from 2 billion dungeon
-                              layouts.  Off, from only 32,767
-         Arena Timers         Cold, electric and arcane resistance,
-                              blindness, light and polymorph wear off
-                              during arena fights, as in dungeons.
-                              Off, they pause until the fight ends
-         Last Bite            Eating the last bite of a food with e
-                              counts as a meal, as it does with u.
-                              Off, it is not counted
-         Floor Items          Putting an item from the floor straight
-                              into your pack frees its place in the
-                              level's list of floor items, as does
-                              leaving an item on an arena's floor or in
-                              the Realm of Eshter, which is laid out
-                              afresh at each visit, and when that list
-                              is full a slain monster drops nothing
-                              instead of an item.  Off, those items
-                              keep their place, and a full list leaves
-                              a stray tile where the item should have
-                              been
          Quest State          The save remembers which dungeons you
                               have entered, so after a load the
                               compass still lists only the dungeons
                               you have entered or heard of.  Off, a
                               loaded game's compass lists every
                               dungeon
-         Valley of Fear       The Valley of Fear is entered from its
-                              entrance at the end of the canyon south
-                              of the pass, and the compass points
-                              there.  Off, it cannot be entered, the
-                              compass points at the mountains to the
-                              north, and the Completionist trophy does
-                              not count it
-         Sun Stone Fixes      A Sun Stone records only a dungeon level,
-                              not the upland or an arena fight, and
-                              keeps that level as you left it.  It
-                              returns you to the dungeon it holds,
-                              rebuilding it if you went elsewhere,
-                              and does nothing if it holds no level.
-                              Off, a return can land in the last
-                              dungeon you visited, monsters and items
-                              you dealt with are back, and an empty
-                              stone sends you to the Northern Realm
-         Lore Books           Putting a lore book straight into your
-                              pack does nothing; read it with g as
-                              usual.  Off, that can copy an item from
-                              your Portable Hole into your pack and
-                              remove the book until you return to the
-                              level
-         Hunting Skill        Hunting on the upland (h, or s) finds
-                              food more often as your Scouting grows,
-                              the skill it trains.  Off, it goes by
-                              your Mace skill
-         Free Upland Keys     On the upland, keys that only show
-                              something or do nothing pass no time:
-                              help, the record, options, icons, ~,
-                              the Tardis log, Q's question, X, keys
-                              with no use, a step into mountains or
-                              water, and an inventory, item use or
-                              gear set left unchanged.  A blocked step
-                              is not counted as a step taken.  Off,
-                              each one passes an hour or more, eats
-                              food and can bring an encounter
-         Shaman Legendaries   Ayres' Mythical items found by a Shaman
-                              get the Cleric's bonuses, and the weapon
-                              is a mace.  Off, the armour has no
-                              bonuses and the weapon is an edged one
-                              no one can train for
-         Platinum Dragon Mount
-                              A Platinum Dragon bought at Nichorville's
-                              stable carries you and flies, like the
-                              other dragons.  Off, it joins your party
-                              but is no mount
+         Compass              The compass points the right way to and
+                              from the easternmost regions.  Off, it
+                              places them at the west end of the next
+                              row of regions, and can point the wrong
+                              way
+         Lost Entrance        One dungeon is entered from its lost entrance
+                              at the end of a canyon, and the compass
+                              points there.  Off, it cannot be entered, the
+                              compass points at the mountains to the north,
+                              and the Completionist trophy leaves it out
          Town Completion      Entering a town, on foot or by ship, marks
                               it complete in the Quest Log, so the
                               Completionist trophy can be won.  Off,
@@ -576,18 +345,28 @@
                               its own, Sightseer (towns are marked by
                               Town Completion).  Off, Completionist
                               wants the towns too
-         Village Shops        Every village's four merchants trade:
-                              weapons and armour of levels 1 and 2,
-                              supplies, and an inn.  Off, they never
-                              open
-         Nether Core          Castle Eshter, the Gateway's fifth level,
-                              has one Nether Core on its floor at a
-                              time.  Strict: none appears while you own
-                              one; with Possessions Off a core used in
-                              crafting still counts as yours.  A new
-                              character starts at Strict.  Off, every
-                              visit while Eshter lives adds another
-                              core
+         Free Upland Keys     On the upland, keys that only show
+                              something or do nothing pass no time:
+                              help, the record, options, icons, ~,
+                              the travel log (T), Q's question, X, keys
+                              with no use, a step into mountains or
+                              water, and an inventory, item use or
+                              gear set left unchanged.  A blocked step
+                              is not counted as a step taken.  Off,
+                              each one passes an hour or more, eats
+                              food and can bring an encounter
+         Upland Quit          Q in the upland asks before ending the
+                              character, as it does in towns and
+                              dungeons.  Off, it quits at once
+         Hunting Skill        Hunting on the upland (h, or s) finds
+                              food more often as your Scouting grows,
+                              the skill it trains.  Off, it goes by
+                              your Mace skill
+         Ship Purchase        A ship bought from a travel agency is
+                              yours at once, docked in that harbor, so
+                              a second is refused.  Off, it counts as
+                              yours only once you board it and step off,
+                              and each purchase before then costs 2500
          Ship Improvements    Your ship stays in a town's harbour and
                               is there each time you return.  Sailing
                               onto a town with a harbour (Radon,
@@ -604,6 +383,139 @@
                               on a mountain, a ship docked on a town's
                               square hides the town, and boarding and
                               leaving a ship take E
+         Travel Saves         A save keeps a relic's travel destinations.
+                              Off, loading a game saved with a destination
+                              programmed loses the destinations and the
+                              messages and lore you have read, and in a
+                              town or dungeon puts you at a destination's
+                              coordinates
+         Travel Descriptions  A destination's description stops at 31
+                              characters.  Off, a longer one overruns
+                              the game's memory
+         Sleep Traps          A sleep trap puts you to sleep.  Off, it
+                              never springs
+         Words of Power       Rising by a word of power from the first
+                              level of a dungeon takes you out of it,
+                              as the stairs do, and words that sink you,
+                              to the next level or to the bottom, do
+                              nothing in a town.  Off, rising from a
+                              first level freezes the game, and sinking
+                              in a town drops you onto a level of the
+                              last dungeon you were in, or freezes the
+                              game if there is none
+         Final Dungeon Exit   Leaving the final dungeon ends its rules,
+                              and its entrance shows again.  Off, every
+                              dungeon after it is built as the final
+                              dungeon, until the game is won
+         Final Boss Spawns    The final boss waits on the fifth level of
+                              the final dungeon.  Off, it never appears,
+                              so the game cannot be won
+         Den of Horror Guards Guards protect a relic on the bottom level
+                              of the Den of Horror.  Off, they never
+                              appear
+         Castle Treasure      The final boss's castle, the final dungeon's
+                              fifth level, has one treasure of its own on
+                              its floor at a time.  Strict: none appears
+                              while you own one; with Possessions Off one
+                              used in crafting still counts as yours.  A
+                              new character starts at Strict.  Off, every
+                              visit while the final boss lives adds one
+         Sun Stone            Returning to a dungeon by Sun Stone leaves
+                              its levels as they were.  Off, a return to
+                              level 2 or deeper saves the town you came
+                              from over the level above
+         Sun Stone Final Dungeon
+                              A Sun Stone used in the final dungeon brings
+                              you back to it.  Off, the return reads a
+                              place past the end of the game's list, and
+                              leaving the dungeon again can crash the game
+         Sun Stone Fixes      A Sun Stone records only a dungeon level,
+                              not the upland or an arena fight, and
+                              keeps that level as you left it.  It
+                              returns you to the dungeon it holds,
+                              rebuilding it if you went elsewhere,
+                              and does nothing if it holds no level.
+                              Off, a return can land in the last
+                              dungeon you visited, monsters and items
+                              you dealt with are back, and an empty
+                              stone sends you to the Northern Realm
+         Elemental Weapon Damage
+                              A weapon whose physical and elemental
+                              damage are equal deals that damage.  Off,
+                              it deals none
+         Ranged Damage        An arrow or thrown weapon rolls for a
+                              critical hit once, and its damage counts
+                              once in your statistics.  Off, it can
+                              critical twice, for four times the damage,
+                              and every hit is counted twice
+         Thrown Weapons       Thrown rocks and stars that land on an
+                              item do nothing.  Off, the game crashes
+         Poison Kills         A creature that poison kills leaves the
+                              map, and drops its loot, where it died.
+                              Off, it stays standing there, dead, and
+                              the ground under you is changed instead
+         Summon Combat        A monster fighting your summoned creature
+                              hits with its own attack against the
+                              creature's defense, arena monsters go for
+                              it and cannot walk over it, and it finds
+                              its way back to you.  Off, a monster aims
+                              at the wrong defense and hits with the
+                              creature's own attack, and the creature
+                              can lose its way
+         Party Joining        A creature that joins your party gets its
+                              party attack, defense and mana.  Off, it
+                              keeps its own, and the party values go to
+                              another slot, often past the party and
+                              into your own data
+         Teleport Spell       Moves you to a random spot on a dungeon
+                              level, and fizzles in towns, the upland,
+                              the arena and the final boss's realm.  Off,
+                              it spends mana and does nothing
+         Blink Only Blinks    Blink only moves you.  Off, it also casts
+                              Protection
+         Blink Landing        Blink leaves you where it lands.  Off, a
+                              blink near the right or bottom edge of a
+                              level can put you in a wall
+         Spell Targets        Blind, sleep and drain spells, and spells
+                              your ring reflects, affect the creature
+                              they hit.  Off, outside the arena they
+                              miss it and change some other record
+         Blast Spells         Nuke, Nova, Word of God, Blizzard,
+                              Conflagration and Electrical Nova spare
+                              anti-magic creatures and cost alignment
+                              only when they hit a friend.  Off, they
+                              hurt most anti-magic creatures, cost
+                              alignment for almost any creature, and
+                              scramble the abilities of those hit
+         Spell Kills          A creature killed by a blast, Super Nova,
+                              Armageddon, a drain or a reflected spell
+                              counts as a kill, can drop loot, and its
+                              exp is shared as for any kill.  Off, you
+                              only get its exp, and killing the final boss
+                              this way does not win the game
+         Scroll of Charging   Restores the chosen item's charges.  Off,
+                              the game freezes
+         Mind Shield          A Potion or Scroll of Mind Shield wears
+                              off like the other resistances.  Off, it
+                              lasts forever
+         Arena Assassins      An Assassin keeps its level in arena
+                              combat.  Off, every turn in the arena
+                              starts an Assassin over at level 1
+         Arena Monk Fear      Monks cannot be frightened in the arena
+                              from level 11, as in dungeons.  Off, not
+                              until level 14
+         Arena Timers         Cold, electric and arcane resistance,
+                              blindness, light and polymorph wear off
+                              during arena fights, as in dungeons.
+                              Off, they pause until the fight ends
+         Arena Decorations    Trees, rocks and other scenery in an
+                              upland arena land only on open ground.
+                              Off, scenery can land on a monster, which
+                              then cannot be fought, or on a party
+                              member, which sits out the fight
+         Arena Exit           ENTER or ESC leaves an arena fight once
+                              every monster is dead.  Off, the only way
+                              out is to walk off the arena's edge
          Rarity Fix           How picking up an item counts it
                               towards your finds (the Eye for
                               Treasure, Treasure Hunter and Lucky!
@@ -616,37 +528,100 @@
                               both as G does, and Band C as G does but
                               with those Ultra Rare ones counted.  A
                               new character starts at Band A
+         Floor Items          Putting an item from the floor straight
+                              into your pack frees its place in the
+                              level's list of floor items, as does
+                              leaving an item on an arena's floor or in
+                              the final boss's realm, which is laid out
+                              afresh at each visit, and when that list
+                              is full a slain monster drops nothing
+                              instead of an item.  Off, those items
+                              keep their place, and a full list leaves
+                              a stray tile where the item should have
+                              been
+         Lore Books           Putting a lore book straight into your
+                              pack does nothing; read it with g as
+                              usual.  Off, that can copy an item from
+                              your Portable Hole into your pack and
+                              remove the book until you return to the
+                              level
+         Pack Weight          The item in the last pack slot counts
+                              toward the weight you carry.  Off, it
+                              weighs nothing
+         Possessions          An item you used up, threw or sold no
+                              longer counts as yours when treasure is
+                              chosen.  Off, until you save and reload,
+                              a unique item you no longer have will not
+                              drop again, and items that need another
+                              item still drop after it is gone
+         Item Deck            The Item Deck never gives the broken "EOL"
+                              item.  Off, it occasionally does
+         Tripped Card         The Deck of Many Things' Tripped card
+                              takes your own class's hit die.  Off, it
+                              takes the next class's, and a Shaman's is
+                              read from outside the game's data
+         Manual of Bodily Health
+                              The Manual of Bodily Health only adds to
+                              your hit points.  Off, it also uses the
+                              Crown of Might, saying the Triad is
+                              incomplete or, with the Triad on, giving
+                              the crown's powers for free
+         Shaman Legendaries   Ayres' Mythical items found by a Shaman
+                              get the Cleric's bonuses, and the weapon
+                              is a mace.  Off, the armour has no
+                              bonuses and the weapon is an edged one
+                              no one can train for
+         Last Bite            Eating the last bite of a food with e
+                              counts as a meal, as it does with u.
+                              Off, it is not counted
+         Meat and Potatoes    The Meat and Potatoes trophy counts the
+                              meat you eat, and meat counts once as a
+                              meal.  Off, meat counts twice as a meal
+                              and 100 potatoes alone earn the trophy
+         Village Shops        Every village's four merchants trade:
+                              weapons and armour of levels 1 and 2,
+                              supplies, and an inn.  Off, they never
+                              open
+         Shop Boots and Wands Armor shops sell cloth, leather and copper
+                              boots, and magic shops sell the Wands of
+                              Pine, Ceder and Redwood.  Off, no shop
+                              sells boots or wands
+         Platinum Dragon Mount
+                              A Platinum Dragon bought at Nichorville's
+                              stable carries you and flies, like the
+                              other dragons.  Off, it joins your party
+                              but is no mount
+         Temple Uncurse       Leaving a temple's Remove Curse without
+                              choosing an item returns to its menu.
+                              Off, the game crashes
+         Library Text         A town library shows its messages in plain
+                              text.  Off, they come out enciphered
+         Lore Search          A library or computer search shows and
+                              teaches the message that matched.  Off,
+                              it gives the message after it
+         House Buying         Owning a house never stops you buying
+                              another.  Off, owning Goldville as your
+                              first house, Radon as your second,
+                              Nichorville as your third or Talfharin as
+                              your fourth stops every later purchase
+         House Storage        A house's storage shows all of its 500
+                              slots, on 13 pages, and you cannot leave
+                              a full house with an item In Air.  Off,
+                              the last 20 slots never show, and an item
+                              In Air is lost when you leave a full house
+         No Negative Amounts  A negative amount typed at a bank, a house
+                              sale or the dice table counts as 0, which
+                              at the dice table means leaving.  Off, it
+                              adds gold
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 
          Auto-Target          Target the nearest monster automatically
-         Auto-Pickup Gold     Pick up gold automatically
-         Auto-Pickup Torches  Pick up torches automatically
          Auto-Open Doors      Doors open automatically
          Auto-Search Walls    Search walls automatically
-         Ranged Delay (ms)    Ranged attack flight delay
-         Hit Delay (ms)       Successful hit effect delay
-         Trap Delay (ms)      Trap effects delay
-         Enhanced Sprites     Show the tile under creatures and items
-         Show Mount           On the overworld, show the mount you ride
-                              in place of your own figure: the first
-                              flying mount in your party when you fly,
-                              otherwise the first mount
-         Unique Class Sprites Show your class as its own figure where the
-                              game has one: a Cavalier in mail with a
-                              lance, a Cleric or Shaman robed in white,
-                              and a Mage, Enchanter, Druid or Hierophant
-                              robed in blue.  Other classes keep the
-                              standard figure
-         Floor Item Names     Show the name of the item you stand on in the
-                              bottom right, in its inventory colour, or
-                              under the message log (see Improved Status)
-         Gothic Scrolls       Write scrolls, lore and the library in
-                              Gothic instead of the hand-drawn scroll
-                              letters.  Either way each line is centred,
-                              and text too long for the scroll moves
-                              with Up/Down and PgUp/PgDn
+         Auto-Pickup Gold     Pick up gold automatically
+         Auto-Pickup Torches  Pick up torches automatically
          Improved Interface   Choose in shops, the library, the
                               inventory, the party screen and a new
                               character's sex, race and class with a
@@ -660,6 +635,11 @@
                               use where you stand with Tab (see Tab
                               Menu).  Off, the game looks and asks as it
                               first did
+         Easy Spells          Spells in the Tab menu lists the spells
+                              you know to pick from, instead of asking
+                              you to type one (see Tab Menu).  It needs
+                              Improved Interface, and is greyed out
+                              while that is Off
          Improved Status      Show the status indicators under your
                               stats (see Status Indicators) as grey
                               letters (Off), letters in the colours of
@@ -672,11 +652,28 @@
                               message log grows into its place, with
                               the compass and item names on its last
                               line; the Tab menu covers that line too
-         Easy Spells          Spells in the Tab menu lists the spells
-                              you know to pick from, instead of asking
-                              you to type one (see Tab Menu).  It needs
-                              Improved Interface, and is greyed out
-                              while that is Off
+         Floor Item Names     Show the name of the item you stand on in the
+                              bottom right, in its inventory colour, or
+                              under the message log (see Improved Status)
+         Enhanced Sprites     Show the tile under creatures and items
+         Unique Class Sprites Show your class as its own figure where the
+                              game has one: a Cavalier in mail with a
+                              lance, a Cleric or Shaman robed in white,
+                              and a Mage, Enchanter, Druid or Hierophant
+                              robed in blue.  Other classes keep the
+                              standard figure
+         Show Mount           On the overworld, show the mount you ride
+                              in place of your own figure: the first
+                              flying mount in your party when you fly,
+                              otherwise the first mount
+         Gothic Scrolls       Write scrolls, lore and the library in
+                              Gothic instead of the hand-drawn scroll
+                              letters.  Either way each line is centred,
+                              and text too long for the scroll moves
+                              with Up/Down and PgUp/PgDn
+         Ranged Delay (ms)    Ranged attack flight delay
+         Hit Delay (ms)       Successful hit effect delay
+         Trap Delay (ms)      Trap effects delay
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in

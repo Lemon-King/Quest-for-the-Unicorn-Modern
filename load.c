@@ -831,9 +831,10 @@ static Int32 read_version(FILE* file, char* version) {
   offset = 1;
   read_line(version);
 
-  if (strcmp(version, "v7.0.0") == 0) return 1;
+  /* Saves from 7.0.0 load too; an "e" after the version marks an obfuscated save */
+  if (strcmp(version, VERSION) == 0 || strcmp(version, "v7.0.0") == 0) return 1;
 
-  if (strcmp(version, "v7.0.0e") == 0) {
+  if (strcmp(version, VERSION "e") == 0 || strcmp(version, "v7.0.0e") == 0) {
     encrypted = 0xff;
     return 1;
     }

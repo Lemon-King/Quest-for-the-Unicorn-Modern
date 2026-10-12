@@ -1,13 +1,13 @@
 // Resources of unicorn.exe: the application icon and the version shown in Explorer.
-// The numbers mirror VERSION ("v7.0.0") in header.h; load.c checks that string against every save.
+// The numbers mirror VERSION ("v7.1.0") in header.h; load.c checks that string, and 7.0.0's, against every save.
 
 #include <winres.h>
 
 1 ICON "unicorn.ico"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 7,0,0,0
- PRODUCTVERSION 7,0,0,0
+ FILEVERSION 7,1,0,0
+ PRODUCTVERSION 7,1,0,0
  FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
  FILEFLAGS 0x0L
  FILEOS VOS_NT_WINDOWS32
@@ -19,12 +19,12 @@ BEGIN
         BLOCK "040904B0"
         BEGIN
             VALUE "FileDescription", "Quest for the Unicorn"
-            VALUE "FileVersion", "7.0.0"
+            VALUE "FileVersion", "7.1.0"
             VALUE "InternalName", "unicorn"
             VALUE "LegalCopyright", "Copyright 1985-2014 by Michael H. Riley"
             VALUE "OriginalFilename", "unicorn.exe"
             VALUE "ProductName", "Quest for the Unicorn"
-            VALUE "ProductVersion", "7.0.0"
+            VALUE "ProductVersion", "7.1.0"
         END
     END
     BLOCK "VarFileInfo"
