@@ -234,97 +234,33 @@ void adjust_player_map() {
   }
 */
 
-static void move_up(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.y = player.y+1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up() */
+/* Steps by dx,dy, into the next region at its edge. Returns 'N' when the step was blocked, which without the Free
+   Upland Keys change still counts as a step taken. */
+static char move_land(Int32 dx,Int32 dy) {
+  Int32 old_x,old_y;
+  Int32 old_region;
+  char  moved;
 
-static void move_down(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.y = player.y-1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down() */
+  old_x = player.x;
+  old_y = player.y;
+  old_region = player.region;
 
-static void move_left(void) {
   remove_land_player();
-  player.x = player.x-1;
+  player.x = player.x+dx;
+  player.y = player.y+dy;
   check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.x = player.x+1;
+  if (valid(player.x,player.y) == ' ') {
+    player.x = player.x-dx;
+    player.y = player.y-dy;
+    }
   if (adjust_map() == 'Y') show_land();
   show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_left() */
 
-static void move_right(void) {
-  remove_land_player();
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.x = player.x-1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_right() */
+  moved = (player.x != old_x || player.y != old_y || player.region != old_region) ? 'Y' : 'N';
+  if (moved == 'Y' || change_free_upland_keys != 'Y') stats.counts[STAT_STEPS_TAKEN]++;
 
-static void move_up_left(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  player.x = player.x-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x+1; player.y = player.y+1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up_left() */
-
-static void move_up_right(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x-1; player.y = player.y+1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up_right() */
-
-static void move_down_left(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  player.x = player.x-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x+1; player.y = player.y-1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down_left() */
-
-static void move_down_right(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x-1; player.y = player.y-1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down_right() */
+  return moved;
+  } /* char move_land(Int32 dx,Int32 dy) */
 
 static void enter_dungeon(void) {
   char flag;
@@ -458,15 +394,19 @@ void eat() {
   }
 */
 
-static void land_use_item(void) {
+/* Returns 'Y' when an item was used, or the inventory screen moved one */
+static char land_use_item(void) {
   OBJECT_REC* item;
+  char        acted;
   item = NULL;
   saveScreen();
   item = inventory(item);
+  acted = takes_time;
   restoreScreen();
   show_spot(player.x,player.y);
   show_player();
   if (item != NULL && item->otype != O_NONE) {
+    acted = 'Y';
     if (item->otype == O_FOOD && player.health > 100) {
       msg("Too full to eat any more",10);
       }
@@ -484,13 +424,16 @@ static void land_use_item(void) {
   show_player();
   show_messages();
   clair = ' ';
-  } /* void land_use_item() */
+
+  return acted;
+  } /* char land_use_item() */
 
 static void hunt(void) {
   Int32 chance;
   Int32 item_count;
   Int32 item;
   Int32 i;
+  Int32 skill;
   chance = 10;
   switch (player.map[player.x][player.y]) {
     case 2:chance = 25; break;
@@ -500,9 +443,12 @@ static void hunt(void) {
     case 8:chance = 5; break;
     case 9:chance = 17; break;
     }
-  if (get_skill(4)>4 && get_skill(4)<10) chance = chance*2;
-  if (get_skill(4)>9 && get_skill(4)<15) chance = chance*3;
-  if (get_skill(4)>14) chance = chance*4;
+
+  /* Without the Hunting Skill change the chance grows with the Mace skill, though hunting trains Scouting */
+  skill = (change_hunting_skill == 'Y') ? get_skill(SK_SCOUT) : get_skill(SK_MACE);
+  if (skill>4 && skill<10) chance = chance*2;
+  if (skill>9 && skill<15) chance = chance*3;
+  if (skill>14) chance = chance*4;
   if (u_random(100)<chance) {
     item = -1;
     item_count = 0;
@@ -643,11 +589,14 @@ static void tardis_log(void) {
   show_land_player();
   } /* void tardis_log() */
 
-static void do_inventory(void) {
+/* Returns 'Y' when the inventory screen moved an item */
+static char do_inventory(void) {
   saveScreen();
   inventory(NULL);
   restoreScreen();
-  } /* void do_inventory() */
+
+  return takes_time;
+  } /* char do_inventory() */
 
 static void gps(void) {
   char buffer[20];
@@ -657,6 +606,76 @@ static void gps(void) {
   msg(buffer,15);
   }
 
+/* An overworld turn: regeneration, the clock and food, and the chance of an encounter */
+static void land_turn(void) {
+  Int32 i;
+  if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
+  player.hp_count = player.hp_count-1;
+  for (i=1; i<=19; i++) {
+    if (player.invent[i].otype != O_NONE) {
+      if ((i==I_NCK1 || i==I_NCK2) &&
+          player.invent[i].otype == O_NECK &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if ((i==I_RNG1 || i==I_RNG2 || i==I_RNG3 || i==I_RNG4) &&
+          player.invent[i].otype == O_RING &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_SHLD &&
+          player.invent[i].otype == O_SHLD &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_ARMR &&
+          player.invent[i].otype == O_ARMR &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_ROBE &&
+          player.invent[i].otype == O_ROBE &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_BOOT &&
+          player.invent[i].otype == O_BOOT &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_HELM &&
+          player.invent[i].otype == O_HELM &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (player.invent[i].otype != O_NECK &&
+               player.invent[i].otype != O_RING &&
+               player.invent[i].otype != O_SHLD &&
+               player.invent[i].otype != O_ARMR &&
+               player.invent[i].otype != O_ROBE &&
+               player.invent[i].otype != O_BOOT &&
+               player.invent[i].otype != O_HELM &&
+               player.invent[i].effect == E_INTR &&
+               player.invent[i].control == A_HEAL)
+             player.hp_count -= player.invent[i].damage;
+        }
+      }
+
+  if (player.hp_count<1) {
+    player.hp_count = 2;
+    if (player.chp<player.mhp) player.chp = player.chp+1;
+    show_side();
+    }
+  player.mana_count = player.mana_count-1;
+  if (player.mana_count<1) {
+    player.mana_count = 3;
+    if (player.cmana<player.mmana) player.cmana = player.cmana+1;
+    show_side();
+    }
+  take_time();
+  check_encounter();
+  } /* void land_turn() */
+
 void up_land() {
   byte key;
   Int32  x = 0,y = 0;
@@ -664,6 +683,7 @@ void up_land() {
 //  Int32  m_file;
   Int32  suggest;
   Int32  sug_level;
+  char   turn;
 
 /* ******************************************* */
 /* ***** Actual beginning of upland code ***** */
@@ -709,34 +729,52 @@ void up_land() {
   exitf = 0;
   while (exitf == 0) {
     show_time();
+
+    /* turn is 'N' for a key that only shows something, asks something, or does nothing; save_gear() and load_gear()
+       clear takes_time when cancelled */
+    turn = 'Y';
+    takes_time = 'Y';
     key = inkey();
     switch (key) {
       /* Without the Upland Quit change Q quits at once, unasked, and falls through into a step north */
       case 'Q':if (change_upland_quit == 'Y') {
                  if (check_quit()) exitf = 3;
+                 turn = 'N';
                  break;
                  }
                exitf = 3;
-      case '8':move_up(); break;
-      case '2':move_down(); break;
-      case '4':move_left(); break;
-      case '6':move_right(); break;
-      case '7':move_up_left(); break;
-      case '9':move_up_right(); break;
-      case '1':move_down_left(); break;
-      case '3':move_down_right(); break;
+      case '8':turn = move_land(0,-1); break;
+      case '2':turn = move_land(0,1); break;
+      case '4':turn = move_land(-1,0); break;
+      case '6':turn = move_land(1,0); break;
+      case '7':turn = move_land(-1,-1); break;
+      case '9':turn = move_land(1,-1); break;
+      case '1':turn = move_land(-1,1); break;
+      case '3':turn = move_land(1,1); break;
       case '>':enter_dungeon(); break;
-      case '}':save_gear('N',-1); break;
-      case ']':load_gear('N',-1); break;
-      case '{':save_gear('Y',-1); break;
-      case '[':load_gear('Y',-1); break;
+      case '}':save_gear('N',-1);
+               turn = takes_time;
+               break;
+      case ']':load_gear('N',-1);
+               turn = takes_time;
+               break;
+      case '{':save_gear('Y',-1);
+               turn = takes_time;
+               break;
+      case '[':load_gear('Y',-1);
+               turn = takes_time;
+               break;
       case 'e':eat(); break;
-      case 'H':show_icons(); break;
+      case 'H':show_icons();
+               turn = 'N';
+               break;
       case 'h':hunt(); break;
       case 's':hunt(); break;
-      case 'i':do_inventory(); break;
+      case 'i':turn = do_inventory(); break;
       case 'E':land_go_ship(); break;
-      case '?':upland_help(); break;
+      case '?':upland_help();
+               turn = 'N';
+               break;
       case 'S':
           player.land_x = player.x;
           player.land_y = player.y;
@@ -748,9 +786,11 @@ void up_land() {
           show_side();
           show_land_player();
           break;
-      case 'u':land_use_item(); break;
+      case 'u':turn = land_use_item(); break;
       case 'v':view(player.map[x][y]); break;
-      case 'X':exitf = 4; break;
+      case 'X':exitf = 4;
+               turn = 'N';
+               break;
       case 'R':
           disp_char();
           graphmode();
@@ -758,6 +798,7 @@ void up_land() {
           show_sm_land();
           show_land_player();
           show_side();
+          turn = 'N';
           break;
       case 'O':
           game_options();
@@ -766,8 +807,11 @@ void up_land() {
           show_sm_land();
           show_land_player();
           show_side();
+          turn = 'N';
           break;
-      case '~':gps(); break;
+      case '~':gps();
+               turn = 'N';
+               break;
       case KY_F1:tardis(1); break;
       case KY_F2:tardis(2); break;
       case KY_F3:tardis(3); break;
@@ -789,73 +833,16 @@ void up_land() {
       case KY_S_F9:new_tardis(9); break;
       case KY_S_F10:new_tardis(10); break;
       case 'T':if (has_intrinsic(A_TARD)) tardis_log();
+               turn = 'N';
+               break;
+      default:turn = 'N';
       }
-    land_discover();
-    if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
-    player.hp_count = player.hp_count-1;
-    for (i=1; i<=19; i++) {
-      if (player.invent[i].otype != O_NONE) {
-        if ((i==I_NCK1 || i==I_NCK2) &&
-            player.invent[i].otype == O_NECK &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if ((i==I_RNG1 || i==I_RNG2 || i==I_RNG3 || i==I_RNG4) &&
-            player.invent[i].otype == O_RING &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_SHLD &&
-            player.invent[i].otype == O_SHLD &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_ARMR &&
-            player.invent[i].otype == O_ARMR &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_ROBE &&
-            player.invent[i].otype == O_ROBE &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_BOOT &&
-            player.invent[i].otype == O_BOOT &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_HELM &&
-            player.invent[i].otype == O_HELM &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL)
-          player.hp_count -= player.invent[i].damage;
-        else if (player.invent[i].otype != O_NECK &&
-                 player.invent[i].otype != O_RING &&
-                 player.invent[i].otype != O_SHLD &&
-                 player.invent[i].otype != O_ARMR &&
-                 player.invent[i].otype != O_ROBE &&
-                 player.invent[i].otype != O_BOOT &&
-                 player.invent[i].otype != O_HELM &&
-                 player.invent[i].effect == E_INTR &&
-                 player.invent[i].control == A_HEAL)
-               player.hp_count -= player.invent[i].damage;
-          }
-        }
 
-    if (player.hp_count<1) {
-      player.hp_count = 2;
-      if (player.chp<player.mhp) player.chp = player.chp+1;
-      show_side();
-      }
-    player.mana_count = player.mana_count-1;
-    if (player.mana_count<1) {
-      player.mana_count = 3;
-      if (player.cmana<player.mmana) player.cmana = player.cmana+1;
-      show_side();
-      }
-    take_time();
-    check_encounter();
+    /* Without the Free Upland Keys change every key passes a turn: help, the record, a blocked step, any key at all */
+    if (change_free_upland_keys != 'Y') turn = 'Y';
+
+    land_discover();
+    if (turn == 'Y') land_turn();
     if (player.chp<1) exitf = 6;
     if (player.health<=0) exitf = 6;
     if (has_intrinsic(A_COMP)) {
@@ -900,7 +887,7 @@ void up_land() {
         putimage(300,screen_height-27,select_sprite(x),0);
         } else putimage(300,screen_height-27,select_sprite(10),0);
       }
-    if (has_intrinsic(A_FOOD) && player.health < 100) player.health++;
+    if (turn == 'Y' && has_intrinsic(A_FOOD) && player.health < 100) player.health++;
     if (get_str() <= 0 || get_dex() <= 0 || get_int() <= 0 ||
         get_con() <= 0 || get_wis() <= 0 || get_chr() <= 0) exitf = 9;
     }

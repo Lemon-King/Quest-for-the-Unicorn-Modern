@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    52
+#define NUM_CHANGES    54
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -282,7 +282,13 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_sun_stone_fixes, .on = 'Y', .off = 'N', .key = "SunStoneFixes" },
   { .label = "Lore Books",
     .help  = "G and P on a lore book do nothing, instead of copying a Portable Hole item",
-    .kind  = OPT_SWITCH, .flag = &change_lore_books, .on = 'Y', .off = 'N', .key = "LoreBooks" }
+    .kind  = OPT_SWITCH, .flag = &change_lore_books, .on = 'Y', .off = 'N', .key = "LoreBooks" },
+  { .label = "Hunting Skill",
+    .help  = "Hunting on the upland improves with Scouting, the skill it trains, not Mace",
+    .kind  = OPT_SWITCH, .flag = &change_hunting_skill, .on = 'Y', .off = 'N', .key = "HuntingSkill" },
+  { .label = "Free Upland Keys",
+    .help  = "Help, records, options, unused keys and blocked steps take no upland time",
+    .kind  = OPT_SWITCH, .flag = &change_free_upland_keys, .on = 'Y', .off = 'N', .key = "FreeUplandKeys" }
   };
 
 static Int32 mode_index(Int32 mode) {
