@@ -588,6 +588,14 @@
                               character starts at Strict.  Off, every
                               visit while Eshter lives adds another
                               core
+         Docked Ships         A ship you leave in a town's harbour
+                              stays there, and is in the harbour each
+                              time you return; once sailed out, it is
+                              wherever you dock it.  Off, the overworld
+                              draws a ship left in a town at the
+                              harbour's square on the overworld's own
+                              map, out at sea or on a mountain, and the
+                              harbour stays empty
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:

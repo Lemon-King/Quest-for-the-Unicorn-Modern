@@ -17,7 +17,7 @@ void go_ship() {
     show_spot(player.x,player.y);
     player.ship_x = player.x;
     player.ship_y = player.y;
-    player.ship_r = player.region;
+    player.ship_r = ship_region();
     }
   else if (player.map[player.x][player.y] == 12) {
     player.inship = '*';

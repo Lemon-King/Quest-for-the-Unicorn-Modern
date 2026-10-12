@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    60
+#define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -337,7 +337,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_village_shops, .on = 'Y', .off = 'N', .key = "VillageShops" },
   { .label = "Nether Core",
     .help  = "Castle Eshter has one Nether Core at a time; Strict, none while you own one",
-    .kind  = OPT_SWITCH, .flag = &change_nether_core, .on = 'Y', .off = 'N', .strict = 'S', .key = "NetherCore" }
+    .kind  = OPT_SWITCH, .flag = &change_nether_core, .on = 'Y', .off = 'N', .strict = 'S', .key = "NetherCore" },
+  { .label = "Docked Ships",
+    .help  = "A ship left in a town stays in its harbour instead of appearing at sea",
+    .kind  = OPT_SWITCH, .flag = &change_docked_ships, .on = 'Y', .off = 'N', .key = "DockedShips" }
   };
 
 static Int32 mode_index(Int32 mode) {

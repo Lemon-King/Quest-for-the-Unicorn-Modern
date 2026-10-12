@@ -120,6 +120,7 @@
     <ClCompile Include="displayabilities.c" />
     <ClCompile Include="dmgreduction.c" />
     <ClCompile Include="doblink.c" />
+    <ClCompile Include="dockedships.c" />
     <ClCompile Include="doexchange.c" />
     <ClCompile Include="doget.c" />
     <ClCompile Include="doheal.c" />

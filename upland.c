@@ -683,6 +683,7 @@ void up_land() {
   player.map_x = player.x-8;
   player.map_y = player.y-8;
   adjust_map();
+  track_ship();
   if (player.inship == ' ' && player.ship_r == player.region) {
       player.map[player.ship_x][player.ship_y] = 12;
     }
@@ -809,6 +810,7 @@ void up_land() {
     if (change_free_upland_keys != 'Y') turn = 'Y';
 
     land_discover();
+    track_ship();
     if (turn == 'Y') land_turn();
     if (player.chp<1) exitf = 6;
     if (player.health<=0) exitf = 6;

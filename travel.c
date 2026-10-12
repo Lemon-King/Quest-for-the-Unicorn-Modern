@@ -38,6 +38,7 @@ static void new_town(Int32 where) {
   /* A town reached by ship is entered too (see enter_dungeon() in upland.c) */
   if (change_town_completion == 'Y') player.quests[where] = 'Y';
   copyMap(&player.map,player.city);
+  place_town_ship();
 //#ifdef MINGW
 //    m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
 //#else
@@ -202,7 +203,7 @@ void travel(char* name) {
           if (change_ship_purchase == 'Y') {
             player.ship_x = shipx;
             player.ship_y = shipy;
-            player.ship_r = player.region;
+            player.ship_r = ship_region();
             }
           gotoxy(20,ndest+6); textcolor(14);
           txt_write("You will find you new ship in the harbor");

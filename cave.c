@@ -786,6 +786,7 @@ void cave() {
   if (mod_exit == 5) {
       player.d_level = 1;
       copyMap(&player.map,player.city);
+      place_town_ship();
 //#ifdef MINGW
 //      m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
 //#else
@@ -1422,6 +1423,7 @@ void cave() {
           get_con() <= 0 || get_wis() <= 0 || get_chr() <= 0) exitf = 9;
       }
     show_floor_item();
+    track_ship();
     }
   hide_bottom_name();
   /* ************************************ */
