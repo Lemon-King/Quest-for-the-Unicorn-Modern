@@ -1226,6 +1226,7 @@ extern Int32 check_quit(void);
 extern Int32 party_blow(NPC_REC* attacker);
 extern Int32 trophy_counter(Int32 trophy,Int32 slot);
 extern void tick_polymorph(void);
+extern char is_valley_of_fear(Int32 i);
 extern Int32 link_y(Int32 i);
 extern void show_floor_item(void);
 extern void hide_floor_item(void);
