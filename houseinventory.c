@@ -39,7 +39,7 @@ static Int32 house_slots() {
     char buffer[80];
     textmode(3);
     textcolor(15); gotoxy(33,1); txt_write("House Inventory");
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       draw_menu(menu);
       show_in_air(in_air,23);
       return;
@@ -116,7 +116,7 @@ void house_inventory(Int32 hnum) {
   house_show_inventory(base,hnum,&in_air,&menu);
   flag = ' ';
   while (flag == ' ') {
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,transfer_action(&(player.houses[hnum].inventory[menu.row])));
       if (key == STORAGE_MOVED) house_show_inventory(base,hnum,&in_air,&menu);
@@ -138,7 +138,7 @@ void house_inventory(Int32 hnum) {
     /* Without the House Storage change an item In Air is lost when you leave a full house */
     if (key == 27 && change_house_storage == 'Y' && in_air.otype != O_NONE && empty_slot(hnum) < 0) {
       textcolor(12);
-      gotoxy(20,(cursor_menus == 'Y') ? 24 : 2);
+      gotoxy(20,(improved_interface == 'Y') ? 24 : 2);
       txt_write("No room in the house for the item In Air");
       flag = ' ';
       }

@@ -133,9 +133,10 @@ static COMMAND* add_command(COMMANDS* commands,char* label,char* keys,Int32 colo
   return command;
   }
 
-/* Shows the item name that follows verb in a command's label in its rarity colour, name_color */
+/* Shows the item name that follows verb in a command's label in its rarity colour, name_color, with the Improved
+   Interface preference */
 static void color_item_name(COMMAND* command,char* verb,Int32 name_color) {
-  if (command == NULL || name_color == 0) return;
+  if (command == NULL || name_color == 0 || improved_interface != 'Y') return;
 
   command->name_start = (Int32)strlen(verb) + 1;
   command->name_color = name_color;

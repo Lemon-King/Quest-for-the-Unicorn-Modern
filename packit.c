@@ -14,6 +14,7 @@ void pack_it(Int32 floor) {
   Int32  i;
   Int32  ct;
   char buffer[40];
+  char packed[160];
   char flag;
   Int32  slot;
   Int32  pitem;
@@ -74,7 +75,13 @@ void pack_it(Int32 floor) {
     /* Without the Floor Items change the floor slot is never freed for reuse */
     if (change_floor_items == 'Y') it->otype = O_NONE;
     clear_prompt();
-    msg_named("Packed",get_name(&(player.pack[slot])),15,item_color(&(player.pack[slot])));
+
+    /* With the Improved Interface only the item's name is in its rarity colour */
+    if (improved_interface == 'Y') msg_named("Packed",get_name(&(player.pack[slot])),15,item_color(&(player.pack[slot])));
+    else {
+      sprintf(packed,"Packed %s",get_name(&(player.pack[slot])));
+      msg(packed,item_color(&(player.pack[slot])));
+      }
     player.map[player.x][player.y] = floor;
     show_spot(player.x,player.y);
     ct = 0;

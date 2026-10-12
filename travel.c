@@ -175,7 +175,7 @@ void travel(char* name) {
   txt_write(buffer);
 
   textcolor(14);
-  if (cursor_menus == 'Y') draw_menu(&menu);
+  if (improved_interface == 'Y') draw_menu(&menu);
   else {
     for (i=1; i<ndest; i++) {
       gotoxy(27,i+2);
@@ -199,7 +199,7 @@ void travel(char* name) {
   flag = ' ';
   while (flag == ' ') {
     textcolor(10); gotoxy(20,ndest+4);
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       txt_write("Where would you like to travel to (<ESC> to leave) ?");
       option = menu_choice(&menu) + 1;
       }
@@ -249,7 +249,7 @@ void travel(char* name) {
       gotoxy(20,ndest+6); textcolor(14);
       sprintf(buffer,"A trip to %s will cost %d",dest[option],cost[option]);
       txt_write(buffer);
-      if (cursor_menus == 'Y') key = ask_action(20,ndest+7,14,"Take the trip","Cancel",0);
+      if (improved_interface == 'Y') key = ask_action(20,ndest+7,14,"Take the trip","Cancel",0);
       else {
         gotoxy(20,ndest+7); txt_write("Do you wish to go ?");
         key = inkey();

@@ -169,7 +169,7 @@ static void show_top(char* name,MENU* menu) {
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
 
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
     else show_numbered();
 
   textcolor(14); gotoxy(35,24);
@@ -190,7 +190,7 @@ void tavern(char* name) {
   price = 4;
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       txt_write("Which item would you like (<ESC> to leave) ?");
       option = menu_choice(&menu) + 1;
       }

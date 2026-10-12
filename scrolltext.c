@@ -9,8 +9,8 @@
 */
 
 /* Scroll text, each line centred on the parchment, in write_font()'s hand-drawn letters or, with the Gothic Scrolls
-   preference, in Gothic. The scroll stands at the left of the screen, or with the Center Scroll preference in its
-   middle. */
+   preference, in Gothic. The scroll stands at the left of the screen, or with the Improved Interface preference in
+   its middle. */
 
 #include "header.h"
 
@@ -248,7 +248,7 @@ void scroll_text(char* message) {
   style = (gothic != NULL) ? GOTHIC_STYLE : LETTER_STYLE;
   style.gothic = gothic;
 
-  if (center_scroll == 'Y') {
+  if (improved_interface == 'Y') {
     style.dx = screen_width / 2 - CENTER_X;
     style.dy = screen_height / 2 - CENTER_Y;
     }

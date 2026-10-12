@@ -160,7 +160,7 @@ static void inventory_show_screen(MENU* menu) {
   char label[20];
   char buffer[40];
   textmode(3);
-  if (cursor_menus == 'Y') {
+  if (improved_interface == 'Y') {
     write_centred(1,15,"Inventory");
     draw_menu(menu);
     }
@@ -195,10 +195,10 @@ static void inventory_show_screen(MENU* menu) {
   txt_write(buffer);
   }
 
-/* The screen again; without the Cursor Menus preference the arrow marks line */
+/* The screen again; without the Improved Interface preference the arrow marks line */
 static void show_screen_at(MENU* menu,Int32 line) {
   inventory_show_screen(menu);
-  if (cursor_menus == 'Y') return;
+  if (improved_interface == 'Y') return;
 
   textcolor(14);
   gotoxy(1,line); txt_write("->");
@@ -238,7 +238,7 @@ static char pick_action(Int32 row) {
   return (picked >= 0) ? keys[picked] : 0;
   }
 
-/* A key with the Cursor Menus preference: the cursor picks the row, shown beside its card, and ENTER an action for
+/* A key with the Improved Interface preference: the cursor picks the row, shown beside its card, and ENTER an action for
    it, returned as the key that does it without the cursor. Returns 0 for the keys the cursor took. */
 static char inventory_key(MENU* menu,Int32* line) {
   char key;
@@ -320,7 +320,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
   show_screen_at(&menu,line);
   flag = ' ';
   while (flag == ' ') {
-    key = (cursor_menus == 'Y') ? inventory_key(&menu,&line) : inkey();
+    key = (improved_interface == 'Y') ? inventory_key(&menu,&line) : inkey();
     if (key == ' ' || key == '0') {
       textcolor(14);
       gotoxy(1,line); txt_write("  ");
@@ -374,7 +374,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       }
     if ((key == 'x' || key == 'X') && line > 3) {
       do_exchange(&in_air,line);
-      if (cursor_menus == 'Y') show_screen_at(&menu,line);
+      if (improved_interface == 'Y') show_screen_at(&menu,line);
       }
     if (key == 'Q') flag = '*';
     if (key == 'I') {

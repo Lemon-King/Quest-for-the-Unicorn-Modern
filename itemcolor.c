@@ -27,11 +27,12 @@ void itemColor(OBJECT_REC* item) {
   textcolor(item_color(item));
   }
 
-/* At the cursor: before and after in color, and between them the item's name in its rarity colour */
+/* At the cursor: before and after in color, and between them the item's name, in its rarity colour with the Improved
+   Interface preference, or else in color too, as the game first wrote it */
 void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color) {
   textcolor(color);
   txt_write(before);
-  itemColor(item);
+  if (improved_interface == 'Y') itemColor(item);
   txt_write(name);
   textcolor(color);
   txt_write(after);

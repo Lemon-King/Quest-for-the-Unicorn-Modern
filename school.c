@@ -75,7 +75,7 @@ static void show_top(char* name,MENU* menu) {
   txt_write(buffer);
 
   gotoxy(1,3); textcolor(14);
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     for (i=0; i<12; i++) {
       sprintf(buffer,"   %2d> %s  %7d      %2d> %s  %7d",i+1,school_classes[i].name,class_price(i),
@@ -103,7 +103,7 @@ void school(char* name) {
   price = 5000;
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       txt_write("Which course would you like to take (<ESC> to leave) ?");
       option = menu_choice(&menu) + 1;
       }

@@ -38,7 +38,7 @@ static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost,M
   sprintf(buffer,"%.0f",ccost+down);
   gotoxy(24,8); txt_write("Due at Closing");  gotoxy(51,8); txt_write(buffer);
 
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     for (i=0; i<NUM_PURCHASE_OPTIONS; i++) {
       sprintf(buffer,"%d> %s",i+1,purchase_options[i]);
@@ -75,7 +75,7 @@ void buy_house(Int32 hnum) {
   show_top(buffer,hnum,down,a,ccost,&menu);
   key = ' ';
   while (key != '0') {
-    key = (cursor_menus == 'Y') ? menu_number(&menu) : inkey();
+    key = (improved_interface == 'Y') ? menu_number(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1') {
       gotoxy(27,15); textcolor(2); txt_write("New Down Payment: ");

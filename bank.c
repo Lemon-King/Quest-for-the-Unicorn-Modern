@@ -61,7 +61,7 @@ static void show_top(char* name,MENU* menu) {
     }
 
   textcolor(14);
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     for (i=0; i<NUM_ACCOUNT_OPTIONS; i++) {
       sprintf(buffer,"%d> %s",i+1,account_options[i]);
@@ -87,7 +87,7 @@ void bank(char* name) {
   show_top(name,&menu);
   key = ' ';
   while (key != '0') {
-    key = (cursor_menus == 'Y') ? menu_number(&menu) : inkey();
+    key = (improved_interface == 'Y') ? menu_number(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1' && get_gold() > 0) {
       gotoxy(30,19); textcolor(14);

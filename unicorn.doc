@@ -634,15 +634,15 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
-         Center Scroll        Show scrolls in the middle of the screen.
-                              Off, they stand at its left, as before
-         Cursor Menus         Choose in shops, the library, the
+         Improved Interface   Choose in shops, the library, the
                               inventory, the party screen and a new
                               character's sex, race and class with a
-                              cursor, as on the options screen, and
-                              answer their questions from a menu (see
-                              Item Merchants).  Off, they choose by
-                              letter or number and answer with Y or N
+                              cursor, as on the options screen, answer
+                              their questions from a menu, see item
+                              names in the colours of their rarity (see
+                              Item Merchants) and read scrolls in the
+                              middle of the screen.  Off, the game looks
+                              and asks as it first did
          Tab Menu             Tab opens a menu of the commands you can use
                               where you stand (see Tab Menu)
          Music Volume         Volume of the background music, 0% to 100%
@@ -1042,16 +1042,17 @@
        The <a> through <r> keys will also instantly move the selection
      arrows to the row marked by the appropriate key.
 
-       With the Cursor Menus preference, which a new character starts with,
-     the merchants' rows have no letters.  The same keys move the cursor,
-     which runs from the last item round to the first, <ESC> leaves, and a
-     scroll bar beside a long list shows how far down it is.  The other
-     menus that choose by number work the same way, with <8> and <2> to
-     move, <9>, <3>, <7> and <1> to jump, <Enter> to choose and <ESC> to
-     leave: the temple, stable, bank, house purchase, travel agency, inn,
-     school, pawn shop and Mech-Merchant, the party screen (where <Enter>
-     shows the member's statistics, and <D>, <C> and <O> ask for the member
-     with the cursor), and a new character's sex, race and class.
+       With the Improved Interface preference, which a new character
+     starts with, the merchants' rows have no letters.  The same keys move
+     the cursor, which runs from the last item round to the first, <ESC>
+     leaves, and a scroll bar beside a long list shows how far down it is.
+     The other menus that choose by number work the same way, with <8> and
+     <2> to move, <9>, <3>, <7> and <1> to jump, <Enter> to choose and
+     <ESC> to leave: the temple, stable, bank, house purchase, travel
+     agency, inn, school, pawn shop and Mech-Merchant, the party screen
+     (where <Enter> shows the member's statistics, and <D>, <C> and <O>
+     ask for the member with the cursor), and a new character's sex, race
+     and class.
 
        With the preference an item merchant lists the goods down the left
      and shows the selected item's info card on the right, as <I> would:
@@ -1093,6 +1094,14 @@
      as one).  The items gather at the top and the empty slots after
      them, and items you have not identified come after the rest for
      rarity, value and quantity.
+
+       The preference also shows an item's name in the colour of its rarity
+     wherever the game names it among other words, with the words around
+     it in their own colour: in the message log, at the merchants, in the
+     Tab Menu and on the crafting screen.  A spell's card gives its class,
+     level and mana a line each, and scrolls stand in the middle of the
+     screen.  Off, these show as the game first wrote them, with scrolls
+     at the left of the screen.
 
      Tab Menu
      ========

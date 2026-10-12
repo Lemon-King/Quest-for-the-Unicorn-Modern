@@ -112,6 +112,33 @@ char* item_kind(OBJECT_REC* item) {
   return "";
   }
 
+/* A spell's class, level and mana from line fact on: a line each with the Improved Interface preference, or else one
+   line, as the card first showed them. Returns the line after them. */
+static Int32 write_spell_facts(Int32 spell,Int32 column,Int32 fact) {
+  char buffer[128];
+
+  if (improved_interface != 'Y') {
+    sprintf(buffer,"%s Lvl: %d Mana: %d",classes[spells[spell].allign-1].name,spells[spell].level,spells[spell].mana);
+    gotoxy(column,fact++);
+    txt_write(buffer);
+    return fact;
+    }
+
+  sprintf(buffer,"Class: %s",classes[spells[spell].allign-1].name);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  sprintf(buffer,"Level: %d",spells[spell].level);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  sprintf(buffer,"Mana: %d",spells[spell].mana);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  return fact;
+  }
+
 /* The card's text with the name at column and line: the kind and rarity under it, then what the item does, and its
    value at the foot */
 void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
@@ -168,15 +195,7 @@ void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
       }
     strcpy(buffer,"");
     switch (item->effect) {
-      case E_SPEL:sprintf(buffer,"Class: %s",classes[spells[item->control].allign-1].name);
-                  gotoxy(column,fact++);
-                  txt_write(buffer);
-                  sprintf(buffer,"Level: %d",spells[item->control].level);
-                  gotoxy(column,fact++);
-                  txt_write(buffer);
-                  sprintf(buffer,"Mana: %d",spells[item->control].mana);
-                  gotoxy(column,fact++);
-                  txt_write(buffer);
+      case E_SPEL:fact = write_spell_facts(item->control,column,fact);
                   show_spell(item->control,column-2,line+1,fact+1);
                   textcolor(7);
                   strcpy(buffer,"");

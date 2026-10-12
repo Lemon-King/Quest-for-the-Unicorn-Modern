@@ -8,7 +8,7 @@
  *******************************************************************
 */
 
-/* Menus picked from with a cursor, for the Cursor Menus preference: 8/2 move it a row, wrapping at either end, 9/3 a
+/* Menus picked from with a cursor, for the Improved Interface preference: 8/2 move it a row, wrapping at either end, 9/3 a
    page and 7/1 to the first or last row, and the rows scroll to keep it in sight. */
 
 #include "header.h"
@@ -103,7 +103,7 @@ void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color
   }
 
 /* A row naming an item: the name in its rarity colour, name_color, and the value in the menu's colour */
-void draw_menu_item(MENU* menu,Int32 line,char* name,Int32 name_color,char* value) {
+void draw_menu_named(MENU* menu,Int32 line,char* name,Int32 name_color,char* value) {
   draw_row_text(menu,line,name,name_color,value,menu->color);
   }
 

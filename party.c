@@ -13,7 +13,7 @@
 #define PARTY_KEYS "<8/2>Select, <ENTER>Statistics, <D>ismiss, <C>hange order, <O>rders, <Q>uit"
 #define NUM_ORDERS 2
 
-/* Picked by 'a' and 'e' without the Cursor Menus preference */
+/* Picked by 'a' and 'e' without the Improved Interface preference */
 static char* order_names[NUM_ORDERS] = { "Attack", "Evade" };
 
 static void draw_member(MENU* menu,Int32 row,Int32 line) {
@@ -36,7 +36,7 @@ static void party_show_top(MENU* menu) {
   gotoxy(24,1); textcolor(2);
   txt_write("  #  Name               Lvl     Hp");
 
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     for (i=1; i<=5; i++) {
       gotoxy(25,i + 2); textcolor(14);
@@ -141,7 +141,7 @@ static void show_member(Int32 member,MENU* menu) {
         sprintf(training,"Training to next level will cost %.0f Gold",cost);
         sprintf(buffer,"Gold=%d",get_gold());
         key = ' ';
-        if (cursor_menus == 'Y') {
+        if (improved_interface == 'Y') {
           write_centred(25,14,buffer);
           show_menu_question(menu,14,training);
           key = ask_action(0,menu->keys_line + 1,14,"Train","Cancel",0);
@@ -194,7 +194,7 @@ static void set_orders(Int32 member,MENU* menu) {
   char key;
 
   key = ' ';
-  if (cursor_menus == 'Y') key = pick_orders(member,menu);
+  if (improved_interface == 'Y') key = pick_orders(member,menu);
   else {
     gotoxy(20,14); textcolor(10);
     txt_write("<A>ttack, or <E>vade ?");
@@ -233,7 +233,7 @@ static Int32 pick_member(MENU* menu,char* question) {
   return row + 1;
   }
 
-/* A key on the party screen with the Cursor Menus preference: the cursor picks the member in place of 1 to 5 */
+/* A key on the party screen with the Improved Interface preference: the cursor picks the member in place of 1 to 5 */
 static void party_command(MENU* menu,char key) {
   Int32 member;
   Int32 other;
@@ -266,16 +266,16 @@ void party() {
 
   saveScreen();
   textmode(3); party_show_top(&menu);
-  if (cursor_menus != 'Y') {
+  if (improved_interface != 'Y') {
     gotoxy(10,13); textcolor(3);
     txt_write("<D>ismiss, <1-5>Statistics, <C>hange order, <O>orders, <Q>uit");
     }
 
   key = ' ';
   while (key != 'q') {
-    key = (cursor_menus == 'Y') ? menu_key(&menu) : inkey();
+    key = (improved_interface == 'Y') ? menu_key(&menu) : inkey();
     if (key == 27) key = 'q';
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       party_command(&menu,key);
       continue;
       }

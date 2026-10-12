@@ -17,7 +17,7 @@
     char buffer[80];
     textmode(3);
     textcolor(15); gotoxy(29,1); txt_write("Portable Hole Inventory");
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       draw_menu(menu);
       show_in_air(in_air,23);
       return;
@@ -94,7 +94,7 @@ void hole_inventory() {
   hole_show_inventory(base,&in_air,&menu);
   flag = ' ';
   while (flag == ' ') {
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,transfer_action(&(player.hole[menu.row])));
       if (key == STORAGE_MOVED) hole_show_inventory(base,&in_air,&menu);

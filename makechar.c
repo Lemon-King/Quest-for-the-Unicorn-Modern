@@ -67,7 +67,7 @@ static void draw_start(MENU* menu,Int32 row,Int32 line) {
   draw_menu_text(menu,line,classes[((Int32*)menu->screen)[row] - 1].name,"");
   }
 
-/* A list of choices under the heading, for the Cursor Menus preference */
+/* A list of choices under the heading, for the Improved Interface preference */
 static void open_choices(MENU* menu,Int32 count,void (*draw_row)(MENU* menu,Int32 row,Int32 line),void* screen) {
   menu->rows = (SCROLL_LIST){ .count = count, .shown = count, .line = CHOICE_LINE };
   menu->row = 0;
@@ -141,7 +141,7 @@ void make_char(Int32 rebirth) {
   gotoxy(10,2);
   sprintf(buffer,"%d",player.age);
   txt_write(buffer);
-  if (rebirth == 0 && cursor_menus == 'Y') player.sex = choose_sex();
+  if (rebirth == 0 && improved_interface == 'Y') player.sex = choose_sex();
   else if (rebirth == 0) {
     textcolor(2); gotoxy(10,3); textcolor(14); txt_write("(m/f) _");
     key = inkey();
@@ -161,7 +161,7 @@ void make_char(Int32 rebirth) {
     gotoxy(5,15); txt_write("Character Race:");
     textcolor(15);
 
-    if (cursor_menus == 'Y') open_choices(&menu,NUM_RACES,draw_race,NULL);
+    if (improved_interface == 'Y') open_choices(&menu,NUM_RACES,draw_race,NULL);
     else {
       for (i=0; i<NUM_RACES; i++) {
         sprintf(buffer,"%d> %s",i+1,races[i].name);
@@ -171,7 +171,7 @@ void make_char(Int32 rebirth) {
     textcolor(14);
     gotoxy(10,4); txt_write("_");
     key = '0';
-    if (cursor_menus == 'Y') key = choose(&menu);
+    if (improved_interface == 'Y') key = choose(&menu);
     while (key<'1' || key>'0'+NUM_RACES) key = inkey();
     gotoxy(10,4);
     player.race = (key - '1' + 1);
@@ -197,20 +197,20 @@ void make_char(Int32 rebirth) {
   numStarts = 0;
   for (i=0; i<NUM_CLASSES; i++)
     if (classes[i].flags & 2048) {
-      if (cursor_menus != 'Y') {
+      if (improved_interface != 'Y') {
         gotoxy(5,16+numStarts);
         sprintf(buffer,"%d> %s",numStarts+1,classes[i].name);
         txt_write(buffer);
         }
       starts[numStarts++] = i+1;
     }
-  if (cursor_menus == 'Y') open_choices(&menu,numStarts,draw_start,starts);
+  if (improved_interface == 'Y') open_choices(&menu,numStarts,draw_start,starts);
   gotoxy(10,7);
   textcolor(14);
   txt_write("_");
   gotoxy(10,7);
   key = '0';
-  if (cursor_menus == 'Y') {
+  if (improved_interface == 'Y') {
     key = choose(&menu);
     clear_choice_keys();
     textcolor(14);

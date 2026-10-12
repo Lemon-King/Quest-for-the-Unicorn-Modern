@@ -205,14 +205,21 @@ static void show_info(OBJECT_REC* item) {
   data_card(item);
   }
 
+/* With the Improved Interface only the item's name, as the list shows it, is in its rarity colour */
 static void buy(Int32 i) {
   OBJECT_REC item;
   char       name[80];
+  char       buffer[128];
 
   item = known_goods(i);
   gotoxy(15,22); txt_write("                                                  ");
   gotoxy(15,22);
-  write_named("Ah, a ",&item,base_name(name,&item)," A fine selection!",12);
+  if (improved_interface == 'Y') write_named("Ah, a ",&item,base_name(name,&item)," A fine selection!",12);
+  else {
+    textcolor(12);
+    sprintf(buffer,"Ah, a %s A fine selection!",item.name);
+    txt_write(buffer);
+    }
 
   haggle(buy_price(item_cost(&item)),item);
   }
@@ -232,7 +239,7 @@ static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
   known = known_goods(row);
   goods_name(row,menu_label_width(menu),name);
   goods_price(row,price);
-  draw_menu_item(menu,line,name,item_color(&known),price);
+  draw_menu_named(menu,line,name,item_color(&known),price);
   }
 
 /* The selected item's card beside the list, as (I) shows it */
@@ -250,7 +257,7 @@ static void show_menu_screen(char* name,MENU* menu) {
   ask_which();
   }
 
-/* The shop with the Cursor Menus preference: the goods are one list, without letters. Items are listed on the left,
+/* The shop with the Improved Interface preference: the goods are one list, without letters. Items are listed on the left,
    with the selected one's card on the right; spells keep their wide rows and show their card with (I). */
 static void shop_menu(char* name,Int32 shop_type) {
   MENU  menu = { .rows = { .shown = SHOP_ROWS, .line = 2 }, .color = 14, .keys = SHOP_KEYS, .keys_line = 24,
@@ -320,7 +327,7 @@ void shop(char* name,Int32 shop_type) {
   if (change_village_shops == 'Y' && in_village() == 'Y' && (shop_type == SHOP_WEAP || shop_type == SHOP_ARMR))
     limit_shop_items(2);
 
-  if (cursor_menus == 'Y') {
+  if (improved_interface == 'Y') {
     shop_menu(name,shop_type);
     return;
     }

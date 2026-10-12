@@ -408,8 +408,10 @@ void load_options() {
       if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
-      if (match(line, "CenterScroll ")) center_scroll = *next;
-      if (match(line, "CursorMenus ")) cursor_menus = *next;
+      if (match(line, "ImprovedInterface ")) improved_interface = *next;
+
+      /* Saves from before Improved Interface kept its menus as Cursor Menus */
+      if (match(line, "CursorMenus ")) improved_interface = *next;
       if (match(line, "TabMenu ")) tab_menu = *next;
       load_gameplay_change(line);
       }

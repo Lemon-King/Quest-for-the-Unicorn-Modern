@@ -8,7 +8,7 @@
  *******************************************************************
 */
 
-/* Stored items with the Cursor Menus preference: the pack, a house and the portable hole list their slots in one
+/* Stored items with the Improved Interface preference: the pack, a house and the portable hole list their slots in one
    numbered list beside the selected item's card, and ENTER offers what can be done with the slot. */
 
 #include "header.h"

@@ -17,7 +17,7 @@ void unpack_top(OBJECT_REC in_air,MENU* menu) {
   char buffer[80];
   textmode(3);
   textcolor(15); gotoxy(33,1); txt_write("Pack Inventory");
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     gotoxy(13,3);
     textcolor(6);
@@ -123,7 +123,7 @@ OBJECT_REC* unpack(Int32 slot) {
   unpack_top(inair,&menu);
   flag = ' ';
   while (flag == ' ') {
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       key = storage_key(&menu);
       if (key == 13) key = storage_action(&menu,pack_action(&(player.pack[menu.row + 1]),slot));
       if (key == STORAGE_MOVED) unpack_top(inair,&menu);

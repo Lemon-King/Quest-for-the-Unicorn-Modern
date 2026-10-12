@@ -44,7 +44,7 @@ static void show_top(char* name,MENU* menu) {
   txt_write(buffer);
 
   textcolor(14);
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     for (i=0; i<NUM_MOUNTS; i++) {
       sprintf(buffer,"%d> %s",i+1,mounts_for_sale[i].name);
@@ -72,7 +72,7 @@ void mounts(char* name) {
 
   show_top(name,&menu);
   while (key != '0') {
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       key = menu_number(&menu);
       if (key == 27) key = '0';
       }

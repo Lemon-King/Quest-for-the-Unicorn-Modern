@@ -12,7 +12,7 @@
 
 #define NUM_SEARCHES    3
 
-/* Picked by 'L', 'G' and 'Q' without the Cursor Menus preference */
+/* Picked by 'L', 'G' and 'Q' without the Improved Interface preference */
 static char* search_names[NUM_SEARCHES] = { "Search for Lore", "Search for General Information", "Leave" };
 
 /* The key of the search picked with the cursor, or 'Q' for ESC */
@@ -40,14 +40,14 @@ static void show_top(char* name) {
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
   textcolor(14);
-  if (cursor_menus != 'Y') {
+  if (improved_interface != 'Y') {
     gotoxy(10,5);
     txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
     }
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
-  if (cursor_menus == 'Y') draw_menu_keys(MENU_KEYS,25);
+  if (improved_interface == 'Y') draw_menu_keys(MENU_KEYS,25);
   } /* void show_top()() */
 
 void library(char* name) {
@@ -59,10 +59,10 @@ void library(char* name) {
   flag = ' ';
   while (flag == ' ') {
     show_top(name);
-    key = (cursor_menus == 'Y') ? pick_search() : inkey();
+    key = (improved_interface == 'Y') ? pick_search() : inkey();
     if (key == 'Q' || key == 'q') flag = '*';
     if (key == 'L' || key == 'l') {
-      if (cursor_menus == 'Y') key = ask_action(10,7,3,"Pay 500 gold to search","Cancel",0);
+      if (improved_interface == 'Y') key = ask_action(10,7,3,"Pay 500 gold to search","Cancel",0);
       else {
         gotoxy(10,7); textcolor(3);
         txt_write("Cost of Lore search is 500 Gold Pieces, Continue Search ?");
@@ -98,7 +98,7 @@ void library(char* name) {
         }
       }
     else if (key == 'G' || key == 'g') {
-      if (cursor_menus == 'Y') key = ask_action(10,7,3,"Pay 100 gold to search","Cancel",0);
+      if (improved_interface == 'Y') key = ask_action(10,7,3,"Pay 100 gold to search","Cancel",0);
       else {
         gotoxy(10,7); textcolor(3);
         txt_write("Cost of General search is 100 Gold Pieces, Continue Search ?");

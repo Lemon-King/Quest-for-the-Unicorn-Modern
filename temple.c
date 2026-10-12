@@ -12,7 +12,7 @@
 
 #define NUM_MODES       3
 
-/* Picked by 'N', 'H' and 'E' without the Cursor Menus preference */
+/* Picked by 'N', 'H' and 'E' without the Improved Interface preference */
 static char* mode_names[NUM_MODES] = { "Normal", "Heroic", "Epic" };
 
 /* The key of the game mode picked with the cursor; ESC picks none */
@@ -36,7 +36,7 @@ void rebirth() {
   gotoxy(10,12); txt_write("\"You are reborn, your journey begins anew.\"");
   textcolor(7);
   key = ' ';
-  if (cursor_menus == 'Y') key = pick_mode();
+  if (improved_interface == 'Y') key = pick_mode();
   else {
     gotoxy(10,16); txt_write("Select game mode: <N>ormal, <H>eroic, <E>pic: ");
     }
@@ -129,7 +129,7 @@ static void show_top(char* name,char allowed,double* cost,MENU* menu) {
   textcolor(14);
   *cost = alignment_cost();
   count = offered_services(allowed,menu->screen);
-  if (cursor_menus == 'Y') {
+  if (improved_interface == 'Y') {
     fit_menu(menu,count);
     draw_menu(menu);
     }
@@ -168,7 +168,7 @@ void temple(char* name) {
   show_top(name,allowed,&cost,&menu);
   key = ' ';
   while (key != '0') {
-    key = (cursor_menus == 'Y') ? pick_service(&menu) : inkey();
+    key = (improved_interface == 'Y') ? pick_service(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1' && get_gold()>=100) {
       player.chp = (classes[player.class-1].flags & CF_DRUID) ? player.mhp * 2 : player.mhp;
@@ -215,7 +215,7 @@ void temple(char* name) {
         if (cost > get_gold()) {
           gotoxy(27,14); textcolor(12); txt_write("You do not have enough gold!!!");
           } else {
-          if (cursor_menus == 'Y') key = ask_action(27,15,11,"Remove the Curse","Cancel",0);
+          if (improved_interface == 'Y') key = ask_action(27,15,11,"Remove the Curse","Cancel",0);
           else {
             gotoxy(27,15); textcolor(11); txt_write("Do you wish to uncurse it? (Y/N)");
             while (key != 'Y' && key != 'N') {
@@ -244,7 +244,7 @@ void temple(char* name) {
     if (player.gateway == 'F' && player.effect[PE_HEROIC] >=0 && key == '6') {
       textcolor(12); gotoxy(22,14); txt_write("WARNING! Rebirth will clear your game!");
       key = ' ';
-      if (cursor_menus == 'Y') key = ask_action(18,16,15,"Perform the Ritual of Rebirth","Cancel",1);
+      if (improved_interface == 'Y') key = ask_action(18,16,15,"Perform the Ritual of Rebirth","Cancel",1);
       else {
         textcolor(15); gotoxy(18,16); txt_write("Do you wish to perform the Ritual of Rebirth?");
         while (key != 'Y' && key != 'N') {
@@ -259,7 +259,7 @@ void temple(char* name) {
       if (player.effect[PE_HEROIC] == 0) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Casual!"); }
       if (player.effect[PE_HEROIC] == 2) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Normal!"); }
       if (player.effect[PE_HEROIC] == 4) { textcolor(12); gotoxy(22,14); txt_write("WARNING! This will downgrade your game to Heroic!"); }
-      if (cursor_menus == 'Y') key = ask_action(18,16,15,"Become one with Nature","Cancel",1);
+      if (improved_interface == 'Y') key = ask_action(18,16,15,"Become one with Nature","Cancel",1);
       else {
         textcolor(15); gotoxy(18,16); txt_write("Do you wish to become one with nature?");
         while (key != 'Y' && key != 'N') {

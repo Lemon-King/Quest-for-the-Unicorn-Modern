@@ -32,7 +32,7 @@ static void draw_mech_row(MENU* menu,Int32 row,Int32 line) {
   mech = menu->screen;
   if (row < mech->count) {
     sprintf(price,"%6.0f",mech_price(&(mech->items[row])));
-    draw_menu_item(menu,line,get_name(&(mech->items[row])),item_color(&(mech->items[row])),price);
+    draw_menu_named(menu,line,get_name(&(mech->items[row])),item_color(&(mech->items[row])),price);
     }
   else draw_menu_text(menu,line,trades[row - mech->count],"");
   }
@@ -61,7 +61,7 @@ static void show_top(OBJECT_REC* items,MENU* menu) {
   txt_write(buffer);
 
   textcolor(14);
-  if (cursor_menus == 'Y') draw_menu(menu);
+  if (improved_interface == 'Y') draw_menu(menu);
   else {
     pos = 1;
     for (i=0; i<10; i++) {
@@ -125,7 +125,7 @@ void mech_merchant() {
   option = 1;
   while (option != 0) {
     gotoxy(15,19); textcolor(10);
-    if (cursor_menus == 'Y') {
+    if (improved_interface == 'Y') {
       txt_write("Which item would you like (<ESC> to leave) ?");
       option = pick_option(&menu);
       }
@@ -142,9 +142,16 @@ void mech_merchant() {
       }
     if (option>0 && option<11 && items[option-1].otype != O_NONE) {
       item = items[option-1];
-      list_item_name(&item,60,buffer);
       gotoxy(15,19);
-      write_named("Ah, a ",&item,buffer," A fine selection!",12);
+      if (improved_interface == 'Y') {
+        list_item_name(&item,60,buffer);
+        write_named("Ah, a ",&item,buffer," A fine selection!",12);
+        }
+      else {
+        textcolor(12);
+        sprintf(buffer,"Ah, a %s A fine selection!",item.name);
+        txt_write(buffer);
+        }
       price = mech_price(&item);
       if (price <= get_gold()) {
         inventory(&item);
@@ -173,7 +180,7 @@ void mech_merchant() {
           key = inkey();
           }
         else {
-          if (cursor_menus == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
+          if (improved_interface == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
           else {
             gotoxy(15,21); textcolor(10);
             txt_write("Do you wish to identify it ? ");
@@ -206,7 +213,7 @@ void mech_merchant() {
           gotoxy(22,20);
           sprintf(buffer,"I offer you %.0f",price);
           txt_write(buffer);
-          if (cursor_menus == 'Y') key = ask_action(22,21,15,"Sell","Keep",1);
+          if (improved_interface == 'Y') key = ask_action(22,21,15,"Sell","Keep",1);
           else {
             gotoxy(22,21); textcolor(15);
             txt_write("Do you wish to sell ?");
@@ -244,7 +251,7 @@ void mech_merchant() {
             key=inkey();
             }
           else {
-            if (cursor_menus == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
+            if (improved_interface == 'Y') key = ask_action(15,21,10,"Identify","Cancel",0);
             else {
               gotoxy(15,21); textcolor(10);
               txt_write("Do you wish to identify it ? ");
@@ -290,7 +297,7 @@ void mech_merchant() {
           }
         sprintf(buffer,"%.0f",price);
         txt_write(buffer);
-        if (cursor_menus == 'Y') key = ask_action(15,22,9,"Sell","Keep",0);
+        if (improved_interface == 'Y') key = ask_action(15,22,9,"Sell","Keep",0);
         else {
           gotoxy(15,22); txt_write("Do you wish to sell it ?");
           key = inkey();
