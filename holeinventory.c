@@ -10,12 +10,18 @@
 
 #include "header.h"
 
+#define HOLE_SLOTS      1000
 
-  void hole_show_inventory(Int32 base,OBJECT_REC* in_air) {
+  void hole_show_inventory(Int32 base,OBJECT_REC* in_air,MENU* menu) {
     Int32 i;
     char buffer[80];
     textmode(3);
     textcolor(15); gotoxy(29,1); txt_write("Portable Hole Inventory");
+    if (cursor_menus == 'Y') {
+      draw_menu(menu);
+      show_in_air(in_air,23);
+      return;
+      }
     sprintf(buffer,"     Page %d of 25",base/40+1);
     txt_write(buffer);
     gotoxy(10,3);
@@ -61,17 +67,7 @@
         txt_write(buffer);
         }
       }
-    textcolor(CLR_WHITE);
-    gotoxy(20,25); txt_write("In Air: ");
-    if (in_air != NULL && in_air->otype != O_NONE) {
-        sprintf(buffer,"%s",get_name(in_air));
-        if (strlen(buffer) > 30) {
-          buffer[30] = 0;
-          strcat(buffer,"...");
-          }
-        itemColor(in_air);
-        txt_write(buffer);
-      }
+    show_in_air(in_air,25);
     }
 
 void hole_inventory() {
@@ -87,21 +83,34 @@ void hole_inventory() {
   OBJECT_REC  temp;
   Int32 item1;
   Int32 item2;
+  STORAGE     storage = { .slots = player.hole, .inair = &in_air };
+  MENU        menu;
 
   row = 0;
   col = 0;
   base = 0;
   in_air.otype = O_NONE;
-  hole_show_inventory(base,&in_air);
+  open_storage(&menu,&storage,HOLE_SLOTS);
+  hole_show_inventory(base,&in_air,&menu);
   flag = ' ';
   while (flag == ' ') {
-    textcolor(14);
-    gotoxy(1+col*40,row+5);
-    txt_write("->");
-    key = inkey();
-    textcolor(14);
-    gotoxy(1+col*40,row+5);
-    txt_write("  ");
+    if (cursor_menus == 'Y') {
+      key = storage_key(&menu);
+      if (key == 13) key = storage_action(&menu,transfer_action(&(player.hole[menu.row])));
+      if (key == 'M') hole_show_inventory(base,&in_air,&menu);
+      base = menu.row / 40 * 40;
+      col = menu.row % 40 / 20;
+      row = menu.row % 20;
+      }
+    else {
+      textcolor(14);
+      gotoxy(1+col*40,row+5);
+      txt_write("->");
+      key = inkey();
+      textcolor(14);
+      gotoxy(1+col*40,row+5);
+      txt_write("  ");
+      }
     if (key == 27) flag = 'N';
     if (key == 13) {
       it = player.hole[base+row+col*20];
@@ -113,22 +122,22 @@ void hole_inventory() {
         player.hole[base+row+col*20] = *item;
         item->otype = O_NONE;
         }
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == 'i' || key == 'I') {
       it = player.hole[base+row+col*20];
       if (it.otype != O_NONE) data_card(&it);
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == '3') {
       base += 40;
       if (base > 960) base = 0;
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == '9') {
       base -= 40;
       if (base < 0) base = 960;
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == '2' || key == '.' || key == '>') {
       row++;
@@ -146,7 +155,7 @@ void hole_inventory() {
       temp = player.hole[item1];
       player.hole[item1] = in_air;
       in_air = temp;
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == '7') {
       item1 = row+col*20;
@@ -157,7 +166,7 @@ void hole_inventory() {
       player.hole[base + item2] = temp;
       col = item2 / 20;
       row = item2 - (col * 20);
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     if (key == '1') {
       item1 = row+col*20;
@@ -168,7 +177,7 @@ void hole_inventory() {
       player.hole[base + item2] = temp;
       col = item2 / 20;
       row = item2 - (col * 20);
-      hole_show_inventory(base,&in_air);
+      hole_show_inventory(base,&in_air,&menu);
       }
     }
   if (in_air.otype != O_NONE) {

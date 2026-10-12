@@ -326,6 +326,7 @@
     <ClCompile Include="stockmonsters.c" />
     <ClCompile Include="stocktown.c" />
     <ClCompile Include="stocktreasure.c" />
+    <ClCompile Include="storage.c" />
     <ClCompile Include="strokefont.c" />
     <ClCompile Include="super.c" />
     <ClCompile Include="taketime.c" />

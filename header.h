@@ -937,6 +937,14 @@ struct MENU {
   void*       screen;
   };
 
+/* Stored items listed with the cursor (storage.c): the slots from the first listed, the item the screen holds in the
+   air, and the digits of the slots' numbers */
+typedef struct {
+  OBJECT_REC* slots;
+  OBJECT_REC* inair;
+  Int32       digits;
+  } STORAGE;
+
 typedef struct {
   char      name[21];
   byte      age;
@@ -1320,6 +1328,11 @@ extern char menu_key(MENU* menu);
 extern Int32 menu_choice(MENU* menu);
 extern char menu_number(MENU* menu);
 extern Int32 ask_choice(Int32 column,Int32 line,Int32 color,char** choices,Int32 count,Int32 row);
+extern void open_storage(MENU* menu,STORAGE* storage,Int32 count);
+extern char storage_key(MENU* menu);
+extern char storage_action(MENU* menu,char* main);
+extern char* transfer_action(OBJECT_REC* item);
+extern void show_in_air(OBJECT_REC* in_air,Int32 line);
 extern char ask_action(Int32 column,Int32 line,Int32 color,char* action,char* cancel,Int32 row);
 extern Int32 open_tab_menu(void);
 extern Int32 merchant_beside(void);

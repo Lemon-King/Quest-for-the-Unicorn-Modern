@@ -816,6 +816,9 @@
     <ClCompile Include="stocktreasure.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="storage.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="strokefont.c">
       <Filter>Display</Filter>
     </ClCompile>

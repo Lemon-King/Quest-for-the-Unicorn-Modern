@@ -1079,6 +1079,11 @@
      Moving asks for the slot with the cursor, and swaps the item with
      whatever is there.  <Space>, <X> and <I> still work too.
 
+       A house and the portable hole list their slots the same way, in one
+     numbered list in place of pages.  <Enter> offers to take the item out
+     into your inventory, or to store an item from your inventory in an
+     empty slot, then the pack's other actions.
+
      Tab Menu
      ========
        With the Tab Menu preference, <Tab> opens a menu of commands in the
