@@ -1141,6 +1141,7 @@ LINK char               change_platinum_dragon_mount;
 LINK char               change_town_completion;
 LINK char               change_town_trophy;
 LINK char               change_village_shops;
+LINK char               change_nether_core;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;

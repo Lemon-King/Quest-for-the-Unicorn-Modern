@@ -10,6 +10,33 @@
 
 #include "header.h"
 
+#define NETHER_CORE   704
+
+/* Whether a Nether Core lies on the level's floor */
+static Int32 core_on_floor(void) {
+  Int32 x,y;
+  Int32 value;
+
+  for (x=1; x<=100; x++)
+    for (y=1; y<=100; y++) {
+      value = player.map[x][y];
+      if (value >= 1000 && value < 2000 &&
+          player.map_objects[value-1000].otype != O_NONE &&
+          player.map_objects[value-1000].link == NETHER_CORE) return 1;
+      }
+
+  return 0;
+  }
+
+/* Without the Nether Core change every entry to Castle Eshter adds a Nether Core. On, one lies there at a time;
+   Strict, none while you own one. */
+static Int32 places_nether_core(void) {
+  if (change_nether_core == 'S' && possesses(NETHER_CORE)) return 0;
+  if (change_nether_core == 'Y' || change_nether_core == 'S') return !core_on_floor();
+
+  return 1;
+  }
+
 void make_map(char dir) {
   Int32  i,j,x,y;
   Int32  upx,upy;
@@ -155,6 +182,10 @@ void make_map(char dir) {
       player.diff = 30;
       strcpy(player.d_name,"Realm of Eshter");
       copyMap(&player.map,18);
+
+      /* The template covers the items left on the Realm's floor; without Floor Items they keep their slots */
+      if (change_floor_items == 'Y')
+        for (i=0; i<1000; i++) player.map_objects[i].otype = O_NONE;
       player.x = 78;
       player.y = 89;
       stock_monsters(player.d_level,-1,-1,&(player.map),&(player.monster));
@@ -167,10 +198,10 @@ void make_map(char dir) {
       }
     if (player.d_level == 5) {
       strcpy(player.d_name,"Castle Eshter");
-      if (player.gateway != 'F') {
+      if (player.gateway != 'F' && places_nether_core()) {
         slot = find_item_slot();
         if (slot < 0) return;
-        item = find_linked_item(704);
+        item = find_linked_item(NETHER_CORE);
         if (item != NULL) {
           x = u_random(80) + 10;
           y = u_random(80) + 10;

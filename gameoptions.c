@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    59
+#define NUM_CHANGES    60
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -48,9 +48,10 @@
 #define CELL_HEIGHT    19
 #define THUMB_WIDTH     4
 
-/* units follows a number's value; standard is a number's or mode's own default, and initial the value a new game
-   starts with, after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there
-   instead of in the save; apply puts a new value into effect; key names a gameplay change in the save */
+/* units follows a number's value; strict is a switch's third value, after On; standard is a number's or mode's own
+   default, and initial the value a new game starts with, after unicorn.cfg and the command line; config names the
+   unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect; key names a
+   gameplay change in the save */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -59,6 +60,7 @@ typedef struct {
   char*  flag;
   char   on;
   char   off;
+  char   strict;
   char   casual;
   Int32* number;
   Int32  min;
@@ -332,7 +334,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_town_trophy, .on = 'Y', .off = 'N', .key = "TownTrophy" },
   { .label = "Village Shops",
     .help  = "Village merchants sell; their weapons and armour are only levels 1 and 2",
-    .kind  = OPT_SWITCH, .flag = &change_village_shops, .on = 'Y', .off = 'N', .key = "VillageShops" }
+    .kind  = OPT_SWITCH, .flag = &change_village_shops, .on = 'Y', .off = 'N', .key = "VillageShops" },
+  { .label = "Nether Core",
+    .help  = "Castle Eshter has one Nether Core at a time; Strict, none while you own one",
+    .kind  = OPT_SWITCH, .flag = &change_nether_core, .on = 'Y', .off = 'N', .strict = 'S', .key = "NetherCore" }
   };
 
 static Int32 mode_index(Int32 mode) {
@@ -440,13 +445,43 @@ static Int32 first_editable(char rules_editable) {
   return 0;
   }
 
+/* A switch is on at On, and at its strict value if it has one */
+static Int32 is_switch_on(OPTION_ROW* row, char flag) {
+  return (flag == row->on || (row->strict != 0 && flag == row->strict));
+  }
+
+static char* switch_name(OPTION_ROW* row, char flag) {
+  if (flag == row->on) return "On";
+  if (row->strict != 0 && flag == row->strict) return "Strict";
+
+  return "Off";
+  }
+
+/* Steps a switch through Off and On, then Strict when it has one, wrapping either way */
+static char next_switch_value(OPTION_ROW* row, Int32 dir) {
+  char  values[3];
+  Int32 count;
+  Int32 i;
+
+  values[0] = row->off;
+  values[1] = row->on;
+  values[2] = row->strict;
+  count = (row->strict != 0) ? 3 : 2;
+
+  i = 0;
+  while (i < count && values[i] != *row->flag) i++;
+  if (i == count) i = 0;
+
+  return values[(i + dir + count) % count];
+  }
+
 static void format_value(OPTION_ROW* row, char* text) {
   char flag;
   char number[16];
   switch (row->kind) {
     case OPT_MODE:   sprintf(text, "%-*s", VALUE_WIDTH, mode_name(*row->number)); break;
     case OPT_SWITCH: flag = is_held_by_mode(row) ? row->casual : *row->flag;
-                     sprintf(text, "%-*s", VALUE_WIDTH, (flag == row->on) ? "On" : "Off");
+                     sprintf(text, "%-*s", VALUE_WIDTH, switch_name(row, flag));
                      break;
     case OPT_NUMBER: sprintf(number, "%d%s", *row->number, row->units);
                      sprintf(text, "%-*s", VALUE_WIDTH, number);
@@ -460,9 +495,10 @@ static Int32 option_value(OPTION_ROW* row) {
   return *row->number;
   }
 
-/* A switch is blue On and grey Off; a number or mode is yellow at the game's own default and blue when changed */
+/* A switch is blue On or Strict and grey Off; a number or mode is yellow at the game's own default and blue when
+   changed */
 static Int32 value_color(OPTION_ROW* row) {
-  if (row->kind == OPT_SWITCH) return (*row->flag == row->on) ? CLR_LIGHTBLUE : CLR_GRAY;
+  if (row->kind == OPT_SWITCH) return is_switch_on(row, *row->flag) ? CLR_LIGHTBLUE : CLR_GRAY;
   if (*row->number == row->standard) return CLR_YELLOW;
 
   return CLR_LIGHTBLUE;
@@ -474,7 +510,7 @@ static void change_option(OPTION_ROW* row, Int32 dir) {
          *row->number = mode_values[(mode_index(*row->number) + dir + NUM_MODES) % NUM_MODES];
          break;
     case OPT_SWITCH:
-         *row->flag = (*row->flag == row->on) ? row->off : row->on;
+         *row->flag = next_switch_value(row, dir);
          break;
     case OPT_NUMBER:
          *row->number += dir * row->step;
@@ -514,7 +550,7 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   txt_write(text);
   }
 
-/* A track beside the group's rows, with a thumb as long as the share of rows shown, placed by how far it has scrolled */
+/* A track beside the group's rows, with a thumb as long as the share of rows shown, placed by how far it scrolled */
 static void draw_scroll_bar(OPTION_GROUP* group) {
   Int32 x,y;
   Int32 height;
@@ -649,11 +685,13 @@ void remember_built_in_defaults() {
     if (option_rows[i].kind != OPT_SWITCH) option_rows[i].standard = *option_rows[i].number;
   }
 
-/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start On. */
+/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start On,
+   or Strict where they have it. */
 void remember_option_defaults() {
   Int32 i;
   for (i=0; i<NUM_OPTIONS; i++) {
-    if (is_gameplay_change(i)) option_rows[i].initial = option_rows[i].on;
+    if (is_gameplay_change(i) && option_rows[i].strict != 0) option_rows[i].initial = option_rows[i].strict;
+      else if (is_gameplay_change(i)) option_rows[i].initial = option_rows[i].on;
       else option_rows[i].initial = option_value(&option_rows[i]);
     }
   }
