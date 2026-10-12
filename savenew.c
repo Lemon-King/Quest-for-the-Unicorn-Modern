@@ -280,6 +280,7 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
   sprintf(line, "  ShowMount %c", show_mount);              write_line(file, line);
+  sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  CursorMenus %c", cursor_menus);          write_line(file, line);

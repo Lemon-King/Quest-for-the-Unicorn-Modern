@@ -16,7 +16,7 @@ void show_player() {
   y = player.y;
   if (player.effect[PE_SLEEP] == 0) {
     if (player.inship == ' ')
-      show_sprite(player.x-player.map_x,player.y-player.map_y,35);
+      show_sprite(player.x-player.map_x,player.y-player.map_y,player_sprite());
     else
       show_sprite(player.x-player.map_x,player.y-player.map_y,12);
     }

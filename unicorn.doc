@@ -621,6 +621,12 @@
                               in place of your own figure: the first
                               flying mount in your party when you fly,
                               otherwise the first mount
+         Unique Class Sprites Show your class as its own figure where the
+                              game has one: a Cavalier in mail with a
+                              lance, a Cleric or Shaman robed in white,
+                              and a Mage, Enchanter, Druid or Hierophant
+                              robed in blue.  Other classes keep the
+                              standard figure
          Floor Item Names     Show the name of the item you stand on in the
                               bottom right, in its inventory colour
          Gothic Scrolls       Write scrolls, lore and the library in

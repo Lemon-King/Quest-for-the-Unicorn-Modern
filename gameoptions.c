@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      14
+#define NUM_PREFS      15
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -147,6 +147,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Show Mount",
     .help  = "On the overworld, the mount you ride shows in place of your own sprite",
     .kind  = OPT_SWITCH, .flag = &show_mount, .on = 'Y', .off = 'N' },
+  { .label = "Unique Class Sprites",
+    .help  = "Show your class's own figure where there is one: cavalier, cleric or mage",
+    .kind  = OPT_SWITCH, .flag = &class_sprites, .on = 'Y', .off = 'N' },
   { .label = "Floor Item Names",
     .help  = "Shows the name of the item you stand on, in the bottom right",
     .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },

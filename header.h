@@ -598,6 +598,7 @@ typedef struct {
   Int32  spell_group;
   Int32  hp_regen;
   Int32  weapon_affinity;
+  Int32  sprite;               /* drawn for the player with the Unique Class Sprites preference */
   } CLASS_REC;
 
 typedef struct {
@@ -1111,6 +1112,7 @@ LINK char               floor_item_names;
 LINK char               gothic_scrolls;
 LINK char               cursor_menus;
 LINK char               show_mount;
+LINK char               class_sprites;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
 LINK char               change_dalek_spawns;
@@ -1663,6 +1665,7 @@ extern void mapgen(Int32 depth,Int32 floor,Int32* treasurex,Int32* treasurey,
 extern Int32 damage_reduction(Int32 n);
 extern Int32 magic_adjust(Int32 n);
 extern void check_mount();
+extern Int32 player_sprite(void);
 extern Int32 rider_sprite(void);
 extern Int32 reduce_damage(Int32 damage,Int32 element);
 extern Int32 get_city();

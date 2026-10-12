@@ -251,6 +251,7 @@
     <ClCompile Include="permadeath.c" />
     <ClCompile Include="pittrap.c" />
     <ClCompile Include="placeobject.c" />
+    <ClCompile Include="playersprite.c" />
     <ClCompile Include="poisonkill.c" />
     <ClCompile Include="poisontrap.c" />
     <ClCompile Include="possesses.c" />

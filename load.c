@@ -405,6 +405,7 @@ void load_options() {
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
       if (match(line, "ShowMount ")) show_mount = *next;
+      if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "CursorMenus ")) cursor_menus = *next;

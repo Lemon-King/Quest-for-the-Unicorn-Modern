@@ -591,6 +591,9 @@
     <ClCompile Include="placeobject.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="playersprite.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="poisonkill.c">
       <Filter>Game</Filter>
     </ClCompile>
