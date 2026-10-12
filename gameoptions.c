@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      12
-#define NUM_CHANGES    54
+#define NUM_CHANGES    55
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -317,7 +317,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .kind  = OPT_SWITCH, .flag = &change_hunting_skill, .on = 'Y', .off = 'N', .key = "HuntingSkill" },
   { .label = "Free Upland Keys",
     .help  = "Help, records, options, unused keys and blocked steps take no upland time",
-    .kind  = OPT_SWITCH, .flag = &change_free_upland_keys, .on = 'Y', .off = 'N', .key = "FreeUplandKeys" }
+    .kind  = OPT_SWITCH, .flag = &change_free_upland_keys, .on = 'Y', .off = 'N', .key = "FreeUplandKeys" },
+  { .label = "Shaman Legendaries",
+    .help  = "Ayres' Mythical items found by a Shaman get the Cleric's bonuses and a mace",
+    .kind  = OPT_SWITCH, .flag = &change_shaman_legendaries, .on = 'Y', .off = 'N', .key = "ShamanLegendaries" }
   };
 
 static Int32 mode_index(Int32 mode) {
