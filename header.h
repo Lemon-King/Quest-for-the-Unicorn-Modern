@@ -888,6 +888,34 @@ typedef struct {
   Int32       time_played;
   } SAVE_SUMMARY;
 
+/* A list's rows under a heading line: count rows, of which shown fit from top. A list longer than that scrolls, with
+   "more" markers at more_column and a scroll bar after them. */
+typedef struct {
+  Int32       count;
+  Int32       shown;
+  Int32       top;
+  Int32       line;
+  Int32       more_column;
+  } SCROLL_LIST;
+
+/* A list picked from with a cursor, as on the Game Options screen. draw_row draws a row on its line, reaching the
+   screen's own data through screen. */
+#define MENU_KEYS "(8/2) Select   (ENTER) Choose   (ESC) Leave"
+
+typedef struct MENU MENU;
+
+struct MENU {
+  SCROLL_LIST rows;
+  Int32       row;
+  Int32       column;
+  Int32       value_column;
+  Int32       color;
+  char*       keys;
+  Int32       keys_line;
+  void        (*draw_row)(MENU* menu,Int32 row,Int32 line);
+  void*       screen;
+  };
+
 typedef struct {
   char      name[21];
   byte      age;
@@ -1081,6 +1109,7 @@ LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
 LINK char               gothic_scrolls;
+LINK char               cursor_menus;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
 LINK char               change_dalek_spawns;
@@ -1246,6 +1275,17 @@ extern void walk_aboard(void);
 extern Int32 steps_ashore(Int32 x,Int32 y,Int32 dx,Int32 dy,Int32 shore);
 extern void show_bottom_name(char* name,Int32 color);
 extern void hide_bottom_name(void);
+extern Int32 list_shows(SCROLL_LIST* list,Int32 row);
+extern Int32 list_scroll_to(SCROLL_LIST* list,Int32 row);
+extern Int32 list_line(SCROLL_LIST* list,Int32 row);
+extern void draw_list_more(SCROLL_LIST* list);
+extern void draw_list_arrow(Int32 column,Int32 line,Int32 selected);
+extern void fit_menu(MENU* menu,Int32 count);
+extern void draw_menu(MENU* menu);
+extern void draw_menu_text(MENU* menu,Int32 line,char* label,char* value);
+extern char menu_key(MENU* menu);
+extern Int32 menu_choice(MENU* menu);
+extern char menu_number(MENU* menu);
 extern void special8();
 extern void special9();
 extern void special14();

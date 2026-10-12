@@ -10,6 +10,26 @@
 
 #include "header.h"
 
+#define SHIP_LABEL "Purchase a ship"
+
+/* The trips offered: dest[1] to dest[count] at their costs, then a ship when the town has a harbour */
+typedef struct {
+  char   (*dest)[33];
+  Int32* cost;
+  Int32  count;
+  } TRIPS;
+
+static void draw_trip(MENU* menu,Int32 row,Int32 line) {
+  TRIPS* trips;
+  char   price[16];
+  trips = menu->screen;
+  if (row < trips->count) {
+    sprintf(price,"%4d",trips->cost[row + 1]);
+    draw_menu_text(menu,line,trips->dest[row + 1],price);
+    }
+  else draw_menu_text(menu,line,SHIP_LABEL,"2500");
+  }
+
 static void new_town(Int32 where) {
   Int32 i;
 //    Int32 m_file;
@@ -106,6 +126,9 @@ void travel(char* name) {
   Int32  city;
   Int32  shipx,shipy;
   Int32  ndest;
+  TRIPS  trips;
+  MENU   menu = { .rows = { .shown = 9, .line = 2 }, .column = 27, .value_column = 50,
+                  .color = 14, .keys = MENU_KEYS, .keys_line = 25, .draw_row = draw_trip, .screen = &trips };
 
   shipx = -1;
   shipy = -1;
@@ -140,37 +163,51 @@ void travel(char* name) {
       } else i++;
     }
 
+  trips.dest = dest;
+  trips.cost = cost;
+  trips.count = ndest - 1;
+  fit_menu(&menu,(shipx >= 0) ? ndest : ndest - 1);
+
   textmode(3);
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
   textcolor(14);
-  for (i=1; i<ndest; i++) {
-    gotoxy(27,i+2);
-    sprintf(buffer,"%2d> %s",i,dest[i]);
-    txt_write(buffer);
-    gotoxy(50,i+2);
-    sprintf(buffer,"%4d",cost[i]);
-    txt_write(buffer);
+  if (cursor_menus == 'Y') draw_menu(&menu);
+  else {
+    for (i=1; i<ndest; i++) {
+      gotoxy(27,i+2);
+      sprintf(buffer,"%2d> %s",i,dest[i]);
+      txt_write(buffer);
+      gotoxy(50,i+2);
+      sprintf(buffer,"%4d",cost[i]);
+      txt_write(buffer);
+      }
+    if (shipx >= 0)
+      {
+        sprintf(buffer,"%2d> %s",ndest,SHIP_LABEL);
+        gotoxy(27,ndest+2); txt_write(buffer);
+        gotoxy(49,11); txt_write("2500");
+      }
     }
-  if (shipx >= 0)
-    {
-      sprintf(buffer,"%2d> Purchase a ship",ndest);
-      gotoxy(27,ndest+2); txt_write(buffer);
-      gotoxy(49,11); txt_write("2500");
-    }
-  textcolor(14); gotoxy(35,24); 
+  textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
   flag = ' ';
   while (flag == ' ') {
     textcolor(10); gotoxy(20,ndest+4);
-    txt_write("Where would you like to travel to (<ESC> to leave) ?      ");
-    gotoxy(73,ndest+4);
-    strcpy(buffer,"");
-    if (p_read(buffer) == 0) {
-      sscanf(buffer,"%d",&option);
-      } else option = 0;
+    if (cursor_menus == 'Y') {
+      txt_write("Where would you like to travel to (<ESC> to leave) ?");
+      option = menu_choice(&menu) + 1;
+      }
+    else {
+      txt_write("Where would you like to travel to (<ESC> to leave) ?      ");
+      gotoxy(73,ndest+4);
+      strcpy(buffer,"");
+      if (p_read(buffer) == 0) {
+        sscanf(buffer,"%d",&option);
+        } else option = 0;
+      }
     gotoxy(20,16);
     txt_write("                                           ");
     if (option == 0) flag = '*';

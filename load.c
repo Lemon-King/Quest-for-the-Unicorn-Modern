@@ -406,6 +406,7 @@ void load_options() {
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
+      if (match(line, "CursorMenus ")) cursor_menus = *next;
       load_gameplay_change(line);
       }
     }

@@ -624,6 +624,11 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
+         Cursor Menus         Choose in shops, the party screen and a new
+                              character's sex, race and class with a
+                              cursor, as on the options screen (see Item
+                              Merchants).  Off, they choose by letter or
+                              number
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -1020,6 +1025,17 @@
 
        The <a> through <r> keys will also instantly move the selection
      arrows to the row marked by the appropriate key.
+
+       With the Cursor Menus preference, which a new character starts with,
+     the merchants' rows have no letters.  The same keys move the cursor,
+     which runs from the last item round to the first, <ESC> leaves, and a
+     scroll bar beside a long list shows how far down it is.  The other
+     menus that choose by number work the same way, with <8> and <2> to
+     move, <9>, <3>, <7> and <1> to jump, <Enter> to choose and <ESC> to
+     leave: the temple, stable, bank, house purchase, travel agency, inn,
+     school, pawn shop and Mech-Merchant, the party screen (where <Enter>
+     shows the member's statistics, and <D>, <C> and <O> ask for the member
+     with the cursor), and a new character's sex, race and class.
 
      Persistant Dungeons
      ===================

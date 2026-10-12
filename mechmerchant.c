@@ -10,7 +10,44 @@
 
 #include "header.h"
 
-static void show_top(OBJECT_REC* items) {
+#define NUM_TRADES      4
+
+/* Picked by 11 to 14 in the numbered menu, after the items for sale */
+static char* trades[NUM_TRADES] = { "Sell an item", "Identify an item", "Sell from Pack", "Identify from Pack" };
+
+/* The Mech-Merchant's menu: items[0] to items[count-1] for sale, then the trades */
+typedef struct {
+  OBJECT_REC* items;
+  Int32       count;
+  } MECH_MENU;
+
+static double mech_price(OBJECT_REC* item) {
+  return item_cost(item) * 1.50;
+  }
+
+static void draw_mech_row(MENU* menu,Int32 row,Int32 line) {
+  MECH_MENU* mech;
+  char       price[16];
+  mech = menu->screen;
+  if (row < mech->count) {
+    sprintf(price,"%6.0f",mech_price(&(mech->items[row])));
+    draw_menu_text(menu,line,get_name(&(mech->items[row])),price);
+    }
+  else draw_menu_text(menu,line,trades[row - mech->count],"");
+  }
+
+/* The number that picks the chosen row in the numbered menu, or 0 to leave */
+static Int32 pick_option(MENU* menu) {
+  MECH_MENU* mech;
+  Int32      row;
+  mech = menu->screen;
+  row = menu_choice(menu);
+  if (row < 0) return 0;
+  if (row < mech->count) return row + 1;
+  return 11 + row - mech->count;
+  }
+
+static void show_top(OBJECT_REC* items,MENU* menu) {
   Int32 i;
   Int32 pos;
   char buffer[80];
@@ -19,23 +56,26 @@ static void show_top(OBJECT_REC* items) {
   sprintf(buffer,"Mech-Merchant");
   txt_write(buffer);
   textcolor(14);
-  pos = 1;
-  for (i=0; i<10; i++) {
-    if (items[i].otype != O_NONE) {
-      gotoxy(22,pos+2);
-      strcpy(buffer2, get_name(&(items[i])));
-      sprintf(buffer,"%2d  %s",pos,buffer2);
-      txt_write(buffer);
-      gotoxy(50,pos+2);
-      sprintf(buffer,"%6.0f",item_cost(&(items[i])) * 1.50);
-      txt_write(buffer);
-      pos++;
+  if (cursor_menus == 'Y') draw_menu(menu);
+  else {
+    pos = 1;
+    for (i=0; i<10; i++) {
+      if (items[i].otype != O_NONE) {
+        gotoxy(22,pos+2);
+        strcpy(buffer2, get_name(&(items[i])));
+        sprintf(buffer,"%2d  %s",pos,buffer2);
+        txt_write(buffer);
+        gotoxy(50,pos+2);
+        sprintf(buffer,"%6.0f",mech_price(&(items[i])));
+        txt_write(buffer);
+        pos++;
+        }
+      }
+    for (i=0; i<NUM_TRADES; i++) {
+      sprintf(buffer,"%2d  %s",11+i,trades[i]);
+      gotoxy(22,14+i); txt_write(buffer);
       }
     }
-  gotoxy(22,14); txt_write("11  Sell an item");
-  gotoxy(22,15); txt_write("12  Identify an item");
-  gotoxy(22,16); txt_write("13  Sell from Pack");
-  gotoxy(22,17); txt_write("14  Identify from Pack");
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -64,22 +104,33 @@ void mech_merchant() {
   char buffer[80];
   char key;
   OBJECT_REC items[10];
+  MECH_MENU mech = { .items = items };
+  MENU menu = { .rows = { .shown = 10 + NUM_TRADES, .line = 2 }, .column = 22, .value_column = 50, .color = 14,
+                .keys = MENU_KEYS, .keys_line = 25, .draw_row = draw_mech_row, .screen = &mech };
 
   i = 0;
   pItem = find_linked_item(40); if (pItem != NULL) items[i++] = *pItem;
   pItem = find_linked_item(499); if (pItem != NULL) items[i++] = *pItem;
+  mech.count = i;
+  fit_menu(&menu,mech.count + NUM_TRADES);
   while (i < 10) items[i++].otype = O_NONE;
   pItem = &item;
-  show_top(items);
+  show_top(items,&menu);
   option = 1;
   while (option != 0) {
     gotoxy(15,19); textcolor(10);
-    txt_write("Which item would you like (<ESC> to leave) ?        ");
-    gotoxy(60,19); textcolor(15);
-    strcpy(buffer,"");
-    if (p_read(buffer) == 0) {
-      sscanf(buffer,"%d",&option);
-      } else option = 0;
+    if (cursor_menus == 'Y') {
+      txt_write("Which item would you like (<ESC> to leave) ?");
+      option = pick_option(&menu);
+      }
+    else {
+      txt_write("Which item would you like (<ESC> to leave) ?        ");
+      gotoxy(60,19); textcolor(15);
+      strcpy(buffer,"");
+      if (p_read(buffer) == 0) {
+        sscanf(buffer,"%d",&option);
+        } else option = 0;
+      }
     for (i=18; i<=23; i++) {
       gotoxy(10,i); txt_write("                                                                    ");
       }
@@ -88,7 +139,7 @@ void mech_merchant() {
       gotoxy(15,19); textcolor(12);
       sprintf(buffer,"Ah, a %s A fine selection!",item.name);
       txt_write(buffer);
-      price = item_cost(&item) * 1.50;
+      price = mech_price(&item);
       if (price <= get_gold()) {
         inventory(&item);
         sub_gold(price);
@@ -98,11 +149,11 @@ void mech_merchant() {
         txt_write("You do not have that much!! (press a key)");
         key = inkey();
         }
-      show_top(items);
+      show_top(items,&menu);
       }
     if (option == 12) {
       pItem = inventory(0);
-      show_top(items);
+      show_top(items,&menu);
       if (pItem != NULL && pItem->otype != O_NONE) {
         gotoxy(15,19); textcolor(12);
         price = rcs_trunc(item_cost(pItem) * 0.25);
@@ -131,7 +182,7 @@ void mech_merchant() {
             }
           }
         }
-      show_top(items);
+      show_top(items,&menu);
       }
     if (option == 13)
       for (i=1; i<=32; i++)
@@ -207,7 +258,7 @@ void mech_merchant() {
         }
     if (option == 11) {
       pItem = inventory(0);
-      show_top(items);
+      show_top(items,&menu);
       if (pItem != NULL && pItem->otype != O_NONE) {
         price = sell_price(pItem);
 	if (price < 1) price = 1;
@@ -239,7 +290,7 @@ void mech_merchant() {
           if (price > stats.counts[STAT_LARGEST_SALE]) stats.counts[STAT_LARGEST_SALE] = price;
           }
         }
-      show_top(items);
+      show_top(items,&menu);
       }
     }
   } /* void pawn(char* name, byte city) */

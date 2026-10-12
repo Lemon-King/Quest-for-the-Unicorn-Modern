@@ -10,75 +10,70 @@
 
 #include "header.h"
 
-static void show_spells(Int32 offset,Int32 page_size) {
-  Int32 i;
+#define SHOP_ROWS      18
+#define SHOP_KEYS      "(8/2) Select   (ENTER) Buy   (I) Info   (ESC) Leave"
+
+static void draw_spell(Int32 i,Int32 line) {
   Int32 j;
-  Int32 line,col;
+  Int32 col;
   char buffer[80];
   char buffer2[80];
-  Int32 count;
-  line = 3;
   col = 12;
-  textcolor(14);
-  count = n_shop_items - offset;
-  if (count > page_size) count = page_size;
-  for (i=0; i<count; i++) {
-    gotoxy(18,line);
-    txt_write("                                                  ");
-    sprintf(buffer,"%c)",i+'a');
-    gotoxy(5,line); txt_write(buffer);
-    strcpy(buffer2,shop_items[i+offset].name);
-    for (j=0; j<strlen(buffer2); j++)
-      if (buffer2[j] == '_') buffer2[j] = ' ';
-    gotoxy(col,line);
-    sprintf(buffer,"%3d",i+1+offset);
-    txt_write(buffer);
-    gotoxy(col+5,line);
-    sprintf(buffer,"%s:%d",classes[spells[shop_items[i+offset].control].allign-1].name,spells[shop_items[i+offset].control].level);
-    txt_write(buffer);
-    gotoxy(col+20,line);
-    txt_write(buffer2);
-    gotoxy(col+50,line);
-    sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i+offset]))));
-    txt_write(buffer);
-    line++;
+  strcpy(buffer2,shop_items[i].name);
+  for (j=0; j<strlen(buffer2); j++)
+    if (buffer2[j] == '_') buffer2[j] = ' ';
+  gotoxy(col,line);
+  sprintf(buffer,"%3d",i+1);
+  txt_write(buffer);
+  gotoxy(col+5,line);
+  sprintf(buffer,"%s:%d",classes[spells[shop_items[i].control].allign-1].name,spells[shop_items[i].control].level);
+  txt_write(buffer);
+  gotoxy(col+20,line);
+  txt_write(buffer2);
+  gotoxy(col+50,line);
+  sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
+  txt_write(buffer);
+  }
+
+static void draw_item(Int32 i,Int32 line) {
+  Int32 j;
+  char buffer[80];
+  char buffer2[80];
+  gotoxy(18,line);
+  strcpy(buffer2,shop_items[i].name);
+  if (shop_items[i].charges > 0) {
+    sprintf(buffer," [%d]",shop_items[i].charges);
+    strcat(buffer2,buffer);
     }
+  for (j=0; j<strlen(buffer2); j++)
+    if (buffer2[j] == '_') buffer2[j] = ' ';
+  txt_write(buffer2);
+  gotoxy(55,line);
+  sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i]))));
+  txt_write(buffer);
+  }
+
+/* Item i's row, covering the row before it */
+static void draw_goods(Int32 shop_type,Int32 i,Int32 line) {
+  gotoxy(18,line);
+  txt_write("                                                  ");
+
+  if (shop_type == SHOP_SPEL) draw_spell(i,line);
+    else draw_item(i,line);
   }
 
 static void show_items(Int32 shop_type,Int32 offset,Int32 page_size) {
   Int32 count;
   Int32 i;
-  Int32 j;
-  Int32 line;
-  char buffer[80];
-  char buffer2[80];
-  if (shop_type == SHOP_SPEL) {
-    show_spells(offset,page_size);
-    return;
-    }
-  line = 3;
+  char buffer[8];
   textcolor(14);
   count = n_shop_items - offset;
   if (count > page_size) count = page_size;
   for (i=0; i<count; i++) {
-    gotoxy(18,line);
-    txt_write("                                                  ");
+    draw_goods(shop_type,i+offset,i+3);
     sprintf(buffer,"%c)",i+'a');
-    gotoxy(11,line); txt_write(buffer);
-    gotoxy(18,line);
-    strcpy(buffer2,shop_items[i+offset].name);
-    if (shop_items[i+offset].charges > 0) {
-      sprintf(buffer," [%d]",shop_items[i+offset].charges);
-      strcat(buffer2,buffer);
-      }
-    for (j=0; j<strlen(buffer2); j++)
-      if (buffer2[j] == '_') buffer2[j] = ' ';
-    sprintf(buffer,"%s",buffer2);
+    gotoxy((shop_type == SHOP_SPEL) ? 5 : 11,i+3);
     txt_write(buffer);
-    gotoxy(55,line);
-    sprintf(buffer,"%6.0f",buy_price(item_cost(&(shop_items[i+offset]))));
-    txt_write(buffer);
-    line++;
     }
   }
 
@@ -119,21 +114,25 @@ static void show_top_spell(char* name,Int32 offset,Int32 page_size) {
   txt_write(buffer);
   }
 
-static void show_top(char* name,Int32 shop_type,Int32 offset,Int32 page_size) {
+static void show_frame(char* name) {
   char buffer[80];
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14); gotoxy(35,25);
+  sprintf(buffer,"Gold = %d",get_gold());
+  txt_write(buffer);
+  }
+
+static void show_top(char* name,Int32 shop_type,Int32 offset,Int32 page_size) {
 /*
   if (shop_type == SHOP_SPEL) {
     show_top_spell(name,offset,page_size);
     return;
     }
 */
-  textmode(3); gotoxy(27,1); textcolor(11);
-  sprintf(buffer,"Welcome to %s",name);
-  txt_write(buffer);
+  show_frame(name);
   show_items(shop_type,offset,page_size);
-  textcolor(14); gotoxy(35,25);
-  sprintf(buffer,"Gold = %d",get_gold());
-  txt_write(buffer);
   }
 
 static void show_arrows(Int32 shop_type,Int32 line) {
@@ -157,12 +156,66 @@ static void erase_arrows(Int32 shop_type,Int32 line) {
     }
   }
 
+static void ask_which(void) {
+  gotoxy(15,22); textcolor(10);
+  txt_write("Which item would you like (<ESC> to leave) ?");
+  }
+
+static void show_info(OBJECT_REC* item) {
+  item->flags |= OF_IDENT;
+  data_card(item);
+  }
+
+static void buy(OBJECT_REC item) {
+  char buffer[80];
+  gotoxy(15,22); txt_write("                                                  ");
+  gotoxy(15,22); textcolor(12);
+  sprintf(buffer,"Ah, a %s A fine selection!",item.name);
+  txt_write(buffer);
+  haggle(buy_price(item_cost(&item)),item);
+  }
+
+static void draw_goods_row(MENU* menu,Int32 row,Int32 line) {
+  textcolor(menu->color);
+  draw_goods(*(Int32*)menu->screen,row,line);
+  }
+
+static void show_menu_screen(char* name,MENU* menu) {
+  show_frame(name);
+  draw_menu(menu);
+  ask_which();
+  }
+
+/* The shop with the Cursor Menus preference: the goods are one list, without letters */
+static void shop_menu(char* name,Int32 shop_type) {
+  MENU menu = { .rows = { .shown = SHOP_ROWS, .line = 2 }, .color = 14, .keys = SHOP_KEYS, .keys_line = 24,
+                .draw_row = draw_goods_row, .screen = &shop_type };
+  char key;
+
+  menu.column = (shop_type == SHOP_SPEL) ? 8 : 14;
+  menu.rows.more_column = (shop_type == SHOP_SPEL) ? 62 : 55;
+  fit_menu(&menu,n_shop_items);
+  show_menu_screen(name,&menu);
+
+  key = 0;
+  while (key != 27 && key != '0') {
+    key = menu_key(&menu);
+    if (n_shop_items == 0) continue;
+
+    if (key == 'I') {
+      show_info(&(shop_items[menu.row]));
+      show_menu_screen(name,&menu);
+      }
+    if (key == 13) {
+      buy(shop_items[menu.row]);
+      show_menu_screen(name,&menu);
+      }
+    }
+  }
+
 void shop(char* name,Int32 shop_type) {
-  double price;
-  OBJECT_REC item;
   Int32 offset;
   Int32 page_size;
-  char buffer[80];
   char key;
   Int32  line;
   Int32  boots;
@@ -190,11 +243,15 @@ void shop(char* name,Int32 shop_type) {
   if (change_village_shops == 'Y' && in_village() == 'Y' && (shop_type == SHOP_WEAP || shop_type == SHOP_ARMR))
     limit_shop_items(2);
 
-  page_size = 18;
+  if (cursor_menus == 'Y') {
+    shop_menu(name,shop_type);
+    return;
+    }
+
+  page_size = SHOP_ROWS;
   offset = 0;
   show_top(name,shop_type,offset,page_size);
-  gotoxy(15,22); textcolor(10);
-  txt_write("Which item would you like (<ESC> to leave) ?");
+  ask_which();
   key = ' ';
   line = 0;
   show_arrows(shop_type,line);
@@ -269,25 +326,16 @@ void shop(char* name,Int32 shop_type) {
       show_arrows(shop_type,line);
       }
     if (key == 'I') {
-      shop_items[offset+line].flags |= OF_IDENT;
-      data_card(&(shop_items[offset + line]));
+      show_info(&(shop_items[offset+line]));
       show_top(name,shop_type,offset,page_size);
       show_arrows(shop_type,line);
-      gotoxy(15,22); textcolor(10);
-      txt_write("Which item would you like (<ESC> to leave) ?");
+      ask_which();
       }
     if (key == 13) {
-      item = shop_items[offset+line];
-      gotoxy(15,22); txt_write("                                                  ");
-      gotoxy(15,22); textcolor(12);
-      sprintf(buffer,"Ah, a %s A fine selection!",item.name);
-      txt_write(buffer);
-      price = buy_price(item_cost(&item));
-      haggle(price,item);
+      buy(shop_items[offset+line]);
       show_top(name,shop_type,offset,page_size);
       show_arrows(shop_type,line);
-      gotoxy(15,22); textcolor(10);
-      txt_write("Which item would you like (<ESC> to leave) ?");
+      ask_which();
       }
     }
   } /* void shop(char* name) */

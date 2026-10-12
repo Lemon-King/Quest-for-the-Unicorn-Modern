@@ -10,6 +10,15 @@
 
 #include "header.h"
 
+#define NUM_ACCOUNT_OPTIONS  2
+
+/* Picked by '1' and '2' in the numbered menu */
+static char* account_options[NUM_ACCOUNT_OPTIONS] = { "Deposit", "Withdrawal" };
+
+static void draw_account_option(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,account_options[row],"");
+  }
+
 static char* find_name(Int32 r,Int32 x,Int32 y) {
   Int32 i;
   i = 0;
@@ -23,7 +32,7 @@ static char* find_name(Int32 r,Int32 x,Int32 y) {
   return NULL;
   }
 
-static void show_top(char* name) {
+static void show_top(char* name,MENU* menu) {
   Int32 i;
   Int32 l;
   char buffer[80];
@@ -51,10 +60,15 @@ static void show_top(char* name) {
       }
     }
   textcolor(14);
-  gotoxy(34,14); txt_write("1> Deposit");
-  gotoxy(34,15); txt_write("2> Withdrawal");
-  gotoxy(34,16); txt_write("<ESC> Leave");
-  gotoxy(37,17); txt_write("Option ?");
+  if (cursor_menus == 'Y') draw_menu(menu);
+  else {
+    for (i=0; i<NUM_ACCOUNT_OPTIONS; i++) {
+      sprintf(buffer,"%d> %s",i+1,account_options[i]);
+      gotoxy(34,14+i); txt_write(buffer);
+      }
+    gotoxy(34,16); txt_write("<ESC> Leave");
+    gotoxy(37,17); txt_write("Option ?");
+    }
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -64,11 +78,14 @@ void bank(char* name) {
   double amt;
   char   buffer[80];
   char   key;
+  MENU   menu = { .rows = { .count = NUM_ACCOUNT_OPTIONS, .shown = NUM_ACCOUNT_OPTIONS, .line = 13 },
+                  .column = 33, .value_column = 48, .color = 14, .keys = MENU_KEYS, .keys_line = 25,
+                  .draw_row = draw_account_option };
 
-  show_top(name);
+  show_top(name,&menu);
   key = ' ';
   while (key != '0') {
-    key = inkey();
+    key = (cursor_menus == 'Y') ? menu_number(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1' && get_gold() > 0) {
       gotoxy(30,19); textcolor(14);
@@ -81,12 +98,12 @@ void bank(char* name) {
       if (amt <= get_gold()) {
         player.bank += amt;
         sub_gold(amt);
-        show_top(name);
+        show_top(name,&menu);
         } else {
         gotoxy(30,20); textcolor(12);
         txt_write("You do not have that much!!!");
         delay(5000);
-        show_top(name);
+        show_top(name,&menu);
         }
       }
     if (key == '2' && player.bank > 0) {
@@ -100,14 +117,14 @@ void bank(char* name) {
       if (amt <= player.bank) {
         player.bank -= amt;
         add_gold(amt);
-        show_top(name);
+        show_top(name,&menu);
         } else {
         gotoxy(25,20); textcolor(12);
         txt_write("Your account does not have that much!!!");
         delay(5000);
-        show_top(name);
+        show_top(name,&menu);
         }
       }
-    show_top(name);
+    show_top(name,&menu);
     }
   } /* void temple(char* name) */

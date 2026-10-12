@@ -507,6 +507,9 @@
     <ClCompile Include="meleehit.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="menu.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="missile.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -659,6 +662,9 @@
     </ClCompile>
     <ClCompile Include="school.c">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="scrolllist.c">
+      <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="scrolltext.c">
       <Filter>Display</Filter>

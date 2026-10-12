@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      12
+#define NUM_PREFS      13
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -43,10 +43,6 @@
 #define LABEL_INDENT    6
 #define VALUE_INDENT   31
 #define VALUE_WIDTH     7     /* the column after it holds a scrolling group's bar */
-
-#define CELL_WIDTH      8     /* txt_write()'s cells, in pixels */
-#define CELL_HEIGHT    19
-#define THUMB_WIDTH     4
 
 /* units follows a number's value; strict is a switch's third value, after On; standard is a number's or mode's own
    default, and initial the value a new game starts with, after unicorn.cfg and the command line; config names the
@@ -73,24 +69,24 @@ typedef struct {
   char*  key;
   } OPTION_ROW;
 
-/* A group of rows under its heading: shown of its count rows fit, from top, which scrolls when count is larger */
+/* A group of rows under its heading, from option first; its rows scroll when more of them than fit */
 typedef struct {
-  char*  heading;
-  Int32  first;
-  Int32  count;
-  Int32  shown;
-  Int32  column;
-  Int32  line;
-  Int32  top;
+  char*       heading;
+  Int32       first;
+  Int32       column;
+  SCROLL_LIST rows;
   } OPTION_GROUP;
 
 static OPTION_GROUP option_groups[NUM_GROUPS] = {
-  { .heading = "Game Rules",       .first = 0,            .count = NUM_RULES,   .shown = NUM_RULES,
-    .column  = LEFT_COLUMN,        .line  = RULES_LINE },
-  { .heading = "Preferences",      .first = NUM_RULES,    .count = NUM_PREFS,   .shown = MORE_LINE - PREFS_LINE - 1,
-    .column  = LEFT_COLUMN,        .line  = PREFS_LINE },
-  { .heading = "Gameplay Changes", .first = FIRST_CHANGE, .count = NUM_CHANGES, .shown = MORE_LINE - CHANGES_LINE - 1,
-    .column  = RIGHT_COLUMN,       .line  = CHANGES_LINE }
+  { .heading = "Game Rules",       .first = 0,            .column = LEFT_COLUMN,
+    .rows = { .count = NUM_RULES,   .shown = NUM_RULES,
+              .line  = RULES_LINE,  .more_column = LEFT_COLUMN + VALUE_INDENT } },
+  { .heading = "Preferences",      .first = NUM_RULES,    .column = LEFT_COLUMN,
+    .rows = { .count = NUM_PREFS,   .shown = MORE_LINE - PREFS_LINE - 1,
+              .line  = PREFS_LINE,  .more_column = LEFT_COLUMN + VALUE_INDENT } },
+  { .heading = "Gameplay Changes", .first = FIRST_CHANGE, .column = RIGHT_COLUMN,
+    .rows = { .count = NUM_CHANGES, .shown = MORE_LINE - CHANGES_LINE - 1,
+              .line  = CHANGES_LINE, .more_column = RIGHT_COLUMN + VALUE_INDENT } }
   };
 
 static Int32 mode_values[NUM_MODES] = { 0, 2, 4, -1 };
@@ -154,6 +150,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
+  { .label = "Cursor Menus",
+    .help  = "Shop, party and new character menus pick with a cursor, like this screen",
+    .kind  = OPT_SWITCH, .flag = &cursor_menus, .on = 'Y', .off = 'N' },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -393,27 +392,19 @@ static Int32 is_editable(Int32 i, char rules_editable) {
 
 static Int32 is_shown(Int32 i) {
   OPTION_GROUP* group;
-  Int32         row;
 
   group = &option_groups[option_group(i)];
-  row = i - group->first;
 
-  return (row >= group->top && row < group->top + group->shown);
+  return list_shows(&group->rows, i - group->first);
   }
 
 /* Scrolls row i's group until it shows. Returns 1 when the group moved. */
 static Int32 scroll_to(Int32 i) {
   OPTION_GROUP* group;
-  Int32         row;
-
-  if (is_shown(i)) return 0;
 
   group = &option_groups[option_group(i)];
-  row = i - group->first;
-  if (row < group->top) group->top = row;
-    else group->top = row - group->shown + 1;
 
-  return 1;
+  return list_scroll_to(&group->rows, i - group->first);
   }
 
 static Int32 option_line(Int32 i) {
@@ -421,7 +412,7 @@ static Int32 option_line(Int32 i) {
 
   group = &option_groups[option_group(i)];
 
-  return group->line + 1 + i - group->first - group->top;
+  return list_line(&group->rows, i - group->first);
   }
 
 static Int32 option_column(Int32 i) {
@@ -538,9 +529,7 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   line = option_line(i);
   column = option_column(i);
 
-  textcolor(15);
-  gotoxy(column + ARROW_INDENT, line);
-  txt_write((selected == 'Y') ? "-->" : "   ");
+  draw_list_arrow(column + ARROW_INDENT, line, selected == 'Y');
 
   textcolor(is_editable(i, rules_editable) ? 2 : 8);
   sprintf(label, "%-*s", VALUE_INDENT - LABEL_INDENT - 1, option_rows[i].label);
@@ -553,55 +542,12 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   txt_write(text);
   }
 
-/* A track beside the group's rows, with a thumb as long as the share of rows shown, placed by how far it scrolled */
-static void draw_scroll_bar(OPTION_GROUP* group) {
-  Int32 x,y;
-  Int32 height;
-  Int32 thumb;
-  Int32 offset;
-
-  x = (text_offset_x + group->column + VALUE_INDENT + VALUE_WIDTH - 1) * CELL_WIDTH;
-  y = (text_offset_y + group->line) * CELL_HEIGHT;
-  height = group->shown * CELL_HEIGHT;
-
-  thumb = height * group->shown / group->count;
-  if (thumb < CELL_HEIGHT) thumb = CELL_HEIGHT;
-  offset = (height - thumb) * group->top / (group->count - group->shown);
-
-  setfillstyle(1,0);
-  bar(x,y,x + CELL_WIDTH,y + height);
-
-  setfillstyle(1,8);
-  bar(x + CELL_WIDTH / 2,y,x + CELL_WIDTH / 2 + 1,y + height);
-  x += (CELL_WIDTH - THUMB_WIDTH) / 2;
-  bar(x,y + offset,x + THUMB_WIDTH,y + offset + thumb);
-  }
-
-/* Marks rows scrolled out of sight above or below each group that scrolls, and draws its scroll bar */
-static void draw_more() {
-  OPTION_GROUP* group;
-  Int32         g;
-
-  textcolor(8);
-
-  for (g=0; g<NUM_GROUPS; g++) {
-    group = &option_groups[g];
-    if (group->count <= group->shown) continue;
-
-    gotoxy(group->column + VALUE_INDENT, group->line);
-    txt_write((group->top > 0) ? "more ^" : "      ");
-
-    gotoxy(group->column + VALUE_INDENT, MORE_LINE);
-    txt_write((group->top + group->shown < group->count) ? "more v" : "      ");
-
-    draw_scroll_bar(group);
-    }
-  }
-
 static void draw_options(char rules_editable) {
   Int32 i;
+  Int32 g;
+
   for (i=0; i<NUM_OPTIONS; i++) draw_option(i, 'N', rules_editable);
-  draw_more();
+  for (g=0; g<NUM_GROUPS; g++) draw_list_more(&option_groups[g].rows);
   }
 
 static void draw_help(Int32 i) {
@@ -622,7 +568,7 @@ static void draw_screen(char* title, char rules_editable) {
 
   textcolor(11);
   for (g=0; g<NUM_GROUPS; g++) {
-    gotoxy(option_groups[g].column, option_groups[g].line);
+    gotoxy(option_groups[g].column, option_groups[g].rows.line);
     txt_write(option_groups[g].heading);
     }
   draw_options(rules_editable);
@@ -639,7 +585,7 @@ static void edit_options(char* title, char rules_editable) {
   Int32 group_row[NUM_GROUPS];
   char  key;
 
-  for (group=0; group<NUM_GROUPS; group++) option_groups[group].top = 0;
+  for (group=0; group<NUM_GROUPS; group++) option_groups[group].rows.top = 0;
   draw_screen(title, rules_editable);
   i = first_editable(rules_editable);
 
@@ -658,7 +604,7 @@ static void edit_options(char* title, char rules_editable) {
     if (key == 9) {
       group_row[option_group(i)] = i;
       group = (option_group(i) + 1) % NUM_GROUPS;
-      if (option_groups[group].count == 0) group = GROUP_RULES;
+      if (option_groups[group].rows.count == 0) group = GROUP_RULES;
       i = group_row[group];
       }
     if (scroll_to(i)) draw_options(rules_editable);

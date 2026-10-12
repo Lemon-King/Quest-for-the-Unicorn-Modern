@@ -10,23 +10,39 @@
 
 #include "header.h"
 
-static void party_show_top(void) {
+#define PARTY_KEYS "<8/2>Select, <ENTER>Statistics, <D>ismiss, <C>hange order, <O>rders, <Q>uit"
+
+static void draw_member(MENU* menu,Int32 row,Int32 line) {
+  NPC_REC* member;
+  char     label[48];
+  char     value[16];
+  member = &(player.party[row + 1]);
+  sprintf(label,"%2d: %s",row + 1,(member->hp != 0) ? member->name : "");
+  if (member->hp != 0) sprintf(value,"%2d    %3d",member->level,member->hp);
+    else sprintf(value,"%9s","");
+  draw_menu_text(menu,line,label,value);
+  }
+
+static void party_show_top(MENU* menu) {
   Int32  i;
   char buffer[80];
   gotoxy(24,1); textcolor(2);
   txt_write("  #  Name               Lvl     Hp");
-  for (i=1; i<=5; i++) {
-    gotoxy(25,i + 2); textcolor(14);
-    sprintf(buffer,"%2d: ",i);
-    txt_write(buffer);
-    if (player.party[i].hp != 0) {
-      txt_write(player.party[i].name);
-      gotoxy(49,i+2);
-      sprintf(buffer,"%2d    %3d",player.party[i].level,player.party[i].hp);
+  if (cursor_menus == 'Y') draw_menu(menu);
+  else {
+    for (i=1; i<=5; i++) {
+      gotoxy(25,i + 2); textcolor(14);
+      sprintf(buffer,"%2d: ",i);
       txt_write(buffer);
-      }
-    else {
-      txt_write("                                                  ");
+      if (player.party[i].hp != 0) {
+        txt_write(player.party[i].name);
+        gotoxy(49,i+2);
+        sprintf(buffer,"%2d    %3d",player.party[i].level,player.party[i].hp);
+        txt_write(buffer);
+        }
+      else {
+        txt_write("                                                  ");
+        }
       }
     }
   gotoxy(40,9); textcolor(14);
@@ -94,7 +110,7 @@ static void show_member_stats(Int32 member) {
   txt_write(buffer);
   }
 
-static void show_member(Int32 member) {
+static void show_member(Int32 member,MENU* menu) {
   Int32  i;
   char key;
   char flag;
@@ -133,7 +149,7 @@ static void show_member(Int32 member) {
             player.party[member].mana += 25;
           sub_gold(cost);
           player.party[member].hp = player.party[member].level * 9;
-          party_show_top();
+          party_show_top(menu);
           show_member_stats(member);
           }
         }
@@ -146,25 +162,91 @@ static void show_member(Int32 member) {
     }
   }
 
+static void set_orders(Int32 member) {
+  char key;
+  gotoxy(20,14); textcolor(10);
+  txt_write("<A>ttack, or <E>vade ?");
+  key = ' ';
+  while (key != 'a' && key != 'e') key = inkey();
+  switch (key) {
+    case 'a':player.party[member].special &= (~MS_EVADE);
+             break;
+    case 'e':player.party[member].special |= MS_EVADE;
+             break;
+    }
+  gotoxy(20,14); textcolor(10);
+  txt_write("                          ");
+  }
+
+static void swap_members(Int32 i,Int32 j,MENU* menu) {
+  NPC_REC ptemp;
+  ptemp = player.party[i];
+  player.party[i] = player.party[j];
+  player.party[j] = ptemp;
+  party_show_top(menu);
+  }
+
+/* The member picked with the cursor after the question, or 0 when ESC backs out */
+static Int32 pick_member(MENU* menu,char* question) {
+  char  blank[48];
+  Int32 row;
+  gotoxy(20,14); textcolor(10);
+  txt_write(question);
+  row = menu_choice(menu);
+  sprintf(blank,"%*s",(Int32)strlen(question),"");
+  gotoxy(20,14); txt_write(blank);
+  return row + 1;
+  }
+
+/* A key on the party screen with the Cursor Menus preference: the cursor picks the member in place of 1 to 5 */
+static void party_command(MENU* menu,char key) {
+  Int32 member;
+  Int32 other;
+  if (key == 13 && player.party[menu->row + 1].hp != 0) show_member(menu->row + 1,menu);
+  if (key == 'd' && player.in_city == 'Y') {
+    member = pick_member(menu,"Dismiss who ?");
+    if (member > 0) {
+      player.party[member].hp = 0;
+      party_show_top(menu);
+      }
+    }
+  if (key == 'o') {
+    member = pick_member(menu,"Change whos orders ?");
+    if (member > 0) set_orders(member);
+    }
+  if (key == 'c') {
+    member = pick_member(menu,"Change whos position ?");
+    other = (member > 0) ? pick_member(menu,"Change to what position ?") : 0;
+    if (other > 0) swap_members(member,other,menu);
+    }
+  }
+
 void party() {
   Int32 i=0,j=0;
   char temp;
-  NPC_REC ptemp;
   char key;
+  MENU menu = { .rows = { .count = 5, .shown = 5, .line = 2 }, .column = 21, .value_column = 49, .color = 14,
+                .keys = PARTY_KEYS, .keys_line = 13, .draw_row = draw_member };
   saveScreen();
-  textmode(3); party_show_top();
-  gotoxy(10,13); textcolor(3);
-  txt_write("<D>ismiss, <1-5>Statistics, <C>hange order, <O>orders, <Q>uit");
+  textmode(3); party_show_top(&menu);
+  if (cursor_menus != 'Y') {
+    gotoxy(10,13); textcolor(3);
+    txt_write("<D>ismiss, <1-5>Statistics, <C>hange order, <O>orders, <Q>uit");
+    }
   key = ' ';
   while (key != 'q') {
-    key = inkey();
+    key = (cursor_menus == 'Y') ? menu_key(&menu) : inkey();
     if (key == 27) key = 'q';
+    if (cursor_menus == 'Y') {
+      party_command(&menu,key);
+      continue;
+      }
     switch (key) {
-      case '1':if (player.party[1].hp != 0) show_member(1); break;
-      case '2':if (player.party[2].hp != 0) show_member(2); break;
-      case '3':if (player.party[3].hp != 0) show_member(3); break;
-      case '4':if (player.party[4].hp != 0) show_member(4); break;
-      case '5':if (player.party[5].hp != 0) show_member(5); break;
+      case '1':if (player.party[1].hp != 0) show_member(1,&menu); break;
+      case '2':if (player.party[2].hp != 0) show_member(2,&menu); break;
+      case '3':if (player.party[3].hp != 0) show_member(3,&menu); break;
+      case '4':if (player.party[4].hp != 0) show_member(4,&menu); break;
+      case '5':if (player.party[5].hp != 0) show_member(5,&menu); break;
       case 'd':if (player.in_city == 'Y') {
                  gotoxy(20,14); textcolor(10);
                  txt_write("Dismiss who ?");
@@ -178,7 +260,7 @@ void party() {
                      case '4':player.party[4].hp = 0; break;
                      case '5':player.party[5].hp = 0; break;
                      }
-                   party_show_top();
+                   party_show_top(&menu);
                    }
                  gotoxy(20,14); textcolor(10);
                  txt_write("             ");
@@ -191,10 +273,6 @@ void party() {
                temp = key;
                gotoxy(20,14); textcolor(10);
                txt_write("                    ");
-               gotoxy(20,14); textcolor(10);
-               txt_write("<A>ttack, or <E>vade ?");
-               key = ' ';
-               while (key != 'a' && key != 'e') key = inkey();
                switch (temp) {
                  case '1':i = 1; break;
                  case '2':i = 2; break;
@@ -202,14 +280,7 @@ void party() {
                  case '4':i = 4; break;
                  case '5':i = 5; break;
                  }
-               switch (key) {
-                 case 'a':player.party[i].special &= (~MS_EVADE);
-                          break;
-                 case 'e':player.party[i].special |= MS_EVADE;
-                          break;
-                 }
-               gotoxy(20,14); textcolor(10);
-               txt_write("                          ");
+               set_orders(i);
                break;
       case 'c':gotoxy(20,14); textcolor(10);
                txt_write("Change whos position ?");
@@ -238,10 +309,7 @@ void party() {
                  case '4':i = 4; break;
                  case '5':i = 5; break;
                  }
-               ptemp = player.party[i];
-               player.party[i] = player.party[j];
-               player.party[j] = ptemp;
-               party_show_top();
+               swap_members(i,j,&menu);
                break;
       }
     }

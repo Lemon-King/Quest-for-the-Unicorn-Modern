@@ -31,37 +31,92 @@ void rebirth() {
   if (key == 'E') heroicMode = 4;
   }
 
-static void show_top(char* name,char allowed,double* cost) {
+#define NUM_SERVICES    7
+
+/* The services, picked by '1' to '7' in the numbered menu */
+static char* service_names[NUM_SERVICES] = {
+  "Healing", "Prayer", "Restore allignment", "Remove Curse", "Become a Hierophant", "Rebirth", "One with Nature"
+  };
+
+static double alignment_cost(void) {
+  double cost;
+  cost = player.align;
+  return 500*(100-cost);
+  }
+
+/* The price shown beside a service, blank for those priced later */
+static void service_price(char service,char* text) {
+  strcpy(text,"");
+  if (service == '1') sprintf(text,"%5.0f",100.0);
+  if (service == '2') sprintf(text,"%5.0f",500.0);
+  if (service == '3') sprintf(text,"%5.0f",alignment_cost());
+  }
+
+/* The keys of the services offered, in order. Returns how many. */
+static Int32 offered_services(char allowed,char* services) {
+  Int32 count;
+  count = 0;
+  services[count++] = '1';
+  services[count++] = '2';
+  services[count++] = '3';
+  services[count++] = '4';
+  if (allowed == 'Y') services[count++] = '5';
+  if (player.gateway == 'F' && player.effect[PE_HEROIC] >= 0) services[count++] = '6';
+  if (player.effect[PE_HEROIC] >= 0) services[count++] = '7';
+  return count;
+  }
+
+static void draw_service(MENU* menu,Int32 row,Int32 line) {
+  char service;
+  char price[16];
+  service = ((char*)menu->screen)[row];
+  service_price(service,price);
+  draw_menu_text(menu,line,service_names[service - '1'],price);
+  }
+
+static void show_numbered(char* services,Int32 count) {
+  Int32 i;
   Int32 line;
   char buffer[80];
-  textmode(3); gotoxy(27,1); textcolor(11);
-  sprintf(buffer,"Welcome to %s",name);
-  txt_write(buffer);
-  textcolor(14);
   line = 3;
-  gotoxy(27,line++); txt_write("1> Healing"); gotoxy(51,3); txt_write("  100");
-  gotoxy(27,line++); txt_write("2> Prayer");  gotoxy(51,4); txt_write("  500");
-  gotoxy(27,line); txt_write("3> Restore allignment");
-  *cost = player.align;
-  *cost = 500*(100-*cost);
-  sprintf(buffer,"%5.0f",*cost);
-  gotoxy(51,line++); txt_write(buffer);
-  gotoxy(27,line++); txt_write("4> Remove Curse");
-  if (allowed == 'Y') {
-    gotoxy(27,line++); txt_write("5> Become a Hierophant");
-    }
-  if (player.gateway == 'F' && player.effect[PE_HEROIC] >= 0) {
-    gotoxy(27,line++); txt_write("6> Rebirth");
-    }
-  if (player.effect[PE_HEROIC] >= 0) {
-    gotoxy(27,line++); txt_write("7> One with Nature");
+  for (i=0; i<count; i++) {
+    sprintf(buffer,"%c> %s",services[i],service_names[services[i] - '1']);
+    gotoxy(27,line); txt_write(buffer);
+    service_price(services[i],buffer);
+    gotoxy(51,line); txt_write(buffer);
+    line++;
     }
   gotoxy(27,line++); txt_write("<ESC> Leave");
   line++;
   gotoxy(30,line); txt_write("Option ?");
+  }
+
+static void show_top(char* name,char allowed,double* cost,MENU* menu) {
+  char buffer[80];
+  char services[NUM_SERVICES];
+  Int32 count;
+  textmode(3); gotoxy(27,1); textcolor(11);
+  sprintf(buffer,"Welcome to %s",name);
+  txt_write(buffer);
+  textcolor(14);
+  *cost = alignment_cost();
+  count = offered_services(allowed,services);
+  if (cursor_menus == 'Y') {
+    memcpy(menu->screen,services,count);
+    fit_menu(menu,count);
+    draw_menu(menu);
+    }
+  else show_numbered(services,count);
   textcolor(15); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
+  }
+
+/* The key of the service picked, or ESC */
+static char pick_service(MENU* menu) {
+  Int32 row;
+  row = menu_choice(menu);
+  return (row >= 0) ? ((char*)menu->screen)[row] : 27;
   }
 
 void temple(char* name) {
@@ -72,16 +127,19 @@ void temple(char* name) {
   Int32    hier;
   Int32    i;
   char   allowed;
+  char   services[NUM_SERVICES];
+  MENU   menu = { .rows = { .shown = NUM_SERVICES, .line = 2 }, .column = 26, .value_column = 51,
+                  .color = 14, .keys = MENU_KEYS, .keys_line = 25, .draw_row = draw_service, .screen = services };
 
   hier = -1;
   allowed = 'N';
   for (i=0; i<NUM_CLASSES; i++)
     if (classes[i].flags & CF_HIER) hier = i + 1;
   if (hier >= 0) allowed = (check_class_change(hier)) ? 'Y' : 'N';
-  show_top(name,allowed,&cost);
+  show_top(name,allowed,&cost,&menu);
   key = ' ';
   while (key != '0') {
-    key = inkey();
+    key = (cursor_menus == 'Y') ? pick_service(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1' && get_gold()>=100) {
       player.chp = (classes[player.class-1].flags & CF_DRUID) ? player.mhp * 2 : player.mhp;
@@ -109,7 +167,7 @@ void temple(char* name) {
       }
     if (key == '4') {
       item = inventory(NULL);
-      show_top(name,allowed,&cost);
+      show_top(name,allowed,&cost,&menu);
 
       /* Without the Temple Uncurse change choosing no item crashes on item->plus */
       if (item == NULL && change_temple_uncurse == 'Y') {
@@ -179,6 +237,6 @@ void temple(char* name) {
         if (player.effect[PE_HEROIC] < 0) end_permadeath();
         }
       }
-    show_top(name,allowed,&cost);
+    show_top(name,allowed,&cost,&menu);
     }
   } /* void temple(char* name) */

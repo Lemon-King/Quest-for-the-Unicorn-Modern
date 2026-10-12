@@ -223,6 +223,7 @@
     <ClCompile Include="maxdamage.c" />
     <ClCompile Include="mechmerchant.c" />
     <ClCompile Include="meleehit.c" />
+    <ClCompile Include="menu.c" />
     <ClCompile Include="missile.c" />
     <ClCompile Include="mounts.c" />
     <ClCompile Include="moveenemy.c" />
@@ -274,6 +275,7 @@
     <ClCompile Include="sayword.c" />
     <ClCompile Include="scalemonster.c" />
     <ClCompile Include="school.c" />
+    <ClCompile Include="scrolllist.c" />
     <ClCompile Include="scrolltext.c" />
     <ClCompile Include="selectsprite.c" />
     <ClCompile Include="settitle.c" />

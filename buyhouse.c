@@ -11,7 +11,17 @@
 #include "header.h"
 #include "math.h"
 
-static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost) {
+#define NUM_PURCHASE_OPTIONS  2
+
+/* Picked by '1' and '2' in the numbered menu */
+static char* purchase_options[NUM_PURCHASE_OPTIONS] = { "Change Down Payment", "Purchase House" };
+
+static void draw_purchase_option(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,purchase_options[row],"");
+  }
+
+static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost,MENU* menu) {
+  Int32 i;
   textmode(3); gotoxy(33,1); textcolor(11);
   txt_write("Purchase House");
   textcolor(14);
@@ -28,10 +38,15 @@ static void show_top(char* buffer,Int32 hnum,double down,double a,double ccost) 
   sprintf(buffer,"%.0f",ccost+down);
   gotoxy(24,8); txt_write("Due at Closing");  gotoxy(51,8); txt_write(buffer);
 
-  gotoxy(27,10); txt_write("1> Change Down Payment");
-  gotoxy(27,11); txt_write("2> Purchase House");
-  gotoxy(27,12); txt_write("<ESC> Leave");
-  gotoxy(30,13); txt_write("Option ?");
+  if (cursor_menus == 'Y') draw_menu(menu);
+  else {
+    for (i=0; i<NUM_PURCHASE_OPTIONS; i++) {
+      sprintf(buffer,"%d> %s",i+1,purchase_options[i]);
+      gotoxy(27,10+i); txt_write(buffer);
+      }
+    gotoxy(27,12); txt_write("<ESC> Leave");
+    gotoxy(30,13); txt_write("Option ?");
+    }
   textcolor(15); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -47,16 +62,19 @@ void buy_house(Int32 hnum) {
   char   key;
   Int32    flag;
   Int32    j;
+  MENU   menu = { .rows = { .count = NUM_PURCHASE_OPTIONS, .shown = NUM_PURCHASE_OPTIONS, .line = 9 },
+                  .column = 26, .value_column = 50, .color = 14, .keys = MENU_KEYS, .keys_line = 25,
+                  .draw_row = draw_purchase_option };
 
   p = forsale[hnum].price;
   i = .005;
   a = p*((i*pow(1+i,360))/(pow(1+i,360)-1));
   ccost = forsale[hnum].price * 0.023;
   down = 0;
-  show_top(buffer,hnum,down,a,ccost);
+  show_top(buffer,hnum,down,a,ccost,&menu);
   key = ' ';
   while (key != '0') {
-    key = inkey();
+    key = (cursor_menus == 'Y') ? menu_number(&menu) : inkey();
     if (key == 27) key = '0';
     if (key == '1') {
       gotoxy(27,15); textcolor(2); txt_write("New Down Payment: ");
@@ -99,6 +117,6 @@ void buy_house(Int32 hnum) {
           }
         }
       }
-    show_top(buffer,hnum,down,a,ccost);
+    show_top(buffer,hnum,down,a,ccost,&menu);
     }
   } /* void temple(char* name) */
