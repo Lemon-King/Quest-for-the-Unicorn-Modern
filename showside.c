@@ -52,44 +52,24 @@ static Int32 status_column(Int32 i) {
   return TEXT_GRID_WIDTH - 24 + 2 * i;
   }
 
-static Int32 icon_width() {
-  return (tile_width + 1) / 2;
-  }
-
-static Int32 icon_height() {
-  return (tile_height + 1) / 2;
-  }
-
 /* An icon is centred on its letter's 8x12 cell */
 static Int32 icon_left(Int32 i) {
-  return status_column(i) * 8 + 4 - icon_width() / 2;
+  return status_column(i) * 8 + 4 - half_tile_width() / 2;
   }
 
 static Int32 icon_top() {
-  return STATUS_BASELINE - 10 + 6 - icon_height() / 2;
+  return STATUS_BASELINE - 10 + 6 - half_tile_height() / 2;
   }
 
-/* The letters as 7.0.0 drew them: a space leaves the letter there */
-static void show_grey_letters(STATUS_MARK marks[STATUS_COUNT]) {
-  char  text[2];
-  Int32 i;
-
-  setcolor(7);
-  for (i=0; i<STATUS_COUNT; i++) {
-    text[0] = marks[i].active ? marks[i].letter : ' ';
-    text[1] = 0;
-    outtext_xy(status_column(i),STATUS_LINE,text);
-    }
-  }
-
-static void show_colored_letters(STATUS_MARK marks[STATUS_COUNT]) {
+/* Each letter's cell is cleared first, so a status that ends leaves no letter behind */
+static void show_letters(STATUS_MARK marks[STATUS_COUNT], Int32 colored) {
   char  text[2];
   Int32 i;
 
   for (i=0; i<STATUS_COUNT; i++) {
     text[0] = marks[i].active ? marks[i].letter : ' ';
     text[1] = 0;
-    setcolor(marks[i].color);
+    setcolor(colored ? marks[i].color : 7);
     outtextxyclr(status_column(i) * 8,STATUS_BASELINE,text);
     }
   }
@@ -99,38 +79,38 @@ static void show_status_icons(STATUS_MARK marks[STATUS_COUNT]) {
 
   setfillstyle(1,0);
   for (i=0; i<STATUS_COUNT; i++) {
-    bar(icon_left(i),icon_top(),icon_left(i) + icon_width(),icon_top() + icon_height());
+    bar(icon_left(i),icon_top(),icon_left(i) + half_tile_width(),icon_top() + half_tile_height());
     if (marks[i].active) put_half_image(icon_left(i),icon_top(),select_sprite(marks[i].icon));
     }
   }
 
-/* Off, Color or Icons, as the Improved Status preference has it. A change of mode clears the row first: the icons
-   cover more than a letter's cell, and the grey letters never clear what was there. */
+/* Off, Color or Icons, as the Improved Status preference has it. A change of mode clears the row first, since the
+   icons cover more than a letter's cell. */
 static void show_status_row(STATUS_MARK marks[STATUS_COUNT]) {
   if (improved_status != status_mode_drawn) {
     setfillstyle(1,0);
-    bar(icon_left(0),icon_top(),icon_left(STATUS_COUNT - 1) + icon_width(),icon_top() + icon_height());
+    bar(icon_left(0),icon_top(),icon_left(STATUS_COUNT - 1) + half_tile_width(),icon_top() + half_tile_height());
     status_mode_drawn = improved_status;
     }
 
   switch (improved_status) {
-    case 'C': show_colored_letters(marks); break;
+    case 'C': show_letters(marks,1); break;
     case 'I': show_status_icons(marks); break;
-    default:  show_grey_letters(marks); break;
+    default:  show_letters(marks,0); break;
     }
 
   /* Callers draw on in the grey 7.0.0 left set */
   setcolor(7);
   }
 
-/* The icons along the bottom of the screen. An ether icon stays until the screen is redrawn. */
+/* The icons along the bottom of the screen, which Icons mode gives to the map */
 static void show_status_tiles(STATUS_MARK marks[STATUS_COUNT]) {
   Int32 i;
 
-  for (i=0; i<STATUS_COUNT; i++) {
-    if (i == STATUS_ETHER && !marks[i].active) continue;
+  if (!has_bottom_strip()) return;
+
+  for (i=0; i<STATUS_COUNT; i++)
     putimage(tile_width*i,screen_height-tile_height,select_sprite(marks[i].active ? marks[i].icon : NO_STATUS_TILE),0);
-    }
   }
 
 void show_time() {

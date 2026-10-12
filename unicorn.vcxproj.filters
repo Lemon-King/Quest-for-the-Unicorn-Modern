@@ -672,6 +672,9 @@
     <ClCompile Include="school.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="screenlayout.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="scrolllist.c">
       <Filter>Display</Filter>
     </ClCompile>

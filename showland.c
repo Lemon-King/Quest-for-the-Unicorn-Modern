@@ -12,12 +12,7 @@
 
 void show_land() {
   Int32 x,y;
-  setfillstyle(1,12);
-  bar(0,0,screen_width-220,10); bar(0,screen_height-37,screen_width-220,screen_height-27);       /* Top/bottom frame */
-  bar(0,0,10,screen_height-27); bar(screen_width-230,0,screen_width-220,screen_height-27);       /* Left/Right frame */
-  bar(screen_width-221,screen_height-250,screen_width-10,screen_height-240);
-  bar(screen_width-221,screen_height- 37,screen_width-10,screen_height- 27);
-  bar(screen_width- 19,screen_height-250,screen_width-10,screen_height- 27);
+  show_map_frames();
   setfillstyle(1,0);
   bar(10,10,TILES_X * tile_width+10,TILES_Y * tile_height+10);
   for (x=player.map_x; x<=player.map_x+TILES_X; x++)

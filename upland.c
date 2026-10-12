@@ -688,6 +688,7 @@ void up_land() {
 /* ***** Actual beginning of upland code ***** */
 /* ******************************************* */
   play_music(MUSIC_UPLAND);
+  forget_compass();
   while (keypressed()) key=inkey();
   in_upland = 'Y';
   player.d_level = 0;
@@ -810,11 +811,13 @@ void up_land() {
           break;
       case 'O':
           game_options();
+          if (set_screen_layout()) adjust_map();
           graphmode();
           show_land();
           show_sm_land();
           show_land_player();
           show_side();
+          show_messages();
           turn = 'N';
           break;
       case '~':gps();
@@ -895,9 +898,8 @@ void up_land() {
         else if (player.x>links[suggest].x && player.y>links[suggest].y) x = 96;
         else x = 10;
 */
-        putimage(300,screen_height-27,select_sprite(10),0);
-        putimage(300,screen_height-27,select_sprite(x),0);
-        } else putimage(300,screen_height-27,select_sprite(10),0);
+        show_compass(x);
+        } else show_compass(10);
       }
     if (turn == 'Y' && has_intrinsic(A_FOOD) && player.health < 100) player.health++;
     if (get_str() <= 0 || get_dex() <= 0 || get_int() <= 0 ||

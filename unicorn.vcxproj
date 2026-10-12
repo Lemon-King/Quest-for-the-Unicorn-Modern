@@ -278,6 +278,7 @@
     <ClCompile Include="sayword.c" />
     <ClCompile Include="scalemonster.c" />
     <ClCompile Include="school.c" />
+    <ClCompile Include="screenlayout.c" />
     <ClCompile Include="scrolllist.c" />
     <ClCompile Include="scrolltext.c" />
     <ClCompile Include="selectsprite.c" />

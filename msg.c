@@ -10,14 +10,42 @@
 
 #include "header.h"
 
+static void copy_line(Int32 to,Int32 from) {
+  strcpy(messages[to],messages[from]);
+  msg_clr[to] = msg_clr[from];
+  msg_name_clr[to] = msg_name_clr[from];
+  msg_name_at[to] = msg_name_at[from];
+  }
+
+static void blank_line(Int32 line) {
+  strcpy(messages[line],"");
+  msg_clr[line] = 15;
+  msg_name_clr[line] = 0;
+  msg_name_at[line] = 0;
+  }
+
 void scroll_msg() {
   Int32 i;
-  for (i=0; i<NUM_MSG-1; i++) {
-    strcpy(messages[i],messages[i+1]);
-    msg_clr[i] = msg_clr[i+1];
-    msg_name_clr[i] = msg_name_clr[i+1];
-    msg_name_at[i] = msg_name_at[i+1];
-    }
+  for (i=0; i<NUM_MSG-1; i++) copy_line(i,i+1);
+  }
+
+/* The log shows count lines, the newest still at the bottom: it loses its oldest lines, or gains blank ones above */
+void set_log_lines(Int32 count) {
+  Int32 shift;
+  Int32 i;
+
+  shift = count - NUM_MSG;
+
+  if (shift < 0)
+    for (i=0; i<count; i++) copy_line(i,i - shift);
+
+  if (shift > 0)
+    for (i=count-1; i>=0; i--) {
+      if (i >= shift) copy_line(i,i - shift);
+        else blank_line(i);
+      }
+
+  NUM_MSG = count;
   }
 
 /* The newest line's colours; name_at, where the item name starts, lies before the line when the name began on an

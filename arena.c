@@ -728,6 +728,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
     }
   player.map[player.x][player.y] = floor;
   for (i=1; i<=5; i++) player.party[i].prev = floor;
+  forget_compass();
   graphmode();
   show_map();
   show_side();

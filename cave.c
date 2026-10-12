@@ -782,6 +782,7 @@ void cave() {
   /* ***** Actual start of dungeon code ***** */
   /* **************************************** */
   play_music((player.in_city == 'Y') ? MUSIC_TOWN : MUSIC_DUNGEON);
+  forget_compass();
   currentFloor = 7;
   dungeon_floor = currentFloor;
   dungeon_wall = 21;
@@ -1070,10 +1071,16 @@ void cave() {
         case 'O':
               saveScreen();
               game_options();
-              restoreScreen();
-              show_map();
-              show_player();
-              show_side();
+              if (set_screen_layout()) {
+                adjust_map();
+                show_screen();
+                }
+              else {
+                restoreScreen();
+                show_map();
+                show_player();
+                show_side();
+                }
               takes_time = 'N';
               break;
         case 'h':healing(); break;
@@ -1445,12 +1452,11 @@ void cave() {
             else if (player.x<sx && player.y>sy) x = 95;
             else if (player.x>sx && player.y>sy) x = 96;
             else x = 10;
-            putimage(300,screen_height-27,select_sprite(10),0);
-            putimage(300,screen_height-27,select_sprite(x),0);
+            show_compass(x);
             } else
-  		  putimage(300,screen_height-27,select_sprite(10),0);
+  		  show_compass(10);
           } else
-  	       	putimage(300,screen_height-27,select_sprite(10),0);
+  	       	show_compass(10);
         check_trophies();
         if (player.d_level == 0) exitf = 2;
         if (player.chp<1) exitf = 6;

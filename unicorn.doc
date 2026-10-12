@@ -628,7 +628,8 @@
                               robed in blue.  Other classes keep the
                               standard figure
          Floor Item Names     Show the name of the item you stand on in the
-                              bottom right, in its inventory colour
+                              bottom right, in its inventory colour, or
+                              under the message log (see Improved Status)
          Gothic Scrolls       Write scrolls, lore and the library in
                               Gothic instead of the hand-drawn scroll
                               letters.  Either way each line is centred,
@@ -649,7 +650,14 @@
                               stats (see Status Indicators) as grey
                               letters (Off), letters in the colours of
                               their icons (Color), or the icons
-                              themselves at half size (Icons)
+                              themselves at half size (Icons).  Icons
+                              also gives the row of icons along the
+                              bottom of the screen to the map, which
+                              shows one more row.  The small map moves
+                              down to the edge of the screen, and the
+                              message log grows into its place, with
+                              the compass and item names on its last
+                              line; the Tab menu covers that line too
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in

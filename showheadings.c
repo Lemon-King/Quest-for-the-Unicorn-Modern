@@ -14,10 +14,10 @@ void show_headings() {
   char buffer[80];
   setcolor(0);
   settextstyle(0,0,1);
-  outtextxy(148,screen_height-28,"                              ");
-  outtextxy(148,screen_height-28,player.d_name);
+  outtextxy(148,frame_bottom-1,"                              ");
+  outtextxy(148,frame_bottom-1,player.d_name);
   sprintf(buffer,"%d",player.diff);
-  outtextxy(10,screen_height-28,buffer);
+  outtextxy(10,frame_bottom-1,buffer);
   setcolor(14);
   outtext_xy(TEXT_GRID_WIDTH - 24,1,"Depth  :");
   outtext_xy(TEXT_GRID_WIDTH - 24,2,"Date   :");

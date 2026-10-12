@@ -37,6 +37,7 @@ static void start_game(Int32 loadgame) {
     textmode(3); gotoxy(1,1); textcolor(10);
     txt_write("Loading Game . . .");
     load();
+    if (set_screen_layout()) adjust_map();
 
     /* Play time counts from the load, as it does from make_char() */
     start_time = (Int32)time(NULL);
@@ -49,6 +50,7 @@ static void start_game(Int32 loadgame) {
     strcpy(backupname,"");
     new_game();
     game_setup();
+    set_screen_layout();
     make_char(0);
     mod_exit = 1;
     build_dungeon(7,0);
@@ -220,10 +222,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   TEXT_GRID_WIDTH = screen_width / 8;
   TEXT_GRID_HEIGHT = screen_height / 19;
   smap_offset_x = screen_width - 219;
-  smap_offset_y = screen_height - 239;
-  NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
-
-  if (NUM_MSG > MAX_MSG) NUM_MSG = MAX_MSG;
+  set_screen_layout();
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;
   trophy_count = 0;

@@ -37,10 +37,10 @@ void show_sm_map() {
           case 39:color = 1; break;
           case 41:color = 9; break;
           }
-        plot(screen_width-221+x*2,screen_height-240+y*2,color);
-        plot(screen_width-220+x*2,screen_height-240+y*2,color);
-        plot(screen_width-221+x*2,screen_height-239+y*2,color);
-        plot(screen_width-220+x*2,screen_height-239+y*2,color);
+        plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
+        plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
+        plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);
+        plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,color);
         }
   close_display();
   }
