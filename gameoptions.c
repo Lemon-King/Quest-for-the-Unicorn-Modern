@@ -26,9 +26,15 @@
 #define SIDE_LEFT       0
 #define SIDE_RIGHT      1
 
+#define NUM_GROUPS      3
+#define GROUP_RULES     0
+#define GROUP_PREFS     1
+#define GROUP_CHANGES   2
+
 #define RULES_LINE      2
 #define PREFS_LINE     11
 #define CHANGES_LINE    2
+#define MORE_LINE      23     /* "more v" for a group that scrolls; its rows end on the line above */
 #define HELP_LINE      24
 #define KEYS_LINE      25
 #define LEFT_COLUMN     3
@@ -36,7 +42,6 @@
 #define ARROW_INDENT    2
 #define LABEL_INDENT    6
 #define VALUE_INDENT   31
-#define CHANGES_SHOWN  19
 
 /* units follows a number's value; config names the unicorn.cfg key of a number kept there instead of in the save;
    apply puts a new value into effect; key names a gameplay change in the save */
@@ -59,8 +64,25 @@ typedef struct {
   char*  key;
   } OPTION_ROW;
 
-/* The first gameplay change the scrolling column shows */
-static Int32 changes_top;
+/* A group of rows under its heading: shown of its count rows fit, from top, which scrolls when count is larger */
+typedef struct {
+  char*  heading;
+  Int32  first;
+  Int32  count;
+  Int32  shown;
+  Int32  column;
+  Int32  line;
+  Int32  top;
+  } OPTION_GROUP;
+
+static OPTION_GROUP option_groups[NUM_GROUPS] = {
+  { .heading = "Game Rules",       .first = 0,            .count = NUM_RULES,   .shown = NUM_RULES,
+    .column  = LEFT_COLUMN,        .line  = RULES_LINE },
+  { .heading = "Preferences",      .first = NUM_RULES,    .count = NUM_PREFS,   .shown = MORE_LINE - PREFS_LINE - 1,
+    .column  = LEFT_COLUMN,        .line  = PREFS_LINE },
+  { .heading = "Gameplay Changes", .first = FIRST_CHANGE, .count = NUM_CHANGES, .shown = MORE_LINE - CHANGES_LINE - 1,
+    .column  = RIGHT_COLUMN,       .line  = CHANGES_LINE }
+  };
 
 static Int32 mode_values[NUM_MODES] = { 0, 2, 4, -1 };
 static char* mode_names[NUM_MODES]  = { "Normal", "Heroic", "Epic", "Casual" };
@@ -325,15 +347,9 @@ static Int32 side_end(Int32 side) {
 
 /* The groups TAB moves between: rules, preferences and gameplay changes */
 static Int32 option_group(Int32 i) {
-  if (i < NUM_RULES) return 0;
-  if (i < FIRST_CHANGE) return 1;
-  return 2;
-  }
-
-static Int32 group_first(Int32 group) {
-  if (group == 0) return 0;
-  if (group == 1) return NUM_RULES;
-  return FIRST_CHANGE;
+  if (i < NUM_RULES) return GROUP_RULES;
+  if (i < FIRST_CHANGE) return GROUP_PREFS;
+  return GROUP_CHANGES;
   }
 
 static Int32 is_new_game_only(Int32 i) {
@@ -346,28 +362,40 @@ static Int32 is_editable(Int32 i, char rules_editable) {
   }
 
 static Int32 is_shown(Int32 i) {
-  if (!is_gameplay_change(i)) return 1;
-  return (i - FIRST_CHANGE >= changes_top && i - FIRST_CHANGE < changes_top + CHANGES_SHOWN);
+  OPTION_GROUP* group;
+  Int32         row;
+
+  group = &option_groups[option_group(i)];
+  row = i - group->first;
+
+  return (row >= group->top && row < group->top + group->shown);
   }
 
-/* Scrolls the gameplay changes until row i shows. Returns 1 when they moved. */
+/* Scrolls row i's group until it shows. Returns 1 when the group moved. */
 static Int32 scroll_to(Int32 i) {
-  Int32 row;
+  OPTION_GROUP* group;
+  Int32         row;
+
   if (is_shown(i)) return 0;
-  row = i - FIRST_CHANGE;
-  if (row < changes_top) changes_top = row;
-    else changes_top = row - CHANGES_SHOWN + 1;
+
+  group = &option_groups[option_group(i)];
+  row = i - group->first;
+  if (row < group->top) group->top = row;
+    else group->top = row - group->shown + 1;
+
   return 1;
   }
 
 static Int32 option_line(Int32 i) {
-  if (i < NUM_RULES) return RULES_LINE + 1 + i;
-  if (i < FIRST_CHANGE) return PREFS_LINE + 1 + i - NUM_RULES;
-  return CHANGES_LINE + 1 + i - FIRST_CHANGE - changes_top;
+  OPTION_GROUP* group;
+
+  group = &option_groups[option_group(i)];
+
+  return group->line + 1 + i - group->first - group->top;
   }
 
 static Int32 option_column(Int32 i) {
-  return is_gameplay_change(i) ? RIGHT_COLUMN : LEFT_COLUMN;
+  return option_groups[option_group(i)].column;
   }
 
 /* The cursor visits every row of its side, wrapping at either end; a greyed row shows its help but cannot change */
@@ -442,13 +470,23 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   gotoxy(column + VALUE_INDENT, line); txt_write(text);
   }
 
-/* Marks gameplay changes scrolled out of sight above or below the column */
+/* Marks rows scrolled out of sight above or below each group that scrolls */
 static void draw_more() {
+  OPTION_GROUP* group;
+  Int32         g;
+
   textcolor(8);
-  gotoxy(RIGHT_COLUMN + VALUE_INDENT, CHANGES_LINE);
-  txt_write((changes_top > 0) ? "more ^" : "      ");
-  gotoxy(RIGHT_COLUMN + VALUE_INDENT, CHANGES_LINE + CHANGES_SHOWN + 1);
-  txt_write((changes_top + CHANGES_SHOWN < NUM_CHANGES) ? "more v" : "      ");
+
+  for (g=0; g<NUM_GROUPS; g++) {
+    group = &option_groups[g];
+    if (group->count <= group->shown) continue;
+
+    gotoxy(group->column + VALUE_INDENT, group->line);
+    txt_write((group->top > 0) ? "more ^" : "      ");
+
+    gotoxy(group->column + VALUE_INDENT, MORE_LINE);
+    txt_write((group->top + group->shown < group->count) ? "more v" : "      ");
+    }
   }
 
 static void draw_options(char rules_editable) {
@@ -465,14 +503,16 @@ static void draw_help(Int32 i) {
   }
 
 static void draw_screen(char* title, char rules_editable) {
+  Int32 g;
   textmode(3);
   textcolor(12);
   gotoxy(41 - strlen(title) / 2, 1); txt_write(title);
 
   textcolor(11);
-  gotoxy(LEFT_COLUMN, RULES_LINE); txt_write("Game Rules");
-  gotoxy(LEFT_COLUMN, PREFS_LINE); txt_write("Preferences");
-  gotoxy(RIGHT_COLUMN, CHANGES_LINE); txt_write("Gameplay Changes");
+  for (g=0; g<NUM_GROUPS; g++) {
+    gotoxy(option_groups[g].column, option_groups[g].line);
+    txt_write(option_groups[g].heading);
+    }
   draw_options(rules_editable);
 
   textcolor(3);
@@ -483,14 +523,14 @@ static void edit_options(char* title, char rules_editable) {
   Int32 i;
   Int32 dir;
   Int32 group;
-  Int32 group_row[3];
+  Int32 group_row[NUM_GROUPS];
   char  key;
-  changes_top = 0;
+  for (group=0; group<NUM_GROUPS; group++) option_groups[group].top = 0;
   draw_screen(title, rules_editable);
   i = first_editable(rules_editable);
 
   /* TAB moves to the next group, back to the row last selected there */
-  for (group=0; group<3; group++) group_row[group] = group_first(group);
+  for (group=0; group<NUM_GROUPS; group++) group_row[group] = option_groups[group].first;
   group_row[option_group(i)] = i;
 
   key = 0;
@@ -503,8 +543,8 @@ static void edit_options(char* title, char rules_editable) {
     if (key == '2') i = next_option(i, 1);
     if (key == 9) {
       group_row[option_group(i)] = i;
-      group = (option_group(i) + 1) % 3;
-      if (group == 2 && NUM_CHANGES == 0) group = 0;
+      group = (option_group(i) + 1) % NUM_GROUPS;
+      if (option_groups[group].count == 0) group = GROUP_RULES;
       i = group_row[group];
       }
     if (scroll_to(i)) draw_options(rules_editable);
