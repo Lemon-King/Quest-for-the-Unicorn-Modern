@@ -1603,6 +1603,7 @@ extern void show_trophies();
 extern void quest_progress(Int32 criteria,Int32* done,Int32* total);
 
 extern void recipe_string(Int32 num,char* buffer);
+extern Int32 recipe_ingredient(Int32 num,Int32 i);
 
 /* charattributes.c */
 extern Int32 get_base_str();
