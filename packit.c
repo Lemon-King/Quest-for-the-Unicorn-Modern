@@ -22,8 +22,7 @@ void pack_it(Int32 floor) {
   slot = 1;
   pitem = player.map[player.x][player.y] - 1000;
 
-  /* Without the Lore Books change a lore square (2000-2999) is taken for floor item 1000 or more, past the end of
-     map_objects. That is the Portable Hole, so G or P on a lore book copied a hole item into the pack. */
+  /* A lore square (2000-2999) is no floor item; without the Lore Books change it reads past map_objects */
   if (change_lore_books == 'Y' && pitem >= 1000) return;
   it = &(player.map_objects[pitem]);
   if (it->otype == O_NONE) return;
@@ -73,8 +72,7 @@ void pack_it(Int32 floor) {
     it->flags |= OF_COUNTED;
     player.pack[slot] = player.map_objects[pitem];
 
-    /* Without the Floor Items change the floor slot keeps a copy of the packed item, so the slot is never reused;
-       do_get() frees it */
+    /* Without the Floor Items change the floor slot is never freed for reuse */
     if (change_floor_items == 'Y') it->otype = O_NONE;
     clear_prompt();
     sprintf(packed,"Packed %s",get_name(&(player.pack[slot])));

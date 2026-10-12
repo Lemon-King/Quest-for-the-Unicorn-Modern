@@ -10,9 +10,8 @@
 
 #include "header.h"
 
-/* The player.monster[1][] index of the creature in a map cell outside the arena. The map holds creatures as negative
-   numbers; without the Spell Targets change the cell is used as it is, so the spell lands on a record before the
-   creature's. */
+/* The player.monster[1][] index of a creature's map cell, which holds it negated; without the Spell Targets change
+   the cell is used as it is */
 Int32 spell_target(Int32 cell) {
   if (change_spell_targets == 'Y') return -cell;
   return cell;

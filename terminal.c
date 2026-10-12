@@ -236,9 +236,7 @@ void outtextxy(Int32 x,Int32 y,char* buffer) {
   canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 
-/* Text on black, as txt_write() draws it: each glyph cell (8 wide, from 10 above the baseline to 1 below) is cleared
-   first, so writing spaces erases what was there. The GDI build drew this one transparently, so view()'s spaces
-   erased nothing and each name it showed printed over the last. */
+/* Text on black, as txt_write() draws it, so spaces erase what was there */
 void outtextxyclr(Int32 x,Int32 y,char* buffer) {
   canvas_fill(screen,x,y-10,8*(Int32)strlen(buffer),12,PALETTE[CLR_BLACK]);
   canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));

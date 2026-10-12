@@ -1225,6 +1225,7 @@ extern void perform_effect(OBJECT_REC* obj);
 extern void special(Int32 whichone,OBJECT_REC* item);
 extern void set_gateway_dungeon();
 extern Int32 check_quit(void);
+extern void eat(void);
 extern Int32 party_blow(NPC_REC* attacker);
 extern Int32 trophy_counter(Int32 trophy,Int32 slot);
 extern void tick_polymorph(void);

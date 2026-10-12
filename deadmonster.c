@@ -30,8 +30,7 @@ void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y) {
       else if (i >=61 && i<=80) drop = 79;
       else drop = 84;
 
-      /* Without the Floor Items change a full floor-item list, where place_object() returns -1, drops 999: a bogus
-         tile left on the map. With it the monster drops nothing. */
+      /* 999 is a full floor-item list; without the Floor Items change it is dropped as a bogus tile */
       if (change_floor_items != 'Y' || drop != 999) {
         if (mon->prev == currentFloor) mon->prev = drop;
         else {

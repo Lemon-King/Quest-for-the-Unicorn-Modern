@@ -17,8 +17,7 @@ void go_up() {
     flag = ' ';
     player.d_level--;
 
-    /* At level 0 the turn ends by leaving the dungeon, as by the stairs. Without the Words of Power change level 0 is
-       loaded as level[-1], which is not a level. */
+    /* Level 0 leaves the dungeon, as the stairs do; without the Words of Power change it loads level[-1] */
     if (change_words_of_power == 'Y' && player.d_level == 0) return;
     make_map(' ');
     if (flag == ' ') {

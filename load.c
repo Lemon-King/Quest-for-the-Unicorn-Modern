@@ -45,8 +45,7 @@ byte decrypt(byte value) {
   if (value < 32) return value;
   value += 64;
   value -= offset;
-  /* A wrapped character comes back here as its code minus 31, at most 95 for '~'; with < 95 a '~' decoded as 31 and
-     ended the line early */
+  /* A wrapped '~' comes back as 95 */
   if (value <= 95) value += 95;
   value -= 64;
   if (++offset > 64) offset = 1;
@@ -703,6 +702,7 @@ void load_gear_manager() {
 static void load_tardis(char* line) {
   Int32 i;
   char* value;
+
   value = next_word(line);
 
   if (match(line, "TardisDesc")) {
@@ -939,9 +939,7 @@ void load() {
     }
   fclose(save_file);
 
-  /* clear_game_data() leaves every quest 0, and the save brings back only 'Y' (and, with the Quest State change, 'E').
-     The rest are never-entered dungeons: 'N', as make_char() sets them. Without the change they stay 0, which the
-     compass takes for entered, so it lists every dungeon. */
+  /* Quests the save left out were never entered; without the Quest State change they stay 0, read as entered */
   if (change_quest_state == 'Y')
     for (i=0; i<1000; i++)
       if (player.quests[i] == 0) player.quests[i] = 'N';

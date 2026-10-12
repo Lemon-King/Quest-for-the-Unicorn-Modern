@@ -65,9 +65,8 @@ void new_trophy(Int32 num) {
   restoreScreen();
   }
 
-/* Whether a row of links[] counts toward a TC_QUESTS or TC_TOWNS trophy: without the Town Trophy change
-   Completionist wants every row, the towns included; with it the dungeons, and Sightseer the towns. Without the
-   Valley of Fear change the Valley cannot be entered, so Completionist does not want it. */
+/* Whether a row of links[] counts toward a TC_QUESTS or TC_TOWNS trophy. The Town Trophy change gives the towns their
+   own trophy; without the Valley of Fear change the Valley cannot be entered. */
 static char counts_toward(Int32 criteria,Int32 row) {
   if (criteria == TC_TOWNS) return (links[row].typ == 5) ? 'Y' : 'N';
   if (change_town_trophy == 'Y' && links[row].typ == 5) return 'N';

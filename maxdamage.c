@@ -27,11 +27,13 @@ Int32 is_magic_weapon(OBJECT_REC* weapon,NPC_REC* target) {
 
 static Int32 largest_damage(Int32 physical,Int32 fire,Int32 cold,Int32 elec,Int32 arcn) {
   Int32 largest;
+
   largest = physical;
   if (fire > largest) largest = fire;
   if (cold > largest) largest = cold;
   if (elec > largest) largest = elec;
   if (arcn > largest) largest = arcn;
+
   return largest;
   }
 

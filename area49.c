@@ -10,8 +10,7 @@
 
 #include "header.h"
 
-/* Without the Blast Spells change the 7x7 blast reads a creature's special flags as an older single number: 1 for
-   anti-magic, over 9 for friendly, and 10 taken off to make it hostile. The other spells test the MS_ bits. */
+/* Without the Blast Spells change special is read as an old number, not the MS_ bits */
 static Int32 is_anti_magic(NPC_REC* target) {
   if (change_blast_spells == 'Y') return ((target->special & MS_AMAGIC) == MS_AMAGIC);
   return (target->special == 1);

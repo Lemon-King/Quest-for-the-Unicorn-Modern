@@ -13,11 +13,20 @@
 /* Asks before Q ends the character. Returns -1 when the player says yes. */
 Int32 check_quit(void) {
   Int32 key;
+
   saveScreen();
   clrscr();
-  textcolor(12); gotoxy(35,8); txt_write("WARNING!!!");
-  textcolor(15); gotoxy(6,10); txt_write("<Q>uit will end your game with this character.");
-  textcolor(15); gotoxy(6,11); txt_write("Are you sure (Y/N)?");
+
+  textcolor(12);
+  gotoxy(35,8);
+  txt_write("WARNING!!!");
+
+  textcolor(15);
+  gotoxy(6,10);
+  txt_write("<Q>uit will end your game with this character.");
+  gotoxy(6,11);
+  txt_write("Are you sure (Y/N)?");
+
   key = ' ';
   while (key != 'Y' && key != 'N') {
     key = inkey();
@@ -25,5 +34,6 @@ Int32 check_quit(void) {
     if (key == 'n') key = 'N';
     }
   restoreScreen();
+
   return (key == 'Y') ? -1 : 0;
   }

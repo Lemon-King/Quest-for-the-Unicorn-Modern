@@ -10,8 +10,7 @@
 
 #include "header.h"
 
-/* Without the Thrown Weapons change a thrown rock or star, passed as a NULL weapon, crashes the game here when it stops
-   on an item */
+/* A thrown rock or star has no weapon; without the Thrown Weapons change that crashes */
 static Int32 is_bow(OBJECT_REC* weapon) {
   if (change_thrown_weapons == 'Y' && weapon == NULL) return 0;
   return (weapon->otype == O_BOW);
@@ -75,8 +74,7 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
       i = (i/2) + u_random(i/2);
       if (i < 1) i = 1;
 
-      /* aoe() rolls the crit and counts the damage, as for a melee hit. Without the Ranged Damage change the shot
-         does both here first, so it can crit twice and is counted twice. */
+      /* aoe() rolls the crit and counts the damage; without the Ranged Damage change they are done here too */
       if (change_ranged_damage != 'Y') {
         if (u_random(100) < get_crit()) {
           i *= 2;

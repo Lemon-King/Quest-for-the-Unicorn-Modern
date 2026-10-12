@@ -22,8 +22,7 @@ void teleport() {
   last_target_y = 0;
   }
 
-/* The Teleport spell works on dungeon levels only. teleport() hunts for stone floor, which the upland, the village and
-   the Realm of Eshter have little or none of, and the arena must not be left. */
+/* teleport() needs stone floor, so the spell works on dungeon levels only, and never in the Realm of Eshter */
 static Int32 can_teleport() {
   if (in_upland == 'Y' || in_arena == 'Y' || player.in_city == 'Y') return 0;
   return !(player.gateway == '*' && player.d_level == 4);
@@ -35,6 +34,7 @@ void teleport_spell() {
     msg("Fizzle",9);
     return;
     }
+
   teleport();
   discover();
   show_screen();

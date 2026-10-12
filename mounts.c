@@ -65,9 +65,9 @@ void mounts(char* name) {
          player.party[slot].time = -1;
          player.party[slot].exp = needed(player.party[slot].level);
 
-         /* Without the Platinum Dragon Mount change the Platinum Dragon (34), sold here as a mount, has the wild
-            monster's flags: it neither carries the player nor flies */
-         if (change_platinum_dragon_mount == 'Y' && item == 34) player.party[slot].special |= MS_MOUNT | MS_FLY;
+         /* Without the Platinum Dragon Mount change the Platinum Dragon (34) keeps the wild monster's flags */
+         if (change_platinum_dragon_mount == 'Y' && item == 34)
+           player.party[slot].special |= MS_MOUNT | MS_FLY;
          sub_gold(cost);
          gotoxy(30,14); textcolor(11);
          txt_write("Mount Obtained.");

@@ -152,44 +152,6 @@ static void attack(void) {
   player.y -= ydir;
   } /* void attack() */
 
-static void eat(void) {
-  OBJECT_REC* item;
-  Int32 i;
-  if (player.health > 100) {
-    clear_prompt();
-    prompt("Too full to eat any more");
-    return;
-    }
-  item = NULL;
-  for (i=1; i<11; i++)
-    if (player.invent[i].otype == O_FOOD) {
-       item = &(player.invent[i]);
-       i = 99;
-      }
-  if (item == NULL) {
-    for (i=1; i<=32; i++)
-      if (player.pack[i].otype == O_FOOD) {
-        item = &(player.pack[i]);
-        i = 99;
-        }
-    }
-  if (item == NULL) {
-    clear_prompt();
-    prompt("Nothing to Eat!!!");
-    }
-  else {
-    if (item->charges != -1) item->charges--;
-
-    /* Without the Last Bite change the last bite is cleared before perform_effect() can count it as a meal; with it
-       perform_effect() clears it after counting, as for u */
-    if (item->charges == 0 && change_last_bite != 'Y') {
-      item->otype = O_NONE;
-      }
-    perform_effect(item);
-    show_side();
-    }
-  }
-
 /*
 void eat() {
   OBJECT_REC* item;
@@ -293,8 +255,7 @@ static void down_level(Int32 check_clear) {
   if (player.map[player.x][player.y] == 24 ||
       player.map[player.x][player.y] == 5) {
 
-    /* check_clear is 0 when cave() places the player on a level without leaving one. Without the Sun Stone change it
-       is ignored, so a Sun Stone return saves the town it came from over the level above. */
+    /* Without the Sun Stone change a Sun Stone return saves the town over the level above */
     if (player.d_level > 0 && (check_clear || change_sun_stone != 'Y')) {
       save_level();
       if (current_dungeon.level[player.d_level-1].cleared == 0) {
@@ -463,8 +424,7 @@ static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
     player.party[pos].time = -1;
     player.party[pos].hp = player.party[pos].level * 9;
 
-    /* Without the Party Joining change these go to party[i], i being cave()'s loop variable passed in through join():
-       often 6, one past the party, so the player's own data after it is overwritten */
+    /* Without the Party Joining change these go to party[i], i being cave()'s loop variable */
     member = (change_party_joining == 'Y') ? pos : i;
     player.party[member].attack = 2 * player.party[member].level;
     player.party[member].defense = 2 * player.party[member].level;
@@ -548,9 +508,7 @@ static void join(Int32 i) {
   check_mount();
   } /* void join() */
 
-/* Whether the player stands beside shops[i]'s counter. A shop belongs to the town at its region and overworld square;
-   the village shops are listed under region 0 at (0,0) instead, and a village keeps the overworld region and square it
-   was entered from, so without the Village Shops change they never open. */
+/* Whether the player stands beside shops[i]'s counter. Village shops are listed under region 0 at (0,0). */
 static char beside_shop(Int32 i) {
   char here;
 
@@ -582,8 +540,11 @@ static Int32 is_merchant(void) {
 
 /* Whether a house for sale is the house owned in a house slot */
 static Int32 same_house(FORSALE* sale,HOUSE* house) {
-  return sale->region == house->region && sale->rx == house->rx && sale->ry == house->ry &&
-         sale->cx == house->cx && sale->cy == house->cy;
+  return (sale->region == house->region &&
+          sale->rx == house->rx &&
+          sale->ry == house->ry &&
+          sale->cx == house->cx &&
+          sale->cy == house->cy);
   }
 
 static void buy_item(Int32* i) {
@@ -647,8 +608,7 @@ static void buy_item(Int32* i) {
     (*i)++;
     }
 
-  /* Without the House Buying change for-sale row n is checked against house slot n, whichever house you stand at, so
-     owning a house in the slot of its own row stops every purchase */
+  /* Without the House Buying change for-sale row n is checked against house slot n, wherever you stand */
   for (*i=0; *i<5; (*i)++) {
     if (change_house_buying == 'Y') {
       if (flag >= 0 && same_house(&forsale[flag],&player.houses[*i])) flag = -1;

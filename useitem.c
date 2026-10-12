@@ -43,8 +43,7 @@ void use_item() {
       if (item->charges == 0) {
         item->otype = O_NONE;
 
-        /* Clears the square the item lay on. It used to clear the player's own square, which turned stairs or a door
-           to floor when the item had been dropped beside them, and left the item's square pointing at an empty slot */
+        /* The item's own square, which need not be the player's */
         if (use_from_ground == 'Y' && ground_x > 0 && ground_y > 0) {
           player.map[ground_x][ground_y] = currentFloor;
           show_spot(ground_x,ground_y);

@@ -57,10 +57,10 @@ static void land_discover(void) {
 /* The Gateway's entrance: seen with A_GATE, and open with A_GACT as well */
 static void place_gateway(void) {
   if (player.region != GATEWAY_REGION) return;
-  if (player.gateway == ' ' && has_intrinsic(A_GATE))
-    player.map[GATEWAY_X][GATEWAY_Y] = 32;
-  if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-    has_intrinsic(A_GACT)) player.map[GATEWAY_X][GATEWAY_Y] = 31;
+  if (player.gateway != ' ' || !has_intrinsic(A_GATE)) return;
+
+  if (has_intrinsic(A_GACT)) player.map[GATEWAY_X][GATEWAY_Y] = 31;
+    else player.map[GATEWAY_X][GATEWAY_Y] = 32;
   }
 
 static void check_region(void) {
@@ -234,8 +234,7 @@ void adjust_player_map() {
   }
 */
 
-/* Steps by dx,dy, into the next region at its edge. Returns 'N' when the step was blocked, which without the Free
-   Upland Keys change still counts as a step taken. */
+/* Steps by dx,dy, into the next region at its edge. Returns 'N' when the step was blocked. */
 static char move_land(Int32 dx,Int32 dy) {
   Int32 old_x,old_y;
   Int32 old_region;
@@ -302,8 +301,7 @@ static void enter_dungeon(void) {
       player.city = link.diff;
       player.dungeon_number = x-1;
 
-      /* Without the Town Completion change nothing marks a town complete, so the Completionist trophy, which wants
-         every row of links[] complete, can never be won */
+      /* Without the Town Completion change nothing marks a town complete */
       if (change_town_completion == 'Y') player.quests[player.dungeon_number] = 'Y';
       }
     }
@@ -331,44 +329,6 @@ static void enter_dungeon(void) {
       }
     }
   } /* void enter_dungeon() */
-
-static void eat(void) {
-  OBJECT_REC* item;
-  Int32 i;
-  if (player.health > 100) {
-    clear_prompt();
-    prompt("Too full to eat any more");
-    return;
-    }
-  item = NULL;
-  for (i=1; i<11; i++)
-    if (player.invent[i].otype == O_FOOD) {
-       item = &(player.invent[i]);
-       i = 99;
-      }
-  if (item == NULL) {
-    for (i=1; i<=32; i++)
-      if (player.pack[i].otype == O_FOOD) {
-        item = &(player.pack[i]);
-        i = 99;
-        }
-    }
-  if (item == NULL) {
-    clear_prompt();
-    prompt("Nothing to Eat!!!");
-    }
-  else {
-    if (item->charges != -1) item->charges--;
-
-    /* Without the Last Bite change the last bite is cleared before perform_effect() can count it as a meal; with it
-       perform_effect() clears it after counting, as for u */
-    if (item->charges == 0 && change_last_bite != 'Y') {
-      item->otype = O_NONE;
-      }
-    perform_effect(item);
-    show_side();
-    }
-  }
 
 /*
 void eat() {
@@ -402,6 +362,7 @@ void eat() {
 static char land_use_item(void) {
   OBJECT_REC* item;
   char        acted;
+
   item = NULL;
   saveScreen();
   item = inventory(item);
@@ -613,7 +574,9 @@ static void gps(void) {
 /* An overworld turn: regeneration, the clock and food, and the chance of an encounter */
 static void land_turn(void) {
   Int32 i;
+
   if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
+
   player.hp_count = player.hp_count-1;
   for (i=1; i<=19; i++) {
     if (player.invent[i].otype != O_NONE) {
@@ -661,21 +624,23 @@ static void land_turn(void) {
                player.invent[i].otype != O_HELM &&
                player.invent[i].effect == E_INTR &&
                player.invent[i].control == A_HEAL)
-             player.hp_count -= player.invent[i].damage;
-        }
+        player.hp_count -= player.invent[i].damage;
       }
+    }
 
   if (player.hp_count<1) {
     player.hp_count = 2;
     if (player.chp<player.mhp) player.chp = player.chp+1;
     show_side();
     }
+
   player.mana_count = player.mana_count-1;
   if (player.mana_count<1) {
     player.mana_count = 3;
     if (player.cmana<player.mmana) player.cmana = player.cmana+1;
     show_side();
     }
+
   take_time();
   check_encounter();
   } /* void land_turn() */
@@ -697,8 +662,7 @@ void up_land() {
   in_upland = 'Y';
   player.d_level = 0;
 
-  /* Without the Gateway Exit change the Gateway's flag stays set after leaving it: every later dungeon is built by the
-     Gateway's rules, and its entrance does not show again */
+  /* Without the Gateway Exit change the Gateway's rules stay on after leaving it */
   if (change_gateway_exit == 'Y' && player.gateway == '*') player.gateway = ' ';
   copyMap(&player.map,player.region);
 //#ifdef MINGW
@@ -734,8 +698,7 @@ void up_land() {
   while (exitf == 0) {
     show_time();
 
-    /* turn is 'N' for a key that only shows something, asks something, or does nothing; save_gear() and load_gear()
-       clear takes_time when cancelled */
+    /* turn is 'N' for a key that takes no time; a cancelled save_gear() or load_gear() clears takes_time */
     turn = 'Y';
     takes_time = 'Y';
     key = inkey();
@@ -842,7 +805,7 @@ void up_land() {
       default:turn = 'N';
       }
 
-    /* Without the Free Upland Keys change every key passes a turn: help, the record, a blocked step, any key at all */
+    /* Without the Free Upland Keys change every key passes a turn */
     if (change_free_upland_keys != 'Y') turn = 'Y';
 
     land_discover();

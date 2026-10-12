@@ -216,6 +216,9 @@
     <ClCompile Include="dungeonhelp.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="eat.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="effect.c">
       <Filter>Game</Filter>
     </ClCompile>

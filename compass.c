@@ -14,8 +14,7 @@ Int32 compass(Int32 suggest) {
   Int32 dx,dy;
   Int32 px,py;
 
-  /* Without the Compass change a region is placed at column r%4 and row r/4, which moves regions 4, 8 and 12 to the
-     start of the next row */
+  /* Without the Compass change regions 4, 8 and 12 are placed at the start of the next row */
   if (change_compass == 'Y') {
     dx = getPX(links[suggest].region,links[suggest].x);
     dy = getPY(links[suggest].region,link_y(suggest));

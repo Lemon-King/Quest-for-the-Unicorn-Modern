@@ -10,9 +10,7 @@
 
 #include "header.h"
 
-/* A creature killed by area49(), super(), drain() or r_missile(), at map cell x,y. Without the Spell Kills change it
-   only adds its exp, with none of the loot, kill stats, win check or party share the other spells give through
-   dead_monster() and gain_exp(). */
+/* A creature killed by area49(), super(), drain() or r_missile(). Without the Spell Kills change it only adds its exp. */
 void spell_kill(NPC_REC* target,Int32 x,Int32 y) {
   char buffer[32];
 

@@ -13,7 +13,9 @@
 /* A world seed from 0 to 1,999,999,999 built from three rand() calls of 15 bits each */
 static Int32 world_seed(void) {
   UInt32 s;
+
   s = ((UInt32)rand() << 30) ^ ((UInt32)rand() << 15) ^ (UInt32)rand();
+
   return (Int32)(s % 2000000000);
   }
 

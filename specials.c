@@ -1340,39 +1340,42 @@ void special100() {
   show_screen();
   }
 
-/* Whether the Sun Stone holds a dungeon level it can return to: a level of a dungeon in links[], or of the Gateway when
-   the Sun Stone Gateway change makes that return safe */
+/* Whether the Sun Stone holds a level of a dungeon in links[], or of the Gateway with the Sun Stone Gateway change */
 static Int32 sun_stone_record_usable(void) {
-  Int32 i;
+  Int32 row;
   Int32 dungeon;
   Int32 depth;
+
   dungeon = player.effect[PE_DUNGEON];
+
   if (dungeon == GATEWAY_DUNGEON) {
     if (change_sun_stone_gateway != 'Y') return 0;
     depth = 5;
     }
   else {
     if (dungeon < 0) return 0;
-    for (i=0; links[i].region < 90 && i != dungeon; i++);
-    if (links[i].region >= 90 || links[i].typ != 11) return 0;
+
+    row = 0;
+    while (row < dungeon && links[row].region < 90) row++;
+    if (links[row].region >= 90 || links[row].typ != 11) return 0;
+
     depth = player.effect[PE_DEPTH];
     }
+
   return (player.effect[PE_DLEVEL] >= 1 && player.effect[PE_DLEVEL] <= depth);
   }
 
 void special101() {
   if (player.in_city == 'Y') {
 
-    /* Without the Sun Stone Fixes change a stone that holds no usable level still returns, to level 0 of whatever it
-       holds, which reads outside the dungeon's levels */
+    /* Without the Sun Stone Fixes change a stone with no usable level returns to level 0 */
     if (change_sun_stone_fixes == 'Y' && !sun_stone_record_usable()) return;
     exitf = 10;
     player.in_city = 'N';
     player.d_level = player.effect[PE_DLEVEL];
     player.dungeon_number = player.effect[PE_DUNGEON];
 
-    /* The Gateway is dungeon 99, past the end of links[]. Without the Sun Stone Gateway change a return to it reads
-       links[99] for its name, difficulty and place. */
+    /* The Gateway is past the end of links[]; without the Sun Stone Gateway change links[99] is read */
     if (change_sun_stone_gateway == 'Y' && player.dungeon_number == GATEWAY_DUNGEON) {
       set_gateway_dungeon();
       player.land_x = GATEWAY_X;
@@ -1388,14 +1391,12 @@ void special101() {
       }
     used_sunstone = 'Y';
 
-    /* Without the Sun Stone Fixes change the return loads the level from whatever dungeon is in memory. build_dungeon()
-       does nothing when the recorded dungeon is the one in memory. */
+    /* Without the Sun Stone Fixes change the level comes from whatever dungeon is in memory */
     if (change_sun_stone_fixes == 'Y') build_dungeon(7,player.dungeon_number);
     }
   else {
 
-    /* Without the Sun Stone Fixes change the stone also records the overworld (level 0) and arena fights, and leaves
-       the level unsaved, so a return finds it as it was on arrival: killed monsters back, taken items on the floor */
+    /* Without the Sun Stone Fixes change the overworld and arena are recorded too, and the level is left unsaved */
     if (change_sun_stone_fixes == 'Y') {
       if (player.d_level < 1 || in_arena == 'Y') return;
       save_level();
@@ -1605,8 +1606,7 @@ void socketItem(OBJECT_REC* item,Int32 dir) {
     }
   }
 
-/* The Tripped card's hit die. Without the Tripped Card change it is the next class's, read past the table for a
-   Shaman. */
+/* The Tripped card's hit die; without the Tripped Card change it is the next class's */
 static Int32 tripped_hitdie() {
   if (change_tripped_card == 'Y') return classes[player.class-1].hitdie;
   return classes[player.class].hitdie;

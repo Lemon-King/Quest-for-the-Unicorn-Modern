@@ -111,9 +111,11 @@ void temple(char* name) {
       item = inventory(NULL);
       show_top(name,allowed,&cost);
 
-      /* Without the Temple Uncurse change leaving the inventory without choosing an item crashes on item->plus */
+      /* Without the Temple Uncurse change choosing no item crashes on item->plus */
       if (item == NULL && change_temple_uncurse == 'Y') {
-        gotoxy(27,13); textcolor(15); txt_write("Maybe next time.");
+        gotoxy(27,13);
+        textcolor(15);
+        txt_write("Maybe next time.");
         delay(1000);
         }
       else if (item->plus >= 0) {

@@ -126,6 +126,7 @@
     <ClCompile Include="drain.c" />
     <ClCompile Include="dragondice.c" />
     <ClCompile Include="dungeonhelp.c" />
+    <ClCompile Include="eat.c" />
     <ClCompile Include="effect.c" />
     <ClCompile Include="enemyhit.c" />
     <ClCompile Include="enemymissile.c" />

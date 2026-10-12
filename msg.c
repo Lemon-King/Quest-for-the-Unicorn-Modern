@@ -32,7 +32,7 @@ void msg(char* message,Int32 color) {
     next = pChar + 21;
     while (next > pChar && *next != ' ') next--;
 
-    /* A word longer than a line breaks at the line's end; the search used to run off the start of the buffer */
+    /* A word longer than a line breaks at the line's end */
     if (next == pChar) {
       strncpy(messages[NUM_MSG-1],pChar,21);
       messages[NUM_MSG-1][21] = 0;

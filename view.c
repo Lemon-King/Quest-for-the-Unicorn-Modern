@@ -148,14 +148,12 @@ void view(Int32 floor) {
       case 961:strcpy(buffer,"Armed Trap"); break;
       }
 
-    /* 2000-2999 are lore squares. They used to be read as floor items 1000 and up, past the end of map_objects, which
-       is the Portable Hole, so view mode named a hole item. */
-    if (player.map[x+player.map_x][y+player.map_y] >= 2000 && player.map[x+player.map_x][y+player.map_y] < 3000)
+    /* 2000-2999 are lore squares, not floor items */
+    if (player.map[x+player.map_x][y+player.map_y] >= 2000 &&
+        player.map[x+player.map_x][y+player.map_y] < 3000)
       strcpy(buffer,"Lore Book");
     else if (player.map[x+player.map_x][y+player.map_y] >= 1000) {
       strcpy(buffer,get_name(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
-
-      /* outtextxyclr() draws in the graphics colour, which itemColor() left alone, so items showed in yellow */
       setcolor(item_color(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
       }
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||

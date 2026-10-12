@@ -172,8 +172,7 @@ void save_player(FILE* file) {
   for (i=0; i<11; i++)
     if (player.tardis_x[i] != 0 || player.tardis_y[i] != 0) {
 
-      /* Without the Tardis Saves change each slot is a nested block, which load_player() reads as the player's own
-         X and Y, and whose } ends the Player section */
+      /* Without the Tardis Saves change a nested block, which load_player() misreads */
       if (change_tardis_saves == 'Y') {
         sprintf(line, "  TardisX%d %d",i,player.tardis_x[i]);    write_line(file, line);
         sprintf(line, "  TardisY%d %d",i,player.tardis_y[i]);    write_line(file, line);

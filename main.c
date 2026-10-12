@@ -38,8 +38,7 @@ static void start_game(Int32 loadgame) {
     txt_write("Loading Game . . .");
     load();
 
-    /* Play time counts from the load, as make_char() starts it for a new character. Before, a game loaded after another
-       one ended in the same session also counted that game's time and the title screens. */
+    /* Play time counts from the load, as it does from make_char() */
     start_time = (Int32)time(NULL);
     if (player.d_level>0) mod_exit = 2;
       else mod_exit = 1;
@@ -54,9 +53,7 @@ static void start_game(Int32 loadgame) {
     mod_exit = 1;
     build_dungeon(7,0);
 
-    /* clear_game_data() leaves dungeon 0, the Temple of the Forest, marked as built with empty levels, so the call
-       above does nothing. Without the New Game Dungeon change a character whose first dungeon is the Temple of the
-       Forest walks into those empty levels. */
+    /* clear_game_data() leaves dungeon 0 marked as built, so without the New Game Dungeon change its levels are empty */
     if (change_new_game_dungeon == 'Y') current_dungeon.dungeon_number = -1;
     }
   }
@@ -221,7 +218,6 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   smap_offset_y = screen_height - 239;
   NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
 
-  /* A canvas over 1100 pixels tall has room for more lines than the log keeps; past them it wrote over the spellbook */
   if (NUM_MSG > MAX_MSG) NUM_MSG = MAX_MSG;
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;

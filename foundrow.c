@@ -10,8 +10,7 @@
 
 #include "header.h"
 
-/* The lore or gen row a find_lore() or find_gen() result names. They return the matched row plus one, 0 for none;
-   without the Lore Search change that value is used as the row, so the row after the match is shown and learned. */
+/* find_lore() and find_gen() return the row plus one; without the Lore Search change that is used as the row */
 Int32 found_row(Int32 found) {
   if (change_lore_search == 'Y') return found - 1;
   return found;

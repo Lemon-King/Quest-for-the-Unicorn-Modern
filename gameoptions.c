@@ -423,15 +423,18 @@ static Int32 option_column(Int32 i) {
 /* The cursor visits every row of its side, wrapping at either end; a greyed row shows its help but cannot change */
 static Int32 next_option(Int32 i, Int32 dir) {
   Int32 side;
+
   side = option_side(i);
   i += dir;
   if (i < side_first(side)) i = side_end(side) - 1;
   if (i >= side_end(side)) i = side_first(side);
+
   return i;
   }
 
 static Int32 first_editable(char rules_editable) {
   Int32 i;
+
   for (i=0; i<NUM_OPTIONS; i++)
     if (is_editable(i, rules_editable)) return i;
   return 0;
@@ -490,20 +493,25 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   char  text[16];
   Int32 line;
   Int32 column;
+
   if (!is_shown(i)) return;
+
   line = option_line(i);
   column = option_column(i);
 
   textcolor(15);
-  gotoxy(column + ARROW_INDENT, line); txt_write((selected == 'Y') ? "-->" : "   ");
+  gotoxy(column + ARROW_INDENT, line);
+  txt_write((selected == 'Y') ? "-->" : "   ");
 
   textcolor(is_editable(i, rules_editable) ? 2 : 8);
   sprintf(label, "%-*s", VALUE_INDENT - LABEL_INDENT - 1, option_rows[i].label);
-  gotoxy(column + LABEL_INDENT, line); txt_write(label);
+  gotoxy(column + LABEL_INDENT, line);
+  txt_write(label);
 
   textcolor(is_editable(i, rules_editable) ? value_color(&option_rows[i]) : 8);
   format_value(&option_rows[i], text);
-  gotoxy(column + VALUE_INDENT, line); txt_write(text);
+  gotoxy(column + VALUE_INDENT, line);
+  txt_write(text);
   }
 
 /* A track beside the group's rows, with a thumb as long as the share of rows shown, placed by how far it has scrolled */
@@ -561,14 +569,17 @@ static void draw_help(Int32 i) {
   char text[80];
   sprintf(text, "%-76s", option_rows[i].help);
   textcolor(7);
-  gotoxy(3, HELP_LINE); txt_write(text);
+  gotoxy(3, HELP_LINE);
+  txt_write(text);
   }
 
 static void draw_screen(char* title, char rules_editable) {
   Int32 g;
+
   textmode(3);
   textcolor(12);
-  gotoxy(41 - strlen(title) / 2, 1); txt_write(title);
+  gotoxy(41 - strlen(title) / 2, 1);
+  txt_write(title);
 
   textcolor(11);
   for (g=0; g<NUM_GROUPS; g++) {
@@ -578,7 +589,8 @@ static void draw_screen(char* title, char rules_editable) {
   draw_options(rules_editable);
 
   textcolor(3);
-  gotoxy(13, KEYS_LINE); txt_write("(8/2) Select   (4/6) Change   (TAB) Group   (ENTER) Done");
+  gotoxy(13, KEYS_LINE);
+  txt_write("(8/2) Select   (4/6) Change   (TAB) Group   (ENTER) Done");
   }
 
 static void edit_options(char* title, char rules_editable) {
@@ -587,6 +599,7 @@ static void edit_options(char* title, char rules_editable) {
   Int32 group;
   Int32 group_row[NUM_GROUPS];
   char  key;
+
   for (group=0; group<NUM_GROUPS; group++) option_groups[group].top = 0;
   draw_screen(title, rules_editable);
   i = first_editable(rules_editable);
@@ -631,6 +644,7 @@ static void apply_mode_holds() {
 /* Keeps the game's own numbers and modes, set before unicorn.cfg is read, which the screens show in yellow */
 void remember_built_in_defaults() {
   Int32 i;
+
   for (i=0; i<NUM_OPTIONS; i++)
     if (option_rows[i].kind != OPT_SWITCH) option_rows[i].standard = *option_rows[i].number;
   }

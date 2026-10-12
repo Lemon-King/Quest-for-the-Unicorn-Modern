@@ -23,6 +23,7 @@ static Int32 page_slots(Int32 base) {
 /* The first empty slot in the house, or -1 when it is full. */
 static Int32 empty_slot(Int32 hnum) {
   Int32 i;
+
   for (i=0; i<500; i++)
     if (player.houses[hnum].inventory[i].otype == O_NONE) return i;
   return -1;
@@ -124,7 +125,8 @@ void house_inventory(Int32 hnum) {
     /* Without the House Storage change an item In Air is lost when you leave a full house */
     if (key == 27 && change_house_storage == 'Y' && in_air.otype != O_NONE && empty_slot(hnum) < 0) {
       textcolor(12);
-      gotoxy(20,2); txt_write("No room in the house for the item In Air");
+      gotoxy(20,2);
+      txt_write("No room in the house for the item In Air");
       flag = ' ';
       }
     if (key == 13) {

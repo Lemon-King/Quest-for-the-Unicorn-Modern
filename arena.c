@@ -483,13 +483,14 @@ static void do_inventory(void) {
   restoreScreen();
   }
 
-/* Without the Arena Decorations change a second try is used whatever it lands on, so a decoration can replace a monster
-   or a party member. With it the tries go on until one finds the floor. Most of the arena is floor, so one always
-   does; if 1000 miss, the spot is the player's own square, which is set back to floor after decorating. */
+/* Without the Arena Decorations change a second miss is kept, over a monster or party member. With it the last resort
+   is the player's own square, set back to floor after decorating. */
 static void pick_spot(Int32* x,Int32* y,Int32 what) {
   Int32 tries;
+
   *x = u_random(ARENA_SIZE_X) + offset_x;
   *y = u_random(ARENA_SIZE_Y) + offset_y;
+
   if (change_arena_decorations == 'Y') {
     for (tries=1; tries<1000 && player.map[*x][*y] != what; tries++) {
       *x = u_random(ARENA_SIZE_X) + offset_x;
@@ -509,6 +510,7 @@ static void pick_spot(Int32* x,Int32* y,Int32 what) {
 /* -1 when every monster of the arena's group is dead, else 0 */
 static Int32 monsters_dead(void) {
   Int32 i;
+
   for (i=1; i<=5; i++)
     if (player.monster[i][a_mon].hp > 0) return 0;
   return -1;
@@ -843,8 +845,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             }
           }
         }
-      /* Without the Arena Assassins change this tests class 7 (Monk) for the Assassin (8), so an Assassin restarts at
-         level 1 on every arena turn; the test after it is the right one, as in cave() */
+      /* Without the Arena Assassins change this tests the Monk (7) for the Assassin (8), restarting an Assassin */
       if (change_arena_assassins != 'Y' && player.align <= 0 && player.class != 7) make_assassin();
       if (player.align <= 0 && !(classes[player.class-1].flags & CF_ROGUE)) make_assassin();
       while (player.exp >= player.exp_next) {
@@ -1058,12 +1059,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   player.map_x = hold_mapx;
   player.map_y = hold_mapy;
   flag = ' ';
-  all_dead = -1;
-  for (i=1; i<=5; i++) {
-    if (player.monster[i][a_mon].hp < 0)
-      player.monster[i][a_mon].hp = 0;
-    if (player.monster[i][a_mon].hp > 0) all_dead = 0;
-    }
+  for (i=1; i<=5; i++)
+    if (player.monster[i][a_mon].hp < 0) player.monster[i][a_mon].hp = 0;
+  all_dead = monsters_dead();
   flag = ' ';
   while (flag != '*') {
     flag = '*';

@@ -28,11 +28,10 @@
 
 void mutable_legendary(OBJECT_REC* item) {
   Int32 item_class;
+
   if (item == NULL) return;
 
-  /* No case below is the Shaman's (13): without the Shaman Legendaries change the armour keeps three empty
-     enchantments, and the weapon stays an edged "Ayres' Mythical Weapon" under skill 0, which no one trains. The change
-     gives a Shaman the Cleric's (4), whose skills, weapons and spellcasting the Shaman shares. */
+  /* No case below is the Shaman's (13); with the Shaman Legendaries change a Shaman gets the Cleric's (4) */
   item_class = player.class;
   if (item_class == 13 && change_shaman_legendaries == 'Y') item_class = 4;
 

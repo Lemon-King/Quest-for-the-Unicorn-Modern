@@ -21,8 +21,7 @@ void do_blink() {
     }
   player.x = x; player.y = y;
 
-  /* Without the Blink Landing change the player, not the view, is held to 1..84, which can move the player off the
-     landing spot and into a wall */
+  /* Without the Blink Landing change the player, not the view, is held to 1..84, which can land in a wall */
   if (change_blink_landing == 'Y') {
     center_view();
     }

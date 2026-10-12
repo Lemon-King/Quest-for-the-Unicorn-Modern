@@ -198,8 +198,7 @@ void travel(char* name) {
           sub_gold(2500);
           player.map[shipx][shipy] = 12;
 
-          /* Without the Ship Purchase change the ship is not owned until it is boarded and left, so the check above
-             lets another be bought at once. With it the ship is owned as if docked in this harbor. */
+          /* Without the Ship Purchase change the ship is not owned until boarded, so another can be bought */
           if (change_ship_purchase == 'Y') {
             player.ship_x = shipx;
             player.ship_y = shipy;

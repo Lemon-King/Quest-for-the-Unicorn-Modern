@@ -10,16 +10,14 @@
 
 #include "header.h"
 
-/* Without the Eshter Spawns change this tests player.d_level, which build_dungeon() leaves at 0 while it stocks every
-   level, so Eshter never appears. */
+/* Without the Eshter Spawns change this tests player.d_level, which is 0 while levels are stocked */
 static Int32 is_eshter_level(Int32 depth) {
   if (player.gateway != '*') return 0;
   if (change_eshter_spawns == 'Y') return (depth == 5);
   return (player.d_level == 5);
   }
 
-/* The bottom level of the Den of Horror, where Daleks guard the Tardis. It has Eshter's fault without the Dalek
-   Spawns change. */
+/* The Den of Horror's bottom level, where Daleks guard the Tardis; without the Dalek Spawns change as above */
 static Int32 is_dalek_level(Int32 depth) {
   if (player.land_x != 16 || player.land_y != 28) return 0;
   if (change_dalek_spawns == 'Y') return (depth == bottom);

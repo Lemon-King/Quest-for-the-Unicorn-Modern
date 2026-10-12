@@ -141,8 +141,7 @@ void move_enemy(Int32 x,Int32 y) {
           if (player.party[0].sleep > 0) i += 50;
           if (player.party[0].fear > 0) i += 25;
 
-          /* Without the Summon Combat change the summon's level and defense are read from party[i], i being the hit
-             chance, and the blow does the summon's own attack in damage */
+          /* Without the Summon Combat change these read party[i], i being the hit chance */
           if (change_summon_combat == 'Y') {
             i -= player.party[0].level * 2;
             i -= player.party[0].defense * 2;

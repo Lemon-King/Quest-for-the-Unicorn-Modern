@@ -10,8 +10,7 @@
 
 #include "header.h"
 
-/* The lowest party value on the arena map: 300 is the summoned creature, 301-305 the party. Without the Summon Combat
-   change monsters start at 301, so they never go for the summon and can walk over it. */
+/* 300 is the summoned creature, 301-305 the party; without the Summon Combat change monsters ignore the summon */
 static Int32 first_party_cell() {
   return (change_summon_combat == 'Y') ? 300 : 301;
   }
