@@ -46,10 +46,10 @@
 
 /* units follows a number's value; strict is a switch's third value, after On, and extra a fourth, after Strict, which
    needs names; names replaces Off, On, Strict and the fourth as a switch's value names; standard is a number's or
-   mode's own default, and initial the value a new game starts with,
-   after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there instead of in the
-   save; apply puts a new value into effect; key names a gameplay change in the save; needs is a preference that must
-   be On for this one to change */
+   mode's own default, and initial the value a new game starts with, after unicorn.cfg and the command line; config
+   names the unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect; key
+   names a gameplay change in the save; start is the value a new game starts a gameplay change at, when not On or
+   Strict; needs is a preference that must be On for this one to change */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -71,6 +71,7 @@ typedef struct {
   char*  config;
   void   (*apply)();
   char*  key;
+  char   start;
   char*  needs;
   } OPTION_ROW;
 
@@ -361,7 +362,7 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Rarity Fix",
     .help  = "Pickups count rarity alike: A as g and its card, B as G, C as B with 5 ultra",
     .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'A', .off = 'N', .strict = 'B', .extra = 'C',
-    .names = { "Off", "Band A", "Band B", "Band C" }, .key = "RarityFix" }
+    .names = { "Off", "Band A", "Band B", "Band C" }, .key = "RarityFix", .start = 'A' }
   };
 
 static Int32 mode_index(Int32 mode) {
@@ -670,12 +671,12 @@ void remember_built_in_defaults() {
     if (option_rows[i].kind != OPT_SWITCH) option_rows[i].standard = *option_rows[i].number;
   }
 
-/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start at
-   their last value: On, or Strict or the fourth where they have it. */
+/* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start On,
+   or Strict where they have it, or at their start value where they name one. */
 void remember_option_defaults() {
   Int32 i;
   for (i=0; i<NUM_OPTIONS; i++) {
-    if (is_gameplay_change(i) && option_rows[i].extra != 0) option_rows[i].initial = option_rows[i].extra;
+    if (is_gameplay_change(i) && option_rows[i].start != 0) option_rows[i].initial = option_rows[i].start;
       else if (is_gameplay_change(i) && option_rows[i].strict != 0) option_rows[i].initial = option_rows[i].strict;
       else if (is_gameplay_change(i)) option_rows[i].initial = option_rows[i].on;
       else option_rows[i].initial = option_value(&option_rows[i]);

@@ -178,8 +178,8 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   show_keys = 'N';
   auto_pickup_gold = 'N';
   auto_pickup_torch = 'N';
-  auto_open_doors = 'N';
-  auto_bump_walls = 'N';
+  auto_open_doors = 'Y';
+  auto_bump_walls = 'Y';
   no_arena = 'Y';
   downgrade_arena = 'N';
   downgrade_depth = -1;
@@ -189,14 +189,14 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_ranged = 5;
   delay_hit = 200;
   delay_trap = 100;
-  enhanced_sprites = 'N';
+  enhanced_sprites = 'Y';
   show_mount = 'Y';
   class_sprites = 'Y';
   floor_item_names = 'Y';
   gothic_scrolls = 'N';
   improved_interface = 'Y';
   improved_status = 'I';
-  easy_spells = 'N';
+  easy_spells = 'Y';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
