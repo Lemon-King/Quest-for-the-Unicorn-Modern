@@ -1066,6 +1066,8 @@ LINK char               backupname[80];
 LINK char               graphics;
 LINK char               messages[MAX_MSG][80];
 LINK Int32                msg_clr[MAX_MSG];
+LINK Int32                msg_name_clr[MAX_MSG];   /* an item name's rarity colour from msg_name_at[] on; 0 for none */
+LINK Int32                msg_name_at[MAX_MSG];
 LINK STATS_REC          stats;
 LINK Int32                recipe_start;
 LINK Int32                heroicMode;
@@ -1579,6 +1581,7 @@ extern void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y);
 extern void poison_kill(NPC_REC* mon);
 extern void show_messages();
 extern void msg(char* message,Int32 color);
+extern void msg_named(char* words,char* name,Int32 color,Int32 name_color);
 extern void crafting();
 extern void wizard();
 extern void show_gen(Int32 item);
