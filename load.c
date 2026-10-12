@@ -412,7 +412,6 @@ void load_options() {
 
       /* Saves from before Improved Interface kept its menus as Cursor Menus */
       if (match(line, "CursorMenus ")) improved_interface = *next;
-      if (match(line, "TabMenu ")) tab_menu = *next;
       load_gameplay_change(line);
       }
     }

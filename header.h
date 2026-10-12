@@ -1145,7 +1145,6 @@ LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               show_mount;
 LINK char               class_sprites;
-LINK char               tab_menu;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
 LINK char               change_dalek_spawns;

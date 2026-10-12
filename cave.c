@@ -913,7 +913,7 @@ void cave() {
           }
 
       /* TAB opens the Tab Menu, which types the command chosen, or loads another game */
-      if (key == 9 && tab_menu == 'Y') {
+      if (key == 9 && improved_interface == 'Y') {
         command = open_tab_menu();
         if (command == TAB_LOAD_GAME) exitf = 11;
         if (command <= 0) continue;

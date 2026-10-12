@@ -640,11 +640,11 @@
                               cursor, as on the options screen, answer
                               their questions from a menu, see item
                               names in the colours of their rarity (see
-                              Item Merchants) and read scrolls in the
-                              middle of the screen.  Off, the game looks
-                              and asks as it first did
-         Tab Menu             Tab opens a menu of the commands you can use
-                              where you stand (see Tab Menu)
+                              Item Merchants), read scrolls in the
+                              middle of the screen, and open a menu of
+                              the commands you can use where you stand
+                              with Tab (see Tab Menu).  Off, the game
+                              looks and asks as it first did
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -1105,19 +1105,20 @@
 
      Tab Menu
      ========
-       With the Tab Menu preference, <Tab> opens a menu of commands in the
-     box where the messages show, and <Tab> or <ESC> closes it again
-     without taking a turn.  <8> and <2> move the cursor, the list scrolls
-     like the options screen, and <Enter> runs the command, which types
-     the keys shown beside it.  At the top, in green, is everything around
-     you: the merchant or house beside you, each creature beside you to
-     talk to or attack, each door to open or close, and the items,
-     chests, torches, lore, stairs and altars under you or a step away (a
-     step away, the command steps there first).  On the upland it offers
-     the town or dungeon you stand on or beside, and your ship.  The
-     common commands follow, then Save and Load.  A name too long for a
-     line, such as a shop's, carries on over the next, and the cursor
-     moves from command to command.
+       With the Improved Interface preference, <Tab> opens a menu of
+     commands in the box where the messages show, and <Tab> or <ESC>
+     closes it again without taking a turn.  <8> and <2> move the cursor,
+     the list scrolls like the options screen, and <Enter> runs the
+     command, which types the keys shown beside it.  At the top, in green,
+     is everything around you: the merchant or house beside you, each
+     creature beside you to talk to or attack, each door to open or close,
+     and the items, chests, torches, lore, stairs and altars under you or
+     a step away (a step away, the command steps there first).  On the
+     upland it offers the town or dungeon you stand on or beside, and your
+     ship.  The common commands follow, then Save and Load.  A name too
+     long for a line, such as a shop's, carries on over the next, and the
+     cursor moves from command to command.  Off, <Tab> is not one of the
+     game's commands, as before.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved

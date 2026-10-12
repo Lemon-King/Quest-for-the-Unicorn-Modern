@@ -8,8 +8,8 @@
  *******************************************************************
 */
 
-/* The Tab Menu, for the Tab Menu preference: in the box that shows the log, the commands for where you stand, then
-   the common ones, then Save and Load. A command types its keys into the game, as if pressed. */
+/* The Tab Menu, for the Improved Interface preference: in the box that shows the log, the commands for where you
+   stand, then the common ones, then Save and Load. A command types its keys into the game, as if pressed. */
 
 #include "header.h"
 
@@ -133,10 +133,9 @@ static COMMAND* add_command(COMMANDS* commands,char* label,char* keys,Int32 colo
   return command;
   }
 
-/* Shows the item name that follows verb in a command's label in its rarity colour, name_color, with the Improved
-   Interface preference */
+/* Shows the item name that follows verb in a command's label in its rarity colour, name_color */
 static void color_item_name(COMMAND* command,char* verb,Int32 name_color) {
-  if (command == NULL || name_color == 0 || improved_interface != 'Y') return;
+  if (command == NULL || name_color == 0) return;
 
   command->name_start = (Int32)strlen(verb) + 1;
   command->name_color = name_color;

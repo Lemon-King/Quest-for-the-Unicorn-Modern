@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      16
+#define NUM_PREFS      15
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -157,11 +157,8 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
   { .label = "Improved Interface",
-    .help  = "Menus pick with a cursor, items show their cards, names their rarity colours",
+    .help  = "Cursor menus, item cards, rarity colours, centred scrolls and the TAB menu",
     .kind  = OPT_SWITCH, .flag = &improved_interface, .on = 'Y', .off = 'N' },
-  { .label = "Tab Menu",
-    .help  = "TAB opens a menu of the commands you can use here, where the log shows",
-    .kind  = OPT_SWITCH, .flag = &tab_menu, .on = 'Y', .off = 'N' },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
