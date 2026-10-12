@@ -1088,9 +1088,11 @@
 
        <S> sorts the pack, a house or the hole: by Name, Name Reverse,
      Type (the kind of item, as its card names it), Rarity (the rarest
-     first) or Value (the most valuable first).  The items gather at the
-     top and the empty slots after them, and items whose rarity or value
-     you have not identified come after the rest.
+     first), Value (the most valuable first) or Quantity (the most first,
+     by the count in brackets after a name; an item without one counts
+     as one).  The items gather at the top and the empty slots after
+     them, and items you have not identified come after the rest for
+     rarity, value and quantity.
 
      Tab Menu
      ========

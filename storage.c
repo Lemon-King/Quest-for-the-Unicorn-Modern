@@ -25,12 +25,14 @@
 #define SORT_TYPE           2
 #define SORT_RARITY         3
 #define SORT_VALUE          4
-#define NUM_SORTS           5
+#define SORT_QUANTITY       5
+#define NUM_SORTS           6
 
 /* The orders, then Cancel */
-static char* sort_names[NUM_SORTS + 1] = { "Name", "Name Reverse", "Type", "Rarity", "Value", "Cancel" };
+static char* sort_names[NUM_SORTS + 1] = { "Name", "Name Reverse", "Type", "Rarity", "Value", "Quantity", "Cancel" };
 
-/* A slot's place in a sort. Rarity and value are known only for identified items; the others sort after them. */
+/* A slot's place in a sort. Rarity, value and quantity (the charges a name shows, or one) are known only for
+   identified items; the others sort after them. */
 typedef struct {
   Int32  slot;
   Int32  empty;
@@ -38,6 +40,7 @@ typedef struct {
   char*  kind;
   Int32  rarity;
   double value;
+  Int32  quantity;
   } SORT_KEY;
 
 /* A slot, numbered so the empty ones show */
@@ -95,6 +98,7 @@ static void make_sort_key(OBJECT_REC* item,Int32 slot,SORT_KEY* key) {
   key->kind = item_kind(item);
   key->rarity = known ? abs(item->rarity) : INT32_MAX;
   key->value = known ? item_cost(item) : -1.0;
+  key->quantity = !known ? 0 : (item->charges > 0) ? item->charges : 1;
   list_item_name(item,sizeof(key->name) - 1,key->name);
   }
 
@@ -112,6 +116,7 @@ static Int32 compare_keys(SORT_KEY* a,SORT_KEY* b,Int32 order) {
   if (order == SORT_TYPE && by_kind != 0) return by_kind;
   if (order == SORT_RARITY && a->rarity != b->rarity) return (a->rarity < b->rarity) ? -1 : 1;
   if (order == SORT_VALUE && a->value != b->value) return (a->value > b->value) ? -1 : 1;
+  if (order == SORT_QUANTITY && a->quantity != b->quantity) return (a->quantity > b->quantity) ? -1 : 1;
 
   return by_name;
   }
