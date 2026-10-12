@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      16
+#define NUM_PREFS      17
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -47,7 +47,8 @@
 /* units follows a number's value; strict is a switch's third value, after On; names replaces Off, On and Strict as a
    switch's value names; standard is a number's or mode's own default, and initial the value a new game starts with,
    after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there instead of in the
-   save; apply puts a new value into effect; key names a gameplay change in the save */
+   save; apply puts a new value into effect; key names a gameplay change in the save; needs is a preference that must
+   be On for this one to change */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -68,6 +69,7 @@ typedef struct {
   char*  config;
   void   (*apply)();
   char*  key;
+  char*  needs;
   } OPTION_ROW;
 
 /* A group of rows under its heading, from option first; its rows scroll when more of them than fit */
@@ -164,6 +166,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Status row under your stats: grey letters, icon-coloured letters, or icons",
     .kind  = OPT_SWITCH, .flag = &improved_status, .on = 'C', .off = 'N', .strict = 'I',
     .names = { "Off", "Color", "Icons" } },
+  { .label = "Easy Spells",
+    .help  = "Pick your spell from a list in the TAB menu, instead of typing its name",
+    .kind  = OPT_SWITCH, .flag = &easy_spells, .on = 'Y', .off = 'N', .needs = &improved_interface },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -368,6 +373,10 @@ static Int32 is_held_by_mode(OPTION_ROW* row) {
   return (row->casual != 0 && heroicMode < 0);
   }
 
+static Int32 is_held_by_need(OPTION_ROW* row) {
+  return (row->needs != NULL && *row->needs != 'Y');
+  }
+
 static Int32 is_gameplay_change(Int32 i) {
   return (i >= FIRST_CHANGE);
   }
@@ -397,7 +406,7 @@ static Int32 is_new_game_only(Int32 i) {
   }
 
 static Int32 is_editable(Int32 i, char rules_editable) {
-  if (is_held_by_mode(&option_rows[i])) return 0;
+  if (is_held_by_mode(&option_rows[i]) || is_held_by_need(&option_rows[i])) return 0;
   return (!is_new_game_only(i) || rules_editable == 'Y');
   }
 

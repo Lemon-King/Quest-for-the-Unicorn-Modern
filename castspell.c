@@ -17,6 +17,31 @@ typedef struct {
   char  spell_name[33];
   } SPELL_ENTRY;
 
+/* A spell picked from the Tab Menu's list, which the next cast takes without asking; 0 for none */
+static Int32 picked_spell = 0;
+
+/* The spells you know, in the order ? lists them, into list. Returns how many. */
+Int32 known_spells(SPELLBOOK list) {
+  Int32 i;
+  Int32 count;
+
+  count = 0;
+  for (i=1; i<=num_spells; i++)
+    if (has_spell(i) != 0) list[count++] = i;
+
+  return count;
+  }
+
+Int32 knows_a_spell(void) {
+  SPELLBOOK known;
+
+  return (known_spells(known) > 0);
+  }
+
+void pick_spell(Int32 spell) {
+  picked_spell = spell;
+  }
+
 static void match_spell(SPELL_ENTRY* entry) {
   Int32 i;
   Int32 count;
@@ -64,9 +89,12 @@ static void match_spell(SPELL_ENTRY* entry) {
   }
 
 static void show_list(void) {
+  SPELLBOOK known;
+  Int32  count;
   Int32  i;
   Int32  col,row;
   char buffer[80];
+  count = known_spells(known);
   textmode(3);
   col = 1;
   row = 3;
@@ -75,18 +103,17 @@ static void show_list(void) {
   gotoxy(40,2);
   txt_write("Lvl Mana Name");
   textcolor(14);
-  for (i=1; i<=num_spells; i++)
-    if (has_spell(i) != 0) {
-      gotoxy(col,row);
-      sprintf(buffer,"%3d %4d %s",spells[i].level,mana_cost(spells[i].mana),
-              spells[i].name);
-      txt_write(buffer);
-      row++;
-      if (row == 25) {
-        row = 3;
-        col = 40;
-        }
+  for (i=0; i<count; i++) {
+    gotoxy(col,row);
+    sprintf(buffer,"%3d %4d %s",spells[known[i]].level,mana_cost(spells[known[i]].mana),
+            spells[known[i]].name);
+    txt_write(buffer);
+    row++;
+    if (row == 25) {
+      row = 3;
+      col = 40;
       }
+    }
   inkey();
   graphmode();
   show_map();
@@ -174,6 +201,11 @@ Int32 castspell(Int32 spell_num) {
 //  allign = classes[player.class-1].spell_group;
 //  level = (player.level - classes[player.class-1].becomes_caster) + 1;
   flag = ' ';
+  if (picked_spell != 0) {
+    newone = picked_spell;
+    picked_spell = 0;
+    flag = '*';
+    }
   while (flag == ' ') {
     clear_prompt();
     prompt("Spell ? _");

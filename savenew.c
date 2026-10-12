@@ -285,6 +285,7 @@ void save_options(FILE* file) {
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
   sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);
+  sprintf(line, "  EasySpells %c", easy_spells);            write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }

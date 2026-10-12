@@ -1144,6 +1144,7 @@ LINK char               floor_item_names;
 LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
+LINK char               easy_spells;
 LINK char               show_mount;
 LINK char               class_sprites;
 LINK char               permadeath;
@@ -1299,6 +1300,7 @@ extern void tick_polymorph(void);
 extern char is_valley_of_fear(Int32 i);
 extern Int32 link_y(Int32 i);
 extern char* link_name(Int32 region,Int32 x,Int32 y);
+extern char* entrance_name(Int32 x,Int32 y);
 extern void show_floor_item(void);
 extern Int32 ship_region(void);
 extern void track_ship(void);
@@ -1457,6 +1459,9 @@ extern byte has_spell(Int32 check);
 extern Int32 check_spell_1(char* spell_name,Int32 level,Int32 allign,Int32 first);
 extern Int32 get_spell_name(Int32 column,Int32 search,Int32 level,Int32 allign);
 extern Int32 castspell(Int32 spell_num);
+extern Int32 known_spells(SPELLBOOK list);
+extern Int32 knows_a_spell(void);
+extern void pick_spell(Int32 spell);
 extern void new_spell();
 
 /* unisubs.c */

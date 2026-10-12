@@ -660,6 +660,11 @@
                               message log grows into its place, with
                               the compass and item names on its last
                               line; the Tab menu covers that line too
+         Easy Spells          Spells in the Tab menu lists the spells
+                              you know to pick from, instead of asking
+                              you to type one (see Tab Menu).  It needs
+                              Improved Interface, and is greyed out
+                              while that is Off
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -1133,11 +1138,18 @@
      creature beside you to talk to or attack, each door to open or close,
      and the items, chests, torches, lore, stairs and altars under you or
      a step away (a step away, the command steps there first).  On the
-     upland it offers the town or dungeon you stand on or beside, and your
-     ship.  The common commands follow, then Save and Load.  A name too
-     long for a line, such as a shop's, carries on over the next, and the
-     cursor moves from command to command.  Off, <Tab> is not one of the
-     game's commands, as before.
+     upland it offers the town or dungeon you stand on or beside, by its
+     name, and your ship.  The common commands follow, then Save and Load.
+     A name too long for a line, such as a shop's, carries on over the
+     next, and the cursor moves from command to command.  Off, <Tab> is
+     not one of the game's commands, as before.
+
+       Spells, in a town or dungeon when you know a spell, asks for one
+     to cast as <m> does.  With the Easy Spells preference it lists the
+     spells you know instead, each with the mana it costs, and <Enter>
+     casts the one under the cursor.  Spells you lack the mana for are
+     grey and cannot be picked, and the cursor starts on the spell you
+     cast last.  <ESC> goes back to the menu.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved

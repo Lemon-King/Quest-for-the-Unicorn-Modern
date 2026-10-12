@@ -98,9 +98,8 @@ static void name_place(Int32 x,Int32 y,char* name) {
   char* place;
 
   if (improved_interface != 'Y' || in_upland != 'Y') return;
-  if (player.map[x][y] != 5 && player.map[x][y] != 11) return;
 
-  place = link_name(player.region,x,y);
+  place = entrance_name(x,y);
   if (place != NULL) strcpy(name,place);
   }
 

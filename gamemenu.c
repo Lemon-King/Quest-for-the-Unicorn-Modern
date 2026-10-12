@@ -15,8 +15,8 @@
 
 #include <ctype.h>
 
-#define MAX_COMMANDS    48
-#define MAX_LINES      (MAX_COMMANDS * 4)
+#define MAX_COMMANDS    48     /* in the menu itself */
+#define LINES_EACH       4     /* lines a label may wrap onto */
 #define LABEL_WIDTH     20
 #define LABEL_LENGTH    72
 #define INDENT           1     /* a label's later lines, under its first */
@@ -24,7 +24,9 @@
 #define PANEL_LEFT     215     /* from the right edge, where the log's lines start */
 #define PANEL_TOP      100
 #define MORE_COLUMN     19
-#define KEY_COLUMN      24     /* a space after the label; the scroll bar takes column 26 */
+#define BAR_COLUMN      26     /* the scroll bar's */
+#define KEY_COLUMN      24     /* a space after a command's label, the keys it types */
+#define MANA_COLUMN     23     /* a space after a spell's name, its mana */
 
 #define CONTEXT_COLOR   10
 #define COMMON_COLOR    14
@@ -33,9 +35,10 @@
 #define DO_KEYS          0
 #define DO_SAVE          1
 #define DO_LOAD          2
+#define DO_SPELLS        3
 
-/* A command: what it says, the keys it types (the first returned, the rest queued), or Save or Load. An item's name
-   in its label, from name_start on, shows in its rarity colour, name_color; 0 for none. */
+/* A command: what it says, the keys it types (the first returned, the rest queued), or Save, Load or the Easy Spells
+   list. An item's name in its label, from name_start on, shows in its rarity colour, name_color; 0 for none. */
 typedef struct {
   char  label[LABEL_LENGTH];
   char  keys[4];
@@ -54,11 +57,14 @@ typedef struct {
   char  text[LABEL_WIDTH + 1];
   } COMMAND_LINE;
 
+/* Room for some commands, and the lines their labels wrap onto, width columns wide */
 typedef struct {
-  COMMAND      list[MAX_COMMANDS];
-  Int32        count;
-  COMMAND_LINE lines[MAX_LINES];
-  Int32        line_count;
+  COMMAND*      list;
+  Int32         count;
+  Int32         room;
+  COMMAND_LINE* lines;
+  Int32         line_count;
+  Int32         width;
   } COMMANDS;
 
 /* The eight squares around you, clockwise from north, with the key that steps there */
@@ -69,10 +75,24 @@ static const char  step_key[8] = { '8', '9', '6', '3', '2', '1', '4', '7' };
 static char* save_choices[3] = { "Overwrite", "Save as New", "Cancel" };
 static char* overwrite_choices[2] = { "Yes", "No" };
 
+static void open_commands(COMMANDS* commands,Int32 room,Int32 width) {
+  commands->list = malloc(room * sizeof(COMMAND));
+  commands->lines = malloc(room * LINES_EACH * sizeof(COMMAND_LINE));
+  commands->room = (commands->list != NULL && commands->lines != NULL) ? room : 0;
+  commands->count = 0;
+  commands->line_count = 0;
+  commands->width = width;
+  }
+
+static void close_commands(COMMANDS* commands) {
+  free(commands->list);
+  free(commands->lines);
+  }
+
 static void add_line(COMMANDS* commands,Int32 first,char* text,Int32 offset) {
   COMMAND_LINE* line;
 
-  if (commands->line_count == MAX_LINES) return;
+  if (commands->line_count == commands->room * LINES_EACH) return;
 
   line = &commands->lines[commands->line_count++];
   line->command = commands->count - 1;
@@ -94,7 +114,7 @@ static void wrap_label(COMMANDS* commands) {
   strcpy(words,commands->list[commands->count - 1].label);
   strcpy(line,"");
   first = 1;
-  width = LABEL_WIDTH;
+  width = commands->width;
   start = 0;
 
   for (word=strtok(words," "); word != NULL; word=strtok(NULL," ")) {
@@ -104,7 +124,7 @@ static void wrap_label(COMMANDS* commands) {
       strcpy(line,"");
       length = 0;
       first = 0;
-      width = LABEL_WIDTH - INDENT;
+      width = commands->width - INDENT;
       }
     if (length == 0) start = (Int32)(word - words);
       else strcat(line," ");
@@ -118,7 +138,7 @@ static void wrap_label(COMMANDS* commands) {
 static COMMAND* add_command(COMMANDS* commands,char* label,char* keys,Int32 color) {
   COMMAND* command;
 
-  if (commands->count == MAX_COMMANDS || commands->line_count == MAX_LINES) return NULL;
+  if (commands->count == commands->room || commands->line_count == commands->room * LINES_EACH) return NULL;
 
   command = &commands->list[commands->count++];
   sprintf(command->label,"%.*s",LABEL_LENGTH - 1,label);
@@ -148,6 +168,14 @@ static void add_action(COMMANDS* commands,char* label,Int32 action) {
   commands->list[commands->count - 1].enabled = !has_permadeath();
   }
 
+/* Spells types m for the spell prompt, or with Easy Spells opens the list of your spells */
+static void add_spells(COMMANDS* commands) {
+  COMMAND* command;
+
+  command = add_command(commands,"Spells","m",COMMON_COLOR);
+  if (command != NULL && easy_spells == 'Y') command->action = DO_SPELLS;
+  }
+
 /* "<verb> <name>", with the name the look command gives a square of this value. Returns the rarity colour of an item's
    name, or 0 for a square that holds no item. */
 static Int32 named_label(char* verb,Int32 value,char* label) {
@@ -164,13 +192,19 @@ static Int32 named_label(char* verb,Int32 value,char* label) {
   return color;
   }
 
+/* The square in direction d, as x,y; returns 0 off the map's edge */
+static Int32 square_beside(Int32 d,Int32* x,Int32* y) {
+  *x = player.x + step_x[d];
+  *y = player.y + step_y[d];
+
+  return (*x >= 1 && *x <= 100 && *y >= 1 && *y <= 100);
+  }
+
 /* The map value of the square in direction d, or 0 off the map's edge */
 static Int32 value_beside(Int32 d) {
   Int32 x,y;
 
-  x = player.x + step_x[d];
-  y = player.y + step_y[d];
-  if (x < 1 || x > 100 || y < 1 || y > 100) return 0;
+  if (!square_beside(d,&x,&y)) return 0;
 
   return player.map[x][y];
   }
@@ -311,7 +345,7 @@ static void list_town_and_dungeon(COMMANDS* commands) {
 
   add_command(commands,"Inventory","i",COMMON_COLOR);
   add_command(commands,"Use an item","u",COMMON_COLOR);
-  if (player.mmana > 0) add_command(commands,"Cast a spell","m",COMMON_COLOR);
+  if (knows_a_spell()) add_spells(commands);
   add_command(commands,"Eat","e",COMMON_COLOR);
   if (player.in_city != 'Y') {
     add_command(commands,"Search","s",COMMON_COLOR);
@@ -330,35 +364,46 @@ static void list_town_and_dungeon(COMMANDS* commands) {
   add_command(commands,"Options","O",COMMON_COLOR);
   }
 
-/* What > enters on an overworld square of this value, or NULL */
-static char* entrance(Int32 value) {
-  switch (value) {
-    case  5: return "Enter the town";
-    case 17: return "Enter the village";
-    case 11: return "Enter the dungeon";
-    case 31: return "Enter the Gateway";
+/* What > enters on the overworld square x,y, as label, naming the town or dungeon; returns 0 for none */
+static Int32 entrance(Int32 x,Int32 y,char* label) {
+  char* place;
+
+  place = entrance_name(x,y);
+  if (place != NULL) {
+    sprintf(label,"Enter %s",place);
+    return 1;
     }
-  return NULL;
+
+  switch (player.map[x][y]) {
+    case  5: strcpy(label,"Enter the town"); return 1;
+    case 17: strcpy(label,"Enter the village"); return 1;
+    case 11: strcpy(label,"Enter the dungeon"); return 1;
+    case 31: strcpy(label,"Enter the Gateway"); return 1;
+    }
+
+  return 0;
   }
 
 /* On foot, the entrances and your ship on the squares around you */
 static void list_land_beside(COMMANDS* commands,Int32 d) {
-  Int32 value;
+  char  label[LABEL_LENGTH];
+  Int32 x,y;
 
-  value = value_beside(d);
+  if (!square_beside(d,&x,&y)) return;
 
-  if (entrance(value) != NULL) add_step(commands,entrance(value),d,'>');
+  if (entrance(x,y,label)) add_step(commands,label,d,'>');
 
   /* With Ship Improvements walking onto your ship boards it */
-  if (value == 12) add_step(commands,"Board the ship",d,(change_ship_improvements == 'Y') ? 0 : 'E');
+  if (player.map[x][y] == 12) add_step(commands,"Board the ship",d,(change_ship_improvements == 'Y') ? 0 : 'E');
   }
 
 static void list_overworld(COMMANDS* commands) {
+  char  label[LABEL_LENGTH];
   Int32 here;
   Int32 d;
 
   here = player.map[player.x][player.y];
-  if (entrance(here) != NULL) add_command(commands,entrance(here),">",CONTEXT_COLOR);
+  if (entrance(player.x,player.y,label)) add_command(commands,label,">",CONTEXT_COLOR);
   if (player.inship != ' ') add_command(commands,"Leave the ship","E",CONTEXT_COLOR);
     else if (here == 12) add_command(commands,"Board the ship","E",CONTEXT_COLOR);
   if (player.inship == ' ')
@@ -378,9 +423,6 @@ static void list_overworld(COMMANDS* commands) {
   }
 
 static void list_commands(COMMANDS* commands) {
-  commands->count = 0;
-  commands->line_count = 0;
-
   if (in_upland == 'Y') list_overworld(commands);
     else list_town_and_dungeon(commands);
 
@@ -430,18 +472,18 @@ static Int32 name_column(COMMAND* command,COMMAND_LINE* text) {
   return indent + at;
   }
 
-/* A line of a command, with the keys it types on its first, and an item's name in its rarity colour */
+/* A line of a command, with its keys on its first up to the scroll bar, and an item's name in its rarity colour */
 static void draw_command(MENU* menu,Int32 row,Int32 line) {
   COMMANDS*     commands;
   COMMAND_LINE* text;
   COMMAND*      command;
-  char          keys[3];
+  char          keys[8];
   Int32         at;
 
   commands = menu->screen;
   text = &commands->lines[row];
   command = &commands->list[text->command];
-  sprintf(keys,"%-2s",text->first ? command->keys : "");
+  sprintf(keys,"%-*s",BAR_COLUMN - menu->value_column,text->first ? command->keys : "");
 
   draw_menu_text_in(menu,line,text->text,keys,command->enabled ? command->color : 8);
 
@@ -470,6 +512,37 @@ static void keep_on_command(MENU* menu,COMMANDS* commands,char key) {
   scrolled = list_scroll_to(&menu->rows,last);
   scrolled |= list_scroll_to(&menu->rows,row);
   if (scrolled) draw_menu(menu);
+  }
+
+static Int32 first_line(COMMANDS* commands,Int32 command) {
+  Int32 row;
+
+  for (row=0; row<commands->line_count; row++)
+    if (commands->lines[row].command == command) return row;
+
+  return 0;
+  }
+
+/* Moves the cursor from command to command until ENTER picks one that is enabled. Returns it, or -1 when TAB or ESC
+   backs out. */
+static Int32 choose_command(MENU* menu,COMMANDS* commands) {
+  Int32 picked;
+  Int32 command;
+  char  key;
+
+  if (commands->line_count == 0) return -1;
+
+  picked = -2;
+  while (picked == -2) {
+    key = menu_key(menu);
+    keep_on_command(menu,commands,key);
+    command = commands->lines[menu->row].command;
+
+    if (key == 9 || key == 27) picked = -1;
+    if (key == 13 && commands->list[command].enabled) picked = command;
+    }
+
+  return picked;
   }
 
 /* A saved game and its character's level */
@@ -628,6 +701,55 @@ static Int32 load_choice(void) {
   return (row >= 0);
   }
 
+static Int32 can_cast(Int32 spell) {
+  return (player.cmana >= mana_cost(spells[spell].mana));
+  }
+
+/* Of the spells known, the one cast last, which F1 keeps; the first when it is not among them */
+static Int32 last_cast(SPELLBOOK known,Int32 count) {
+  Int32 i;
+
+  for (i=0; i<count; i++)
+    if (strcmp(spells[known[i]].name,player.fspell[1]) == 0) return i;
+
+  return 0;
+  }
+
+/* Easy Spells: picks one of the spells you know, each with its mana, though not one you lack the mana for. The cursor
+   starts on the spell cast last. Returns the spell, or 0 for none. */
+static Int32 spell_choice(void) {
+  SPELLBOOK known;
+  COMMANDS  choices;
+  COMMAND*  choice;
+  MENU      menu;
+  Int32     count;
+  Int32     picked;
+  Int32     i;
+  char      mana[8];
+
+  count = known_spells(known);
+  open_commands(&choices,count,LABEL_WIDTH - 1);
+  for (i=0; i<count; i++) {
+    sprintf(mana,"%3d",mana_cost(spells[known[i]].mana));
+    choice = add_command(&choices,spells[known[i]].name,mana,COMMON_COLOR);
+    if (choice != NULL) choice->enabled = can_cast(known[i]);
+    }
+
+  picked = -1;
+  if (choices.line_count > 0) {
+    open_panel(&menu,choices.line_count,draw_command,&choices);
+    menu.value_column = MANA_COLUMN;
+    menu.row = first_line(&choices,last_cast(known,count));
+    keep_on_command(&menu,&choices,0);
+    show_panel(&menu,"Cast which spell?");
+    picked = choose_command(&menu,&choices);
+    }
+
+  close_commands(&choices);
+
+  return (picked >= 0) ? known[picked] : 0;
+  }
+
 /* Opens the menu, and TAB or ESC closes it. Returns the first key of the command chosen, its others queued to follow;
    0 when none was; TAB_LOAD_GAME when a game to load was picked. */
 Int32 open_tab_menu(void) {
@@ -637,9 +759,11 @@ Int32 open_tab_menu(void) {
   Int32    result;
   Int32    saved;
   Int32    choosing;
-  char     key;
+  Int32    picked;
+  Int32    spell;
   char     text[sizeof(loadname) + 16];
 
+  open_commands(&commands,MAX_COMMANDS,LABEL_WIDTH);
   list_commands(&commands);
   open_panel(&menu,commands.line_count,draw_command,&commands);
   show_panel(&menu,"Menu");
@@ -648,32 +772,38 @@ Int32 open_tab_menu(void) {
   saved = 0;
   choosing = 1;
   while (choosing) {
-    key = menu_key(&menu);
-    keep_on_command(&menu,&commands,key);
-    if (key == 9 || key == 27) choosing = 0;
+    picked = choose_command(&menu,&commands);
+    choosing = 0;
 
-    command = &commands.list[commands.lines[menu.row].command];
-    if (key != 13 || !command->enabled) continue;
+    if (picked >= 0) {
+      command = &commands.list[picked];
 
-    if (command->action == DO_SAVE) {
-      saved = save_choice("Save");
-      choosing = !saved;
-      }
-    else if (command->action == DO_LOAD) {
-      if (load_choice()) {
-        result = TAB_LOAD_GAME;
-        choosing = 0;
+      if (command->action == DO_SAVE) {
+        saved = save_choice("Save");
+        choosing = !saved;
         }
-      }
-    else {
-      strcpy(currentMacro,command->keys + 1);
-      result = (unsigned char)command->keys[0];
-      choosing = 0;
+      else if (command->action == DO_LOAD) {
+        if (load_choice()) result = TAB_LOAD_GAME;
+          else choosing = 1;
+        }
+      else if (command->action == DO_SPELLS) {
+        spell = spell_choice();
+        if (spell != 0) {
+          pick_spell(spell);
+          result = (unsigned char)command->keys[0];
+          }
+        else choosing = 1;
+        }
+      else {
+        strcpy(currentMacro,command->keys + 1);
+        result = (unsigned char)command->keys[0];
+        }
       }
 
     if (choosing) show_panel(&menu,"Menu");
     }
 
+  close_commands(&commands);
   show_messages();
   if (saved) {
     sprintf(text,"Saved as %s",loadname);
