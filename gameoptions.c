@@ -42,9 +42,15 @@
 #define ARROW_INDENT    2
 #define LABEL_INDENT    6
 #define VALUE_INDENT   31
+#define VALUE_WIDTH     7     /* the column after it holds a scrolling group's bar */
 
-/* units follows a number's value; config names the unicorn.cfg key of a number kept there instead of in the save;
-   apply puts a new value into effect; key names a gameplay change in the save */
+#define CELL_WIDTH      8     /* txt_write()'s cells, in pixels */
+#define CELL_HEIGHT    19
+#define THUMB_WIDTH     4
+
+/* units follows a number's value; standard is a number's or mode's own default, and initial the value a new game
+   starts with, after unicorn.cfg and the command line; config names the unicorn.cfg key of a number kept there
+   instead of in the save; apply puts a new value into effect; key names a gameplay change in the save */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -58,6 +64,7 @@ typedef struct {
   Int32  min;
   Int32  max;
   Int32  step;
+  Int32  standard;
   Int32  initial;
   char*  config;
   void   (*apply)();
@@ -419,14 +426,28 @@ static void format_value(OPTION_ROW* row, char* text) {
   char flag;
   char number[16];
   switch (row->kind) {
-    case OPT_MODE:   sprintf(text, "%-8s", mode_name(*row->number)); break;
+    case OPT_MODE:   sprintf(text, "%-*s", VALUE_WIDTH, mode_name(*row->number)); break;
     case OPT_SWITCH: flag = is_held_by_mode(row) ? row->casual : *row->flag;
-                     sprintf(text, "%-8s", (flag == row->on) ? "On" : "Off");
+                     sprintf(text, "%-*s", VALUE_WIDTH, (flag == row->on) ? "On" : "Off");
                      break;
     case OPT_NUMBER: sprintf(number, "%d%s", *row->number, row->units);
-                     sprintf(text, "%-8s", number);
+                     sprintf(text, "%-*s", VALUE_WIDTH, number);
                      break;
     }
+  }
+
+static Int32 option_value(OPTION_ROW* row) {
+  if (row->kind == OPT_SWITCH) return *row->flag;
+
+  return *row->number;
+  }
+
+/* A switch is blue On and grey Off; a number or mode is yellow at the game's own default and blue when changed */
+static Int32 value_color(OPTION_ROW* row) {
+  if (row->kind == OPT_SWITCH) return (*row->flag == row->on) ? CLR_LIGHTBLUE : CLR_GRAY;
+  if (*row->number == row->standard) return CLR_YELLOW;
+
+  return CLR_LIGHTBLUE;
   }
 
 static void change_option(OPTION_ROW* row, Int32 dir) {
@@ -465,12 +486,36 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   sprintf(label, "%-*s", VALUE_INDENT - LABEL_INDENT - 1, option_rows[i].label);
   gotoxy(column + LABEL_INDENT, line); txt_write(label);
 
-  textcolor(is_editable(i, rules_editable) ? 14 : 8);
+  textcolor(is_editable(i, rules_editable) ? value_color(&option_rows[i]) : 8);
   format_value(&option_rows[i], text);
   gotoxy(column + VALUE_INDENT, line); txt_write(text);
   }
 
-/* Marks rows scrolled out of sight above or below each group that scrolls */
+/* A track beside the group's rows, with a thumb as long as the share of rows shown, placed by how far it has scrolled */
+static void draw_scroll_bar(OPTION_GROUP* group) {
+  Int32 x,y;
+  Int32 height;
+  Int32 thumb;
+  Int32 offset;
+
+  x = (text_offset_x + group->column + VALUE_INDENT + VALUE_WIDTH - 1) * CELL_WIDTH;
+  y = (text_offset_y + group->line) * CELL_HEIGHT;
+  height = group->shown * CELL_HEIGHT;
+
+  thumb = height * group->shown / group->count;
+  if (thumb < CELL_HEIGHT) thumb = CELL_HEIGHT;
+  offset = (height - thumb) * group->top / (group->count - group->shown);
+
+  setfillstyle(1,0);
+  bar(x,y,x + CELL_WIDTH,y + height);
+
+  setfillstyle(1,8);
+  bar(x + CELL_WIDTH / 2,y,x + CELL_WIDTH / 2 + 1,y + height);
+  x += (CELL_WIDTH - THUMB_WIDTH) / 2;
+  bar(x,y + offset,x + THUMB_WIDTH,y + offset + thumb);
+  }
+
+/* Marks rows scrolled out of sight above or below each group that scrolls, and draws its scroll bar */
 static void draw_more() {
   OPTION_GROUP* group;
   Int32         g;
@@ -486,6 +531,8 @@ static void draw_more() {
 
     gotoxy(group->column + VALUE_INDENT, MORE_LINE);
     txt_write((group->top + group->shown < group->count) ? "more v" : "      ");
+
+    draw_scroll_bar(group);
     }
   }
 
@@ -566,13 +613,19 @@ static void apply_mode_holds() {
     if (is_held_by_mode(&option_rows[i])) *option_rows[i].flag = option_rows[i].casual;
   }
 
+/* Keeps the game's own numbers and modes, set before unicorn.cfg is read, which the screens show in yellow */
+void remember_built_in_defaults() {
+  Int32 i;
+  for (i=0; i<NUM_OPTIONS; i++)
+    if (option_rows[i].kind != OPT_SWITCH) option_rows[i].standard = *option_rows[i].number;
+  }
+
 /* Keeps the values from unicorn.cfg and the command line, which pre-fill every new game. Gameplay changes start On. */
 void remember_option_defaults() {
   Int32 i;
   for (i=0; i<NUM_OPTIONS; i++) {
     if (is_gameplay_change(i)) option_rows[i].initial = option_rows[i].on;
-      else if (option_rows[i].kind == OPT_SWITCH) option_rows[i].initial = *option_rows[i].flag;
-      else option_rows[i].initial = *option_rows[i].number;
+      else option_rows[i].initial = option_value(&option_rows[i]);
     }
   }
 

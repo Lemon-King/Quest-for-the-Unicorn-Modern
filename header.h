@@ -1608,6 +1608,7 @@ extern void show_time();
 extern void process_config(char* name);
 extern void save_config_value(char* name,char* key,Int32 value);
 extern Int32 process_option(char* pChar);
+extern void remember_built_in_defaults();
 extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();

@@ -285,10 +285,12 @@
      you choose how the game will play.  Use 8 and 2 (or the arrow keys)
      to select an option, 4 and 6 to change it, TAB to move to the next
      group (rules, preferences, gameplay changes), and ENTER when done.
-     TAB returns to the option last selected in a group.  Options shown
-     in grey cannot be changed, but can still be selected to read about
-     them.  The screen starts with the values from unicorn.cfg and the
-     command line.
+     TAB returns to the option last selected in a group.  Options with
+     grey names cannot be changed, but can still be selected to read
+     about them.  The screen starts with the values from unicorn.cfg and
+     the command line.  A switch shows On in blue and Off in grey.  A
+     number or mode shows yellow at the game's own default and blue when
+     changed.  Long lists scroll, with a bar beside them.
 
        Character rules are fixed once the character is created:
 

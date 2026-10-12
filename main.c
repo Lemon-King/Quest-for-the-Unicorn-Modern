@@ -195,6 +195,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
+  remember_built_in_defaults();
   process_config("unicorn");
   for (i=1; i<argc; i++) {
     if (process_option(argv[i]) == 0) {
