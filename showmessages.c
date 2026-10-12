@@ -10,10 +10,15 @@
 
 #include "header.h"
 
-void show_messages() {
-  Int32 i;
+/* The box under the player's stats that the log, or the Tab Menu, fills */
+void clear_messages(void) {
   setfillstyle(1,0);
   bar(screen_width-220,94,screen_width,100 + NUM_MSG * MESSAGE_HEIGHT);
+  }
+
+void show_messages() {
+  Int32 i;
+  clear_messages();
   for (i=0; i<NUM_MSG; i++) {
     setcolor(msg_clr[i]);
     while (strlen(messages[i]) < 22) strcat(messages[i]," ");

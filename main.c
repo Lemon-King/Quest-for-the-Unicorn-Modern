@@ -68,6 +68,7 @@ static void play_game() {
     if (mod_exit == 5) cave();
     if (mod_exit == 6) exit_flag = 'D';
     if (mod_exit == 7) { make_char(1); mod_exit = 1; }
+    if (mod_exit == 8) exit_flag = 'L';
     if (mod_exit == 9) exit_flag = 'O';
     }
   }
@@ -192,6 +193,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   floor_item_names = 'Y';
   gothic_scrolls = 'N';
   cursor_menus = 'Y';
+  tab_menu = 'Y';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
@@ -326,15 +328,18 @@ void run_game(GAME_HOST* host) {
   load_scores();
   set_music_volume();
 
-  /* Death and giving up return to the title screen; saving ends the program. */
+  /* Death and giving up return to the title screen; saving ends the program. A game picked with the Tab Menu's Load
+     starts at once, in loadname. */
   do {
-    play_music(MUSIC_INTRO);
-    if (loadgame == 1) title();
-    else {
-      loadgame = title_menu();
-      if (loadgame == 1) apply_character_config();
+    if (exit_flag != 'L') {
+      play_music(MUSIC_INTRO);
+      if (loadgame == 1) title();
+      else {
+        loadgame = title_menu();
+        if (loadgame == 1) apply_character_config();
+        }
+      show_legends();
       }
-    show_legends();
 /*
     show_final_scores();
 */
@@ -342,6 +347,11 @@ void run_game(GAME_HOST* host) {
     loadgame = 0;
     play_game();
     end_game();
+
+    if (exit_flag == 'L') {
+      loadgame = 1;
+      apply_character_config();
+      }
     } while (exit_flag != 'S');
   stop_music();
   }

@@ -152,6 +152,7 @@
     <ClCompile Include="foundrow.c" />
     <ClCompile Include="gainexp.c" />
     <ClCompile Include="gamble.c" />
+    <ClCompile Include="gamemenu.c" />
     <ClCompile Include="gameoptions.c" />
     <ClCompile Include="gateway.c" />
     <ClCompile Include="getalign.c" />
@@ -272,6 +273,7 @@
     <ClCompile Include="saveconfigvalue.c" />
     <ClCompile Include="savenew.c" />
     <ClCompile Include="savegear.c" />
+    <ClCompile Include="savelist.c" />
     <ClCompile Include="savelevel.c" />
     <ClCompile Include="sayword.c" />
     <ClCompile Include="scalemonster.c" />

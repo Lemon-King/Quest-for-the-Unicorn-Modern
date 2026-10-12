@@ -294,6 +294,9 @@
     <ClCompile Include="gamble.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="gamemenu.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="gameoptions.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -652,6 +655,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="savegear.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="savelist.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="savelevel.c">

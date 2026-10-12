@@ -13,7 +13,10 @@
 
 #include "header.h"
 
-#define LABEL_INDENT    4     /* from the arrow's column */
+/* The label's column, a space after the arrow */
+static Int32 label_column(MENU* menu) {
+  return menu->column + list_arrow_width(&menu->rows) + 1;
+  }
 
 static void draw_shown_rows(MENU* menu) {
   Int32 row;
@@ -45,18 +48,20 @@ void draw_menu(MENU* menu) {
   draw_shown_rows(menu);
   }
 
-/* A row's label after the arrow, padded to its value so the row covers the one it replaces, then the value */
+/* A row's label after the arrow, padded or cut to its value so the row covers the one it replaces, then the value */
+void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color) {
+  char  text[81];
+  Int32 width;
+
+  width = menu->value_column - label_column(menu);
+  sprintf(text,"%-*.*s",width,width,label);
+
+  list_text(&menu->rows,label_column(menu),line,color,text);
+  list_text(&menu->rows,menu->value_column,line,color,value);
+  }
+
 void draw_menu_text(MENU* menu,Int32 line,char* label,char* value) {
-  char text[81];
-
-  sprintf(text,"%-*s",menu->value_column - menu->column - LABEL_INDENT,label);
-
-  textcolor(menu->color);
-  gotoxy(menu->column + LABEL_INDENT,line);
-  txt_write(text);
-
-  gotoxy(menu->value_column,line);
-  txt_write(value);
+  draw_menu_text_in(menu,line,label,value,menu->color);
   }
 
 /* Shows the cursor and reads a key, moving the cursor for the keys that move it. Returns the key. */
@@ -66,9 +71,9 @@ char menu_key(MENU* menu) {
 
   if (menu->rows.count == 0) return inkey();
 
-  draw_list_arrow(menu->column,list_line(&menu->rows,menu->row),1);
+  draw_list_arrow(&menu->rows,menu->column,list_line(&menu->rows,menu->row),1);
   key = inkey();
-  draw_list_arrow(menu->column,list_line(&menu->rows,menu->row),0);
+  draw_list_arrow(&menu->rows,menu->column,list_line(&menu->rows,menu->row),0);
 
   last = menu->rows.count - 1;
   switch (key) {

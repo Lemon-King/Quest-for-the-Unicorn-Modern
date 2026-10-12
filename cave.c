@@ -549,18 +549,18 @@ static char beside_shop(Int32 i) {
           player.y <= shops[i].cy+1) ? 'Y' : 'N';
   }
 
-static Int32 is_merchant(void) {
-  Int32 flag;
+/* The shop you stand beside, or -1 */
+Int32 merchant_beside(void) {
   Int32 i;
-  flag = -1;
-  i = 0;
-  while (flag == -1) {
-    if (beside_shop(i) == 'Y') flag = i;
-    if (shops[i].shoptype == 999) flag = -2;
-    i++;
-    }
-  if (flag >= 0) return -1;
-  return 0;
+
+  for (i=0; shops[i].shoptype != 999; i++)
+    if (beside_shop(i) == 'Y') return i;
+
+  return -1;
+  }
+
+static Int32 is_merchant(void) {
+  return (merchant_beside() >= 0) ? -1 : 0;
   }
 
 /* Whether a house for sale is the house owned in a house slot */
@@ -774,6 +774,7 @@ void cave() {
   Int32 dmg;
   char buffer[20];
   Int32  in_corridor = 0;
+  Int32  command;
 
 /*  Int32  activeDelay; */
 
@@ -910,7 +911,16 @@ void cave() {
           if (run_x == 1 && run_y == 1) key = '3';
           if (run_x == 0 && run_y == 0) key = inkey();
           }
-      if (player.effect[PE_FEAR] > 0 && 
+
+      /* TAB opens the Tab Menu, which types the command chosen, or loads another game */
+      if (key == 9 && tab_menu == 'Y') {
+        command = open_tab_menu();
+        if (command == TAB_LOAD_GAME) exitf = 11;
+        if (command <= 0) continue;
+        key = (byte)command;
+        }
+
+      if (player.effect[PE_FEAR] > 0 &&
           ((key >= '1' && key <= '9') || key == 'f')) {
         find_closest_mob(&x,&y);
         key = fear_dir(player.x,player.y,target_x,target_y);
@@ -1462,6 +1472,7 @@ void cave() {
   if (exitf == 7) mod_exit = 7;
   if (exitf == 9) mod_exit = 9;
   if (exitf == 10) mod_exit = 2;
+  if (exitf == 11) mod_exit = 8;
   remove_bones();
   }
 

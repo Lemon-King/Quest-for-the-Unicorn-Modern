@@ -682,6 +682,7 @@ void up_land() {
   Int32  suggest;
   Int32  sug_level;
   char   turn;
+  Int32  command;
 
 /* ******************************************* */
 /* ***** Actual beginning of upland code ***** */
@@ -733,6 +734,15 @@ void up_land() {
     turn = 'Y';
     takes_time = 'Y';
     key = inkey();
+
+    /* TAB opens the Tab Menu, which types the command chosen, or loads another game */
+    if (key == 9 && tab_menu == 'Y') {
+      command = open_tab_menu();
+      if (command == TAB_LOAD_GAME) exitf = 11;
+      if (command <= 0) continue;
+      key = (byte)command;
+      }
+
     switch (key) {
       /* Without the Upland Quit change Q quits at once, unasked, and falls through into a step north */
       case 'Q':if (change_upland_quit == 'Y') {
@@ -899,6 +909,7 @@ void up_land() {
   if (exitf == 5) mod_exit = 5;
   if (exitf == 6) mod_exit = 6;
   if (exitf == 9) mod_exit = 9;
+  if (exitf == 11) mod_exit = 8;
 //#ifdef MINGW
 //  m_file = open("temp01.$$$",O_WRONLY | O_BINARY);
 //#else

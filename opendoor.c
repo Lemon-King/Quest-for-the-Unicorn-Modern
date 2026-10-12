@@ -10,11 +10,19 @@
 
 #include "header.h"
 
-void open_door() {
-  Int32 xdir,ydir;
+/* The direction of the door o opens without asking: the only closed door beside you, else the only locked one; ' '
+   when it asks */
+char door_to_open(void) {
   char dir;
   dir = item_dir(22);
   if (dir == ' ') dir = item_dir(33);
+  return dir;
+  }
+
+void open_door() {
+  Int32 xdir,ydir;
+  char dir;
+  dir = door_to_open();
   if (dir != ' ') {
     switch (dir) {
       case '1': xdir = -1; ydir = 1; break;

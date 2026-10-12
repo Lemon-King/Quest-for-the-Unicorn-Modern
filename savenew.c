@@ -284,6 +284,7 @@ void save_options(FILE* file) {
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  CursorMenus %c", cursor_menus);          write_line(file, line);
+  sprintf(line, "  TabMenu %c", tab_menu);                  write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }
@@ -520,7 +521,6 @@ void save_current_dungeon(FILE* file) {
   }
 
 void save_new() {
-  FILE* file;
   char  filename[1024];
   gotoxy(1,1); textcolor(14);
   strcpy(filename,"");
@@ -531,7 +531,15 @@ void save_new() {
     txt_write("Filename to save under (No Extension) ?");
     readln(filename);
     }
-  strcpy(loadname, filename);
+  save_game(filename);
+  }
+
+/* Writes the game to <name>.sav, which becomes the game's save */
+void save_game(char* name) {
+  FILE* file;
+  char  filename[1024];
+  if (name != loadname) strcpy(loadname, name);
+  strcpy(filename, name);
   strcat(filename, ".sav");
   file = fopen(filename, "w");
   if (encrypt_save_file != 'N') fprintf(file, "%se\n",VERSION);

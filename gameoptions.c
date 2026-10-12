@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      15
+#define NUM_PREFS      16
 #define NUM_CHANGES    61
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -159,6 +159,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Cursor Menus",
     .help  = "Shop, party and new character menus pick with a cursor, like this screen",
     .kind  = OPT_SWITCH, .flag = &cursor_menus, .on = 'Y', .off = 'N' },
+  { .label = "Tab Menu",
+    .help  = "TAB opens a menu of the commands you can use here, where the log shows",
+    .kind  = OPT_SWITCH, .flag = &tab_menu, .on = 'Y', .off = 'N' },
   { .label = "Music Volume",
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
@@ -535,7 +538,7 @@ static void draw_option(Int32 i, char selected, char rules_editable) {
   line = option_line(i);
   column = option_column(i);
 
-  draw_list_arrow(column + ARROW_INDENT, line, selected == 'Y');
+  draw_list_arrow(&option_groups[option_group(i)].rows, column + ARROW_INDENT, line, selected == 'Y');
 
   textcolor(is_editable(i, rules_editable) ? 2 : 8);
   sprintf(label, "%-*s", VALUE_INDENT - LABEL_INDENT - 1, option_rows[i].label);

@@ -639,6 +639,8 @@
                               cursor, as on the options screen (see Item
                               Merchants).  Off, they choose by letter or
                               number
+         Tab Menu             Tab opens a menu of the commands you can use
+                              where you stand (see Tab Menu)
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -1046,6 +1048,26 @@
      school, pawn shop and Mech-Merchant, the party screen (where <Enter>
      shows the member's statistics, and <D>, <C> and <O> ask for the member
      with the cursor), and a new character's sex, race and class.
+
+     Tab Menu
+     ========
+       With the Tab Menu preference, <Tab> opens a menu of commands in the
+     box where the messages show, and <Tab> or <ESC> closes it again
+     without taking a turn.  <8> and <2> move the cursor, the list scrolls
+     like the options screen, and <Enter> runs the command, which types
+     the keys shown beside it.  At the top, in green, is everything around
+     you: the merchant or house beside you, each creature beside you to
+     talk to or attack, each door to open or close, and the items,
+     chests, torches, lore, stairs and altars under you or a step away (a
+     step away, the command steps there first).  On the upland it offers
+     the town or dungeon you stand on or beside, and your ship.  The
+     common commands follow, then Save and Load.
+
+       Save offers Overwrite, Save as New and Cancel.  Save as New asks
+     for a name, and asks Yes or No before replacing a game already saved
+     under it.  Load saves the same way, then lists the saved games, the
+     newest first, and the one you pick starts at once.  For a character
+     with permadeath both are greyed out.
 
      Persistant Dungeons
      ===================

@@ -889,19 +889,39 @@ typedef struct {
   Int32       time_played;
   } SAVE_SUMMARY;
 
+/* A saved game in the working directory, and the list of them that savelist.c reads, newest first */
+typedef struct {
+  char         name[80];
+  time_t       saved;
+  SAVE_SUMMARY summary;
+  Int32        readable;
+  } SAVED_GAME;
+
+typedef struct {
+  SAVED_GAME* games;
+  Int32       count;
+  Int32       capacity;
+  } SAVE_LIST;
+
 /* A list's rows under a heading line: count rows, of which shown fit from top. A list longer than that scrolls, with
-   "more" markers at more_column and a scroll bar after them. */
+   "more" markers at more_column and a scroll bar after them. Its columns and lines are the 80x25 text grid's, or with
+   a row_height a panel's: 8-pixel columns from x and row_height-pixel lines from y. */
 typedef struct {
   Int32       count;
   Int32       shown;
   Int32       top;
   Int32       line;
   Int32       more_column;
+  Int32       x;
+  Int32       y;
+  Int32       row_height;
   } SCROLL_LIST;
 
 /* A list picked from with a cursor, as on the Game Options screen. draw_row draws a row on its line, reaching the
    screen's own data through screen. */
 #define MENU_KEYS "(8/2) Select   (ENTER) Choose   (ESC) Leave"
+
+#define TAB_LOAD_GAME   -1    /* open_tab_menu(): a game to load was picked, named in loadname */
 
 typedef struct MENU MENU;
 
@@ -1113,6 +1133,7 @@ LINK char               gothic_scrolls;
 LINK char               cursor_menus;
 LINK char               show_mount;
 LINK char               class_sprites;
+LINK char               tab_menu;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
 LINK char               change_dalek_spawns;
@@ -1281,14 +1302,20 @@ extern void hide_bottom_name(void);
 extern Int32 list_shows(SCROLL_LIST* list,Int32 row);
 extern Int32 list_scroll_to(SCROLL_LIST* list,Int32 row);
 extern Int32 list_line(SCROLL_LIST* list,Int32 row);
+extern void list_text(SCROLL_LIST* list,Int32 column,Int32 line,Int32 color,char* text);
 extern void draw_list_more(SCROLL_LIST* list);
-extern void draw_list_arrow(Int32 column,Int32 line,Int32 selected);
+extern Int32 list_arrow_width(SCROLL_LIST* list);
+extern void draw_list_arrow(SCROLL_LIST* list,Int32 column,Int32 line,Int32 selected);
 extern void fit_menu(MENU* menu,Int32 count);
 extern void draw_menu(MENU* menu);
 extern void draw_menu_text(MENU* menu,Int32 line,char* label,char* value);
+extern void draw_menu_text_in(MENU* menu,Int32 line,char* label,char* value,Int32 color);
 extern char menu_key(MENU* menu);
 extern Int32 menu_choice(MENU* menu);
 extern char menu_number(MENU* menu);
+extern Int32 open_tab_menu(void);
+extern Int32 merchant_beside(void);
+extern void clear_messages(void);
 extern void special8();
 extern void special9();
 extern void special14();
@@ -1468,6 +1495,8 @@ extern void show_spot(Int32 x,Int32 y);
 extern void title();
 extern Int32 title_menu();
 extern Int32 load_menu();
+extern void open_save_list(SAVE_LIST* list);
+extern void close_save_list(SAVE_LIST* list);
 extern void touch(Int32 damage,Int32 elem);
 
 /* unisubs3.c */
@@ -1485,6 +1514,8 @@ extern void healing();
 extern void lock_door();
 extern void nap();
 extern void open_door();
+extern char door_to_open(void);
+extern void square_name(Int32 value,char* name,Int32* color);
 extern void pack_it(Int32 floor);
 extern void party();
 extern void poison_trap();
@@ -1716,6 +1747,7 @@ extern Int32 find_empty(Int32 cx,Int32 cy,Int32 range,Int32 floor,Int32* dx,Int3
 extern void move_summoned();
 extern Int32 find_target(Int32 x,Int32 y,Int32* tx,Int32* ty);
 extern void save_new();
+extern void save_game(char* name);
 extern void write_line(FILE* file, char* line);
 extern Int32 has_permadeath();
 extern void hold_save(char* name);
