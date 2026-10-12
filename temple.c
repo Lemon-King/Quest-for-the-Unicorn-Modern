@@ -215,7 +215,7 @@ void temple(char* name) {
         if (cost > get_gold()) {
           gotoxy(27,14); textcolor(12); txt_write("You do not have enough gold!!!");
           } else {
-          if (cursor_menus == 'Y') key = ask_action(27,15,11,"Remove the Curse","Leave it",0);
+          if (cursor_menus == 'Y') key = ask_action(27,15,11,"Remove the Curse","Cancel",0);
           else {
             gotoxy(27,15); textcolor(11); txt_write("Do you wish to uncurse it? (Y/N)");
             while (key != 'Y' && key != 'N') {
