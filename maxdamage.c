@@ -25,6 +25,18 @@ Int32 is_magic_weapon(OBJECT_REC* weapon,NPC_REC* target) {
   return 0;
   }
 
+static Int32 largest_damage(Int32 physical,Int32 fire,Int32 cold,Int32 elec,Int32 arcn) {
+  Int32 largest;
+
+  largest = physical;
+  if (fire > largest) largest = fire;
+  if (cold > largest) largest = cold;
+  if (elec > largest) largest = elec;
+  if (arcn > largest) largest = arcn;
+
+  return largest;
+  }
+
 Int32 max_damage(OBJECT_REC* weapon,NPC_REC* target,Int32 base) {
   Int32 physical;
   Int32 fire;
@@ -102,6 +114,9 @@ Int32 max_damage(OBJECT_REC* weapon,NPC_REC* target,Int32 base) {
     elec = 0;
     arcn = 0;
     }
+
+  /* Without the Elemental Weapon Damage change, damage types that tie for the largest give 0 */
+  if (change_weapon_damage == 'Y') return largest_damage(physical,fire,cold,elec,arcn);
   if (physical > fire && physical > cold && physical > elec && physical > arcn) return physical;
   if (fire > physical && fire > cold && fire > elec && fire > arcn) return fire;
   if (cold > physical && cold > fire && cold > elec && cold > arcn) return cold;

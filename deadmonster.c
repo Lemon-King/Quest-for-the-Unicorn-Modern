@@ -29,12 +29,16 @@ void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y) {
         }
       else if (i >=61 && i<=80) drop = 79;
       else drop = 84;
-      if (mon->prev == currentFloor) mon->prev = drop;
-      else {
-        can_drop(x,y,'N');
-        if (drop_x > 0 && drop_y > 0) {
-          player.map[drop_x][drop_y] = drop;
-          show_spot(drop_x,drop_y);
+
+      /* 999 is a full floor-item list; without the Floor Items change it is dropped as a bogus tile */
+      if (change_floor_items != 'Y' || drop != 999) {
+        if (mon->prev == currentFloor) mon->prev = drop;
+        else {
+          can_drop(x,y,'N');
+          if (drop_x > 0 && drop_y > 0) {
+            player.map[drop_x][drop_y] = drop;
+            show_spot(drop_x,drop_y);
+            }
           }
         }
       }

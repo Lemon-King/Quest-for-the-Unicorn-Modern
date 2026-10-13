@@ -10,52 +10,12 @@
 
 #include "header.h"
 
-void show_message(char* message) {
-  Int32   i;
-  char* cr;
-  Int32 x,y;
-//  Int32 space;
-  Int32 size;
-  char last;
-  x = 120; y = 100; size = 30;
-//  space = 25;
-  while (strlen(message) != 0) {
-    cr = strchr(message,'\n');
-    if (cr != NULL && cr-message < size) {
-      *cr = 0;
-      write_font(x,y,0,message);
-      cr++;
-      strcpy(message,cr);
-      y += 19;
-      }
-    else if (strlen(message) < size) {
-      write_font(x,y,0,message);
-      strcpy(message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && message[i] != ' ') i--;
-      last = message[i];
-      message[i] = 0;
-      write_font(x,y,0,message);
-      message[i] = last;
-      i++;
-      y += 19;
-      strcpy(message,message+i);
-      }
-    }
-  }
-
 void show_lore(Int32 item) {
   Int32 i;
   MESSAGE general;
   i = item;
   general = lore[i];
   player.lore[i] = -1;
-  graphmode();
-  display_scroll();
-  setcolor(0);
-  show_message(general.message);
-  inkey();
+  scroll_text(general.message);
   }
 

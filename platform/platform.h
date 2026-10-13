@@ -35,6 +35,7 @@ void              canvas_line(CANVAS* canvas, int32_t x1, int32_t y1, int32_t x2
 void              canvas_point(CANVAS* canvas, int32_t x, int32_t y, uint32_t rgb);
 void              canvas_text(CANVAS* canvas, const GLYPH_FONT* font, int32_t x, int32_t baseline, const char* text, uint32_t rgb);
 void              canvas_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, const char* const* xpm);
+void              canvas_half_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, const char* const* xpm);
 void              canvas_copy(CANVAS* target, const CANVAS* source);
 int32_t           canvas_save_bmp(const CANVAS* canvas, const char* filename);
 

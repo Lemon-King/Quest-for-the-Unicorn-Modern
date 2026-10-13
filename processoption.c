@@ -108,7 +108,7 @@ Int32 process_option(char* pChar) {
     else if (_stricmp(option,"NoAutoOpenDoors"   ) == 0) auto_open_doors = 'N';
     else if (_stricmp(option,"NoAutoPickupGold"  ) == 0) auto_pickup_gold = 'N';
     else if (_stricmp(option,"NoAutoPickupTorch" ) == 0) auto_pickup_torch = 'N';
-    else if (_stricmp(option,"NoAutoSearchWalls" ) == 0) auto_bump_walls = 'Y';
+    else if (_stricmp(option,"NoAutoSearchWalls" ) == 0) auto_bump_walls = 'N';
     else if (_stricmp(option,"NoAutoTarget"      ) == 0) auto_target = 'N';
     else if (_stricmp(option,"NoDungeonScaling"  ) == 0) dungeon_scaling = 'N';
     else if (_stricmp(option,"NoFullPartyCombat" ) == 0) party_combat_mode = 'R';

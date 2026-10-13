@@ -140,9 +140,10 @@ void clear_game_data() {
   /* ************************** */
   /* ***** Clear messages ***** */
   /* ************************** */
-  for (i=0; i<60; i++) {
+  for (i=0; i<MAX_MSG; i++) {
     strcpy(messages[i],"");
     msg_clr[i] = 15;
+    msg_name_clr[i] = 0;
     }
 
   /* **************************** */

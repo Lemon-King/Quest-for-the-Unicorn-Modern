@@ -27,14 +27,21 @@
 */
 
 void mutable_legendary(OBJECT_REC* item) {
+  Int32 item_class;
+
   if (item == NULL) return;
+
+  /* No case below is the Shaman's (13); with the Shaman Legendaries change a Shaman gets the Cleric's (4) */
+  item_class = player.class;
+  if (item_class == 13 && change_shaman_legendaries == 'Y') item_class = 4;
+
   item->num_enchantments = 3;
   item->num_sockets = 3;
   item->sockets[0] = 0;
   item->sockets[1] = 0;
   item->sockets[2] = 0;
   if (item->otype == O_ARMR) {
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->enchantments[0] = S_STR + 5;
               item->enchantments[1] = S_ATP + 10;
               item->enchantments[2] = S_DEF + 16;
@@ -86,7 +93,7 @@ void mutable_legendary(OBJECT_REC* item) {
       }
     }
   if (item->otype == O_ROBE) {
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->enchantments[0] = S_STR + 3;
               item->enchantments[1] = S_ATP + 5;
               item->enchantments[2] = S_DEF + 8;
@@ -138,7 +145,7 @@ void mutable_legendary(OBJECT_REC* item) {
       }
     }
   if (item->otype == O_HELM) {
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->enchantments[0] = S_STR + 3;
               item->enchantments[1] = S_ATP + 5;
               item->enchantments[2] = S_DEF + 8;
@@ -190,7 +197,7 @@ void mutable_legendary(OBJECT_REC* item) {
       }
     }
   if (item->otype == O_BOOT) {
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->enchantments[0] = S_STR + 3;
               item->enchantments[1] = S_ATP + 5;
               item->enchantments[2] = S_DEF + 8;
@@ -244,7 +251,7 @@ void mutable_legendary(OBJECT_REC* item) {
   if (item->otype == O_RING) {
     item->effect = E_INTR;
     item->control = A_RELE;
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->enchantments[0] = S_STR + 3;
               item->enchantments[1] = S_ATP + 5;
               item->enchantments[2] = S_DEF + 8;
@@ -299,7 +306,7 @@ void mutable_legendary(OBJECT_REC* item) {
     item->enchantments[0] = S_HIT + 10;
     item->enchantments[1] = S_ATP + 10;
     item->enchantments[2] = S_CRT + 10;
-    switch (player.class) {
+    switch (item_class) {
       case 1: item->otype = O_EDGE;
               item->skill = SK_1HSWORD;
               strcpy(item->name,"Ayres'_Mythical_Sword");

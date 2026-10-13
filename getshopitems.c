@@ -31,3 +31,16 @@ void get_shop_items(Int32 otype1,Int32 otype2,Int32 otype3,Int32 otype4,Int32 ot
   sort_shop_items();
   }
 
+/* Keeps the shop's items of max_level or lower, in their order */
+void limit_shop_items(Int32 max_level) {
+  Int32 i;
+  Int32 kept;
+
+  kept = 0;
+
+  for (i=0; i<n_shop_items; i++)
+    if (abs(shop_items[i].level) <= max_level) shop_items[kept++] = shop_items[i];
+
+  n_shop_items = kept;
+  }
+

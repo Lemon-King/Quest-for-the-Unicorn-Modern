@@ -1,5 +1,5 @@
                               Quest for the Unicorn
-                                      v 7.0
+                                      v 7.1
                                     4/7/2017
                                        by
                                    Mike Riley
@@ -283,40 +283,397 @@
      ============
        Before a new character is created, the New Game Options screen lets
      you choose how the game will play.  Use 8 and 2 (or the arrow keys)
-     to select an option, 4 and 6 to change it, and ENTER when done.  The
-     screen starts with the values from unicorn.cfg and the command line.
+     to select an option, 4 and 6 to change it, TAB to move to the next
+     group (rules, preferences, gameplay changes), and ENTER when done.
+     TAB returns to the option last selected in a group.  Options with
+     grey names cannot be changed, but can still be selected to read
+     about them.  The screen starts with the values from unicorn.cfg and
+     the command line.  A switch shows On (or Strict) in blue and Off in
+     grey.  A number or mode shows yellow at the game's own default and
+     blue when changed.  Long lists scroll, with a bar beside them.
 
        Character rules are fixed once the character is created:
 
          Game Mode            Normal, Heroic, Epic or Casual (see below)
          Permadeath           Death is final (see below)
          Dungeon Depth        Levels in each dungeon, 2 to 10
+         Dungeon Scaling      Monsters in dungeons scale to your level
          Monster Count        Spawn size for monsters or groups, 10 to 60
          Arena Combat         On: multi-monster arena combat
                               Off: only bosses
-         Dungeon Scaling      Monsters in dungeons scale to your level
          Full Party Combat    Monsters and party members take full damage
 
        Gameplay changes are listed to the right of the rules.  Each one
      changes how the original game plays, most often to fix a bug.  Like
      the rules, they are chosen on the New Game Options screen and are
      fixed once the character is created.  A new character starts with
-     every change On; Off plays as the original game.  A game saved
-     before a change existed keeps it Off.  This version has no gameplay
-     changes yet.
+     every change On, and Castle Treasure at Strict; Off plays as the
+     original game.  A game saved before a change existed keeps it Off.
+     The list scrolls, and "more" marks changes above or below what
+     fits on the screen.
+
+         World Seed           A new world picks from 2 billion dungeon
+                              layouts.  Off, from only 32,767
+         New Game Dungeon     A new character's first visit to the
+                              Temple of the Forest builds its levels.
+                              Off, if it is the first dungeon entered,
+                              its levels are empty and you stand in a
+                              corner of nothing
+         Quest State          The save remembers which dungeons you
+                              have entered, so after a load the
+                              compass still lists only the dungeons
+                              you have entered or heard of.  Off, a
+                              loaded game's compass lists every
+                              dungeon
+         Compass              The compass points the right way to and
+                              from the easternmost regions.  Off, it
+                              places them at the west end of the next
+                              row of regions, and can point the wrong
+                              way
+         Lost Entrance        One dungeon is entered from its lost entrance
+                              at the end of a canyon, and the compass
+                              points there.  Off, it cannot be entered, the
+                              compass points at the mountains to the north,
+                              and the Completionist trophy leaves it out
+         Town Completion      Entering a town, on foot or by ship, marks
+                              it complete in the Quest Log, so the
+                              Completionist trophy can be won.  Off,
+                              towns are never complete and the trophy
+                              cannot be won
+         Town Trophy          Completionist counts only the dungeons,
+                              and visiting every town earns a trophy of
+                              its own, Sightseer (towns are marked by
+                              Town Completion).  Off, Completionist
+                              wants the towns too
+         Free Upland Keys     On the upland, keys that only show
+                              something or do nothing pass no time:
+                              help, the record, options, icons, ~,
+                              the travel log (T), Q's question, X, keys
+                              with no use, a step into mountains or
+                              water, and an inventory, item use or
+                              gear set left unchanged.  A blocked step
+                              is not counted as a step taken.  Off,
+                              each one passes an hour or more, eats
+                              food and can bring an encounter
+         Upland Quit          Q in the upland asks before ending the
+                              character, as it does in towns and
+                              dungeons.  Off, it quits at once
+         Hunting Skill        Hunting on the upland (h, or s) finds
+                              food more often as your Scouting grows,
+                              the skill it trains.  Off, it goes by
+                              your Mace skill
+         Ship Purchase        A ship bought from a travel agency is
+                              yours at once, docked in that harbor, so
+                              a second is refused.  Off, it counts as
+                              yours only once you board it and step off,
+                              and each purchase before then costs 2500
+         Ship Improvements    Your ship stays in a town's harbour and
+                              is there each time you return.  Sailing
+                              onto a town with a harbour (Radon,
+                              Marduk) docks you in it, and sailing out
+                              of the harbour brings you out on the
+                              water beside the town.  Walking onto your
+                              ship boards it, and moving twice towards
+                              land you can walk on steps ashore: on the
+                              coast, or at a town without a harbour,
+                              the ship waits on the water; in a harbour
+                              it goes back to the dock.  A ship never
+                              docks on a town.  Off, a ship left in a
+                              town appears on the overworld at sea or
+                              on a mountain, a ship docked on a town's
+                              square hides the town, and boarding and
+                              leaving a ship take E
+         Travel Saves         A save keeps a relic's travel destinations.
+                              Off, loading a game saved with a destination
+                              programmed loses the destinations and the
+                              messages and lore you have read, and in a
+                              town or dungeon puts you at a destination's
+                              coordinates
+         Travel Descriptions  A destination's description stops at 31
+                              characters.  Off, a longer one overruns
+                              the game's memory
+         Sleep Traps          A sleep trap puts you to sleep.  Off, it
+                              never springs
+         Words of Power       Rising by a word of power from the first
+                              level of a dungeon takes you out of it,
+                              as the stairs do, and words that sink you,
+                              to the next level or to the bottom, do
+                              nothing in a town.  Off, rising from a
+                              first level freezes the game, and sinking
+                              in a town drops you onto a level of the
+                              last dungeon you were in, or freezes the
+                              game if there is none
+         Final Dungeon Exit   Leaving the final dungeon ends its rules,
+                              and its entrance shows again.  Off, every
+                              dungeon after it is built as the final
+                              dungeon, until the game is won
+         Final Boss Spawns    The final boss waits on the fifth level of
+                              the final dungeon.  Off, it never appears,
+                              so the game cannot be won
+         Den of Horror Guards Guards protect a relic on the bottom level
+                              of the Den of Horror.  Off, they never
+                              appear
+         Castle Treasure      The final boss's castle, the final dungeon's
+                              fifth level, has one treasure of its own on
+                              its floor at a time.  Strict: none appears
+                              while you own one; with Possessions Off one
+                              used in crafting still counts as yours.  A
+                              new character starts at Strict.  Off, every
+                              visit while the final boss lives adds one
+         Sun Stone            Returning to a dungeon by Sun Stone leaves
+                              its levels as they were.  Off, a return to
+                              level 2 or deeper saves the town you came
+                              from over the level above
+         Sun Stone Final Dungeon
+                              A Sun Stone used in the final dungeon brings
+                              you back to it.  Off, the return reads a
+                              place past the end of the game's list, and
+                              leaving the dungeon again can crash the game
+         Sun Stone Fixes      A Sun Stone records only a dungeon level,
+                              not the upland or an arena fight, and
+                              keeps that level as you left it.  It
+                              returns you to the dungeon it holds,
+                              rebuilding it if you went elsewhere,
+                              and does nothing if it holds no level.
+                              Off, a return can land in the last
+                              dungeon you visited, monsters and items
+                              you dealt with are back, and an empty
+                              stone sends you to the Northern Realm
+         Elemental Weapon Damage
+                              A weapon whose physical and elemental
+                              damage are equal deals that damage.  Off,
+                              it deals none
+         Ranged Damage        An arrow or thrown weapon rolls for a
+                              critical hit once, and its damage counts
+                              once in your statistics.  Off, it can
+                              critical twice, for four times the damage,
+                              and every hit is counted twice
+         Thrown Weapons       Thrown rocks and stars that land on an
+                              item do nothing.  Off, the game crashes
+         Poison Kills         A creature that poison kills leaves the
+                              map, and drops its loot, where it died.
+                              Off, it stays standing there, dead, and
+                              the ground under you is changed instead
+         Summon Combat        A monster fighting your summoned creature
+                              hits with its own attack against the
+                              creature's defense, arena monsters go for
+                              it and cannot walk over it, and it finds
+                              its way back to you.  Off, a monster aims
+                              at the wrong defense and hits with the
+                              creature's own attack, and the creature
+                              can lose its way
+         Party Joining        A creature that joins your party gets its
+                              party attack, defense and mana.  Off, it
+                              keeps its own, and the party values go to
+                              another slot, often past the party and
+                              into your own data
+         Teleport Spell       Moves you to a random spot on a dungeon
+                              level, and fizzles in towns, the upland,
+                              the arena and the final boss's realm.  Off,
+                              it spends mana and does nothing
+         Blink Only Blinks    Blink only moves you.  Off, it also casts
+                              Protection
+         Blink Landing        Blink leaves you where it lands.  Off, a
+                              blink near the right or bottom edge of a
+                              level can put you in a wall
+         Spell Targets        Blind, sleep and drain spells, and spells
+                              your ring reflects, affect the creature
+                              they hit.  Off, outside the arena they
+                              miss it and change some other record
+         Blast Spells         Nuke, Nova, Word of God, Blizzard,
+                              Conflagration and Electrical Nova spare
+                              anti-magic creatures and cost alignment
+                              only when they hit a friend.  Off, they
+                              hurt most anti-magic creatures, cost
+                              alignment for almost any creature, and
+                              scramble the abilities of those hit
+         Spell Kills          A creature killed by a blast, Super Nova,
+                              Armageddon, a drain or a reflected spell
+                              counts as a kill, can drop loot, and its
+                              exp is shared as for any kill.  Off, you
+                              only get its exp, and killing the final boss
+                              this way does not win the game
+         Scroll of Charging   Restores the chosen item's charges.  Off,
+                              the game freezes
+         Mind Shield          A Potion or Scroll of Mind Shield wears
+                              off like the other resistances.  Off, it
+                              lasts forever
+         Arena Assassins      An Assassin keeps its level in arena
+                              combat.  Off, every turn in the arena
+                              starts an Assassin over at level 1
+         Arena Monk Fear      Monks cannot be frightened in the arena
+                              from level 11, as in dungeons.  Off, not
+                              until level 14
+         Arena Timers         Cold, electric and arcane resistance,
+                              blindness, light and polymorph wear off
+                              during arena fights, as in dungeons.
+                              Off, they pause until the fight ends
+         Arena Decorations    Trees, rocks and other scenery in an
+                              upland arena land only on open ground.
+                              Off, scenery can land on a monster, which
+                              then cannot be fought, or on a party
+                              member, which sits out the fight
+         Arena Exit           ENTER or ESC leaves an arena fight once
+                              every monster is dead.  Off, the only way
+                              out is to walk off the arena's edge
+         Rarity Fix           How picking up an item counts it
+                              towards your finds (the Eye for
+                              Treasure, Treasure Hunter and Lucky!
+                              trophies and the statistics).  Off,
+                              getting it with g counts it as its card
+                              names it, while packing it with G counts
+                              some items as commoner than that and the
+                              commonest Ultra Rare ones not at all.
+                              Band A counts both as g does, Band B
+                              both as G does, and Band C as G does but
+                              with those Ultra Rare ones counted.  A
+                              new character starts at Band A
+         Floor Items          Putting an item from the floor straight
+                              into your pack frees its place in the
+                              level's list of floor items, as does
+                              leaving an item on an arena's floor or in
+                              the final boss's realm, which is laid out
+                              afresh at each visit, and when that list
+                              is full a slain monster drops nothing
+                              instead of an item.  Off, those items
+                              keep their place, and a full list leaves
+                              a stray tile where the item should have
+                              been
+         Lore Books           Putting a lore book straight into your
+                              pack does nothing; read it with g as
+                              usual.  Off, that can copy an item from
+                              your Portable Hole into your pack and
+                              remove the book until you return to the
+                              level
+         Pack Weight          The item in the last pack slot counts
+                              toward the weight you carry.  Off, it
+                              weighs nothing
+         Possessions          An item you used up, threw or sold no
+                              longer counts as yours when treasure is
+                              chosen.  Off, until you save and reload,
+                              a unique item you no longer have will not
+                              drop again, and items that need another
+                              item still drop after it is gone
+         Item Deck            The Item Deck never gives the broken "EOL"
+                              item.  Off, it occasionally does
+         Tripped Card         The Deck of Many Things' Tripped card
+                              takes your own class's hit die.  Off, it
+                              takes the next class's, and a Shaman's is
+                              read from outside the game's data
+         Manual of Bodily Health
+                              The Manual of Bodily Health only adds to
+                              your hit points.  Off, it also uses the
+                              Crown of Might, saying the Triad is
+                              incomplete or, with the Triad on, giving
+                              the crown's powers for free
+         Shaman Legendaries   Ayres' Mythical items found by a Shaman
+                              get the Cleric's bonuses, and the weapon
+                              is a mace.  Off, the armour has no
+                              bonuses and the weapon is an edged one
+                              no one can train for
+         Last Bite            Eating the last bite of a food with e
+                              counts as a meal, as it does with u.
+                              Off, it is not counted
+         Meat and Potatoes    The Meat and Potatoes trophy counts the
+                              meat you eat, and meat counts once as a
+                              meal.  Off, meat counts twice as a meal
+                              and 100 potatoes alone earn the trophy
+         Village Shops        Every village's four merchants trade:
+                              weapons and armour of levels 1 and 2,
+                              supplies, and an inn.  Off, they never
+                              open
+         Shop Boots and Wands Armor shops sell cloth, leather and copper
+                              boots, and magic shops sell the Wands of
+                              Pine, Ceder and Redwood.  Off, no shop
+                              sells boots or wands
+         Platinum Dragon Mount
+                              A Platinum Dragon bought at Nichorville's
+                              stable carries you and flies, like the
+                              other dragons.  Off, it joins your party
+                              but is no mount
+         Temple Uncurse       Leaving a temple's Remove Curse without
+                              choosing an item returns to its menu.
+                              Off, the game crashes
+         Library Text         A town library shows its messages in plain
+                              text.  Off, they come out enciphered
+         Lore Search          A library or computer search shows and
+                              teaches the message that matched.  Off,
+                              it gives the message after it
+         House Buying         Owning a house never stops you buying
+                              another.  Off, owning Goldville as your
+                              first house, Radon as your second,
+                              Nichorville as your third or Talfharin as
+                              your fourth stops every later purchase
+         House Storage        A house's storage shows all of its 500
+                              slots, on 13 pages, and you cannot leave
+                              a full house with an item In Air.  Off,
+                              the last 20 slots never show, and an item
+                              In Air is lost when you leave a full house
+         No Negative Amounts  A negative amount typed at a bank, a house
+                              sale or the dice table counts as 0, which
+                              at the dice table means leaving.  Off, it
+                              adds gold
 
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 
          Auto-Target          Target the nearest monster automatically
-         Auto-Pickup Gold     Pick up gold automatically
-         Auto-Pickup Torches  Pick up torches automatically
          Auto-Open Doors      Doors open automatically
          Auto-Search Walls    Search walls automatically
+         Auto-Pickup Gold     Pick up gold automatically
+         Auto-Pickup Torches  Pick up torches automatically
+         Improved Interface   Choose in shops, the library, the
+                              inventory, the party screen and a new
+                              character's sex, race and class with a
+                              cursor, as on the options screen, answer
+                              their questions from a menu, see item
+                              names in the colours of their rarity (see
+                              Item Merchants), see the names of towns
+                              and dungeons when you look around (v),
+                              read scrolls in the middle of the screen,
+                              and open a menu of the commands you can
+                              use where you stand with Tab (see Tab
+                              Menu).  Off, the game looks and asks as it
+                              first did
+         Easy Spells          Spells in the Tab menu lists the spells
+                              you know to pick from, instead of asking
+                              you to type one (see Tab Menu).  It needs
+                              Improved Interface, and is greyed out
+                              while that is Off
+         Improved Status      Show the status indicators under your
+                              stats (see Status Indicators) as grey
+                              letters (Off), coloured letters (Color),
+                              or the icons themselves at half size
+                              (Icons).  Icons also gives the row of
+                              icons along the bottom of the screen to
+                              the map, which shows one more row.  The
+                              small map moves down to the edge of the
+                              screen, and the message log grows into
+                              its place, with the compass and item
+                              names on its last line; the Tab menu
+                              covers that line too
+         Floor Item Names     Show the name of the item you stand on in the
+                              bottom right, in its inventory colour, or
+                              under the message log (see Improved Status)
+         Enhanced Sprites     Show the tile under creatures and items
+         Unique Class Sprites Show your class as its own figure where the
+                              game has one: a Cavalier in mail with a
+                              lance, a Cleric or Shaman robed in white,
+                              and a Mage, Enchanter, Druid or Hierophant
+                              robed in blue.  Other classes keep the
+                              standard figure
+         Show Mount           On the overworld, show the mount you ride
+                              in place of your own figure: the first
+                              flying mount in your party when you fly,
+                              otherwise the first mount
+         Gothic Scrolls       Write scrolls, lore and the library in
+                              Gothic instead of the hand-drawn scroll
+                              letters.  Either way each line is centred,
+                              and text too long for the scroll moves
+                              with Up/Down and PgUp/PgDn
          Ranged Delay (ms)    Ranged attack flight delay
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
-         Enhanced Sprites     Show the tile under creatures and items
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
@@ -592,6 +949,11 @@
          E - The player is ethereal
          e - The player is ethereal, but the effect is about to run out
 
+       With the Improved Status preference these letters are drawn in
+     colour, or the icons themselves are drawn at half size in their place.
+     Off, the letters are grey.  The Tab Menu's Status Effects describes
+     each one you have (see Tab Menu).
+
      Macros
      ======
        Version 6.3 introduced the ability to use macros.  Whenever you have
@@ -714,6 +1076,114 @@
        The <a> through <r> keys will also instantly move the selection
      arrows to the row marked by the appropriate key.
 
+       With the Improved Interface preference, which a new character
+     starts with, the merchants' rows have no letters.  The same keys move
+     the cursor, which runs from the last item round to the first, <ESC>
+     leaves, and a scroll bar beside a long list shows how far down it is.
+     The other menus that choose by number work the same way, with <8> and
+     <2> to move, <9>, <3>, <7> and <1> to jump, <Enter> to choose and
+     <ESC> to leave: the temple, stable, bank, house purchase, travel
+     agency, inn, school, pawn shop and Mech-Merchant, the party screen
+     (where <Enter> shows the member's statistics, and <D>, <C> and <O>
+     ask for the member with the cursor), and a new character's sex, race
+     and class.
+
+       With the preference an item merchant lists the goods down the left
+     and shows the selected item's info card on the right, as <I> would:
+     its name in the colour of its rarity, its kind and rarity, what it
+     does and its value.  The card follows the cursor, so these merchants
+     have no <I>.  The spell shops keep their wider rows, and their <I>.
+
+       Questions that wanted <Y> or <N> become a short menu of what to do,
+     such as "Sell" and "Keep", where <ESC> answers no: removing a
+     curse, rebirth and One with Nature at the temple, selling and
+     identifying at the pawn shop and the Mech-Merchant, a trip at the
+     travel agency, a search at the library, joining the Cavaliers and
+     training a party member.  The game mode after rebirth, the library's
+     kind of search and a party member's orders are chosen the same way.
+
+       The inventory lists what you carry with the cursor and shows the
+     selected item's info card on the right.  <Enter> opens a short menu
+     of what to do with it: choose it for the command that opened the
+     inventory, put it in your pack, swap it with an item from your pack
+     (or equip one into an empty slot), or swap it with the item on the
+     ground when that fits the slot.  <P>, <T> and <X> still work too.
+
+       The pack is one numbered list of its 32 slots, with the card beside
+     it.  <Enter> offers to equip the item (or take or choose it, for what
+     opened the pack), to pick it up into the air, put the item in the air
+     down or swap the two, to move it to another slot, or to cancel.
+     Moving asks for the slot with the cursor, and swaps the item with
+     whatever is there.  <Space>, <X> and <I> still work too.
+
+       A house and the portable hole list their slots the same way, in one
+     numbered list in place of pages.  <Enter> offers to take the item out
+     into your inventory, or to store an item from your inventory in an
+     empty slot, then the pack's other actions.
+
+       <S> sorts the pack, a house or the hole: by Name, Name Reverse,
+     Type (the kind of item, as its card names it), Rarity (the rarest
+     first), Value (the most valuable first) or Quantity (the most first,
+     by the count in brackets after a name; an item without one counts
+     as one).  The items gather at the top and the empty slots after
+     them, and items you have not identified come after the rest for
+     rarity, value and quantity.
+
+       The preference also shows an item's name in the colour of its rarity
+     wherever the game names it among other words, with the words around
+     it in their own colour: in the message log, at the merchants, in the
+     Tab Menu and on the crafting screen.  A spell's card gives its class,
+     level and mana a line each, and scrolls stand in the middle of the
+     screen.  Off, these show as the game first wrote them, with scrolls
+     at the left of the screen.
+
+     Tab Menu
+     ========
+       With the Improved Interface preference, <Tab> opens a menu of
+     commands in the box where the messages show, and <Tab> or <ESC>
+     closes it again without taking a turn.  <8> and <2> move the cursor,
+     the list scrolls like the options screen, and <Enter> runs the
+     command, which types the keys shown beside it.  At the top, in green,
+     is everything around you: the merchant or house beside you, each
+     creature beside you to talk to, attack or ask to join, each door to
+     open, close or jam, and the items, chests, torches, lore, stairs and
+     altars under you or a step away (a step away, the command steps there
+     first).  Pick Up puts an item in your pack, as <G> does, or takes it
+     up as <g> does when only that counts it or the pack is full: a
+     trading card joins your collection, and a dungeon's treasure on its
+     last level completes the quest.  On the upland it offers the town or
+     dungeon you stand on or beside, by its name, and your ship.  The
+     common commands follow, then Save, Load, and Save and Exit.  A name
+     too long for a line, such as a shop's, carries on over the next, and
+     the cursor moves from command to command.  Off, <Tab> is not one of
+     the game's commands, as before.
+
+       Some commands show only when they can be used: Fire when your main
+     hand holds a bow, wand or energy weapon, Throw for a dagger or
+     throwing weapon in either hand, Heal when you are wounded, Transcribe
+     a spell when you carry a spell scroll, and Say a Word of Power when
+     a word may be said.
+
+       Status Effects puts a ^ under the status indicators (see Status
+     Indicators) and shows the one it points at in the box below: its
+     name, what it does, and how long it lasts or where it comes from.
+     <4> and <6> move to the next indicator you have, and <ESC> goes
+     back to the menu.  With none, Status Effects is greyed out.
+
+       Spells, in a town or dungeon when you know a spell, asks for one
+     to cast as <m> does.  With the Easy Spells preference it lists the
+     spells you know instead, each with the mana it costs, and <Enter>
+     casts the one under the cursor.  Spells you lack the mana for are
+     grey and cannot be picked, and the cursor starts on the spell you
+     cast last.  <ESC> goes back to the menu.
+
+       Save offers Overwrite, Save as New and Cancel.  Save as New asks
+     for a name, and asks Yes or No before replacing a game already saved
+     under it.  Load saves the same way, then lists the saved games, the
+     newest first, and the one you pick starts at once.  For a character
+     with permadeath both are greyed out.  Save and Exit saves and leaves
+     the game, as <X> does.
+
      Persistant Dungeons
      ===================
        The RNG used for creating dungeons is now tied to a world seed that
@@ -770,6 +1240,13 @@
 
        When using any of these commands you will receive a prompt for which
      gear slot is to be used, 0 through 9.
+
+       With the Improved Interface preference, <G> in the inventory shows
+     the ten gear slots beside your equipment.  The slot under the cursor
+     shows what it keeps in place of your equipment, an item you no
+     longer carry in grey, and <Enter> equips the slot, or just its
+     weapons, or saves your gear, or just your weapons, into it.  <G> or
+     <ESC> goes back to the inventory.
 
      Charged Throwables
      ==================

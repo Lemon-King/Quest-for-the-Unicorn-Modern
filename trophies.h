@@ -51,6 +51,7 @@
 #define TC_SKILL        41               /* Skill >= x */
 #define TC_TROPHY       42               /* Have all trophies but this one */
 #define TC_CARDS        43               /* Collect a set of trading cards */
+#define TC_TOWNS        44               /* All towns marked as complete (the Town Trophy change) */
 
 typedef struct {
   int criteria_type;
@@ -165,6 +166,7 @@ TROPHY_REC trophies[] = {
   { TC_PICKI,   {  T_522,      1,   72,    0,    0,    0,    0,    0, },   "Sunny Days",        "Acquiring a Sun Stone"},              /* 100 */
   { TC_PICKI,   {  T_706,      1,   73,    0,    0,    0,    0,    0, },   "Pack Rat",          "Acquiring a Portable Hole"},          /* 101 */
   { TC_PICKI,   {  T_703,      1,   74,    0,    0,    0,    0,    0, },   "Robo-Master",       "Acquiring a Mech Merchant"},          /* 102 */
+  { TC_TOWNS,   {      0,      0,    0,    0,    0,    0,    0,    0, },   "Sightseer",         "Visiting all the towns"},             /* 103 */
 
   {     999,    {  T_298,    100,    0,    0,    0,    0,    0,    0, },   "Be My Valentine",   "Giving 100 candy hearts to monsters"},/*    */
   };

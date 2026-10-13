@@ -37,6 +37,10 @@ static void start_game(Int32 loadgame) {
     textmode(3); gotoxy(1,1); textcolor(10);
     txt_write("Loading Game . . .");
     load();
+    if (set_screen_layout()) adjust_map();
+
+    /* Play time counts from the load, as it does from make_char() */
+    start_time = (Int32)time(NULL);
     if (player.d_level>0) mod_exit = 2;
       else mod_exit = 1;
     disp_char();
@@ -46,9 +50,13 @@ static void start_game(Int32 loadgame) {
     strcpy(backupname,"");
     new_game();
     game_setup();
+    set_screen_layout();
     make_char(0);
     mod_exit = 1;
     build_dungeon(7,0);
+
+    /* clear_game_data() leaves dungeon 0 marked as built, so without the New Game Dungeon change its levels are empty */
+    if (change_new_game_dungeon == 'Y') current_dungeon.dungeon_number = -1;
     }
   }
 
@@ -62,6 +70,7 @@ static void play_game() {
     if (mod_exit == 5) cave();
     if (mod_exit == 6) exit_flag = 'D';
     if (mod_exit == 7) { make_char(1); mod_exit = 1; }
+    if (mod_exit == 8) exit_flag = 'L';
     if (mod_exit == 9) exit_flag = 'O';
     }
   }
@@ -169,8 +178,8 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   show_keys = 'N';
   auto_pickup_gold = 'N';
   auto_pickup_torch = 'N';
-  auto_open_doors = 'N';
-  auto_bump_walls = 'N';
+  auto_open_doors = 'Y';
+  auto_bump_walls = 'Y';
   no_arena = 'Y';
   downgrade_arena = 'N';
   downgrade_depth = -1;
@@ -180,10 +189,18 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_ranged = 5;
   delay_hit = 200;
   delay_trap = 100;
-  enhanced_sprites = 'N';
+  enhanced_sprites = 'Y';
+  show_mount = 'Y';
+  class_sprites = 'Y';
+  floor_item_names = 'Y';
+  gothic_scrolls = 'N';
+  improved_interface = 'Y';
+  improved_status = 'I';
+  easy_spells = 'Y';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
+  remember_built_in_defaults();
   process_config("unicorn");
   for (i=1; i<argc; i++) {
     if (process_option(argv[i]) == 0) {
@@ -206,8 +223,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   TEXT_GRID_WIDTH = screen_width / 8;
   TEXT_GRID_HEIGHT = screen_height / 19;
   smap_offset_x = screen_width - 219;
-  smap_offset_y = screen_height - 239;
-  NUM_MSG = (smap_offset_y - 110) / MESSAGE_HEIGHT;
+  set_screen_layout();
   text_offset_x = (TEXT_GRID_WIDTH - 80) / 2;
   text_offset_y = (TEXT_GRID_HEIGHT - 25) / 2;
   trophy_count = 0;
@@ -312,15 +328,18 @@ void run_game(GAME_HOST* host) {
   load_scores();
   set_music_volume();
 
-  /* Death and giving up return to the title screen; saving ends the program. */
+  /* Death and giving up return to the title screen; saving ends the program. A game picked with the Tab Menu's Load
+     starts at once, in loadname. */
   do {
-    play_music(MUSIC_INTRO);
-    if (loadgame == 1) title();
-    else {
-      loadgame = title_menu();
-      if (loadgame == 1) apply_character_config();
+    if (exit_flag != 'L') {
+      play_music(MUSIC_INTRO);
+      if (loadgame == 1) title();
+      else {
+        loadgame = title_menu();
+        if (loadgame == 1) apply_character_config();
+        }
+      show_legends();
       }
-    show_legends();
 /*
     show_final_scores();
 */
@@ -328,6 +347,11 @@ void run_game(GAME_HOST* host) {
     loadgame = 0;
     play_game();
     end_game();
+
+    if (exit_flag == 'L') {
+      loadgame = 1;
+      apply_character_config();
+      }
     } while (exit_flag != 'S');
   stop_music();
   }

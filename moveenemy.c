@@ -140,8 +140,16 @@ void move_enemy(Int32 x,Int32 y) {
           i = 50 + player.monster[1][0-monster].level * 2;
           if (player.party[0].sleep > 0) i += 50;
           if (player.party[0].fear > 0) i += 25;
-          i -= player.party[i].level * 2;
-          i -= player.party[i].defense * 2;
+
+          /* Without the Summon Combat change these read party[i], i being the hit chance */
+          if (change_summon_combat == 'Y') {
+            i -= player.party[0].level * 2;
+            i -= player.party[0].defense * 2;
+            }
+          else {
+            i -= player.party[i].level * 2;
+            i -= player.party[i].defense * 2;
+            }
           if (i < 20) i = 20;
           if (i > 80) i = 80;
           if (u_random(100) < i) {
@@ -150,8 +158,11 @@ void move_enemy(Int32 x,Int32 y) {
               delay(delay_hit);
               show_spot(x+xdir,y+ydir);
               }
-            i = u_random(player.party[0].attack);
-            if (i < 1) i = 1;
+            if (change_summon_combat == 'Y') i = party_blow(&player.monster[1][0-monster]);
+            else {
+              i = u_random(player.party[0].attack);
+              if (i < 1) i = 1;
+              }
             player.party[0].hp -= i;
             if (player.party[0].hp <= 0) {
               player.map[sx][sy] = player.party[0].prev;

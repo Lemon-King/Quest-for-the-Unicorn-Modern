@@ -113,6 +113,16 @@ static void draw_glyph(const STROKE_FONT* font,Int32 glyph,Int32 x,Int32 baselin
     }
   }
 
+/* The glyph for letter, or -1 when the font has none */
+static Int32 find_glyph(const STROKE_FONT* font,char letter) {
+  Int32 glyph;
+
+  glyph = (byte)letter - font->first;
+  if (glyph < 0 || glyph >= font->count) return -1;
+
+  return glyph;
+  }
+
 void stroke_font_draw(const STROKE_FONT* font,Int32 x,Int32 y,Int32 size,Int32 color,char* text) {
   Int32 glyph;
   Int32 baseline;
@@ -124,10 +134,28 @@ void stroke_font_draw(const STROKE_FONT* font,Int32 x,Int32 y,Int32 size,Int32 c
   pen = 0;
 
   for (; *text != 0; text++) {
-    glyph = (byte)*text - font->first;
-    if (glyph < 0 || glyph >= font->count) continue;
+    glyph = find_glyph(font,*text);
+    if (glyph < 0) continue;
 
     draw_glyph(font,glyph,x,baseline,pen,size,color);
     pen += font->widths[glyph];
     }
+  }
+
+Int32 stroke_font_width(const STROKE_FONT* font,Int32 size,char* text) {
+  Int32 glyph;
+  Int32 pen;
+
+  if (size < 1 || size > MAX_SIZE) return 0;
+
+  pen = 0;
+
+  for (; *text != 0; text++) {
+    glyph = find_glyph(font,*text);
+    if (glyph < 0) continue;
+
+    pen += font->widths[glyph];
+    }
+
+  return pen * SIZE_MUL[size] / SIZE_DIV[size];
   }

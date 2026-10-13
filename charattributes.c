@@ -426,11 +426,15 @@ Int32 get_dodge() {
 Int32 get_weight() {
   Int32 ret;
   Int32 i;
+  Int32 last;
   ret = 0;
   for (i=0; i<20; i++) {
     if (player.invent[i].otype != O_NONE) ret += player.invent[i].weight;
     }
-  for (i=0; i<32; i++) {
+
+  /* The pack holds slots 1-32. Without the Pack Weight change slot 32 is left out of the weight. */
+  last = (change_pack_weight == 'Y') ? 32 : 31;
+  for (i=0; i<=last; i++) {
     if (player.pack[i].otype != O_NONE) ret += player.pack[i].weight;
     }
   ret += get_coins() / 250;

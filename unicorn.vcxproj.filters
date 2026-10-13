@@ -75,6 +75,9 @@
     <ClCompile Include="blindtrap.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="bottomname.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="builddungeon.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -97,6 +100,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="cave.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="centerview.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="charattributes.c">
@@ -129,6 +135,9 @@
     <ClCompile Include="checknoble.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="checkquit.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="checkscores.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -157,6 +166,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="copymap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="countrarity.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="crafting.c">
@@ -208,6 +220,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="dungeonhelp.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="eat.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="effect.c">
@@ -273,13 +288,22 @@
     <ClCompile Include="fkeys.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="foundrow.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="gainexp.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="gamble.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="gamemenu.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="gameoptions.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="gateway.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="getalign.c">
@@ -387,6 +411,9 @@
     <ClCompile Include="inventory.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="invillage.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="invvalid.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -412,6 +439,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="lightroom.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="linky.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="load.c">
@@ -483,6 +513,9 @@
     <ClCompile Include="meleehit.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="menu.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="missile.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -546,6 +579,9 @@
     <ClCompile Include="party.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="partyblow.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="passable.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -559,6 +595,12 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="placeobject.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="playersprite.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="poisonkill.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="poisontrap.c">
@@ -618,6 +660,9 @@
     <ClCompile Include="savegear.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="savelist.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="savelevel.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -630,6 +675,15 @@
     <ClCompile Include="school.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="screenlayout.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="scrolllist.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="scrolltext.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="selectsprite.c">
       <Filter>Display</Filter>
     </ClCompile>
@@ -637,6 +691,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="settrap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="ships.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="shop.c">
@@ -653,6 +710,9 @@
     </ClCompile>
     <ClCompile Include="showfkeys.c">
       <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="showflooritem.c">
+      <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="showflt.c">
       <Filter>Display</Filter>
@@ -735,6 +795,12 @@
     <ClCompile Include="specials.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="spellkill.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="spelltarget.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="sqr.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -755,6 +821,9 @@
     </ClCompile>
     <ClCompile Include="stocktreasure.c">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="storage.c">
+      <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="strokefont.c">
       <Filter>Display</Filter>
@@ -789,6 +858,9 @@
     <ClCompile Include="thrownpotion.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="tickpolymorph.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="title.c">
       <Filter>Display</Filter>
     </ClCompile>
@@ -805,6 +877,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="trophies.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="trophycounter.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="trunc.c">
@@ -844,6 +919,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="wizard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="worldpos.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="writefont.c">

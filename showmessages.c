@@ -10,15 +10,37 @@
 
 #include "header.h"
 
+/* The box under the player's stats that the log, or the Tab Menu, fills. Without the bottom strip it holds the detail
+   line too. */
+void clear_messages(void) {
+  Int32 bottom;
+
+  bottom = has_bottom_strip() ? 100 + NUM_MSG * MESSAGE_HEIGHT : detail_line_bottom();
+  setfillstyle(1,0);
+  bar(screen_width-220,94,screen_width,bottom);
+  }
+
+/* Each line in its colour, and an item name on it in the name's own */
 void show_messages() {
   Int32 i;
-  setfillstyle(1,0);
-  bar(screen_width-220,94,screen_width,100 + NUM_MSG * MESSAGE_HEIGHT);
+  Int32 at;
+  char  words[23];
+  clear_messages();
   for (i=0; i<NUM_MSG; i++) {
     setcolor(msg_clr[i]);
     while (strlen(messages[i]) < 22) strcat(messages[i]," ");
   if (strlen(messages[i]) > 22) messages[i][21] = 0;
-    outtextxy(screen_width-215,110+i*12,messages[i]);
+    at = msg_name_at[i];
+    if (msg_name_clr[i] == 0 || at >= (Int32)strlen(messages[i])) {
+      outtextxy(screen_width-215,110+i*12,messages[i]);
+      continue;
+      }
+
+    sprintf(words,"%.*s",at,messages[i]);
+    outtextxy(screen_width-215,110+i*12,words);
+    setcolor(msg_name_clr[i]);
+    outtextxy(screen_width-215 + at*8,110+i*12,messages[i] + at);
     }
+  show_detail_line();
   }
 

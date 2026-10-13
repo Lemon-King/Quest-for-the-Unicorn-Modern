@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define LETTER_WIDTH 9
+
 static void small_a(Int32 x,Int32 y,Int32 color) {
   draw(x+2,y+6,x+5,y+6,color);
   draw(x+1,y+7,x+2,y+7,color);
@@ -1486,8 +1488,12 @@ void write_font(Int32 x,Int32 y,Int32 color,char* line) {
         case 218:
         case 250:rune_z(x,y,color); break;
       }
-    x = x+9;
+    x = x+LETTER_WIDTH;
   }
   close_display();
 }
+
+Int32 write_font_width(char* line) {
+  return LETTER_WIDTH * (Int32)strlen(line);
+  }
 

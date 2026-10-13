@@ -14,57 +14,10 @@
 Int32 gacha[2500];
 Int32 num_gacha;
 
-void display_scroll() {
-  graphmode();
-  setfillstyle(1,15);
-  bar(50,50,450,430);
-  setfillstyle(1,7);
-  bar(50,10,450,49);
-  bar(50,431,450,471);
-  setfillstyle(1,14);
-  bar(10,10,39,49);
-  bar(461,10,491,49);
-  bar(10,431,39,471);
-  bar(461,431,491,471);
-  setfillstyle(1,6);
-  bar(40,20,49,40);
-  bar(451,20,460,40);
-  bar(40,440,49,460);
-  bar(451,440,460,460);
-  settextstyle(4,0,3);
-  }
-
 void display_msg(Int32 msg,char ext) {
-  Int32 i;
-  Int32 x,y;
-//  Int32 space;
-  Int32 size;
-  char last;
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];
-  graphmode();
-  display_scroll();
-  x = 160; y = 160; size = 30;
-//  space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      outtextxy(x,y,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-  inkey();
+  scroll_text(general.message);
   show_screen();
   }
 
@@ -160,9 +113,6 @@ void special9() {
 
 void special10() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_LORE) + 1;
   general = lore[i];
@@ -182,38 +132,12 @@ void special10() {
         general.message[i] += 128;
     }
   saveScreen();
-  display_scroll();
-//  x = 120; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-/*
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      write_font(x,y,0,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      write_font(x,y,0,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-*/
-  inkey();
+  scroll_text(general.message);
   restoreScreen();
   }
 
 void special11() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_GENS) + 1;
   general = gen[i];
@@ -231,31 +155,7 @@ void special11() {
         general.message[i] += 128;
     }
   saveScreen();
-  display_scroll();
-//  x = 120; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-/*
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      write_font(x,y,0,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      write_font(x,y,0,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-*/
-  inkey();
-/*  show_screen(); */
+  scroll_text(general.message);
   restoreScreen();
   }
 
@@ -322,9 +222,6 @@ void special19() {
 
 void special20() {
   Int32 i;
-//  Int32 x,y;
-//  Int32 space;
-//  Int32 size;
   MESSAGE general;
   i = u_random(NO_OF_GENS) + 1;
   general = gen[i];
@@ -335,12 +232,7 @@ void special20() {
   player.gen[i] = -1;
   add_skill(SK_LANG,1);
   saveScreen();
-  graphmode();
-  display_scroll();
-//  x = 160; y = 160; space = 25; size = 30;
-  setcolor(0);
-  show_message(general.message);
-  inkey();
+  scroll_text(general.message);
   restoreScreen();
   }
 
@@ -726,6 +618,7 @@ void special49() {
         delay(1000);
         }
       else {
+        msg = found_row(msg);
         player.lore[msg] = -1;
         display_msg(msg,'L');
         }
@@ -745,6 +638,7 @@ void special49() {
         delay(1000);
         }
       else {
+        msg = found_row(msg);
         player.gen[msg] = -1;
         display_msg(msg,'G');
         }
@@ -770,10 +664,6 @@ void special50() {
 
 void special51() {
   Int32 i;
-  Int32 x,y;
-//  Int32 space;
-  Int32 size;
-  char last;
   MESSAGE general;
   i = u_random(NO_OF_LORE) + 1;
   general = lore[i];
@@ -783,29 +673,7 @@ void special51() {
     }
   player.lore[i] = -1;
   add_skill(SK_LORE,1);
-  graphmode();
-  display_scroll();
-  x = 160; y = 160; size = 30;
-//  space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message) < size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-      i = size;
-      while (i > 0 && general.message[i] != ' ') i--;
-      last = general.message[i];
-      general.message[i] = 0;
-      outtextxy(x,y,general.message);
-      general.message[i] = last;
-      i++;
-      y += 19;
-      strcpy(general.message,general.message+i);
-      }
-    }
-  inkey();
+  scroll_text(general.message);
   }
 
 void special52() {
@@ -1018,6 +886,12 @@ void special73() {
         msg("Item glows briefly",15);
         return;
         }
+
+      /* Without the Scroll of Charging change the search never moves on, and hangs */
+      if (change_scroll_charging == 'Y') {
+        i++;
+        if (objects[i].otype >= 999) break;
+        }
       }
     msg("Fizzle",9);
     }
@@ -1069,10 +943,8 @@ void special79() {
   i = u_random(recipe_count);
   recipe_string(i,buffer);
   saveScreen();
-  display_scroll();
-  show_message(buffer);
   player.lore[RECIPE_BASE+i] = 1;
-  inkey();
+  scroll_text(buffer);
   restoreScreen();
   }
 
@@ -1448,20 +1320,67 @@ void special100() {
   show_screen();
   }
 
+/* Whether the Sun Stone holds a level of a dungeon in links[], or of the Gateway with the Sun Stone Gateway change */
+static Int32 sun_stone_record_usable(void) {
+  Int32 row;
+  Int32 dungeon;
+  Int32 depth;
+
+  dungeon = player.effect[PE_DUNGEON];
+
+  if (dungeon == GATEWAY_DUNGEON) {
+    if (change_sun_stone_gateway != 'Y') return 0;
+    depth = 5;
+    }
+  else {
+    if (dungeon < 0) return 0;
+
+    row = 0;
+    while (row < dungeon && links[row].region < 90) row++;
+    if (links[row].region >= 90 || links[row].typ != 11) return 0;
+
+    depth = player.effect[PE_DEPTH];
+    }
+
+  return (player.effect[PE_DLEVEL] >= 1 && player.effect[PE_DLEVEL] <= depth);
+  }
+
 void special101() {
   if (player.in_city == 'Y') {
+
+    /* Without the Sun Stone Fixes change a stone with no usable level returns to level 0 */
+    if (change_sun_stone_fixes == 'Y' && !sun_stone_record_usable()) return;
     exitf = 10;
     player.in_city = 'N';
     player.d_level = player.effect[PE_DLEVEL];
     player.dungeon_number = player.effect[PE_DUNGEON];
-    strcpy(player.d_name,links[player.dungeon_number].name);
-    player.diff = links[player.dungeon_number].diff;
-    player.land_x = links[player.dungeon_number].x;
-    player.land_y = links[player.dungeon_number].y;
-    player.region = links[player.dungeon_number].region;
+
+    /* The Gateway is past the end of links[]; without the Sun Stone Gateway change links[99] is read */
+    if (change_sun_stone_gateway == 'Y' && player.dungeon_number == GATEWAY_DUNGEON) {
+      set_gateway_dungeon();
+      player.land_x = GATEWAY_X;
+      player.land_y = GATEWAY_Y;
+      player.region = GATEWAY_REGION;
+      }
+    else {
+      strcpy(player.d_name,links[player.dungeon_number].name);
+      player.diff = links[player.dungeon_number].diff;
+      player.land_x = links[player.dungeon_number].x;
+      player.land_y = link_y(player.dungeon_number);
+      player.region = links[player.dungeon_number].region;
+      }
     used_sunstone = 'Y';
+
+    /* Without the Sun Stone Fixes change the level comes from whatever dungeon is in memory */
+    if (change_sun_stone_fixes == 'Y') build_dungeon(7,player.dungeon_number);
     }
   else {
+
+    /* Without the Sun Stone Fixes change the overworld and arena are recorded too, and the level is left unsaved */
+    if (change_sun_stone_fixes == 'Y') {
+      if (player.d_level < 1 || in_arena == 'Y') return;
+      save_level();
+      }
     player.effect[PE_DLEVEL] = player.d_level;
     player.effect[PE_DUNGEON] = player.dungeon_number;
     player.d_level = 0;
@@ -1600,6 +1519,9 @@ void special105() {
     if (objects[i].otype == O_GACH) flag = ' ';
     if (objects[i].otype == O_FOOD) flag = ' ';
     if (objects[i].control2 < 0) flag = ' ';
+
+    /* Without the Item Deck change the draw can land on the table's EOL row, which passes every test above */
+    if (change_item_deck == 'Y' && objects[i].otype >= 999) flag = ' ';
     }
   item = objects[i];
   item.flags |= OF_IDENT;
@@ -1662,6 +1584,12 @@ void socketItem(OBJECT_REC* item,Int32 dir) {
     item->sockets[item->num_sockets-1] = 0;
     item->num_sockets--;
     }
+  }
+
+/* The Tripped card's hit die; without the Tripped Card change it is the next class's */
+static Int32 tripped_hitdie() {
+  if (change_tripped_card == 'Y') return classes[player.class-1].hitdie;
+  return classes[player.class].hitdie;
   }
 
 /* deck of many things */
@@ -1811,8 +1739,8 @@ void special109(OBJECT_REC* item) {
     case 20:
             showCard("Tripped","Lose 1 level");
             player.level--;
-            player.chp -= classes[player.class].hitdie;
-            player.mhp -= classes[player.class].hitdie;
+            player.chp -= tripped_hitdie();
+            player.mhp -= tripped_hitdie();
             if (player.level <= 0) player.chp = -1000;
             break;
     case 21:
@@ -1903,10 +1831,8 @@ void special110(OBJECT_REC* item) {
   i = item->control2;
   recipe_string(i,buffer);
   saveScreen();
-  display_scroll();
-  show_message(buffer);
   player.lore[RECIPE_BASE+i] = 1;
-  inkey();
+  scroll_text(buffer);
   restoreScreen();
   }
 
@@ -2029,6 +1955,9 @@ void special(Int32 whichone,OBJECT_REC* item) {
     case 93:special93(); break;
     case 94:special94(); break;
     case 95:special95(item->control2);
+
+            /* Without the Bodily Health change the manual falls through into the Crown of Might */
+            if (change_bodily_health == 'Y') break;
     case 96:special96(); break;
     case 97:special97(); break;
     case 98:special98(); break;
@@ -2121,9 +2050,9 @@ void perform_effect(OBJECT_REC* obj) {
         stats.counts[trophies[i].control[2]]++;
       }
     if (trophies[i].criteria_type == TC_ITEM) {
-      if (obj->link == trophies[i].control[0]) stats.counts[trophies[i].control[2]]++;
+      if (obj->link == trophies[i].control[0]) stats.counts[trophy_counter(i,2)]++;
       if (trophies[i].control[3] > 0)
-        if (obj->link == trophies[i].control[3]) stats.counts[trophies[i].control[5]]++;
+        if (obj->link == trophies[i].control[3]) stats.counts[trophy_counter(i,5)]++;
       }
     if (trophies[i].criteria_type == TC_ITEMR) {
       if (obj->link >= trophies[i].control[0] && obj->link <= trophies[i].control[1]) {
@@ -2222,11 +2151,14 @@ void perform_effect(OBJECT_REC* obj) {
       }
     switch (spells[obj->control].effect) {
       case 1:do_blink();
+             if (change_blink_only == 'Y') break;
       case 2:player.effect[PE_PROT] = player.level * 8;
              player.effect[PE_APROT] = spells[obj->control].control;
              break;
       case 3:touch(spells[obj->control].control,spells[obj->control].special); break;
       case 4:missile(spells[obj->control].control,spells[obj->control].special,0); break;
+      case 5:if (change_teleport_spell == 'Y') teleport_spell();
+             break;
       case 6:do_sleep(); break;
       case 7:special(spells[obj->control].control,obj); break;
       case 8:fear(0); break;

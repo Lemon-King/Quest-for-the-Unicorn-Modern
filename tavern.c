@@ -10,6 +10,27 @@
 
 #include "header.h"
 
+#define NUM_FARE       10
+
+/* The tavern's fare, picked by 1 to 10 in the numbered menu, with its price; the gamble has none */
+typedef struct {
+  char*  name;
+  Int32  price;
+  } FARE_REC;
+
+static FARE_REC fare[NUM_FARE] = {
+  { "Merchants Meal",  4 },
+  { "Rich Meal",       6 },
+  { "Beer",            2 },
+  { "Ale",             2 },
+  { "Mead",            2 },
+  { "Wine",            2 },
+  { "Room, 1 night",  20 },
+  { "Room, 1 Week",  120 },
+  { "Room, 1 Month", 500 },
+  { "Gamble",          0 }
+  };
+
 static void move_player(void) {
   switch (player.city) {
     case 14:
@@ -104,18 +125,53 @@ static void move_player(void) {
   saveScreen();
   }
 
-static void show_top(char* name) {
+/* Fare i's price as width digits, blank for the gamble */
+static void fare_price(Int32 i,Int32 width,char* text) {
+  if (fare[i].price > 0) sprintf(text,"%*d",width,fare[i].price);
+    else sprintf(text,"%*s",width,"");
+  }
+
+static void draw_fare(MENU* menu,Int32 row,Int32 line) {
+  char price[16];
+
+  fare_price(row,5,price);
+  draw_menu_text(menu,line,fare[row].name,price);
+  }
+
+/* The fare in two columns, 1 to 6 and 7 to 10 */
+static void show_numbered(void) {
+  Int32 i;
+  char  price[16];
+  char  left[48];
+  char  right[48];
+  char  buffer[100];
+
+  gotoxy(5,3); textcolor(14);
+  for (i=0; i<6; i++) {
+    fare_price(i,1,price);
+    sprintf(left,"%d> %-26s%s",i+1,fare[i].name,price);
+
+    if (i + 6 < NUM_FARE) {
+      fare_price(i+6,5,price);
+      sprintf(right,"  %2d> %-27s%s",i+7,fare[i+6].name,price);
+      }
+    else sprintf(right,"%38s","");
+
+    sprintf(buffer,"%s%s%s",(i == 0) ? "" : "    ",left,right);
+    txt_writeln(buffer);
+    }
+  }
+
+static void show_top(char* name,MENU* menu) {
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
-  gotoxy(5,3); textcolor(14);
-  txt_writeln("1> Merchants Meal            4   7> Room, 1 night                 20");
-  txt_writeln("    2> Rich Meal                 6   8> Room, 1 Week                 120");
-  txt_writeln("    3> Beer                      2   9> Room, 1 Month                500");
-  txt_writeln("    4> Ale                       2  10> Gamble                          ");
-  txt_writeln("    5> Mead                      2                                      ");
-  txt_writeln("    6> Wine                      2                                      ");
+
+  if (improved_interface == 'Y') draw_menu(menu);
+    else show_numbered();
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -126,37 +182,35 @@ void tavern(char* name) {
   double price;
   Int32  i;
   char buffer[80];
+  MENU menu = { .rows = { .count = NUM_FARE, .shown = NUM_FARE, .line = 2 }, .column = 26, .value_column = 51,
+                .color = 14, .keys = MENU_KEYS, .keys_line = 25, .draw_row = draw_fare };
 
-  show_top(name);
+  show_top(name,&menu);
   option = 1;
   price = 4;
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
-    txt_write("Which item would you like (<ESC> to leave) ?        ");
-    gotoxy(60,17); textcolor(15);
-    strcpy(buffer,"");
-    if (p_read(buffer) == 0) {
-      sscanf(buffer,"%d",&option);
-      } else option = 0;
+    if (improved_interface == 'Y') {
+      txt_write("Which item would you like (<ESC> to leave) ?");
+      option = menu_choice(&menu) + 1;
+      }
+    else {
+      txt_write("Which item would you like (<ESC> to leave) ?        ");
+      gotoxy(60,17); textcolor(15);
+      strcpy(buffer,"");
+      if (p_read(buffer) == 0) {
+        sscanf(buffer,"%d",&option);
+        } else option = 0;
+      }
     for (i=17; i<=22; i++) {
       gotoxy(10,i); txt_write("                                                                    ");
       }
-    if (option == 10) { 
-      gamble(); 
-      show_top(name);
+    if (option == 10) {
+      gamble();
+      show_top(name,&menu);
       }
     if (option>0 && option<10) {
-      switch (option) {
-        case 1:price = 4; break;
-        case 2:price = 6; break;
-        case 3:price = 2; break;
-        case 4:price = 2; break;
-        case 5:price = 2; break;
-        case 6:price = 2; break;
-        case 7:price = 20; break;
-        case 8:price = 120; break;
-        case 9:price = 500; break;
-        }
+      price = fare[option - 1].price;
       if (price>get_gold()) {
         gotoxy(15,19); textcolor(12);
         txt_write("But you do not have enough gold!");
@@ -255,7 +309,7 @@ void tavern(char* name) {
                  option = 0;
                  break;
           }
-        show_top(name);
+        show_top(name,&menu);
         }
       }
     }

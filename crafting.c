@@ -77,54 +77,51 @@ static void auto_add(CRAFT_BENCH* bench) {
   bench->ing[9] = (recipes[recipe].object10 > 0) ? find_ingredient(bench,recipes[recipe].object10) : NULL;
   }
 
-static char* next_nl(char* buffer) {
-  while (*buffer != 0 && *buffer != '\n') buffer++;
-  return buffer;
+/* The item a recipe names by link, at column and line, named as recipe_string() names it. A recipe names a kind of
+   item, so the name shows in the rarity colour of one identified. Returns 0 when no item has that link. */
+static Int32 draw_recipe_item(Int32 link,Int32 column,Int32 line) {
+  OBJECT_REC* item;
+  OBJECT_REC  known;
+  char        name[80];
+  Int32       i;
+
+  item = find_linked_item(link);
+  if (item == NULL) return 0;
+
+  known = *item;
+  known.flags |= OF_IDENT;
+  strcpy(name,item->name);
+  for (i=0; name[i] != 0; i++)
+    if (name[i] == '_') name[i] = ' ';
+
+  gotoxy(column,line);
+  write_named("",&known,name,"",3);
+  return 1;
   }
 
+/* The recipe at the bench: what it makes, the item it crafts from, and its ingredients */
 static void show_recipe(CRAFT_BENCH* bench) {
   Int32 i;
-  char buffer[1024];
-  char *pChar1;
-  char *pChar2;
+  Int32 line;
+  Int32 recipe;
   if (bench->num_recipes == 0) return;
-  recipe_string(bench->recipe_book[bench->current_recipe],buffer);
+  recipe = bench->recipe_book[bench->current_recipe];
   for (i=1; i<20; i++) {
     gotoxy(40,i); txt_write("                                        ");
     }
   textcolor(15); gotoxy(46,2); txt_write("Recipe");
-  textcolor(3);
-  if (bench->num_recipes > 0) {
-    gotoxy(46,4);
-    strcpy(buffer,buffer+8);
-    pChar2 = next_nl(buffer);
-    if (*pChar2 == 0) return;
-    *pChar2 = 0;
-    pChar2++;
-    txt_write(buffer);
-    textcolor(2); gotoxy(46,6); txt_write("Craft Item:");
-    pChar1 = next_nl(pChar2);
-    if (*pChar1 == 0) return;
-    pChar1++;
-    pChar2 = next_nl(pChar1);
-    if (*pChar2 == 0) return;
-    *pChar2 = 0;
-    pChar2++;
-    textcolor(3); gotoxy(46,7); txt_write(pChar1);
-    textcolor(2); gotoxy(46,9); txt_write("Ingredients:");
-    pChar1 = next_nl(pChar2);
-    if (*pChar1 == 0) return;
-    pChar1++;
-    pChar2 = next_nl(pChar1);
-    i = 10;
-    while (*pChar2 != 0) {
-      *pChar2++ = 0;
-      textcolor(3); gotoxy(46,i++); txt_write(pChar1);
-      pChar1 = pChar2;
-      pChar2 = next_nl(pChar1);
-      }
-    gotoxy(46,i); txt_write(pChar1);
+  if (!draw_recipe_item(recipes[recipe].object,46,4)) return;
+
+  textcolor(2); gotoxy(46,6); txt_write("Craft Item:");
+  if (recipes[recipe].craft_item == 0) {
+    textcolor(3); gotoxy(46,7); txt_write("  none");
     }
+  else if (!draw_recipe_item(recipes[recipe].craft_item,48,7)) return;
+
+  textcolor(2); gotoxy(46,9); txt_write("Ingredients:");
+  line = 10;
+  for (i=0; i<10; i++)
+    if (recipe_ingredient(recipe,i) != 0 && draw_recipe_item(recipe_ingredient(recipe,i),48,line)) line++;
   }
 
 static void craft_show_screen(CRAFT_BENCH* bench) {
@@ -133,13 +130,13 @@ static void craft_show_screen(CRAFT_BENCH* bench) {
   textcolor(15); gotoxy(10,4); txt_write("Crafting");
   textcolor(2); gotoxy(10,6); txt_write("Craft Item:");
   if (bench->craft != NULL && bench->craft->otype != O_NONE) {
-    textcolor(3); gotoxy(10,7); txt_write(get_name(bench->craft));
+    gotoxy(10,7); write_named("",bench->craft,get_name(bench->craft),"",3);
     }
   textcolor(2); gotoxy(10,9); txt_write("Ingredients:");
   for (i=0; i<10; i++) {
     textcolor(3); gotoxy(10,i+10);
     if (bench->ing[i] != NULL && bench->ing[i]->otype != O_NONE)
-      txt_write(get_name(bench->ing[i]));
+      write_named("",bench->ing[i],get_name(bench->ing[i]),"",3);
     }
 
   textcolor(10);

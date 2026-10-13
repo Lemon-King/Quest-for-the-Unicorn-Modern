@@ -38,3 +38,9 @@ void sub_gold(Int32 g) {
     player.adamantite_coins = 0;
     }
   }
+
+/* With the No Negative Amounts change, a typed amount that is not a number of 0 or more counts as 0. */
+double typed_gold(double amount) {
+  if (change_negative_amounts == 'Y' && !(amount >= 0)) return 0;
+  return amount;
+  }

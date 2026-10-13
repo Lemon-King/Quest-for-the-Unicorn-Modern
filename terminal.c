@@ -236,13 +236,19 @@ void outtextxy(Int32 x,Int32 y,char* buffer) {
   canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 
-/* The GDI build drew this one transparently too */
+/* Text on black, as txt_write() draws it, so spaces erase what was there */
 void outtextxyclr(Int32 x,Int32 y,char* buffer) {
+  canvas_fill(screen,x,y-10,8*(Int32)strlen(buffer),12,PALETTE[CLR_BLACK]);
   canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 
 void putimage(Int32 x,Int32 y,char** img,Int32 typ) {
   canvas_sprite(screen,sprites,x,y,(const char* const*)img);
+  }
+
+/* A sprite at half its size, each pixel the average of a 2x2 block */
+void put_half_image(Int32 x,Int32 y,char** img) {
+  canvas_half_sprite(screen,sprites,x,y,(const char* const*)img);
   }
 
 void delay(Int32 tm) {

@@ -10,6 +10,15 @@
 
 #include "header.h"
 
+/* A world seed from 0 to 1,999,999,999 built from three rand() calls of 15 bits each */
+static Int32 world_seed(void) {
+  UInt32 s;
+
+  s = ((UInt32)rand() << 30) ^ ((UInt32)rand() << 15) ^ (UInt32)rand();
+
+  return (Int32)(s % 2000000000);
+  }
+
 void initial_inventory(Int32 slot,Int32 itemnum) {
   player.invent[slot] = *(find_linked_item(itemnum));
   player.invent[slot].flags |= OF_IDENT;
@@ -40,6 +49,71 @@ Int32 get_con_hp() {
   return ((get_con() - 10) / 3);
   }
 
+#define CHOICE_LINE    15     /* the heading over each list of choices */
+#define KEYS_LINE      25
+#define CHOICE_KEYS    "(8/2) Select   (ENTER) Choose"
+
+static char* sex_names[2] = { "Male", "Female" };
+
+static void draw_sex(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,sex_names[row],"");
+  }
+
+static void draw_race(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,races[row].name,"");
+  }
+
+static void draw_start(MENU* menu,Int32 row,Int32 line) {
+  draw_menu_text(menu,line,classes[((Int32*)menu->screen)[row] - 1].name,"");
+  }
+
+/* A list of choices under the heading, for the Improved Interface preference */
+static void open_choices(MENU* menu,Int32 count,void (*draw_row)(MENU* menu,Int32 row,Int32 line),void* screen) {
+  menu->rows = (SCROLL_LIST){ .count = count, .shown = count, .line = CHOICE_LINE };
+  menu->row = 0;
+  menu->column = 4;
+  menu->value_column = 30;
+  menu->color = 15;
+  menu->keys = CHOICE_KEYS;
+  menu->keys_line = KEYS_LINE;
+  menu->draw_row = draw_row;
+  menu->screen = screen;
+  draw_menu(menu);
+  }
+
+/* The key that picks the row chosen in the numbered list it replaces; ESC does not back out */
+static char choose(MENU* menu) {
+  char key;
+
+  key = 27;
+  while (key == 27) key = menu_number(menu);
+
+  return key;
+  }
+
+static void clear_choice_keys(void) {
+  char text[81];
+
+  sprintf(text,"%80s","");
+  gotoxy(1,KEYS_LINE); txt_write(text);
+  }
+
+static char choose_sex(void) {
+  MENU menu;
+  char key;
+
+  textcolor(14); gotoxy(10,3); txt_write("_");
+  textcolor(9); gotoxy(5,CHOICE_LINE); txt_write("Character Sex:");
+  open_choices(&menu,2,draw_sex,NULL);
+  key = choose(&menu);
+
+  gotoxy(5,CHOICE_LINE); txt_write("              ");
+  gotoxy(8,CHOICE_LINE + 1); txt_write("      ");
+  gotoxy(8,CHOICE_LINE + 2); txt_write("      ");
+
+  return (key == '2') ? 'F' : 'M';
+  }
+
 void make_char(Int32 rebirth) {
   Int32 base_hp;
   Int32 con_hp;
@@ -51,6 +125,7 @@ void make_char(Int32 rebirth) {
   Int32  starts[NUM_CLASSES];
   Int32  numStarts;
   char key;
+  MENU menu;
   clrscr();
   char_sheet_labels('N');
   textcolor(14);
@@ -66,7 +141,8 @@ void make_char(Int32 rebirth) {
   gotoxy(10,2);
   sprintf(buffer,"%d",player.age);
   txt_write(buffer);
-  if (rebirth == 0) {
+  if (rebirth == 0 && improved_interface == 'Y') player.sex = choose_sex();
+  else if (rebirth == 0) {
     textcolor(2); gotoxy(10,3); textcolor(14); txt_write("(m/f) _");
     key = inkey();
     if (key == 'f' || key == 'F') player.sex = 'F';
@@ -85,13 +161,17 @@ void make_char(Int32 rebirth) {
     gotoxy(5,15); txt_write("Character Race:");
     textcolor(15);
 
-    for (i=0; i<NUM_RACES; i++) {
-      sprintf(buffer,"%d> %s",i+1,races[i].name);
-      gotoxy(5,16+i); txt_write(buffer);
+    if (improved_interface == 'Y') open_choices(&menu,NUM_RACES,draw_race,NULL);
+    else {
+      for (i=0; i<NUM_RACES; i++) {
+        sprintf(buffer,"%d> %s",i+1,races[i].name);
+        gotoxy(5,16+i); txt_write(buffer);
+        }
       }
     textcolor(14);
     gotoxy(10,4); txt_write("_");
     key = '0';
+    if (improved_interface == 'Y') key = choose(&menu);
     while (key<'1' || key>'0'+NUM_RACES) key = inkey();
     gotoxy(10,4);
     player.race = (key - '1' + 1);
@@ -117,16 +197,25 @@ void make_char(Int32 rebirth) {
   numStarts = 0;
   for (i=0; i<NUM_CLASSES; i++)
     if (classes[i].flags & 2048) {
-      gotoxy(5,16+numStarts); 
-      sprintf(buffer,"%d> %s",numStarts+1,classes[i].name);
-      txt_write(buffer);
+      if (improved_interface != 'Y') {
+        gotoxy(5,16+numStarts);
+        sprintf(buffer,"%d> %s",numStarts+1,classes[i].name);
+        txt_write(buffer);
+        }
       starts[numStarts++] = i+1;
     }
+  if (improved_interface == 'Y') open_choices(&menu,numStarts,draw_start,starts);
   gotoxy(10,7);
   textcolor(14);
   txt_write("_");
   gotoxy(10,7);
   key = '0';
+  if (improved_interface == 'Y') {
+    key = choose(&menu);
+    clear_choice_keys();
+    textcolor(14);
+    gotoxy(10,7);
+    }
   while (key<'1' || key>'0'+numStarts) key = inkey();
   if (rebirth == 0) {
     for (i=1; i<=19; i++) player.invent[i].otype = O_NONE;
@@ -222,7 +311,9 @@ void make_char(Int32 rebirth) {
   player.effect[PE_NOARENA] = (no_arena == 'Y') ? 1 : 0;
   player.effect[PE_MCOUNT] = monster_count;
   player.effect[PE_HEROIC] = 0;
-  player.effect[PE_WORLDSEED] = u_random(2000000000);
+
+  /* Without the World Seed change u_random() scales a single rand() of 0-32767, so there are only 32,767 worlds */
+  player.effect[PE_WORLDSEED] = (change_world_seed == 'Y') ? world_seed() : u_random(2000000000);
   if (heroicMode != 0) player.effect[PE_HEROIC] = heroicMode;
   player.in_city = 'N';
   player.hp_count = 15;

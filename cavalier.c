@@ -82,9 +82,12 @@ void cavalier(char* name) {
     gotoxy(10,12); txt_write("Joining the Cavaliers will change your class.  Refer to the");
     gotoxy(10,13); txt_write("documentation on the pros and cons of changing class before");
     gotoxy(10,14); txt_write("selectiong 'Y'es.");
-    gotoxy(22,4); textcolor(10);
-    txt_write("Do you wish to join the Cavaliers ? ");
-    key = inkey();
+    if (improved_interface == 'Y') key = ask_action(22,4,10,"Join the Cavaliers","Cancel",1);
+    else {
+      gotoxy(22,4); textcolor(10);
+      txt_write("Do you wish to join the Cavaliers ? ");
+      key = inkey();
+      }
     if (key == 'y') key = 'Y';
     if (key == 'Y') {
       make_c();

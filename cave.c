@@ -152,41 +152,6 @@ static void attack(void) {
   player.y -= ydir;
   } /* void attack() */
 
-static void eat(void) {
-  OBJECT_REC* item;
-  Int32 i;
-  if (player.health > 100) {
-    clear_prompt();
-    prompt("Too full to eat any more");
-    return;
-    }
-  item = NULL;
-  for (i=1; i<11; i++)
-    if (player.invent[i].otype == O_FOOD) {
-       item = &(player.invent[i]);
-       i = 99;
-      }
-  if (item == NULL) {
-    for (i=1; i<=32; i++)
-      if (player.pack[i].otype == O_FOOD) {
-        item = &(player.pack[i]);
-        i = 99;
-        }
-    }
-  if (item == NULL) {
-    clear_prompt();
-    prompt("Nothing to Eat!!!");
-    }
-  else {
-    if (item->charges != -1) item->charges--;
-    if (item->charges == 0) {
-      item->otype = O_NONE;
-      }
-    perform_effect(item);
-    show_side();
-    }
-  }
-
 /*
 void eat() {
   OBJECT_REC* item;
@@ -216,10 +181,26 @@ void eat() {
   }
 */
 
+/* valid_move() for the player on foot, while in a ship. A forbidding square is not walked: testing it would wear it. */
+static Int32 walkable_on_foot(Int32 x,Int32 y) {
+  char inship;
+  char flag;
+
+  if (player.map[x][y] >= 600 && player.map[x][y] < 700) return 0;
+
+  inship = player.inship;
+  player.inship = ' ';
+  flag = valid_move(x,y);
+  player.inship = inship;
+
+  return (flag == '*');
+  }
+
 static void move(Int32 xdir,Int32 ydir) {
   Int32 x,y;
   Int32 previous;
   Int32 ex,ey;
+  Int32 blocked;
   last_target_x = 0;
   last_target_y = 0;
   remove_player();
@@ -240,10 +221,19 @@ static void move(Int32 xdir,Int32 ydir) {
     }
   player.x += xdir;
   player.y += ydir;
-  if (valid_move(player.x,player.y) == ' ') {
+
+  /* With Ship Improvements a ship that runs into walkable shore twice puts the player ashore, the ship in its dock */
+  blocked = (valid_move(player.x,player.y) == ' ');
+  if (steps_ashore(x,y,xdir,ydir,blocked && player.inship != ' ' && walkable_on_foot(player.x,player.y))) {
+    blocked = 0;
+    show_spot(x,y);
+    show_spot(player.ship_x,player.ship_y);
+    }
+  if (blocked) {
     player.x -= xdir;
     player.y -= ydir;
     }
+  else walk_aboard();
   if (player.map[player.x][player.y] < 0 &&
       (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
@@ -289,7 +279,9 @@ static void down_level(Int32 check_clear) {
   Int32 i,j;
   if (player.map[player.x][player.y] == 24 ||
       player.map[player.x][player.y] == 5) {
-    if (player.d_level > 0) {
+
+    /* Without the Sun Stone change a Sun Stone return saves the town over the level above */
+    if (player.d_level > 0 && (check_clear || change_sun_stone != 'Y')) {
       save_level();
       if (current_dungeon.level[player.d_level-1].cleared == 0) {
         if (cave_level_cleared()) {
@@ -441,6 +433,7 @@ static void light_torch(void) {
 
 static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
   Int32 pos;
+  Int32 member;
   if (player.party[1].hp == 0) pos = 1;
     else if (player.party[2].hp == 0) pos = 2;
     else if (player.party[3].hp == 0) pos = 3;
@@ -455,10 +448,13 @@ static void add_to_party(NPC_REC* monster,Int32 x,Int32 y,Int32 i) {
     player.party[pos].exp = needed(player.party[pos].level);
     player.party[pos].time = -1;
     player.party[pos].hp = player.party[pos].level * 9;
-    player.party[i].attack = 2 * player.party[i].level;
-    player.party[i].defense = 2 * player.party[i].level;
-    if (player.party[i].mana > 0)
-      player.party[i].mana = 25 * player.party[i].level;
+
+    /* Without the Party Joining change these go to party[i], i being cave()'s loop variable */
+    member = (change_party_joining == 'Y') ? pos : i;
+    player.party[member].attack = 2 * player.party[member].level;
+    player.party[member].defense = 2 * player.party[member].level;
+    if (player.party[member].mana > 0)
+      player.party[member].mana = 25 * player.party[member].level;
     player.map[x][y] = player.party[pos].prev;
     if (player.effect[PE_HEROIC] > 0) {
       player.party[pos].hp *= player.effect[PE_HEROIC];
@@ -537,24 +533,43 @@ static void join(Int32 i) {
   check_mount();
   } /* void join() */
 
-static Int32 is_merchant(void) {
-  Int32 flag;
+/* Whether the player stands beside shops[i]'s counter. Village shops are listed under region 0 at (0,0). */
+static char beside_shop(Int32 i) {
+  char here;
+
+  if (change_village_shops == 'Y' && in_village() == 'Y') here = (shops[i].region == 0) ? 'Y' : 'N';
+    else here = (player.region == shops[i].region &&
+                 player.land_x == shops[i].rx &&
+                 player.land_y == shops[i].ry) ? 'Y' : 'N';
+  if (here == 'N') return 'N';
+
+  return (player.x >= shops[i].cx-1 &&
+          player.x <= shops[i].cx+1 &&
+          player.y >= shops[i].cy-1 &&
+          player.y <= shops[i].cy+1) ? 'Y' : 'N';
+  }
+
+/* The shop you stand beside, or -1 */
+Int32 merchant_beside(void) {
   Int32 i;
-  flag = -1;
-  i = 0;
-  while (flag == -1) {
-    if (player.region == shops[i].region &&
-        player.land_x == shops[i].rx &&
-        player.land_y == shops[i].ry &&
-        player.x >= shops[i].cx-1 &&
-        player.x <= shops[i].cx+1 &&
-        player.y >= shops[i].cy-1 &&
-        player.y <= shops[i].cy+1) flag = i;
-    if (shops[i].shoptype == 999) flag = -2;
-    i++;
-    }
-  if (flag >= 0) return -1;
-  return 0;
+
+  for (i=0; shops[i].shoptype != 999; i++)
+    if (beside_shop(i) == 'Y') return i;
+
+  return -1;
+  }
+
+static Int32 is_merchant(void) {
+  return (merchant_beside() >= 0) ? -1 : 0;
+  }
+
+/* Whether a house for sale is the house owned in a house slot */
+static Int32 same_house(FORSALE* sale,HOUSE* house) {
+  return (sale->region == house->region &&
+          sale->rx == house->rx &&
+          sale->ry == house->ry &&
+          sale->cx == house->cx &&
+          sale->cy == house->cy);
   }
 
 static void buy_item(Int32* i) {
@@ -617,12 +632,13 @@ static void buy_item(Int32* i) {
     if (forsale[*i].region == 999) flag = -2;
     (*i)++;
     }
+
+  /* Without the House Buying change for-sale row n is checked against house slot n, wherever you stand */
   for (*i=0; *i<5; (*i)++) {
-    if (forsale[*i].region == player.houses[*i].region &&
-        forsale[*i].rx == player.houses[*i].rx &&
-        forsale[*i].ry == player.houses[*i].ry &&
-        forsale[*i].cx == player.houses[*i].cx &&
-        forsale[*i].cy == player.houses[*i].cy) flag = -1;
+    if (change_house_buying == 'Y') {
+      if (flag >= 0 && same_house(&forsale[flag],&player.houses[*i])) flag = -1;
+      }
+    else if (same_house(&forsale[*i],&player.houses[*i])) flag = -1;
     }
   if (flag >= 0) {
     saveScreen();
@@ -634,13 +650,7 @@ static void buy_item(Int32* i) {
   flag = -1;
   *i = 0;
   while (flag == -1) {
-    if (player.region == shops[*i].region &&
-        player.land_x == shops[*i].rx &&
-        player.land_y == shops[*i].ry &&
-        player.x >= shops[*i].cx-1 &&
-        player.x <= shops[*i].cx+1 &&
-        player.y >= shops[*i].cy-1 &&
-        player.y <= shops[*i].cy+1) flag = *i;
+    if (beside_shop(*i) == 'Y') flag = *i;
     if (shops[*i].shoptype == 999) flag = -2;
     (*i)++;
     }
@@ -705,23 +715,6 @@ static void gps(void) {
   msg(buffer,15);
   }
 
-static Int32 check_quit(void) {
-  Int32 key;
-  saveScreen();
-  clrscr();
-  textcolor(12); gotoxy(35,8); txt_write("WARNING!!!");
-  textcolor(15); gotoxy(6,10); txt_write("Using the <Q>uit command will permenently end your current character.");
-  textcolor(15); gotoxy(6,11); txt_write("Are you sure you want to permenently end this character (Y/N)?");
-  key = ' ';
-  while (key != 'Y' && key != 'N') {
-    key = inkey();
-    if (key == 'y') key = 'Y';
-    if (key == 'n') key = 'N';
-    }
-  restoreScreen();
-  return (key == 'Y') ? -1 : 0;
-  }
-
 static Int32 check_in_corridor(void) {
   return (in_room(player.x, player.y)) ? 0 : -1;
 /*
@@ -781,6 +774,7 @@ void cave() {
   Int32 dmg;
   char buffer[20];
   Int32  in_corridor = 0;
+  Int32  command;
 
 /*  Int32  activeDelay; */
 
@@ -788,6 +782,7 @@ void cave() {
   /* ***** Actual start of dungeon code ***** */
   /* **************************************** */
   play_music((player.in_city == 'Y') ? MUSIC_TOWN : MUSIC_DUNGEON);
+  forget_compass();
   currentFloor = 7;
   dungeon_floor = currentFloor;
   dungeon_wall = 21;
@@ -818,6 +813,7 @@ void cave() {
   if (mod_exit == 5) {
       player.d_level = 1;
       copyMap(&player.map,player.city);
+      place_town_ship();
 //#ifdef MINGW
 //      m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
 //#else
@@ -841,8 +837,9 @@ void cave() {
           player.x = links[i].sx;
           player.y = links[i].sy;
           i = -1;
-          } else i++; 
+          } else i++;
         }
+      ship_docks_in_town();
       stock_town(player.city);
       player.map_x = player.x-TILES_X/2;
       player.map_y = player.y-TILES_Y/2;
@@ -915,7 +912,16 @@ void cave() {
           if (run_x == 1 && run_y == 1) key = '3';
           if (run_x == 0 && run_y == 0) key = inkey();
           }
-      if (player.effect[PE_FEAR] > 0 && 
+
+      /* TAB opens the Tab Menu, which types the command chosen, or loads another game */
+      if (key == 9 && improved_interface == 'Y') {
+        command = open_tab_menu();
+        if (command == TAB_LOAD_GAME) exitf = 11;
+        if (command <= 0) continue;
+        key = (byte)command;
+        }
+
+      if (player.effect[PE_FEAR] > 0 &&
           ((key >= '1' && key <= '9') || key == 'f')) {
         find_closest_mob(&x,&y);
         key = fear_dir(player.x,player.y,target_x,target_y);
@@ -1065,9 +1071,16 @@ void cave() {
         case 'O':
               saveScreen();
               game_options();
-              restoreScreen();
-              show_map();
-              show_player();
+              if (set_screen_layout()) {
+                adjust_map();
+                show_screen();
+                }
+              else {
+                restoreScreen();
+                show_map();
+                show_player();
+                show_side();
+                }
               takes_time = 'N';
               break;
         case 'h':healing(); break;
@@ -1108,7 +1121,8 @@ void cave() {
             }
           }
         }
-      if (player.map[player.x][player.y] == 801 && player.effect[PE_SLEEP] != 0) {
+      /* Without the Sleep Traps change a sleep trap springs only under a sleeping player, who cannot step on it */
+      if (player.map[player.x][player.y] == 801 && (change_sleep_traps == 'Y' || player.effect[PE_SLEEP] != 0)) {
         player.map[player.x][player.y] = 40;
         if (has_intrinsic(A_LEV) == 0) sleep_trap();
         }
@@ -1233,7 +1247,7 @@ void cave() {
   msg(buffer,15);
                 player.monster[1][x].poison--;
                 player.monster[1][x].hp -= 2;
-                dead_monster(&(player.monster[1][x]),'Y',player.x,player.y);
+                poison_kill(&(player.monster[1][x]));
   msg("done",15);
                 }
             }
@@ -1267,6 +1281,12 @@ void cave() {
           if (player.effect[PE_ARCN]>0) {
               player.effect[PE_ARCN]--;
               if (player.effect[PE_ARCN] == 0)  show_side();
+            }
+
+          /* Without the Mind Shield change nothing counts PE_MIND down, so a Mind Shield never wears off */
+          if (change_mind_shield == 'Y' && player.effect[PE_MIND]>0) {
+              player.effect[PE_MIND]--;
+              if (player.effect[PE_MIND] == 0)  show_side();
             }
           if (player.effect[PE_HASTE]>0) {
               player.effect[PE_HASTE]--;
@@ -1355,21 +1375,7 @@ void cave() {
               show_map();
               }
           }
-        if (player.effect[PE_POLYTIME]>0) {
-            player.effect[PE_POLYTIME]--;
-            if (player.effect[PE_POLYTIME] == 10) msg("Poly ends 10 turns",15);
-            if (player.effect[PE_POLYTIME] > 0 && player.effect[PE_POLYTIME] < 6) {
-              sprintf(buffer,"Poly ends %d turns",player.effect[PE_POLYTIME]);
-              msg(buffer,15);
-              }
-            if (player.effect[PE_POLYTIME] == 0) {
-              msg("Polymorph ended",15);
-              player.chp -= monsters[player.effect[PE_POLYMORPH]].hp;
-              player.mhp -= monsters[player.effect[PE_POLYMORPH]].hp;
-              if (player.chp < 0) player.chp = 0;
-              show_side();
-              }
-          }
+        tick_polymorph();
         if (player.phase>0) {
             player.phase--;
             if (player.phase == 0) {
@@ -1446,12 +1452,11 @@ void cave() {
             else if (player.x<sx && player.y>sy) x = 95;
             else if (player.x>sx && player.y>sy) x = 96;
             else x = 10;
-            putimage(300,screen_height-27,select_sprite(10),0);
-            putimage(300,screen_height-27,select_sprite(x),0);
+            show_compass(x);
             } else
-  		  putimage(300,screen_height-27,select_sprite(10),0);
+  		  show_compass(10);
           } else
-  	       	putimage(300,screen_height-27,select_sprite(10),0);
+  	       	show_compass(10);
         check_trophies();
         if (player.d_level == 0) exitf = 2;
         if (player.chp<1) exitf = 6;
@@ -1460,7 +1465,10 @@ void cave() {
       if (get_str() <= 0 || get_dex() <= 0 || get_int() <= 0 ||
           get_con() <= 0 || get_wis() <= 0 || get_chr() <= 0) exitf = 9;
       }
+    show_floor_item();
+    track_ship();
     }
+  hide_bottom_name();
   /* ************************************ */
   /* ***** End of main dungeon loop ***** */
   /* ************************************ */
@@ -1471,6 +1479,7 @@ void cave() {
   if (exitf == 7) mod_exit = 7;
   if (exitf == 9) mod_exit = 9;
   if (exitf == 10) mod_exit = 2;
+  if (exitf == 11) mod_exit = 8;
   remove_bones();
   }
 

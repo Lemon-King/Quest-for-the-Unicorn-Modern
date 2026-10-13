@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define NUM_COURSES    24
+
 typedef struct {
   char name[32];
   Int32  cost;
@@ -57,18 +59,31 @@ static Int32 class_price(Int32 cls) {
   return ret;
   }
 
-static void show_top(char* name) {
+static void draw_course(MENU* menu,Int32 row,Int32 line) {
+  char price[16];
+
+  sprintf(price,"%7d",class_price(row));
+  draw_menu_text(menu,line,school_classes[row].name,price);
+  }
+
+static void show_top(char* name,MENU* menu) {
   Int32 i;
   char buffer[80];
+
   textmode(3); gotoxy(27,1); textcolor(11);
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
+
   gotoxy(1,3); textcolor(14);
-  for (i=0; i<12; i++) {
-    sprintf(buffer,"   %2d> %s  %7d      %2d> %s  %7d",i+1,school_classes[i].name,class_price(i),
-                                                       i+13,school_classes[i+12].name,class_price(i+12));
-    txt_writeln(buffer);
+  if (improved_interface == 'Y') draw_menu(menu);
+  else {
+    for (i=0; i<12; i++) {
+      sprintf(buffer,"   %2d> %s  %7d      %2d> %s  %7d",i+1,school_classes[i].name,class_price(i),
+                                                         i+13,school_classes[i+12].name,class_price(i+12));
+      txt_writeln(buffer);
+      }
     }
+
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
@@ -79,18 +94,27 @@ void school(char* name) {
   double price;
   Int32 i;
   char buffer[80];
+  MENU menu = { .rows = { .count = NUM_COURSES, .shown = 12, .line = 2, .more_column = 52 },
+                .column = 26, .value_column = 52, .color = 14, .keys = MENU_KEYS, .keys_line = 25,
+                .draw_row = draw_course };
 
-  show_top(name);
+  show_top(name,&menu);
   option = 1;
   price = 5000;
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
-    txt_write("Which course would you like to take (<ESC> to leave) ?        ");
-    gotoxy(70,17); textcolor(15);
-    strcpy(buffer,"");
-    if (p_read(buffer) == 0) {
-      sscanf(buffer,"%d",&option);
-      } else option = 0;
+    if (improved_interface == 'Y') {
+      txt_write("Which course would you like to take (<ESC> to leave) ?");
+      option = menu_choice(&menu) + 1;
+      }
+    else {
+      txt_write("Which course would you like to take (<ESC> to leave) ?        ");
+      gotoxy(70,17); textcolor(15);
+      strcpy(buffer,"");
+      if (p_read(buffer) == 0) {
+        sscanf(buffer,"%d",&option);
+        } else option = 0;
+      }
     for (i=17; i<=22; i++) {
       gotoxy(10,i); txt_write("                                                              ");
       }
@@ -108,7 +132,7 @@ void school(char* name) {
         delay(1000);
         player.skill[school_classes[option-1].skill] += 100000;
         if (player.skill[school_classes[option-1].skill] > 9900000) player.skill[school_classes[option-1].skill] = 9900000;
-        show_top(name);
+        show_top(name,&menu);
         }
       }
     }

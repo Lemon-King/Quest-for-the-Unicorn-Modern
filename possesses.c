@@ -10,16 +10,22 @@
 
 #include "header.h"
 
+/* An emptied slot keeps its item's link. Without the Possessions change such a slot still counts as holding it. */
+static Int32 holds(OBJECT_REC* slot,Int32 link) {
+  if (slot->link != link) return 0;
+  return (change_possessions != 'Y' || slot->otype != O_NONE);
+  }
+
 Int32 possesses(Int32 link) {
   Int32 i;
   Int32 j;
   if (link == 0) return 0;
-  for (i=0; i<20; i++) if (player.invent[i].link == link) return -1;
-  for (i=0; i<33; i++) if (player.pack[i].link == link) return -1;
-  for (i=0; i<1000; i++) if (player.hole[i].link == link) return -1;
+  for (i=0; i<20; i++) if (holds(&player.invent[i],link)) return -1;
+  for (i=0; i<33; i++) if (holds(&player.pack[i],link)) return -1;
+  for (i=0; i<1000; i++) if (holds(&player.hole[i],link)) return -1;
   for (i=0; i<5; i++)
     for (j=0; j<500; j++)
-      if (player.houses[i].inventory[j].link == link) return -1;
+      if (holds(&player.houses[i].inventory[j],link)) return -1;
   return 0;
   }
 

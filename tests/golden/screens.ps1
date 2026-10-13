@@ -68,7 +68,7 @@ Save-Screen "icons"                      # first of the icon legend's four pages
 Invoke-Driver keys enter enter enter enter O
 Save-Screen "game-options"               # in-game Game Options (preferences)
 Invoke-Driver keys enter v 4
-Save-Screen "look"                       # look-mode cursor on the city west of the player, "City"
+Save-Screen "look"                       # look-mode cursor on the city west of the player, "Radon"
 Invoke-Driver keys esc
 Invoke-Driver quit
 

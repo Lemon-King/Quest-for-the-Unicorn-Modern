@@ -16,6 +16,9 @@ void go_up() {
     if (player.d_level > 0 && player.in_city != 'Y') save_level();
     flag = ' ';
     player.d_level--;
+
+    /* Level 0 leaves the dungeon, as the stairs do; without the Words of Power change it loads level[-1] */
+    if (change_words_of_power == 'Y' && player.d_level == 0) return;
     make_map(' ');
     if (flag == ' ') {
       player.x = u_random(80)+10; player.y = u_random(80) + 10;

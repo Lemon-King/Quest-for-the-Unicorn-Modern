@@ -79,6 +79,7 @@
     <ClCompile Include="bank.c" />
     <ClCompile Include="blind.c" />
     <ClCompile Include="blindtrap.c" />
+    <ClCompile Include="bottomname.c" />
     <ClCompile Include="builddungeon.c" />
     <ClCompile Include="buyhouse.c" />
     <ClCompile Include="buyprice.c" />
@@ -87,6 +88,7 @@
     <ClCompile Include="cast_spell.c" />
     <ClCompile Include="cavalier.c" />
     <ClCompile Include="cave.c" />
+    <ClCompile Include="centerview.c" />
     <ClCompile Include="charattributes.c" />
     <ClCompile Include="charmmonster.c" />
     <ClCompile Include="checkautos.c" />
@@ -97,6 +99,7 @@
     <ClCompile Include="checkmonkweapon.c" />
     <ClCompile Include="checkmount.c" />
     <ClCompile Include="checknoble.c" />
+    <ClCompile Include="checkquit.c" />
     <ClCompile Include="checkscores.c" />
     <ClCompile Include="checkspell1.c" />
     <ClCompile Include="cleargamedata.c" />
@@ -107,6 +110,7 @@
     <ClCompile Include="convertrecipe.c" />
     <ClCompile Include="converttime.c" />
     <ClCompile Include="copymap.c" />
+    <ClCompile Include="countrarity.c" />
     <ClCompile Include="crafting.c" />
     <ClCompile Include="darttrap.c" />
     <ClCompile Include="datacard.c" />
@@ -124,6 +128,7 @@
     <ClCompile Include="drain.c" />
     <ClCompile Include="dragondice.c" />
     <ClCompile Include="dungeonhelp.c" />
+    <ClCompile Include="eat.c" />
     <ClCompile Include="effect.c" />
     <ClCompile Include="enemyhit.c" />
     <ClCompile Include="enemymissile.c" />
@@ -145,9 +150,12 @@
     <ClCompile Include="fixability.c" />
     <ClCompile Include="fixname.c" />
     <ClCompile Include="fkeys.c" />
+    <ClCompile Include="foundrow.c" />
     <ClCompile Include="gainexp.c" />
     <ClCompile Include="gamble.c" />
+    <ClCompile Include="gamemenu.c" />
     <ClCompile Include="gameoptions.c" />
+    <ClCompile Include="gateway.c" />
     <ClCompile Include="getalign.c" />
     <ClCompile Include="getcity.c" />
     <ClCompile Include="getclass.c" />
@@ -183,6 +191,7 @@
     <ClCompile Include="inroom.c" />
     <ClCompile Include="insight.c" />
     <ClCompile Include="inventory.c" />
+    <ClCompile Include="invillage.c" />
     <ClCompile Include="invvalid.c" />
     <ClCompile Include="intrinsiccount.c" />
     <ClCompile Include="isweapon.c" />
@@ -192,6 +201,7 @@
     <ClCompile Include="levellegacy.c" />
     <ClCompile Include="library.c" />
     <ClCompile Include="lightroom.c" />
+    <ClCompile Include="linky.c" />
     <ClCompile Include="load.c" />
     <ClCompile Include="loadgear.c" />
     <ClCompile Include="loadlevel.c" />
@@ -215,6 +225,7 @@
     <ClCompile Include="maxdamage.c" />
     <ClCompile Include="mechmerchant.c" />
     <ClCompile Include="meleehit.c" />
+    <ClCompile Include="menu.c" />
     <ClCompile Include="missile.c" />
     <ClCompile Include="mounts.c" />
     <ClCompile Include="moveenemy.c" />
@@ -236,11 +247,14 @@
     <ClCompile Include="packit.c" />
     <ClCompile Include="packitem.c" />
     <ClCompile Include="party.c" />
+    <ClCompile Include="partyblow.c" />
     <ClCompile Include="passable.c" />
     <ClCompile Include="pawn.c" />
     <ClCompile Include="permadeath.c" />
     <ClCompile Include="pittrap.c" />
     <ClCompile Include="placeobject.c" />
+    <ClCompile Include="playersprite.c" />
+    <ClCompile Include="poisonkill.c" />
     <ClCompile Include="poisontrap.c" />
     <ClCompile Include="possesses.c" />
     <ClCompile Include="printrec.c" />
@@ -260,18 +274,24 @@
     <ClCompile Include="saveconfigvalue.c" />
     <ClCompile Include="savenew.c" />
     <ClCompile Include="savegear.c" />
+    <ClCompile Include="savelist.c" />
     <ClCompile Include="savelevel.c" />
     <ClCompile Include="sayword.c" />
     <ClCompile Include="scalemonster.c" />
     <ClCompile Include="school.c" />
+    <ClCompile Include="screenlayout.c" />
+    <ClCompile Include="scrolllist.c" />
+    <ClCompile Include="scrolltext.c" />
     <ClCompile Include="selectsprite.c" />
     <ClCompile Include="settitle.c" />
     <ClCompile Include="settrap.c" />
+    <ClCompile Include="ships.c" />
     <ClCompile Include="shop.c" />
     <ClCompile Include="showalign.c" />
     <ClCompile Include="showheadings.c" />
     <ClCompile Include="showhealth.c" />
     <ClCompile Include="showfkeys.c" />
+    <ClCompile Include="showflooritem.c" />
     <ClCompile Include="showflt.c" />
     <ClCompile Include="showgain.c" />
     <ClCompile Include="showgen.c" />
@@ -299,6 +319,8 @@
     <ClCompile Include="sleeptrap.c" />
     <ClCompile Include="sortshopitems.c" />
     <ClCompile Include="specials.c" />
+    <ClCompile Include="spellkill.c" />
+    <ClCompile Include="spelltarget.c" />
     <ClCompile Include="sqr.c" />
     <ClCompile Include="statsdodamage.c" />
     <ClCompile Include="statstakedamage.c" />
@@ -306,6 +328,7 @@
     <ClCompile Include="stockmonsters.c" />
     <ClCompile Include="stocktown.c" />
     <ClCompile Include="stocktreasure.c" />
+    <ClCompile Include="storage.c" />
     <ClCompile Include="strokefont.c" />
     <ClCompile Include="super.c" />
     <ClCompile Include="taketime.c" />
@@ -317,12 +340,14 @@
     <ClCompile Include="terminal.c" />
     <ClCompile Include="throw.c" />
     <ClCompile Include="thrownpotion.c" />
+    <ClCompile Include="tickpolymorph.c" />
     <ClCompile Include="title.c" />
     <ClCompile Include="touch.c" />
     <ClCompile Include="transcribe.c" />
     <ClCompile Include="travel.c" />
     <ClCompile Include="triggertrap.c" />
     <ClCompile Include="trophies.c" />
+    <ClCompile Include="trophycounter.c" />
     <ClCompile Include="trunc.c" />
     <ClCompile Include="unpack.c" />
     <ClCompile Include="upland.c" />
@@ -336,6 +361,7 @@
     <ClCompile Include="view.c" />
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
+    <ClCompile Include="worldpos.c" />
     <ClCompile Include="writefont.c" />
     <ClCompile Include="yesno.c" />
   </ItemGroup>

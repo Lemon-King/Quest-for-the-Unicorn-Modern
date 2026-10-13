@@ -10,38 +10,27 @@
 
 #include "header.h"
 
+#define NUM_SEARCHES    3
+
+/* Picked by 'L', 'G' and 'Q' without the Improved Interface preference */
+static char* search_names[NUM_SEARCHES] = { "Search for Lore", "Search for General Information", "Leave" };
+
+/* The key of the search picked with the cursor, or 'Q' for ESC */
+static char pick_search(void) {
+  Int32 row;
+
+  row = ask_choice(10,5,14,search_names,NUM_SEARCHES,0);
+
+  return (row >= 0) ? "LGQ"[row] : 'Q';
+  }
 
 static void library_display_msg(Int32 msg,char ext) {
-  Int32 i;
-  Int32 x,y;
-//    Int32 space;
-  Int32 size;
-  byte last;
   MESSAGE general;
   general = (ext == 'L') ? lore[msg] : gen[msg];
-  decode(general.message);
-  graphmode();
-  display_scroll();
-  x = 60; y = 60; size = 30;
-//    space = 25;
-  setcolor(0);
-  while (strlen(general.message) != 0) {
-    if (strlen(general.message)<size) {
-      outtextxy(x,y,general.message);
-      strcpy(general.message,"");
-      }
-    else {
-     i = size;
-     while (i > 0 && general.message[i] != ' ') i--;
-     last = general.message[i];
-     general.message[i] = 0;
-     outtextxy(x,y,general.message);
-     general.message[i] = last;
-     i++;
-     strcpy(general.message,general.message+i);
-     }
-   }
-  inkey();
+
+  /* Without the Library Text change the plain message is enciphered, as if the tables were still stored encoded */
+  if (change_library_text != 'Y') decode(general.message);
+  scroll_text(general.message);
   } /* void library_display_msg(Int32 msg, char* ext) */
 
 static void show_top(char* name) {
@@ -51,11 +40,14 @@ static void show_top(char* name) {
   sprintf(buffer,"Welcome to %s",name);
   txt_write(buffer);
   textcolor(14);
-  gotoxy(10,5);
-  txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+  if (improved_interface != 'Y') {
+    gotoxy(10,5);
+    txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+    }
   textcolor(14); gotoxy(35,24);
   sprintf(buffer,"Gold = %d",get_gold());
   txt_write(buffer);
+  if (improved_interface == 'Y') draw_menu_keys(MENU_KEYS,25);
   } /* void show_top()() */
 
 void library(char* name) {
@@ -67,12 +59,15 @@ void library(char* name) {
   flag = ' ';
   while (flag == ' ') {
     show_top(name);
-    key = inkey();
+    key = (improved_interface == 'Y') ? pick_search() : inkey();
     if (key == 'Q' || key == 'q') flag = '*';
     if (key == 'L' || key == 'l') {
-      gotoxy(10,7); textcolor(3);
-      txt_write("Cost of Lore search is 500 Gold Pieces, Continue Search ?");
-      key = inkey();
+      if (improved_interface == 'Y') key = ask_action(10,7,3,"Pay 500 gold to search","Cancel",0);
+      else {
+        gotoxy(10,7); textcolor(3);
+        txt_write("Cost of Lore search is 500 Gold Pieces, Continue Search ?");
+        key = inkey();
+        }
       if (key == 'Y' || key == 'y') {
         if (get_gold()<500) {
           gotoxy(10,9); textcolor(12);
@@ -95,6 +90,7 @@ void library(char* name) {
             delay(1000);
             }
           else {
+            msg = found_row(msg);
             player.lore[msg] = -1;
             library_display_msg(msg,'L');
             }
@@ -102,9 +98,12 @@ void library(char* name) {
         }
       }
     else if (key == 'G' || key == 'g') {
-      gotoxy(10,7); textcolor(3);
-      txt_write("Cost of General search is 100 Gold Pieces, Continue Search ?");
-      key = inkey();
+      if (improved_interface == 'Y') key = ask_action(10,7,3,"Pay 100 gold to search","Cancel",0);
+      else {
+        gotoxy(10,7); textcolor(3);
+        txt_write("Cost of General search is 100 Gold Pieces, Continue Search ?");
+        key = inkey();
+        }
       if (key == 'Y' || key == 'y') {
         if (get_gold()<100) {
           gotoxy(10,9); textcolor(12);
@@ -127,6 +126,7 @@ void library(char* name) {
             delay(1000);
             }
           else {
+            msg = found_row(msg);
             player.gen[msg] = -1;
             library_display_msg(msg,'G');
             }

@@ -54,6 +54,15 @@ static void land_discover(void) {
   close_display();
   } /* void land_discover() */
 
+/* The Gateway's entrance: seen with A_GATE, and open with A_GACT as well */
+static void place_gateway(void) {
+  if (player.region != GATEWAY_REGION) return;
+  if (player.gateway != ' ' || !has_intrinsic(A_GATE)) return;
+
+  if (has_intrinsic(A_GACT)) player.map[GATEWAY_X][GATEWAY_Y] = 31;
+    else player.map[GATEWAY_X][GATEWAY_Y] = 32;
+  }
+
 static void check_region(void) {
   char flag;
 //    Int32  m_file;
@@ -161,12 +170,7 @@ static void check_region(void) {
     flag = '*';
     }
   strcpy(player.d_name,regions[player.region-1].name);
-  if (player.region == 12) {
-    if (player.gateway == ' ' && has_intrinsic(A_GATE))
-       player.map[80][78] = 32;
-    if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-       has_intrinsic(A_GACT)) player.map[80][78] = 31;
-    }
+  place_gateway();
   if (player.inship == ' ' && player.ship_r == player.region) {
     player.map[player.ship_x][player.ship_y] = 12;
     }
@@ -202,6 +206,19 @@ static char valid(Int32 x,Int32 y) {
   return flag;
   } /* char valid(Int32 x,Int32 y) */
 
+/* valid() for the player on foot, while in a ship */
+static char valid_on_foot(Int32 x,Int32 y) {
+  char inship;
+  char flag;
+
+  inship = player.inship;
+  player.inship = ' ';
+  flag = valid(x,y);
+  player.inship = inship;
+
+  return flag;
+  }
+
 /*
 void adjust_player_map() {
   char changed;
@@ -230,110 +247,53 @@ void adjust_player_map() {
   }
 */
 
-static void move_up(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.y = player.y+1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up() */
+/* Steps by dx,dy, into the next region at its edge. Returns 'N' when the step was blocked. */
+static char move_land(Int32 dx,Int32 dy) {
+  Int32 old_x,old_y;
+  Int32 old_region;
+  Int32 blocked;
+  Int32 shore;
+  char  moved;
 
-static void move_down(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.y = player.y-1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down() */
+  old_x = player.x;
+  old_y = player.y;
+  old_region = player.region;
 
-static void move_left(void) {
   remove_land_player();
-  player.x = player.x-1;
+  player.x = player.x+dx;
+  player.y = player.y+dy;
   check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.x = player.x+1;
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_left() */
 
-static void move_right(void) {
-  remove_land_player();
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    player.x = player.x-1;
+  /* With Ship Improvements a ship that runs into walkable shore twice puts the player ashore */
+  blocked = (valid(player.x,player.y) == ' ' && !sails_into_town(player.x,player.y));
+  shore = (blocked && player.inship != ' ' && player.region == old_region && valid_on_foot(player.x,player.y) == '*');
+  if (steps_ashore(old_x,old_y,dx,dy,shore)) {
+    blocked = 0;
+    show_spot(old_x,old_y);
+    }
+  if (blocked) {
+    player.x = player.x-dx;
+    player.y = player.y-dy;
+    }
+  else walk_aboard();
   if (adjust_map() == 'Y') show_land();
   show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_right() */
 
-static void move_up_left(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  player.x = player.x-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x+1; player.y = player.y+1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up_left() */
+  moved = (player.x != old_x || player.y != old_y || player.region != old_region) ? 'Y' : 'N';
+  if (moved == 'Y' || change_free_upland_keys != 'Y') stats.counts[STAT_STEPS_TAKEN]++;
 
-static void move_up_right(void) {
-  remove_land_player();
-  player.y = player.y-1;
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x-1; player.y = player.y+1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_up_right() */
-
-static void move_down_left(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  player.x = player.x-1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x+1; player.y = player.y-1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down_left() */
-
-static void move_down_right(void) {
-  remove_land_player();
-  player.y = player.y+1;
-  player.x = player.x+1;
-  check_region();
-  if (valid(player.x,player.y) == ' ')
-    { player.x = player.x-1; player.y = player.y-1; }
-  if (adjust_map() == 'Y') show_land();
-  show_land_player();
-  stats.counts[STAT_STEPS_TAKEN]++;
-  } /* void move_down_right() */
+  return moved;
+  } /* char move_land(Int32 dx,Int32 dy) */
 
 static void enter_dungeon(void) {
   char flag;
   Int32  x;
   LINK_REC link;
   if (player.map[player.x][player.y] == 31) {
-    strcpy(player.d_name,"The Gateway");
     exitf = 2;
     player.in_city = 'N';
     player.d_level = 0;
-    player.diff = 20;
-    if (player.gateway != 'F') player.gateway = '*';
-    player.dungeon_number = 99;
+    set_gateway_dungeon();
     build_dungeon(7,player.dungeon_number);
     }
   if (player.map[player.x][player.y] == 17) {
@@ -364,18 +324,21 @@ static void enter_dungeon(void) {
       player.in_city = 'Y';
       player.city = link.diff;
       player.dungeon_number = x-1;
+
+      /* Without the Town Completion change nothing marks a town complete */
+      if (change_town_completion == 'Y') player.quests[player.dungeon_number] = 'Y';
       }
     }
   if (player.map[player.x][player.y] == 11) {
     x = 0;
     link = links[x++];
     flag = '*';
-    if (link.x != player.x || link.y != player.y || link.typ != 11 ||
+    if (link.x != player.x || link_y(x-1) != player.y || link.typ != 11 ||
         link.region != player.region) flag = ' ';
     while (flag == ' ') {
       link = links[x++];
       flag = '*';
-      if (link.x != player.x || link.y != player.y || link.typ != 11 ||
+      if (link.x != player.x || link_y(x-1) != player.y || link.typ != 11 ||
           link.region != player.region) flag = ' ';
       if (link.region == 99) flag = '*';
       }
@@ -390,41 +353,6 @@ static void enter_dungeon(void) {
       }
     }
   } /* void enter_dungeon() */
-
-static void eat(void) {
-  OBJECT_REC* item;
-  Int32 i;
-  if (player.health > 100) {
-    clear_prompt();
-    prompt("Too full to eat any more");
-    return;
-    }
-  item = NULL;
-  for (i=1; i<11; i++)
-    if (player.invent[i].otype == O_FOOD) {
-       item = &(player.invent[i]);
-       i = 99;
-      }
-  if (item == NULL) {
-    for (i=1; i<=32; i++)
-      if (player.pack[i].otype == O_FOOD) {
-        item = &(player.pack[i]);
-        i = 99;
-        }
-    }
-  if (item == NULL) {
-    clear_prompt();
-    prompt("Nothing to Eat!!!");
-    }
-  else {
-    if (item->charges != -1) item->charges--;
-    if (item->charges == 0) {
-      item->otype = O_NONE;
-      }
-    perform_effect(item);
-    show_side();
-    }
-  }
 
 /*
 void eat() {
@@ -454,15 +382,20 @@ void eat() {
   }
 */
 
-static void land_use_item(void) {
+/* Returns 'Y' when an item was used, or the inventory screen moved one */
+static char land_use_item(void) {
   OBJECT_REC* item;
+  char        acted;
+
   item = NULL;
   saveScreen();
   item = inventory(item);
+  acted = takes_time;
   restoreScreen();
   show_spot(player.x,player.y);
   show_player();
   if (item != NULL && item->otype != O_NONE) {
+    acted = 'Y';
     if (item->otype == O_FOOD && player.health > 100) {
       msg("Too full to eat any more",10);
       }
@@ -480,13 +413,16 @@ static void land_use_item(void) {
   show_player();
   show_messages();
   clair = ' ';
-  } /* void land_use_item() */
+
+  return acted;
+  } /* char land_use_item() */
 
 static void hunt(void) {
   Int32 chance;
   Int32 item_count;
   Int32 item;
   Int32 i;
+  Int32 skill;
   chance = 10;
   switch (player.map[player.x][player.y]) {
     case 2:chance = 25; break;
@@ -496,9 +432,12 @@ static void hunt(void) {
     case 8:chance = 5; break;
     case 9:chance = 17; break;
     }
-  if (get_skill(4)>4 && get_skill(4)<10) chance = chance*2;
-  if (get_skill(4)>9 && get_skill(4)<15) chance = chance*3;
-  if (get_skill(4)>14) chance = chance*4;
+
+  /* Without the Hunting Skill change the chance grows with the Mace skill, though hunting trains Scouting */
+  skill = (change_hunting_skill == 'Y') ? get_skill(SK_SCOUT) : get_skill(SK_MACE);
+  if (skill>4 && skill<10) chance = chance*2;
+  if (skill>9 && skill<15) chance = chance*3;
+  if (skill>14) chance = chance*4;
   if (u_random(100)<chance) {
     item = -1;
     item_count = 0;
@@ -517,12 +456,17 @@ static void hunt(void) {
   } /* void hunt() */
 
 static void land_go_ship(void) {
+  Int32 x,y;
+
   if (player.inship != ' ') {
+    x = player.x;
+    y = player.y;
+    dock_square(&x,&y);
     player.inship = ' ';
-    player.map[player.x][player.y] = 12;
-    show_spot(player.x,player.y);
-    player.ship_x = player.x;
-    player.ship_y = player.y;
+    player.map[x][y] = 12;
+    show_spot(x,y);
+    player.ship_x = x;
+    player.ship_y = y;
     player.ship_r = player.region;
     }
   else if (player.map[player.x][player.y] == 12) {
@@ -531,6 +475,12 @@ static void land_go_ship(void) {
     }
   show_land_player();
   } /* void land_go_ship() */
+
+/* Without the Tardis Descriptions change a description has no length limit, and overruns invoke and tardis_d */
+static Int32 description_has_room(char* invoke) {
+  if (change_tardis_descriptions != 'Y') return 1;
+  return (strlen(invoke) < sizeof(STRING32) - 1);
+  }
 
 static void new_tardis(Int32 i) {
   char invoke[33];
@@ -545,7 +495,7 @@ static void new_tardis(Int32 i) {
     key = 255;
     while (key != 13) {
       key = inkey();
-      if (key>31) {
+      if (key>31 && description_has_room(invoke)) {
         invoke[strlen(invoke) + 1] = 0;
         invoke[strlen(invoke)] = key;
         clear_prompt();
@@ -599,12 +549,7 @@ static void tardis(Int32 i) {
       if (player.inship == ' ' && player.ship_r == player.region) {
             player.map[player.ship_x][player.ship_y] = 12;
         }
-      if (player.region == 12) {
-        if (player.gateway == ' ' && has_intrinsic(A_GATE))
-          player.map[80][78] = 32;
-        if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-          has_intrinsic(A_GACT)) player.map[80][78] = 31;
-        }
+      place_gateway();
       show_map();
       show_sm_map();
       show_side();
@@ -638,11 +583,14 @@ static void tardis_log(void) {
   show_land_player();
   } /* void tardis_log() */
 
-static void do_inventory(void) {
+/* Returns 'Y' when the inventory screen moved an item */
+static char do_inventory(void) {
   saveScreen();
   inventory(NULL);
   restoreScreen();
-  } /* void do_inventory() */
+
+  return takes_time;
+  } /* char do_inventory() */
 
 static void gps(void) {
   char buffer[20];
@@ -652,6 +600,80 @@ static void gps(void) {
   msg(buffer,15);
   }
 
+/* An overworld turn: regeneration, the clock and food, and the chance of an encounter */
+static void land_turn(void) {
+  Int32 i;
+
+  if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
+
+  player.hp_count = player.hp_count-1;
+  for (i=1; i<=19; i++) {
+    if (player.invent[i].otype != O_NONE) {
+      if ((i==I_NCK1 || i==I_NCK2) &&
+          player.invent[i].otype == O_NECK &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if ((i==I_RNG1 || i==I_RNG2 || i==I_RNG3 || i==I_RNG4) &&
+          player.invent[i].otype == O_RING &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_SHLD &&
+          player.invent[i].otype == O_SHLD &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_ARMR &&
+          player.invent[i].otype == O_ARMR &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_ROBE &&
+          player.invent[i].otype == O_ROBE &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_BOOT &&
+          player.invent[i].otype == O_BOOT &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (i==I_HELM &&
+          player.invent[i].otype == O_HELM &&
+          player.invent[i].effect == E_INTR &&
+          player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      else if (player.invent[i].otype != O_NECK &&
+               player.invent[i].otype != O_RING &&
+               player.invent[i].otype != O_SHLD &&
+               player.invent[i].otype != O_ARMR &&
+               player.invent[i].otype != O_ROBE &&
+               player.invent[i].otype != O_BOOT &&
+               player.invent[i].otype != O_HELM &&
+               player.invent[i].effect == E_INTR &&
+               player.invent[i].control == A_HEAL)
+        player.hp_count -= player.invent[i].damage;
+      }
+    }
+
+  if (player.hp_count<1) {
+    player.hp_count = 2;
+    if (player.chp<player.mhp) player.chp = player.chp+1;
+    show_side();
+    }
+
+  player.mana_count = player.mana_count-1;
+  if (player.mana_count<1) {
+    player.mana_count = 3;
+    if (player.cmana<player.mmana) player.cmana = player.cmana+1;
+    show_side();
+    }
+
+  take_time();
+  check_encounter();
+  } /* void land_turn() */
+
 void up_land() {
   byte key;
   Int32  x = 0,y = 0;
@@ -659,14 +681,20 @@ void up_land() {
 //  Int32  m_file;
   Int32  suggest;
   Int32  sug_level;
+  char   turn;
+  Int32  command;
 
 /* ******************************************* */
 /* ***** Actual beginning of upland code ***** */
 /* ******************************************* */
   play_music(MUSIC_UPLAND);
+  forget_compass();
   while (keypressed()) key=inkey();
   in_upland = 'Y';
   player.d_level = 0;
+
+  /* Without the Gateway Exit change the Gateway's rules stay on after leaving it */
+  if (change_gateway_exit == 'Y' && player.gateway == '*') player.gateway = ' ';
   copyMap(&player.map,player.region);
 //#ifdef MINGW
 //  m_file = open("temp01.$$$",O_RDONLY | O_BINARY);
@@ -683,19 +711,16 @@ void up_land() {
   memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
   player.x = player.land_x;
   player.y = player.land_y;
+  ship_leaves_town();
   player.map_x = player.x-8;
   player.map_y = player.y-8;
   adjust_map();
+  track_ship();
   if (player.inship == ' ' && player.ship_r == player.region) {
       player.map[player.ship_x][player.ship_y] = 12;
     }
   strcpy(player.d_name,regions[player.region-1].name);
-  if (player.region == 12) {
-    if (player.gateway == ' ' && has_intrinsic(A_GATE))
-      player.map[80][78] = 32;
-    if (player.gateway == ' ' && has_intrinsic(A_GATE) &&
-      has_intrinsic(A_GACT)) player.map[80][78] = 31;
-    }
+  place_gateway();
   graphmode();
   show_land();
   show_sm_land();
@@ -705,29 +730,60 @@ void up_land() {
   exitf = 0;
   while (exitf == 0) {
     show_time();
+
+    /* turn is 'N' for a key that takes no time; a cancelled save_gear() or load_gear() clears takes_time */
+    turn = 'Y';
+    takes_time = 'Y';
     key = inkey();
+
+    /* TAB opens the Tab Menu, which types the command chosen, or loads another game */
+    if (key == 9 && improved_interface == 'Y') {
+      command = open_tab_menu();
+      if (command == TAB_LOAD_GAME) exitf = 11;
+      if (command <= 0) continue;
+      key = (byte)command;
+      }
+
     switch (key) {
-      case 'Q':exitf = 3;
-      case '8':move_up(); break;
-      case '2':move_down(); break;
-      case '4':move_left(); break;
-      case '6':move_right(); break;
-      case '7':move_up_left(); break;
-      case '9':move_up_right(); break;
-      case '1':move_down_left(); break;
-      case '3':move_down_right(); break;
+      /* Without the Upland Quit change Q quits at once, unasked, and falls through into a step north */
+      case 'Q':if (change_upland_quit == 'Y') {
+                 if (check_quit()) exitf = 3;
+                 turn = 'N';
+                 break;
+                 }
+               exitf = 3;
+      case '8':turn = move_land(0,-1); break;
+      case '2':turn = move_land(0,1); break;
+      case '4':turn = move_land(-1,0); break;
+      case '6':turn = move_land(1,0); break;
+      case '7':turn = move_land(-1,-1); break;
+      case '9':turn = move_land(1,-1); break;
+      case '1':turn = move_land(-1,1); break;
+      case '3':turn = move_land(1,1); break;
       case '>':enter_dungeon(); break;
-      case '}':save_gear('N',-1); break;
-      case ']':load_gear('N',-1); break;
-      case '{':save_gear('Y',-1); break;
-      case '[':load_gear('Y',-1); break;
+      case '}':save_gear('N',-1);
+               turn = takes_time;
+               break;
+      case ']':load_gear('N',-1);
+               turn = takes_time;
+               break;
+      case '{':save_gear('Y',-1);
+               turn = takes_time;
+               break;
+      case '[':load_gear('Y',-1);
+               turn = takes_time;
+               break;
       case 'e':eat(); break;
-      case 'H':show_icons(); break;
+      case 'H':show_icons();
+               turn = 'N';
+               break;
       case 'h':hunt(); break;
       case 's':hunt(); break;
-      case 'i':do_inventory(); break;
+      case 'i':turn = do_inventory(); break;
       case 'E':land_go_ship(); break;
-      case '?':upland_help(); break;
+      case '?':upland_help();
+               turn = 'N';
+               break;
       case 'S':
           player.land_x = player.x;
           player.land_y = player.y;
@@ -739,9 +795,11 @@ void up_land() {
           show_side();
           show_land_player();
           break;
-      case 'u':land_use_item(); break;
+      case 'u':turn = land_use_item(); break;
       case 'v':view(player.map[x][y]); break;
-      case 'X':exitf = 4; break;
+      case 'X':exitf = 4;
+               turn = 'N';
+               break;
       case 'R':
           disp_char();
           graphmode();
@@ -749,16 +807,22 @@ void up_land() {
           show_sm_land();
           show_land_player();
           show_side();
+          turn = 'N';
           break;
       case 'O':
           game_options();
+          if (set_screen_layout()) adjust_map();
           graphmode();
           show_land();
           show_sm_land();
           show_land_player();
           show_side();
+          show_messages();
+          turn = 'N';
           break;
-      case '~':gps(); break;
+      case '~':gps();
+               turn = 'N';
+               break;
       case KY_F1:tardis(1); break;
       case KY_F2:tardis(2); break;
       case KY_F3:tardis(3); break;
@@ -780,73 +844,20 @@ void up_land() {
       case KY_S_F9:new_tardis(9); break;
       case KY_S_F10:new_tardis(10); break;
       case 'T':if (has_intrinsic(A_TARD)) tardis_log();
+               turn = 'N';
+               break;
+      default:turn = 'N';
       }
-    land_discover();
-    if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
-    player.hp_count = player.hp_count-1;
-    for (i=1; i<=19; i++) {
-      if (player.invent[i].otype != O_NONE) {
-        if ((i==I_NCK1 || i==I_NCK2) &&
-            player.invent[i].otype == O_NECK &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if ((i==I_RNG1 || i==I_RNG2 || i==I_RNG3 || i==I_RNG4) &&
-            player.invent[i].otype == O_RING &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_SHLD &&
-            player.invent[i].otype == O_SHLD &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_ARMR &&
-            player.invent[i].otype == O_ARMR &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_ROBE &&
-            player.invent[i].otype == O_ROBE &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_BOOT &&
-            player.invent[i].otype == O_BOOT &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL) 
-          player.hp_count -= player.invent[i].damage;
-        else if (i==I_HELM &&
-            player.invent[i].otype == O_HELM &&
-            player.invent[i].effect == E_INTR &&
-            player.invent[i].control == A_HEAL)
-          player.hp_count -= player.invent[i].damage;
-        else if (player.invent[i].otype != O_NECK &&
-                 player.invent[i].otype != O_RING &&
-                 player.invent[i].otype != O_SHLD &&
-                 player.invent[i].otype != O_ARMR &&
-                 player.invent[i].otype != O_ROBE &&
-                 player.invent[i].otype != O_BOOT &&
-                 player.invent[i].otype != O_HELM &&
-                 player.invent[i].effect == E_INTR &&
-                 player.invent[i].control == A_HEAL)
-               player.hp_count -= player.invent[i].damage;
-          }
-        }
 
-    if (player.hp_count<1) {
-      player.hp_count = 2;
-      if (player.chp<player.mhp) player.chp = player.chp+1;
-      show_side();
-      }
-    player.mana_count = player.mana_count-1;
-    if (player.mana_count<1) {
-      player.mana_count = 3;
-      if (player.cmana<player.mmana) player.cmana = player.cmana+1;
-      show_side();
-      }
-    take_time();
-    check_encounter();
+    /* A ship sailed onto a town with a harbour enters it (Ship Improvements) */
+    if (sails_into_town(player.x,player.y)) enter_dungeon();
+
+    /* Without the Free Upland Keys change every key passes a turn */
+    if (change_free_upland_keys != 'Y') turn = 'Y';
+
+    land_discover();
+    track_ship();
+    if (turn == 'Y') land_turn();
     if (player.chp<1) exitf = 6;
     if (player.health<=0) exitf = 6;
     if (has_intrinsic(A_COMP)) {
@@ -887,11 +898,10 @@ void up_land() {
         else if (player.x>links[suggest].x && player.y>links[suggest].y) x = 96;
         else x = 10;
 */
-        putimage(300,screen_height-27,select_sprite(10),0);
-        putimage(300,screen_height-27,select_sprite(x),0);
-        } else putimage(300,screen_height-27,select_sprite(10),0);
+        show_compass(x);
+        } else show_compass(10);
       }
-    if (has_intrinsic(A_FOOD) && player.health < 100) player.health++;
+    if (turn == 'Y' && has_intrinsic(A_FOOD) && player.health < 100) player.health++;
     if (get_str() <= 0 || get_dex() <= 0 || get_int() <= 0 ||
         get_con() <= 0 || get_wis() <= 0 || get_chr() <= 0) exitf = 9;
     }
@@ -901,6 +911,7 @@ void up_land() {
   if (exitf == 5) mod_exit = 5;
   if (exitf == 6) mod_exit = 6;
   if (exitf == 9) mod_exit = 9;
+  if (exitf == 11) mod_exit = 8;
 //#ifdef MINGW
 //  m_file = open("temp01.$$$",O_WRONLY | O_BINARY);
 //#else

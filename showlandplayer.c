@@ -15,7 +15,7 @@ void show_land_player() {
   x = player.x;
   y = player.y;
   if (player.inship == ' ')
-    show_sprite(player.x-player.map_x,player.y-player.map_y,35);
+    show_sprite(player.x-player.map_x,player.y-player.map_y,rider_sprite());
   else
     show_sprite(player.x-player.map_x,player.y-player.map_y,12);
   plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,15);

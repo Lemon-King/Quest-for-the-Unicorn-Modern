@@ -171,12 +171,22 @@ void save_player(FILE* file) {
   sprintf(line, "  TimePlayed %d",player.time_played); write_line(file, line);
   for (i=0; i<11; i++)
     if (player.tardis_x[i] != 0 || player.tardis_y[i] != 0) {
-      sprintf(line, "  Tardis %d {",i);             write_line(file, line);
-      sprintf(line, "    X %d",player.tardis_x[i]); write_line(file, line);
-      sprintf(line, "    Y %d",player.tardis_y[i]); write_line(file, line);
-      sprintf(line, "    R %d",player.tardis_r[i]); write_line(file, line);
-      sprintf(line, "    Desc %s",player.tardis_d[i]); write_line(file, line);
-      sprintf(line, "    }"); write_line(file, line);
+
+      /* Without the Tardis Saves change a nested block, which load_player() misreads */
+      if (change_tardis_saves == 'Y') {
+        sprintf(line, "  TardisX%d %d",i,player.tardis_x[i]);    write_line(file, line);
+        sprintf(line, "  TardisY%d %d",i,player.tardis_y[i]);    write_line(file, line);
+        sprintf(line, "  TardisR%d %d",i,player.tardis_r[i]);    write_line(file, line);
+        sprintf(line, "  TardisDesc%d %s",i,player.tardis_d[i]); write_line(file, line);
+        }
+      else {
+        sprintf(line, "  Tardis %d {",i);             write_line(file, line);
+        sprintf(line, "    X %d",player.tardis_x[i]); write_line(file, line);
+        sprintf(line, "    Y %d",player.tardis_y[i]); write_line(file, line);
+        sprintf(line, "    R %d",player.tardis_r[i]); write_line(file, line);
+        sprintf(line, "    Desc %s",player.tardis_d[i]); write_line(file, line);
+        sprintf(line, "    }"); write_line(file, line);
+        }
       }
   for (i=0; i<5000; i++)
     if (player.gen[i] != 0) {
@@ -220,6 +230,13 @@ void save_player(FILE* file) {
     if (player.quests[i] == 'Y') {
       sprintf(line,"  Quest %d",i); write_line(file, line);
       }
+
+  /* Without the Quest State change only completed quests are saved, so entered ('E') dungeons are lost on a load */
+  if (change_quest_state == 'Y')
+    for (i=0; i<1000; i++)
+      if (player.quests[i] == 'E') {
+        sprintf(line,"  Entered %d",i); write_line(file, line);
+        }
   sprintf(line, "  }"); write_line(file, line);
   sprintf(line, "FKeySpells {"); write_line(file, line);
   for (i=0; i<13; i++)
@@ -262,6 +279,13 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayHit %d", delay_hit);                write_line(file, line);
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
+  sprintf(line, "  ShowMount %c", show_mount);              write_line(file, line);
+  sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
+  sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
+  sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
+  sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
+  sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);
+  sprintf(line, "  EasySpells %c", easy_spells);            write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }
@@ -498,7 +522,6 @@ void save_current_dungeon(FILE* file) {
   }
 
 void save_new() {
-  FILE* file;
   char  filename[1024];
   gotoxy(1,1); textcolor(14);
   strcpy(filename,"");
@@ -509,7 +532,15 @@ void save_new() {
     txt_write("Filename to save under (No Extension) ?");
     readln(filename);
     }
-  strcpy(loadname, filename);
+  save_game(filename);
+  }
+
+/* Writes the game to <name>.sav, which becomes the game's save */
+void save_game(char* name) {
+  FILE* file;
+  char  filename[1024];
+  if (name != loadname) strcpy(loadname, name);
+  strcpy(filename, name);
   strcat(filename, ".sav");
   file = fopen(filename, "w");
   if (encrypt_save_file != 'N') fprintf(file, "%se\n",VERSION);

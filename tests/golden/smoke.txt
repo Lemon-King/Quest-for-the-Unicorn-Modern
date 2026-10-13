@@ -1,4 +1,4 @@
-Trophy Count: 103
+Trophy Count: 104
 Object Count: 1200
   Common     : 116
   Uncommon   : 232
@@ -18,9 +18,9 @@ Options:
 
   Auto Pickup Torches: Y
 
-  Auto Open Doors: N
+  Auto Open Doors: Y
 
-  Auto Search Walls: N
+  Auto Search Walls: Y
 
   Dungeon Depth: 5
   Dungeon Scaling: N

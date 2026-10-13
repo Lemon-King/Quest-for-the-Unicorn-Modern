@@ -107,73 +107,337 @@ Int32 can_drop(Int32 destx,Int32 desty,char check_inair) {
   return 0;
   }
 
-static void inventory_show_screen(void) {
+#define NUM_SLOTS       20
+#define NAME_WIDTH      24      /* a name in the list, which ends before the card */
+#define ACTION_COLUMN   48      /* the actions for a row show under its card */
+#define ACTION_LINE     19
+#define INVENTORY_KEYS  "(8/2) Select   (ENTER) Actions   (G) Gear Sets   (ESC) Leave"
+#define GEAR_KEYS       "(8/2) Select   (ENTER) Actions   (G/ESC) Back"
+#define ACTION_KEYS     "QPTVvXxI"
+#define NUM_GEAR_SETS   10
+#define GEAR_LINE        3      /* the gear sets' heading, where the card shows; the sets follow */
+#define GEAR_ACTION_LINE 15
+#define HEADING_COLOR   11
+
+/* Row 0 is the item in the air, shown as on the ground; rows 1 to 19 are the inventory's slots */
+static char* slot_names[NUM_SLOTS] = {
+  "On Ground", "Main Hand", "Off Hand", "Left Shoulder", "Right Shoulder", "Neck 1", "Neck 2", "Belt Left",
+  "Belt Right", "Belt Front", "Belt Back", "Shield", "Armor", "Ring Left 1", "Ring Left 2", "Ring Right 1",
+  "Ring Right 2", "Cloak", "Boots", "Helm"
+  };
+
+static OBJECT_REC* slot_item(Int32 row) {
+  return (row > 0) ? &(player.invent[row]) : &in_air;
+  }
+
+static void slot_label(Int32 row,char* label) {
+  sprintf(label,"%-15s:",slot_names[row]);
+  }
+
+Int32 pack_count(void) {
   Int32 i;
-  Int32 ct;
+  Int32 count;
+
+  count = 0;
+  for (i=1; i<=PACK_SLOTS; i++)
+    if (player.pack[i].otype != O_NONE) count++;
+
+  return count;
+  }
+
+/* The treasure of the dungeon you are in, on its bottom level, which completes the dungeon's quest once picked up */
+Int32 is_quest_treasure(OBJECT_REC* item) {
+  OBJECT_REC* treasure;
+
+  if (player.d_level != bottom) return 0;
+
+  treasure = find_linked_item(links[player.dungeon_number].treasure);
+
+  return (treasure != NULL && strcmp(item->name,treasure->name) == 0);
+  }
+
+/* A row's slot, then name in color */
+static void draw_slot_name(MENU* menu,Int32 row,Int32 line,char* name,Int32 color) {
+  char label[20];
+  char text[NAME_WIDTH + 1];
+
+  slot_label(row,label);
+  sprintf(text,"%-*.*s",NAME_WIDTH,NAME_WIDTH,name);
+
+  draw_menu_text(menu,line,label,"");
+  list_text(&menu->rows,menu->value_column,line,color,text);
+  }
+
+static void draw_slot(MENU* menu,Int32 row,Int32 line) {
+  OBJECT_REC* item;
+  char        name[128];
+
+  item = slot_item(row);
+  list_item_name(item,NAME_WIDTH,name);
+  draw_slot_name(menu,row,line,name,item_color(item));
+  }
+
+/* The name a gear set keeps for an inventory row: the hands, necks, shield, armor, rings, cloak, boots and helm */
+static char* set_item(GEAR_SET* set,Int32 row) {
+  switch (row) {
+    case I_RHND: return set->main_hand;
+    case I_LHND: return set->off_hand;
+    case I_NCK1: return set->neck_1;
+    case I_NCK2: return set->neck_2;
+    case I_SHLD: return set->shield;
+    case I_ARMR: return set->armor;
+    case I_RNG1: return set->ring_l1;
+    case I_RNG2: return set->ring_l2;
+    case I_RNG3: return set->ring_r1;
+    case I_RNG4: return set->ring_r2;
+    case I_ROBE: return set->cloak;
+    case I_BOOT: return set->boots;
+    case I_HELM: return set->helm;
+    }
+
+  return "";
+  }
+
+static Int32 set_count(GEAR_SET* set) {
+  Int32 row;
+  Int32 count;
+
+  count = 0;
+  for (row=1; row<NUM_SLOTS; row++)
+    if (set_item(set,row)[0] != 0) count++;
+
+  return count;
+  }
+
+/* The item named, in the main hand or wherever load_gear() looks for it, or NULL */
+static OBJECT_REC* carried_item(char* name) {
+  if (player.invent[I_RHND].otype != O_NONE && strcmp(name,player.invent[I_RHND].name) == 0)
+    return &(player.invent[I_RHND]);
+
+  return find_gear(name);
+  }
+
+/* A row as the gear set menu->screen keeps it: the item in its colour where you carry it, dark grey where you do not */
+static void draw_set_slot(MENU* menu,Int32 row,Int32 line) {
+  OBJECT_REC* item;
+  char*       kept;
+  char        name[128];
+
+  kept = set_item(menu->screen,row);
+  item = (kept[0] != 0) ? carried_item(kept) : NULL;
+
+  if (item != NULL) {
+    list_item_name(item,NAME_WIDTH,name);
+    draw_slot_name(menu,row,line,name,item_color(item));
+    }
+  else draw_slot_name(menu,row,line,kept,8);
+  }
+
+static void draw_gear_set(MENU* menu,Int32 row,Int32 line) {
+  char  label[8];
+  char  kept[16];
+  Int32 count;
+
+  sprintf(label,"Set %d",row);
+  count = set_count(&gear_manager[row]);
+  if (count == 0) strcpy(kept,"Empty");
+    else sprintf(kept,"%d item%s",count,(count == 1) ? "" : "s");
+
+  draw_menu_text_in(menu,line,label,kept,(count > 0) ? menu->color : 8);
+  }
+
+static void inventory_show_screen(MENU* menu) {
+  Int32 i;
+  char label[20];
   char buffer[40];
   textmode(3);
-  textcolor(6);
-  gotoxy(1,1);
-  txt_write("<");
-  textcolor(14); txt_write("ESC");
-  textcolor(6); txt_write(">quit, <");
-  textcolor(14); txt_write("P");
-  textcolor(6); txt_write(">ack, <");
-  textcolor(14); txt_write("T");
-  textcolor(6); txt_write(">ake from pack, e<");
-  textcolor(14); txt_write("X");
-  textcolor(6); txt_write(">change, <");
-  textcolor(14); txt_write("ENTER");
-  textcolor(6); txt_write("> select, <");
-  textcolor(14); txt_write("I");
-  textcolor(6); txt_write(">nfo");
-  textcolor(2);
-  gotoxy(1,3);
-  txt_writeln("       On Ground      :");
-  txt_writeln("    a) Main Hand      :");
-  txt_writeln("    b) Off Hand       :");
-  txt_writeln("    c) Left Shoulder  :");
-  txt_writeln("    d) Right Shoulder :");
-  txt_writeln("    e) Neck 1         :");
-  txt_writeln("    f) Neck 2         :");
-  txt_writeln("    g) Belt Left      :");
-  txt_writeln("    h) Belt Right     :");
-  txt_writeln("    i) Belt Front     :");
-  txt_writeln("    j) Belt Back      :");
-  txt_writeln("    k) Shield         :");
-  txt_writeln("    l) Armor          :");
-  txt_writeln("    m) Ring Left 1    :");
-  txt_writeln("    n) Ring Left 2    :");
-  txt_writeln("    o) Ring Right 1   :");
-  txt_writeln("    p) Ring Right 2   :");
-  txt_writeln("    q) Cloak          :");
-  txt_writeln("    r) Boots          :");
-  txt_writeln("    s) Helm           :");
-  show_inventory(&in_air);
-  ct = 0;
-  for (i=1; i<=32; i++)
-    if (player.pack[i].otype != O_NONE) ct++;
+  if (improved_interface == 'Y') {
+    write_centred(1,15,"Inventory");
+    draw_menu(menu);
+    }
+  else {
+    textcolor(6);
+    gotoxy(1,1);
+    txt_write("<");
+    textcolor(14); txt_write("ESC");
+    textcolor(6); txt_write(">quit, <");
+    textcolor(14); txt_write("P");
+    textcolor(6); txt_write(">ack, <");
+    textcolor(14); txt_write("T");
+    textcolor(6); txt_write(">ake from pack, e<");
+    textcolor(14); txt_write("X");
+    textcolor(6); txt_write(">change, <");
+    textcolor(14); txt_write("ENTER");
+    textcolor(6); txt_write("> select, <");
+    textcolor(14); txt_write("I");
+    textcolor(6); txt_write(">nfo");
+    textcolor(2);
+    gotoxy(1,3);
+    for (i=0; i<NUM_SLOTS; i++) {
+      slot_label(i,label);
+      if (i == 0) sprintf(buffer,"       %s",label);
+        else sprintf(buffer,"    %c) %s",'a' + i - 1,label);
+      txt_writeln(buffer);
+      }
+    show_inventory(&in_air);
+    }
   textcolor(14); gotoxy(5,24);
-  sprintf(buffer,"Pack holds %d items",ct);
+  sprintf(buffer,"Pack holds %d items",pack_count());
   txt_write(buffer);
   }
 
+/* The screen again; without the Improved Interface preference the arrow marks line */
+static void show_screen_at(MENU* menu,Int32 line) {
+  inventory_show_screen(menu);
+  if (improved_interface == 'Y') return;
+
+  textcolor(14);
+  gotoxy(1,line); txt_write("->");
+  }
+
+/* The actions for a row, each as the key that does it without the cursor. Returns the key picked, or 0. */
+static char pick_action(Int32 row) {
+  OBJECT_REC* item;
+  char*       labels[5];
+  char        keys[5];
+  Int32       count;
+  Int32       picked;
+
+  item = slot_item(row);
+  count = 0;
+
+  if (item->otype != O_NONE) {
+    labels[count] = "Choose";
+    keys[count++] = 13;
+    labels[count] = "Put in Pack";
+    keys[count++] = 'P';
+    }
+  if (pack_count() > 0) {
+    if (row == 0) labels[count] = "Take from Pack";
+      else labels[count] = (item->otype != O_NONE) ? "Swap with Pack Item" : "Equip from Pack";
+    keys[count++] = 'T';
+    }
+  if (row > 0 && in_air.otype != O_NONE && inv_valid(&in_air,row) == 'Y') {
+    labels[count] = (item->otype != O_NONE) ? "Swap with Ground Item" : "Equip Ground Item";
+    keys[count++] = 'X';
+    }
+  labels[count] = "Cancel";
+  keys[count++] = 0;
+
+  picked = ask_choice(ACTION_COLUMN,ACTION_LINE,15,labels,count,0);
+
+  return (picked >= 0) ? keys[picked] : 0;
+  }
+
+/* Equips or saves gear set n as the keys without the inventory do: ] and [ equip the whole set or its weapons, } and
+   { save your gear or weapons into it. Each takes a turn, as its key does. */
+static void gear_set_action(Int32 n) {
+  GEAR_SET* set;
+  char*     labels[5];
+  char      keys[5];
+  Int32     count;
+  Int32     picked;
+
+  set = &gear_manager[n];
+  count = 0;
+
+  if (set_count(set) > 0) {
+    labels[count] = "Equip Set";
+    keys[count++] = ']';
+    }
+  if (set->main_hand[0] != 0 || set->off_hand[0] != 0) {
+    labels[count] = "Equip Weapons Only";
+    keys[count++] = '[';
+    }
+  labels[count] = "Save Current Gear";
+  keys[count++] = '}';
+  labels[count] = "Save Current Weapons";
+  keys[count++] = '{';
+  labels[count] = "Cancel";
+  keys[count++] = 0;
+
+  picked = ask_choice(ACTION_COLUMN,GEAR_ACTION_LINE,15,labels,count,0);
+  if (picked < 0 || keys[picked] == 0) return;
+
+  if (keys[picked] == ']' || keys[picked] == '[') load_gear((keys[picked] == '[') ? 'Y' : 'N',n);
+    else save_gear((keys[picked] == '{') ? 'Y' : 'N',n);
+  takes_time = 'Y';
+  }
+
+/* The sets over the card beside the slots */
+static void show_gear_sets(MENU* slots,MENU* sets) {
+  draw_card_panel(NULL,slots->rows.line + 1,slots->rows.line + slots->rows.shown);
+  hide_menu_keys(slots);
+  textcolor(HEADING_COLOR);
+  gotoxy(ACTION_COLUMN,GEAR_LINE);
+  txt_write("Gear Sets");
+  draw_menu(sets);
+  }
+
+/* G: the ten gear sets where the card shows, the one under the cursor shown in the slots, and ENTER equips or saves
+   it. The screen is drawn again once G or ESC goes back. */
+static void gear_sets(MENU* slots) {
+  MENU sets = { .rows = { .count = NUM_GEAR_SETS, .shown = NUM_GEAR_SETS, .line = GEAR_LINE },
+                .column = ACTION_COLUMN, .value_column = ACTION_COLUMN + 11, .color = 2, .keys = GEAR_KEYS,
+                .keys_line = 25, .draw_row = draw_gear_set };
+  MENU kept;
+  char caption[16];
+  char key;
+
+  kept = *slots;
+  kept.keys = NULL;
+  kept.draw_row = draw_set_slot;
+
+  show_gear_sets(slots,&sets);
+  key = 0;
+  while (key != 27 && key != 'G' && key != 'g') {
+    kept.screen = &gear_manager[sets.row];
+    draw_menu(&kept);
+    sprintf(caption,"Gear Set %d",sets.row);
+    textcolor(HEADING_COLOR);
+    gotoxy(slots->column + 4,slots->rows.line);
+    txt_write(caption);
+
+    key = menu_key(&sets);
+    if (key == 13) {
+      gear_set_action(sets.row);
+      inventory_show_screen(slots);
+      show_gear_sets(slots,&sets);
+      }
+    }
+
+  inventory_show_screen(slots);
+  }
+
+/* A key with the Improved Interface preference: the cursor picks the row, shown beside its card, and ENTER an action for
+   it, returned as the key that does it without the cursor. Returns 0 for the keys the cursor took. */
+static char inventory_key(MENU* menu,Int32* line) {
+  char key;
+
+  draw_card_panel(slot_item(menu->row),menu->rows.line + 1,menu->rows.line + menu->rows.shown);
+  key = menu_key(menu);
+  *line = menu->row + 3;
+
+  if (key == 13) return pick_action(menu->row);
+  if (key == 'G' || key == 'g') gear_sets(menu);
+  if (key == 27 || (key != 0 && strchr(ACTION_KEYS,key) != NULL)) return key;
+
+  return 0;
+  }
+
 OBJECT_REC* inventory(OBJECT_REC* it) {
-  OBJECT_REC* treasure;
   char key;
   Int32  line;
   char flag;
   Int32  i,j;
+  MENU   menu = { .rows = { .count = NUM_SLOTS, .shown = NUM_SLOTS, .line = 2 }, .column = 2, .value_column = 23,
+                  .color = 2, .keys = INVENTORY_KEYS, .keys_line = 25, .draw_row = draw_slot };
 
   takes_time = 'N';
   if (it != NULL) {
     if ((it->flags & OF_COUNTED) == 0) {
       if (it->otype == O_CARD) stats.counts[it->control] |= (1 << it->control2);
-      if (it->rarity > 2500) stats.counts[STAT_COMMONS]++;
-      if (it->rarity > 500 && it->rarity <= 2500) stats.counts[STAT_UNCOMMONS]++;
-      if (it->rarity > 100 && it->rarity <= 500) stats.counts[STAT_RARES]++;
-      if (it->rarity > 5 && it->rarity <= 100) stats.counts[STAT_VERY_RARES]++;
-      if (it->rarity > 0 && it->rarity <= 5) stats.counts[STAT_ULTRA_RARES]++;
+      count_rarity(it,'g');
 
       if (it->effect != E_MUTA && it->level >= 0 && it->plus >= 0) {
         if (it->rarity > 2500) it->flags |= OF_IDENT;
@@ -210,22 +474,17 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
   in_air.otype = O_NONE;
   if (it != NULL) in_air = *it;
     else in_air.otype = O_NONE;
-  if (player.d_level == bottom && it != NULL) {
-    treasure = find_linked_item(links[player.dungeon_number].treasure);
-    if (treasure != NULL && strcmp(it->name,treasure->name) == 0) {
-      player.quests[player.dungeon_number] = 'Y';
-      in_air.flags |= OF_IDENT;
-      }
+  if (it != NULL && is_quest_treasure(it)) {
+    player.quests[player.dungeon_number] = 'Y';
+    in_air.flags |= OF_IDENT;
     }
   it = NULL;
   item_to_use = NULL;
-  inventory_show_screen();
   line = 3;
+  show_screen_at(&menu,line);
   flag = ' ';
-  textcolor(14);
-  gotoxy(1,line); txt_write("->");
   while (flag == ' ') {
-    key = inkey();
+    key = (improved_interface == 'Y') ? inventory_key(&menu,&line) : inkey();
     if (key == ' ' || key == '0') {
       textcolor(14);
       gotoxy(1,line); txt_write("  ");
@@ -248,22 +507,16 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       }
     if (key == 'V' || key == 'v') {
       unpack(line - 3);
-      inventory_show_screen();
-      textcolor(14);
-      gotoxy(1,line); txt_write("->");
+      show_screen_at(&menu,line);
       }
     if (key == 'P') {
       pack_item(&in_air,line);
-      inventory_show_screen();
-      textcolor(14);
-      gotoxy(1,line); txt_write("->");
+      show_screen_at(&menu,line);
       takes_time = 'Y';
       }
     if (key == 'T') {
       unpack(line - 3);
-      inventory_show_screen();
-      textcolor(14);
-      gotoxy(1,line); txt_write("->");
+      show_screen_at(&menu,line);
       }
     if (key == 13) {
       if (line > 3) {
@@ -283,13 +536,15 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       line = key - 93;
       gotoxy(1,line); txt_write("->");
       }
-    if ((key == 'x' || key == 'X') && line > 3) do_exchange(&in_air,line);
+    if ((key == 'x' || key == 'X') && line > 3) {
+      do_exchange(&in_air,line);
+      if (improved_interface == 'Y') show_screen_at(&menu,line);
+      }
     if (key == 'Q') flag = '*';
     if (key == 'I') {
       if (line > 3) data_card(&(player.invent[line-3]));
         else data_card(&in_air);
-      inventory_show_screen();
-      gotoxy(1,line); txt_write("->");
+      show_screen_at(&menu,line);
       }
     if (key == 27) {
       flag = '*';
@@ -309,7 +564,9 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
       player.map[drop_x][drop_y] = i+1000;
       show_spot(drop_x,drop_y);
       show_player();
-      if (use_from_ground == 'Y') item_to_use = &(player.map_objects[player.map[player.x][player.y] - 1000]);
+
+      /* Slot i lies at drop_x,drop_y, which need not be the player's own square */
+      if (use_from_ground == 'Y') item_to_use = &(player.map_objects[i]);
       }
     } else {
     }

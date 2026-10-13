@@ -10,6 +10,177 @@
 
 #include "header.h"
 
+#define STATUS_ETHER      11
+#define STATUS_LINE        8
+#define STATUS_BASELINE   (STATUS_LINE * 11)     /* outtext_xy()'s baseline for the line */
+#define NO_STATUS_TILE    10
+
+/* A status: its letter, its colour, its icon, and whether the player has it */
+typedef struct {
+  char  letter;
+  Int32 color;
+  Int32 icon;
+  Int32 active;
+  } STATUS_MARK;
+
+/* The mode the status row was last drawn in */
+static char status_mode_drawn;
+
+/* Each status's name and what it does, in the row's order */
+static const char* status_names[STATUS_COUNT] = {
+  "Light", "Shielded", "Poisoned", "Hasted", "Giant Strength", "Levitating", "Resist Fire", "Resist Cold",
+  "Resist Electricity", "Resist Arcane", "Resist Mind", "Ethereal"
+  };
+
+static const char* status_effects[STATUS_COUNT] = {
+  "Darkness bothers you no longer",
+  "Protection from spells",
+  "Poison lingers in your veins",
+  "Your movements are swift",
+  "You have the strength of a giant",
+  "You float just off the ground",
+  "You are protected from Fire",
+  "You are protected from Cold",
+  "You are protected from Electricity",
+  "You are protected from Arcane",
+  "You are resistant to Mind attacks",
+  "Your body is translucent like a ghost"
+  };
+
+/* The effect that times each status, -1 for none, and whether it counts down every turn in towns and dungeons rather
+   than every 1 + level/6 turns */
+static const Int32 status_timers[STATUS_COUNT][2] = {
+  { PE_LIGHT, 1 }, { PE_PROT, 0 }, { PE_POISON, 1 }, { PE_HASTE, 0 }, { PE_GIANT, 0 }, { PE_LEV, 1 },
+  { PE_FIRE, 0 }, { PE_COLD, 0 }, { PE_ELEC, 0 }, { PE_ARCN, 0 }, { PE_MIND, 0 }, { PE_ETHER, 1 }
+  };
+
+static void read_statuses(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 ether;
+
+  ether = player.effect[PE_ETHER];
+
+  marks[0]  = (STATUS_MARK){ 'L', CLR_BROWN,        43, can_see() != 0 };
+  marks[1]  = (STATUS_MARK){ 'S', CLR_LIGHTBLUE,    47, player.effect[PE_PROT] != 0 };
+  marks[2]  = (STATUS_MARK){ 'P', CLR_GREEN,        46, player.effect[PE_POISON] != 0 };
+  marks[3]  = (STATUS_MARK){ 'H', CLR_WHITE,        50, has_intrinsic(A_SPD) != 0 };
+  marks[4]  = (STATUS_MARK){ 'G', CLR_YELLOW,       45, player.effect[PE_GIANT] != 0 };
+  marks[5]  = (STATUS_MARK){ 'V', CLR_WHITE,       325, has_intrinsic(A_LEV) != 0 };
+  marks[6]  = (STATUS_MARK){ 'F', CLR_LIGHTRED,     44, has_intrinsic(A_RFIR) != 0 };
+  marks[7]  = (STATUS_MARK){ 'C', CLR_LIGHTBLUE,   354, has_intrinsic(A_RCLD) != 0 };
+  marks[8]  = (STATUS_MARK){ 'Z', CLR_CYAN,        355, has_intrinsic(A_RELC) != 0 };
+  marks[9]  = (STATUS_MARK){ 'A', CLR_PURPLE,      356, has_intrinsic(A_RDRK) != 0 };
+  marks[10] = (STATUS_MARK){ 'M', CLR_LIGHTPURPLE, 357, has_intrinsic(A_RPSI) != 0 };
+
+  if (ether > 10) marks[STATUS_ETHER] = (STATUS_MARK){ 'E', CLR_WHITE, 48, 1 };
+    else marks[STATUS_ETHER] = (STATUS_MARK){ 'e', CLR_GRAY, 49, ether > 0 };
+  }
+
+static Int32 status_column(Int32 i) {
+  return TEXT_GRID_WIDTH - 24 + 2 * i;
+  }
+
+/* Where you have light from, in can_see()'s order */
+static void light_source(char* text) {
+  if (in_upland == 'Y') strcpy(text,"Always, on the overworld");
+  else if (player.effect[PE_LIGHT] > 0) sprintf(text,"Your light lasts %d more turns",player.effect[PE_LIGHT]);
+  else if (player.effect[PE_LIGHT] < 0) strcpy(text,"Your light never goes out");
+  else if (player.in_city == 'Y') strcpy(text,"Always, in towns");
+  else strcpy(text,"By infravision");
+  }
+
+/* How long a status you have lasts, or where it comes from */
+static void status_lasting(Int32 i,char* text) {
+  Int32 left;
+  Int32 turns;
+
+  left = player.effect[status_timers[i][0]];
+  turns = status_timers[i][1] ? left : left * (1 + player.level / 6);
+
+  if (i == 0) light_source(text);
+  else if (i == 2) sprintf(text,"Takes %d damage a turn",(left / 10 > 1) ? left / 10 : 1);
+  else if (left <= 0) strcpy(text,"From your gear, race or class");
+
+  /* Without the Mind Shield change nothing counts a Mind Shield down */
+  else if (i == 10 && change_mind_shield != 'Y') strcpy(text,"Does not wear off");
+  else if (status_timers[i][1]) sprintf(text,"Lasts %d more turns",turns);
+  else sprintf(text,"Lasts about %d more turns",turns);
+  }
+
+void describe_status(Int32 i,STATUS_NOTE* note) {
+  STATUS_MARK marks[STATUS_COUNT];
+
+  read_statuses(marks);
+  strcpy(note->name,status_names[i]);
+  strcpy(note->effect,status_effects[i]);
+  note->color = marks[i].color;
+  note->active = marks[i].active;
+  note->x = status_column(i) * 8;
+
+  if (note->active) status_lasting(i,note->lasting);
+    else strcpy(note->lasting,"Not active");
+  }
+
+/* An icon is centred on its letter's 8x12 cell */
+static Int32 icon_left(Int32 i) {
+  return status_column(i) * 8 + 4 - half_tile_width() / 2;
+  }
+
+static Int32 icon_top() {
+  return STATUS_BASELINE - 10 + 6 - half_tile_height() / 2;
+  }
+
+/* Each letter's cell is cleared first, so a status that ends leaves no letter behind */
+static void show_letters(STATUS_MARK marks[STATUS_COUNT], Int32 colored) {
+  char  text[2];
+  Int32 i;
+
+  for (i=0; i<STATUS_COUNT; i++) {
+    text[0] = marks[i].active ? marks[i].letter : ' ';
+    text[1] = 0;
+    setcolor(colored ? marks[i].color : 7);
+    outtextxyclr(status_column(i) * 8,STATUS_BASELINE,text);
+    }
+  }
+
+static void show_status_icons(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 i;
+
+  setfillstyle(1,0);
+  for (i=0; i<STATUS_COUNT; i++) {
+    bar(icon_left(i),icon_top(),icon_left(i) + half_tile_width(),icon_top() + half_tile_height());
+    if (marks[i].active) put_half_image(icon_left(i),icon_top(),select_sprite(marks[i].icon));
+    }
+  }
+
+/* Off, Color or Icons, as the Improved Status preference has it. A change of mode clears the row first, since the
+   icons cover more than a letter's cell. */
+static void show_status_row(STATUS_MARK marks[STATUS_COUNT]) {
+  if (improved_status != status_mode_drawn) {
+    setfillstyle(1,0);
+    bar(icon_left(0),icon_top(),icon_left(STATUS_COUNT - 1) + half_tile_width(),icon_top() + half_tile_height());
+    status_mode_drawn = improved_status;
+    }
+
+  switch (improved_status) {
+    case 'C': show_letters(marks,1); break;
+    case 'I': show_status_icons(marks); break;
+    default:  show_letters(marks,0); break;
+    }
+
+  /* Callers draw on in the grey 7.0.0 left set */
+  setcolor(7);
+  }
+
+/* The icons along the bottom of the screen, which Icons mode gives to the map */
+static void show_status_tiles(STATUS_MARK marks[STATUS_COUNT]) {
+  Int32 i;
+
+  if (!has_bottom_strip()) return;
+
+  for (i=0; i<STATUS_COUNT; i++)
+    putimage(tile_width*i,screen_height-tile_height,select_sprite(marks[i].active ? marks[i].icon : NO_STATUS_TILE),0);
+  }
+
 void show_time() {
   setfillstyle(1,0);
   bar(screen_width-130,12,screen_width,23);
@@ -19,7 +190,8 @@ void show_time() {
   }
 
 void show_side() {
-  char buffer[80];
+  char        buffer[80];
+  STATUS_MARK marks[STATUS_COUNT];
   setfillstyle(1,0);
   bar(screen_width - 130,10,screen_width,100);
   settextstyle(0,0,1);
@@ -84,42 +256,13 @@ void show_side() {
   putimage(statusCol+175,statusLine,select_sprite((player.effect[PE_FIRE] != 0)?44:10),0);
   putimage(statusCol+210,statusLine,select_sprite((player.effect[PE_LEV] != 0)?325:10),0);
 */
-  setcolor(7);
-  if (can_see())                     outtext_xy(TEXT_GRID_WIDTH - 24,8,"L"); else outtext_xy(TEXT_GRID_WIDTH - 24,8," ");
-  if (player.effect[PE_PROT] != 0)   outtext_xy(TEXT_GRID_WIDTH - 22,8,"S"); else outtext_xy(TEXT_GRID_WIDTH - 22,8," ");
-  if (player.effect[PE_POISON] != 0) outtext_xy(TEXT_GRID_WIDTH - 20,8,"P"); else outtext_xy(TEXT_GRID_WIDTH - 20,8," ");
-  if (has_intrinsic(A_SPD))          outtext_xy(TEXT_GRID_WIDTH - 18,8,"H"); else outtext_xy(TEXT_GRID_WIDTH - 18,8," ");
-  if (player.effect[PE_GIANT] != 0)  outtext_xy(TEXT_GRID_WIDTH - 16,8,"G"); else outtext_xy(TEXT_GRID_WIDTH - 16,8," ");
-  if (has_intrinsic(A_LEV))          outtext_xy(TEXT_GRID_WIDTH - 14,8,"V"); else outtext_xy(TEXT_GRID_WIDTH - 14,8," ");
-  if (has_intrinsic(A_RFIR))         outtext_xy(TEXT_GRID_WIDTH - 12,8,"F"); else outtext_xy(TEXT_GRID_WIDTH - 12,8," ");
-  if (has_intrinsic(A_RCLD))         outtext_xy(TEXT_GRID_WIDTH - 10,8,"C"); else outtext_xy(TEXT_GRID_WIDTH - 10,8," ");
-  if (has_intrinsic(A_RELC))         outtext_xy(TEXT_GRID_WIDTH -  8,8,"Z"); else outtext_xy(TEXT_GRID_WIDTH -  8,8," ");
-  if (has_intrinsic(A_RDRK))         outtext_xy(TEXT_GRID_WIDTH -  6,8,"A"); else outtext_xy(TEXT_GRID_WIDTH -  6,8," ");
-  if (has_intrinsic(A_RPSI))         outtext_xy(TEXT_GRID_WIDTH -  4,8,"M"); else outtext_xy(TEXT_GRID_WIDTH -  4,8," ");
-  if (player.effect[PE_ETHER] > 0) {
-    if (player.effect[PE_ETHER] > 10) outtext_xy(TEXT_GRID_WIDTH - 2,8,"E"); else outtext_xy(TEXT_GRID_WIDTH - 2,8,"e");
-    } else outtext_xy(TEXT_GRID_WIDTH - 2,8," ");
+  read_statuses(marks);
+  show_status_row(marks);
   /*
   if (player.effect[PE_ETHER] > 10) show_sprite(21,2,49);
     else if (player.effect[PE_ETHER] > 0) show_sprite(21,2,48);
       else show_sprite(21,2,10);
       */
-  putimage(tile_width*0,screen_height-tile_height,select_sprite(can_see() ? 43 : 10),0);
-  putimage(tile_width*1,screen_height-tile_height,select_sprite((player.effect[PE_PROT] != 0) ? 47 : 10),0);
-  putimage(tile_width*2,screen_height-tile_height,select_sprite((player.effect[PE_POISON] != 0) ? 46 : 10),0);
-  putimage(tile_width*3,screen_height-tile_height,select_sprite((has_intrinsic(A_SPD)) ? 50 : 10),0);
-  putimage(tile_width*4,screen_height-tile_height,select_sprite((player.effect[PE_GIANT] != 0) ? 45 : 10),0);
-  putimage(tile_width*5,screen_height-tile_height,select_sprite((has_intrinsic(A_LEV)) ? 325 : 10),0);
-  putimage(tile_width*6,screen_height-tile_height,select_sprite((has_intrinsic(A_RFIR)) ? 44 : 10),0);
-  putimage(tile_width*7,screen_height-tile_height,select_sprite((has_intrinsic(A_RCLD)) ? 354 : 10),0);
-  putimage(tile_width*8,screen_height-tile_height,select_sprite((has_intrinsic(A_RELC)) ? 355 : 10),0);
-  putimage(tile_width*9,screen_height-tile_height,select_sprite((has_intrinsic(A_RDRK)) ? 356 : 10),0);
-  putimage(tile_width*10,screen_height-tile_height,select_sprite((has_intrinsic(A_RPSI)) ? 357 : 10),0);
-  if (player.effect[PE_ETHER] > 0) {
-    if (player.effect[PE_ETHER] > 10)  putimage(tile_width*11,screen_height-tile_height,select_sprite(48),0);
-    else if (player.effect[PE_ETHER] > 0)  putimage(tile_width*11,screen_height-tile_height,select_sprite(49),0);
-    else putimage(tile_width*11,screen_height-tile_height,select_sprite(10),0);
-
-    }
+  show_status_tiles(marks);
   }
 

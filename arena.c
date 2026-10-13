@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define FLOOR_SLOTS  ((Int32)(sizeof(DUNGEON_OBJECTS) / sizeof(OBJECT_REC)))
+
 static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
   char flag;
   Int32  ex = 0,ey = 0;
@@ -53,9 +55,7 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
         delay(delay_hit);
         show_spot(ex,ey);
         }
-      i = u_random(player.monster[mon][a_mon].attack);
-      if (party_combat_mode != 'F') i /= NPC_DIV;
-      if (i < 1) i = 1;
+      i = party_blow(&player.monster[mon][a_mon]);
       player.party[target].hp -= i;
       if ((player.monster[mon][a_mon].special & MS_SLEEP) == MS_SLEEP) {
         hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
@@ -485,13 +485,53 @@ static void do_inventory(void) {
   restoreScreen();
   }
 
+/* Without the Arena Decorations change a second miss is kept, over a monster or party member. With it the last resort
+   is the player's own square, set back to floor after decorating. */
 static void pick_spot(Int32* x,Int32* y,Int32 what) {
+  Int32 tries;
+
   *x = u_random(ARENA_SIZE_X) + offset_x;
   *y = u_random(ARENA_SIZE_Y) + offset_y;
-  if (player.map[*x][*y] != what) {
+
+  if (change_arena_decorations == 'Y') {
+    for (tries=1; tries<1000 && player.map[*x][*y] != what; tries++) {
+      *x = u_random(ARENA_SIZE_X) + offset_x;
+      *y = u_random(ARENA_SIZE_Y) + offset_y;
+      }
+    if (player.map[*x][*y] != what) {
+      *x = player.x;
+      *y = player.y;
+      }
+    }
+  else if (player.map[*x][*y] != what) {
     *x = u_random(ARENA_SIZE_X) + offset_x;
     *y = u_random(ARENA_SIZE_Y) + offset_y;
     }
+  }
+
+/* -1 when every monster of the arena's group is dead, else 0 */
+static Int32 monsters_dead(void) {
+  Int32 i;
+
+  for (i=1; i<=5; i++)
+    if (player.monster[i][a_mon].hp > 0) return 0;
+  return -1;
+  }
+
+/* Which floor-item slots are in use before the fight */
+static void note_floor_items(char* in_use) {
+  Int32 i;
+
+  for (i=0; i<FLOOR_SLOTS; i++)
+    in_use[i] = (player.map_objects[i].otype != O_NONE);
+  }
+
+/* Frees the slots the fight took: their items lay on the arena's map, which is gone */
+static void free_arena_items(char* in_use) {
+  Int32 i;
+
+  for (i=0; i<FLOOR_SLOTS; i++)
+    if (!in_use[i]) player.map_objects[i].otype = O_NONE;
   }
 
 static void find_closest_mob(Int32* x,Int32* y) {
@@ -534,6 +574,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   Int32 all_dead;
   Int32 arena_x;
   Int32 arena_y;
+  char  floor_items[FLOOR_SLOTS];
 
   /* ************************************** */
   /* ***** Actual start of Arena code ***** */
@@ -541,6 +582,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   arena_x = srcx;
   arena_y = srcy;
   all_dead = 0;
+  note_floor_items(floor_items);
   while (keypressed()) key=inkey();
   lastFloor = currentFloor;
   snakes = 0;
@@ -686,6 +728,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
     }
   player.map[player.x][player.y] = floor;
   for (i=1; i<=5; i++) player.party[i].prev = floor;
+  forget_compass();
   graphmode();
   show_map();
   show_side();
@@ -716,6 +759,9 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             }
           }
         }
+
+    /* Without the Arena Exit change all_dead is only worked out after the fight, so ENTER and ESC never leave */
+    if (change_arena_exit == 'Y') all_dead = monsters_dead();
     switch (key) {
       case '8': move(0,-1); break;
       case '2': move(0,1); break;
@@ -803,7 +849,6 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       case 'H': show_icons();
                 takes_time = 'N';
                 break;
-      case ':': special(54,NULL); break;
       case 'R': disp_char();
                 show_screen();
                 takes_time = 'N';
@@ -821,7 +866,8 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
             }
           }
         }
-      if (player.align <= 0 && player.class != 7) make_assassin();
+      /* Without the Arena Assassins change this tests the Monk (7) for the Assassin (8), restarting an Assassin */
+      if (change_arena_assassins != 'Y' && player.align <= 0 && player.class != 7) make_assassin();
       if (player.align <= 0 && !(classes[player.class-1].flags & CF_ROGUE)) make_assassin();
       while (player.exp >= player.exp_next) {
         advancement();
@@ -896,7 +942,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
           if (player.monster[x][a_mon].poison > 0) {
             player.monster[x][a_mon].poison--;
             player.monster[x][a_mon].hp -= 2;
-            dead_monster(&(player.monster[x][a_mon]),'Y',player.x,player.y);
+            poison_kill(&(player.monster[x][a_mon]));
             }
           }
         } /* if (haste_flag == ' ') */
@@ -904,7 +950,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         if (player.level >= 23) player.effect[PE_HASTE] = 10;
         if (player.level >= 17) player.effect[PE_SLEEP] = 0;
         if (player.level >= 29) player.effect[PE_POISON] = 0;
-        if (player.level >= 14) player.effect[PE_FEAR] = 0;
+        if (player.level >= ((change_arena_monk_fear == 'Y') ? 11 : 14)) player.effect[PE_FEAR] = 0;
         check_monk_weapon();
         }
       if (haste_flag == '*') haste_flag = ' ';
@@ -920,6 +966,28 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         if (player.effect[PE_FIRE] > 0) {
           player.effect[PE_FIRE]--;
           if (player.effect[PE_FIRE] == 0) show_side();
+          }
+
+        /* Without the Mind Shield change nothing counts PE_MIND down, so a Mind Shield never wears off */
+        if (change_mind_shield == 'Y' && player.effect[PE_MIND] > 0) {
+          player.effect[PE_MIND]--;
+          if (player.effect[PE_MIND] == 0) show_side();
+          }
+
+        /* Without the Arena Timers change cold, electric and arcane resistance wait for the fight to end */
+        if (change_arena_timers == 'Y') {
+          if (player.effect[PE_COLD] > 0) {
+            player.effect[PE_COLD]--;
+            if (player.effect[PE_COLD] == 0) show_side();
+            }
+          if (player.effect[PE_ELEC] > 0) {
+            player.effect[PE_ELEC]--;
+            if (player.effect[PE_ELEC] == 0) show_side();
+            }
+          if (player.effect[PE_ARCN] > 0) {
+            player.effect[PE_ARCN]--;
+            if (player.effect[PE_ARCN] == 0) show_side();
+            }
           }
         if (player.effect[PE_HASTE] > 0) {
           player.effect[PE_HASTE]--;
@@ -966,6 +1034,22 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       if (player.effect[PE_SLEEP] > 0) player.effect[PE_SLEEP]--;
       if (player.effect[PE_LEV] > 0) player.effect[PE_LEV]--;
       if (player.effect[PE_ROOT] > 0) player.effect[PE_ROOT]--;
+
+      /* Without the Arena Timers change blindness, light and polymorph wait for the fight to end */
+      if (change_arena_timers == 'Y') {
+        if (player.effect[PE_BLIND] > 0) {
+          player.effect[PE_BLIND]--;
+          if (player.effect[PE_BLIND] == 0) show_map();
+          }
+        if (player.effect[PE_LIGHT] > 0) {
+          player.effect[PE_LIGHT]--;
+          if (player.effect[PE_LIGHT] == 0) {
+            show_side();
+            show_map();
+            }
+          }
+        tick_polymorph();
+        }
       player.hp_count -= get_hpr();
       if (player.hp_count < 1) {
         player.hp_count = 20;
@@ -982,24 +1066,26 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       if (player.x <= offset_x || player.y <= offset_y ||
           player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y) exitf = 1;
       }
+    show_floor_item();
     } /* while (exitf == 0) */
+  hide_bottom_name();
   exitf = 0;
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {
       player.known[x][y] = tmp_known[x][y];
       player.map[x][y] = tmp_map[x][y];
       }
+
+  /* Without the Floor Items change the items left on the arena's floor keep their slots */
+  if (change_floor_items == 'Y') free_arena_items(floor_items);
   player.x = hold_x;
   player.y = hold_y;
   player.map_x = hold_mapx;
   player.map_y = hold_mapy;
   flag = ' ';
-  all_dead = -1;
-  for (i=1; i<=5; i++) {
-    if (player.monster[i][a_mon].hp < 0)
-      player.monster[i][a_mon].hp = 0;
-    if (player.monster[i][a_mon].hp > 0) all_dead = 0;
-    }
+  for (i=1; i<=5; i++)
+    if (player.monster[i][a_mon].hp < 0) player.monster[i][a_mon].hp = 0;
+  all_dead = monsters_dead();
   flag = ' ';
   while (flag != '*') {
     flag = '*';

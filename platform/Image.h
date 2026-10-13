@@ -25,7 +25,18 @@ class Image {
     uint32_t pixel(int32_t x, int32_t y) const;
     bool opaque(int32_t x, int32_t y) const;
 
+    /* Half the size, rounded up: each pixel averages the opaque pixels of its 2x2 block, and is transparent when fewer
+       than half of the block's pixels are opaque. Blocks on an odd edge hold two pixels or one. */
+    Image halved() const;
+
   private:
+    struct Block {
+      uint32_t rgb;
+      bool     opaque;
+      };
+
+    Block averageBlock(int32_t left, int32_t top) const;
+
     int32_t               width_;
     int32_t               height_;
     std::vector<uint32_t> pixels_;

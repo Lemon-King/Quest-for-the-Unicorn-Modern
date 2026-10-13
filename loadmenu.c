@@ -12,8 +12,6 @@
 
 #include "header.h"
 
-#include <io.h>
-
 #define LIST_LINE        4
 #define LIST_ROWS       18
 #define COUNT_LINE      22
@@ -31,86 +29,6 @@
 #define DATE_COLUMN     70
 #define DATE_WIDTH      10
 #define ROW_WIDTH       (DATE_COLUMN + DATE_WIDTH - CURSOR_COLUMN)
-
-typedef struct {
-  char         name[sizeof(loadname)];
-  time_t       saved;
-  SAVE_SUMMARY summary;
-  Int32        readable;
-  } SAVED_GAME;
-
-typedef struct {
-  SAVED_GAME* games;
-  Int32       count;
-  Int32       capacity;
-  } SAVE_LIST;
-
-static void add_saved_game(SAVE_LIST* list, char* file_name, time_t saved) {
-  SAVED_GAME* games;
-  SAVED_GAME* game;
-  Int32       length;
-  length = strlen(file_name);
-
-  if (length <= 4 || strcmp(file_name + length - 4, ".sav") != 0) return;
-
-  /* load() names the backup <name>.bak in backupname */
-  if (length >= sizeof(backupname)) return;
-
-  if (list->count == list->capacity) {
-    games = realloc(list->games, (list->capacity + 16) * sizeof(SAVED_GAME));
-    if (games == NULL) return;
-    list->games = games;
-    list->capacity += 16;
-    }
-
-  game = &list->games[list->count];
-  strcpy(game->name, file_name);
-  game->name[length - 4] = 0;
-  game->saved = saved;
-  game->readable = load_summary(game->name, &game->summary);
-  list->count++;
-  }
-
-static void read_saved_games(SAVE_LIST* list) {
-  struct _finddata_t found;
-  intptr_t           search;
-
-  search = _findfirst("*.sav", &found);
-  if (search == -1) return;
-
-  do {
-    if ((found.attrib & _A_SUBDIR) == 0) add_saved_game(list, found.name, found.time_write);
-    } while (_findnext(search, &found) == 0);
-
-  _findclose(search);
-  }
-
-static int newest_first(const void* a, const void* b) {
-  const SAVED_GAME* first;
-  const SAVED_GAME* second;
-  first = a;
-  second = b;
-
-  if (first->saved > second->saved) return -1;
-  if (first->saved < second->saved) return 1;
-  return strcmp(first->name, second->name);
-  }
-
-static void open_save_list(SAVE_LIST* list) {
-  list->games = NULL;
-  list->count = 0;
-  list->capacity = 0;
-
-  read_saved_games(list);
-  if (list->count > 1) qsort(list->games, list->count, sizeof(SAVED_GAME), newest_first);
-  }
-
-static void close_save_list(SAVE_LIST* list) {
-  free(list->games);
-  list->games = NULL;
-  list->count = 0;
-  list->capacity = 0;
-  }
 
 /* Writes value padded or cut to width, so it covers whatever the row showed before. */
 static void write_field(Int32 column, Int32 line, Int32 width, char* value) {

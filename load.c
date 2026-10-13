@@ -45,7 +45,8 @@ byte decrypt(byte value) {
   if (value < 32) return value;
   value += 64;
   value -= offset;
-  if (value < 95) value += 95;
+  /* A wrapped '~' comes back as 95 */
+  if (value <= 95) value += 95;
   value -= 64;
   if (++offset > 64) offset = 1;
   return value;
@@ -351,6 +352,11 @@ void load_completed_quests() {
         i = atoi(next);
         player.quests[i] = 'Y';
         }
+      if (match(line, "Entered ")) {
+        next = next_word(line);
+        i = atoi(next);
+        player.quests[i] = 'E';
+        }
       }
     }
   }
@@ -398,6 +404,16 @@ void load_options() {
       if (match(line, "DelayHit ")) delay_hit = atoi(next);
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
+      if (match(line, "ShowMount ")) show_mount = *next;
+      if (match(line, "UniqueClassSprites ")) class_sprites = *next;
+      if (match(line, "FloorItemNames ")) floor_item_names = *next;
+      if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
+      if (match(line, "ImprovedInterface ")) improved_interface = *next;
+      if (match(line, "ImprovedStatus ")) improved_status = *next;
+      if (match(line, "EasySpells ")) easy_spells = *next;
+
+      /* Saves from before Improved Interface kept its menus as Cursor Menus */
+      if (match(line, "CursorMenus ")) improved_interface = *next;
       load_gameplay_change(line);
       }
     }
@@ -690,6 +706,28 @@ void load_gear_manager() {
     }
   }
 
+/* One line of a Tardis slot as the Tardis Saves change writes it: TardisX<n>, TardisY<n>, TardisR<n> or TardisDesc<n> */
+static void load_tardis(char* line) {
+  Int32 i;
+  char* value;
+
+  value = next_word(line);
+
+  if (match(line, "TardisDesc")) {
+    i = atoi(line+10);
+    if (i < 0 || i >= 11) return;
+    strncpy(player.tardis_d[i], value, sizeof(STRING32) - 1);
+    player.tardis_d[i][sizeof(STRING32) - 1] = 0;
+    return;
+    }
+
+  i = atoi(line+7);
+  if (i < 0 || i >= 11) return;
+  if (match(line, "TardisX")) player.tardis_x[i] = atoi(value);
+  if (match(line, "TardisY")) player.tardis_y[i] = atoi(value);
+  if (match(line, "TardisR")) player.tardis_r[i] = atoi(value);
+  }
+
 void load_player() {
   byte flag;
   char line[1024];
@@ -754,7 +792,8 @@ void load_player() {
       if (match(line, "CavPaid ")) { next = next_word(line); player.cav_paid = atoi(next); }
       if (match(line, "DungeonNum ")) { next = next_word(line); player.dungeon_number = atoi(next); }
       if (match(line, "TimePlayed ")) { next = next_word(line); player.time_played = atoi(next); }
-      if (match(line, "Stat")) { 
+      if (match(line, "Tardis")) load_tardis(line);
+      if (match(line, "Stat")) {
         i = atoi(line+4);
         next = next_word(line); player.stat[i] = atoi(next);
         }
@@ -792,9 +831,10 @@ static Int32 read_version(FILE* file, char* version) {
   offset = 1;
   read_line(version);
 
-  if (strcmp(version, "v7.0.0") == 0) return 1;
+  /* Saves from 7.0.0 load too; an "e" after the version marks an obfuscated save */
+  if (strcmp(version, VERSION) == 0 || strcmp(version, "v7.0.0") == 0) return 1;
 
-  if (strcmp(version, "v7.0.0e") == 0) {
+  if (strcmp(version, VERSION "e") == 0 || strcmp(version, "v7.0.0e") == 0) {
     encrypted = 0xff;
     return 1;
     }
@@ -849,6 +889,7 @@ Int32 load_summary(char* name, SAVE_SUMMARY* summary) {
   }
 
 void load() {
+  Int32 i;
   Int32 readable;
   char line[1024];
   char filename[sizeof(backupname)];
@@ -906,6 +947,11 @@ void load() {
     if (match(line, "GearManager {")) load_gear_manager();
     }
   fclose(save_file);
+
+  /* Quests the save left out were never entered; without the Quest State change they stay 0, read as entered */
+  if (change_quest_state == 'Y')
+    for (i=0; i<1000; i++)
+      if (player.quests[i] == 0) player.quests[i] = 'N';
   read_character_rules();
   hold_save(loadname);
   }

@@ -10,6 +10,9 @@
 
 #include "header.h"
 
+#define CARD_COLUMN    48
+#define CARD_WIDTH     33
+
 void get_attribute_name(char* buffer,Int32 ench) {
   char plus[255];
   strcpy(buffer,"");
@@ -74,75 +77,102 @@ void get_attribute_name(char* buffer,Int32 ench) {
   strcat(buffer,plus);
   }
 
-void data_card(OBJECT_REC* item) {
-  Int32 i;
-  char key;
+/* The kind of item, as its card names it; "" for none */
+char* item_kind(OBJECT_REC* item) {
+  switch (item->otype) {
+    case O_EDGE: return "Edge Weapon";
+    case O_BLNT: return "Blunt Weapon";
+    case O_ARMR: return "Armor";
+    case O_POTN: return "Potion";
+    case O_RING: return "Ring";
+    case O_STFF: return "Staff";
+    case O_WAND: return "Wand";
+    case O_FOOD: return "Food";
+    case O_MISC: return "Miscellaneous";
+    case O_SCRL: return "Scroll";
+    case O_NECK: return "Necklace";
+    case O_ROBE: return "Robe";
+    case O_BOOT: return "Boots";
+    case O_HELM: return "Helm";
+    case O_SHLD: return "Shield";
+    case O_BOOK: return "Book";
+    case O_POLE: return "Polearm";
+    case O_BOW : return "Missile";
+    case O_JEWL: return "Jewel";
+    case O_PROJ: return "Energy";
+    case O_DAGR: return "Dagger";
+    case O_CRFT: return "Craft Item";
+    case O_ALCH: return "Alcohol";
+    case O_CONS: return "Consumable";
+    case O_TRAP: return "Trap";
+    case O_THRN: return "Thrown";
+    case O_CARD: return "Card";
+    case O_GACH: return "Gacha";
+    }
+  return "";
+  }
+
+/* A spell's class, level and mana from line fact on: a line each with the Improved Interface preference, or else one
+   line, as the card first showed them. Returns the line after them. */
+static Int32 write_spell_facts(Int32 spell,Int32 column,Int32 fact) {
+  char buffer[128];
+
+  if (improved_interface != 'Y') {
+    sprintf(buffer,"%s Lvl: %d Mana: %d",classes[spells[spell].allign-1].name,spells[spell].level,spells[spell].mana);
+    gotoxy(column,fact++);
+    txt_write(buffer);
+    return fact;
+    }
+
+  sprintf(buffer,"Class: %s",classes[spells[spell].allign-1].name);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  sprintf(buffer,"Level: %d",spells[spell].level);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  sprintf(buffer,"Mana: %d",spells[spell].mana);
+  gotoxy(column,fact++);
+  txt_write(buffer);
+
+  return fact;
+  }
+
+/* The card's text with the name at column and line: the kind and rarity under it, then what the item does, and its
+   value at the foot */
+void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
   char buffer[128];
   char buffer2[128];
-  Int32 line;
+  Int32 fact;
   Int32 control;
   Int32 amount;
   double price;
-  if (item->otype == O_NONE) return;
   base_name(buffer,item);
-  textcolor(7); gotoxy(20,5);   txt_write("+--------------------------------+");
-  textcolor(7); gotoxy(20,18);  txt_write("+--------------------------------+");
-  for (i=6; i<18; i++) {
-    textcolor(7); gotoxy(20,i); txt_write("|                                |");
-    }
   itemColor(item);
-  gotoxy(22,6); txt_write(buffer);
-  gotoxy(22,7);
+  gotoxy(column,line); txt_write(buffer);
+  gotoxy(column,line+1);
   textcolor(7);
-  switch (item->otype) {
-    case O_EDGE: txt_write("Edge Weapon"); break;
-    case O_BLNT: txt_write("Blunt Weapon"); break;
-    case O_ARMR: txt_write("Armor"); break;
-    case O_POTN: txt_write("Potion"); break;
-    case O_RING: txt_write("Ring"); break;
-    case O_STFF: txt_write("Staff"); break;
-    case O_WAND: txt_write("Wand"); break;
-    case O_FOOD: txt_write("Food"); break;
-    case O_MISC: txt_write("Miscellaneous"); break;
-    case O_SCRL: txt_write("Scroll"); break;
-    case O_NECK: txt_write("Necklace"); break;
-    case O_ROBE: txt_write("Robe"); break;
-    case O_BOOT: txt_write("Boots"); break;
-    case O_HELM: txt_write("Helm"); break;
-    case O_SHLD: txt_write("Shield"); break;
-    case O_BOOK: txt_write("Book"); break;
-    case O_POLE: txt_write("Polearm"); break;
-    case O_BOW : txt_write("Missile"); break;
-    case O_JEWL: txt_write("Jewel"); break;
-    case O_PROJ: txt_write("Energy"); break;
-    case O_DAGR: txt_write("Dagger"); break;
-    case O_CRFT: txt_write("Craft Item"); break;
-    case O_ALCH: txt_write("Alcohol"); break;
-    case O_CONS: txt_write("Consumable"); break;
-    case O_TRAP: txt_write("Trap"); break;
-    case O_THRN: txt_write("Thrown"); break;
-    case O_CARD: txt_write("Card"); break;
-    case O_GACH: txt_write("Gacha"); break;
-    }
+  txt_write(item_kind(item));
   if (item->flags & OF_IDENT) {
     if (item->effect == E_LGCY) {
       strcpy(buffer,"Legacy");
-      gotoxy(44,7); txt_write(buffer);
+      gotoxy(column+22,line+1); txt_write(buffer);
       }
     else {
-      if (abs(item->rarity) > 2500) { gotoxy(46,7);                             txt_write("Common"); }
-      if (abs(item->rarity) > 500 && abs(item->rarity) <= 2500) { gotoxy(44,7); txt_write("Uncommon"); }
-      if (abs(item->rarity) > 100 && abs(item->rarity) <= 500) { gotoxy(48,7);  txt_write("Rare"); }
-      if (abs(item->rarity) > 5 && abs(item->rarity) <= 100) { gotoxy(43,7);   txt_write("Very Rare"); }
-      if (abs(item->rarity) > 0 && abs(item->rarity) <= 5) { gotoxy(42,7);     txt_write("Ultra Rare"); }
+      if (abs(item->rarity) > 2500) { gotoxy(column+24,line+1);                             txt_write("Common"); }
+      if (abs(item->rarity) > 500 && abs(item->rarity) <= 2500) { gotoxy(column+22,line+1); txt_write("Uncommon"); }
+      if (abs(item->rarity) > 100 && abs(item->rarity) <= 500) { gotoxy(column+26,line+1);  txt_write("Rare"); }
+      if (abs(item->rarity) > 5 && abs(item->rarity) <= 100) { gotoxy(column+21,line+1);   txt_write("Very Rare"); }
+      if (abs(item->rarity) > 0 && abs(item->rarity) <= 5) { gotoxy(column+20,line+1);     txt_write("Ultra Rare"); }
       }
     }
   else {
-    gotoxy(45,7); txt_write("Unknown");
+    gotoxy(column+23,line+1); txt_write("Unknown");
     }
 
   if (item->flags & OF_IDENT) {
-    line = 8;
+    fact = line + 2;
     strcpy(buffer,"");
     switch (item->otype) {
       case O_EDGE:
@@ -160,17 +190,13 @@ void data_card(OBJECT_REC* item) {
                    break;
       }
     if (strlen(buffer) > 0) {
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     strcpy(buffer,"");
     switch (item->effect) {
-      case E_SPEL:sprintf(buffer,"%s Lvl: %d Mana: %d",classes[spells[item->control].allign-1].name,
-                                                       spells[item->control].level,
-                                                       spells[item->control].mana);
-                  gotoxy(22,line++);
-                  txt_write(buffer);
-                  show_spell(item->control,20,7,line+1);
+      case E_SPEL:fact = write_spell_facts(item->control,column,fact);
+                  show_spell(item->control,column-2,line+1,fact+1);
                   textcolor(7);
                   strcpy(buffer,"");
                   break;
@@ -318,7 +344,7 @@ void data_card(OBJECT_REC* item) {
 
 
     if (strlen(buffer) > 0) {
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->effect == E_INTR) {
@@ -366,7 +392,7 @@ void data_card(OBJECT_REC* item) {
         case 41: strcpy(buffer,"Resist Poison"); break;
         case 42: strcpy(buffer,"Walk on Water"); break;
         }
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 0) {
@@ -374,7 +400,7 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[0]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 1) {
@@ -382,7 +408,7 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[1]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_sockets > 2) {
@@ -390,14 +416,14 @@ void data_card(OBJECT_REC* item) {
         get_attribute_name(buffer2,item->sockets[2]);
         sprintf(buffer,"(%s)",buffer2);
         } else strcpy(buffer,"()");
-      gotoxy(22,line++);
+      gotoxy(column,fact++);
       txt_write(buffer);
       }
     if (item->num_enchantments > 0) {
       if (item->enchantments[0] != 0) {
         get_attribute_name(buffer2,item->enchantments[0]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
@@ -405,7 +431,7 @@ void data_card(OBJECT_REC* item) {
       if (item->enchantments[1] != 0) {
         get_attribute_name(buffer2,item->enchantments[1]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
@@ -413,16 +439,42 @@ void data_card(OBJECT_REC* item) {
       if (item->enchantments[2] != 0) {
         get_attribute_name(buffer2,item->enchantments[2]);
         sprintf(buffer,"%s",buffer2);
-        gotoxy(22,line++);
+        gotoxy(column,fact++);
         txt_write(buffer);
         }
       }
     price = item->cost;
     if (item->charges > 0) price += (item->charges * item->costp);
     sprintf(buffer,"Base Value: %.0f gold",price);
-    gotoxy(22,17);
+    gotoxy(column,line+11);
     txt_write(buffer);
     }
+  }
+
+/* The card of the item selected in a list, on the right of lines top to bottom; blank for no item */
+void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom) {
+  char  blank[CARD_WIDTH + 1];
+  Int32 line;
+
+  sprintf(blank,"%*s",CARD_WIDTH,"");
+  for (line=top; line<=bottom; line++) {
+    gotoxy(CARD_COLUMN,line);
+    txt_write(blank);
+    }
+
+  if (item != NULL && item->otype != O_NONE) draw_item_card(item,CARD_COLUMN,top);
+  }
+
+void data_card(OBJECT_REC* item) {
+  Int32 i;
+  char key;
+  if (item->otype == O_NONE) return;
+  textcolor(7); gotoxy(20,5);   txt_write("+--------------------------------+");
+  textcolor(7); gotoxy(20,18);  txt_write("+--------------------------------+");
+  for (i=6; i<18; i++) {
+    textcolor(7); gotoxy(20,i); txt_write("|                                |");
+    }
+  draw_item_card(item,22,6);
   key = 0;
   while (key != 13 && key != 27) key = inkey();
   }

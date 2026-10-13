@@ -57,6 +57,15 @@ extern "C" void canvas_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, 
     }
   }
 
+extern "C" void canvas_half_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y,
+                                   const char* const* xpm) {
+  try {
+    canvas->canvas.image(x, y, sprites->cache.halfSprite(xpm));
+    }
+  catch (const std::exception&) {
+    }
+  }
+
 extern "C" void canvas_copy(CANVAS* target, const CANVAS* source) {
   try {
     target->canvas.copyFrom(source->canvas);

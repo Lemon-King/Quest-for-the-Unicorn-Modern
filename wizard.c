@@ -479,13 +479,13 @@ static void view_trophy(Int32 num) {
         if (trophies[num].control[0] > 0) {
           item = find_linked_item(trophies[num].control[0]);
           gotoxy(ox+4,line++); txt_write(item->name);
-          sprintf(buffer,"Progress: %d/%d",stats.counts[trophies[num].control[2]],trophies[num].control[1]);
+          sprintf(buffer,"Progress: %d/%d",stats.counts[trophy_counter(num,2)],trophies[num].control[1]);
           gotoxy(ox+6,line++); txt_write(buffer);
           }
         if (trophies[num].control[3] > 0) {
           item = find_linked_item(trophies[num].control[3]);
           gotoxy(ox+4,line++); txt_write(item->name);
-          sprintf(buffer,"Progress: %d/%d",stats.counts[trophies[num].control[5]],trophies[num].control[4]);
+          sprintf(buffer,"Progress: %d/%d",stats.counts[trophy_counter(num,5)],trophies[num].control[4]);
           gotoxy(ox+6,line++); txt_write(buffer);
           }
         break;
@@ -654,14 +654,8 @@ static void view_trophy(Int32 num) {
           }
         break;
       case TC_QUESTS:
-        count = 0;
-        count2 = 0;
-        i = 0;
-        while (links[i].region < 90) {
-          if (player.quests[i] == 'Y') count++;
-          count2++;
-          i++;
-          }
+      case TC_TOWNS:
+        quest_progress(trophies[num].criteria_type,&count,&count2);
         sprintf(buffer,"Progress: %d/%d",count,count2);
         gotoxy(ox+2,line++); txt_write(buffer);
         break;

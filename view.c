@@ -10,9 +10,103 @@
 
 #include "header.h"
 
+/* The name of a square's tile, floor item or lore square, as the look command shows it, or "" for none; an item's
+   name sets color to its inventory colour */
+void square_name(Int32 value,char* name,Int32* color) {
+  strcpy(name,"");
+
+  if (value >= 600 && value <= 699) strcpy(name,"Forbidding");
+  else if (value >= 700 && value <= 799) strcpy(name,"Phase Door");
+  else switch (value) {
+    case  1:strcpy(name,"Plains"); break;
+    case  2:strcpy(name,"Forest"); break;
+    case  3:strcpy(name,"Mountains"); break;
+    case  4:strcpy(name,"Water"); break;
+    case  5:strcpy(name,"City"); break;
+    case  6:strcpy(name,"Swamp"); break;
+    case  8:strcpy(name,"Desert"); break;
+    case  9:strcpy(name,"Hills"); break;
+    case 10:strcpy(name,"Darkness"); break;
+    case 11:strcpy(name,"Dungeon Entrance"); break;
+    case 12:strcpy(name,"Your Ship"); break;
+    case 13:strcpy(name,"Ship"); break;
+    case 14:strcpy(name,"Dock"); break;
+    case 16:strcpy(name,"Cactus"); break;
+    case 17:strcpy(name,"Village"); break;
+    case 18:strcpy(name,"Rock"); break;
+    case 19:strcpy(name,"Pass"); break;
+    case 20:strcpy(name,"Tree"); break;
+    case 21:strcpy(name,"Wall"); break;
+    case 22:strcpy(name,"Closed Door"); break;
+    case 23:strcpy(name,"Open Door"); break;
+    case 24:strcpy(name,"Down Stairs"); break;
+    case 25:strcpy(name,"Up Stairs"); break;
+    case 26:strcpy(name,"Chair"); break;
+    case 27:strcpy(name,"Table"); break;
+    case 28:strcpy(name,"Merchant"); break;
+    case 29:strcpy(name,"Bed"); break;
+    case 30:strcpy(name,"Shelves"); break;
+    case 31:strcpy(name,"Gateway"); break;
+    case 32:strcpy(name,"Gateway"); break;
+    case 33:strcpy(name,"Jammed Door"); break;
+    case 36:strcpy(name,"Sleeping"); break;
+    case 38:strcpy(name,"Wall of Fire"); break;
+    case 39:strcpy(name,"Wall of Water"); break;
+    case 40:strcpy(name,"Disarmed Trap"); break;
+    case 41:strcpy(name,"Forbidding"); break;
+    case 42:strcpy(name,"Phase Door"); break;
+    case 79:strcpy(name,"Gold"); break;
+    case 84:strcpy(name,"Torch"); break;
+    case 99:strcpy(name,"Food"); break;
+    case 176:strcpy(name,"Rock"); break;
+    case 178:strcpy(name,"Rock"); break;
+    case 536:strcpy(name,"Gacha Machine"); break;
+    case 901:strcpy(name,"Altar"); break;
+    case 902:strcpy(name,"Dull Altar"); break;
+    case 903:strcpy(name,"Dull Runestone"); break;
+    case 904:strcpy(name,"Blue Runestone"); break;
+    case 905:strcpy(name,"Red Runestone"); break;
+    case 906:strcpy(name,"Purple Runestone"); break;
+    case 907:strcpy(name,"White Runestone"); break;
+    case 908:strcpy(name,"Yellow Runestone"); break;
+    case 909:strcpy(name,"Green Runestone"); break;
+    case 910:strcpy(name,"Cyan Runestone"); break;
+    case 951:strcpy(name,"Armed Trap"); break;
+    case 952:strcpy(name,"Armed Trap"); break;
+    case 953:strcpy(name,"Armed Trap"); break;
+    case 954:strcpy(name,"Armed Trap"); break;
+    case 955:strcpy(name,"Armed Trap"); break;
+    case 956:strcpy(name,"Armed Trap"); break;
+    case 957:strcpy(name,"Armed Trap"); break;
+    case 958:strcpy(name,"Armed Trap"); break;
+    case 959:strcpy(name,"Armed Trap"); break;
+    case 960:strcpy(name,"Armed Trap"); break;
+    case 961:strcpy(name,"Armed Trap"); break;
+    }
+
+  /* 2000-2999 are lore squares, not floor items */
+  if (value >= 2000 && value < 3000)
+    strcpy(name,"Lore Book");
+  else if (value >= 1000) {
+    strcpy(name,get_name(&(player.map_objects[value - 1000])));
+    *color = item_color(&(player.map_objects[value - 1000]));
+    }
+  }
+
+/* With the Improved Interface preference an overworld town or dungeon square is named as the place it leads to */
+static void name_place(Int32 x,Int32 y,char* name) {
+  char* place;
+
+  if (improved_interface != 'Y' || in_upland != 'Y') return;
+
+  place = entrance_name(x,y);
+  if (place != NULL) strcpy(name,place);
+  }
+
 void view(Int32 floor) {
   Int32  i = 0,x,y;
   Int32  key;
+  Int32  color;
   char buffer[255];
 /*
   char mflag;
@@ -32,7 +126,8 @@ void view(Int32 floor) {
   x = target_x;
   y = target_y;
 */
-  setcolor(15);
+  hide_bottom_name();
+  color = 15;
   msg("Press <ESC> to end view mode",15);
   x = player.x - player.map_x;
   y = player.y - player.map_y;
@@ -74,82 +169,10 @@ void view(Int32 floor) {
 
       }
     show_sprite(x,y,100);
-    outtextxyclr(screen_width-160, screen_height-15,"                                      ");
     if (los(player.x,player.y,x+player.map_x,y+player.map_y,'Y')) {
-      setcolor(CLR_YELLOW);
-      strcpy(buffer,"");
-    if (player.map[x+player.map_x][y+player.map_y] >= 600 && player.map[x+player.map_x][y+player.map_y] <= 699) strcpy(buffer,"Forbidding");
-    else if (player.map[x+player.map_x][y+player.map_y] >= 700 && player.map[x+player.map_x][y+player.map_y] <= 799) strcpy(buffer,"Phase Door");
-    else switch (player.map[x+player.map_x][y+player.map_y]) {
-      case  1:strcpy(buffer,"Plains"); break;
-      case  2:strcpy(buffer,"Forest"); break;
-      case  3:strcpy(buffer,"Mountains"); break;
-      case  4:strcpy(buffer,"Water"); break;
-      case  5:strcpy(buffer,"City"); break;
-      case  6:strcpy(buffer,"Swamp"); break;
-      case  8:strcpy(buffer,"Desert"); break;
-      case  9:strcpy(buffer,"Hills"); break;
-      case 10:strcpy(buffer,"Darkness"); break;
-      case 11:strcpy(buffer,"Dungeon Entrance"); break;
-      case 12:strcpy(buffer,"Your Ship"); break;
-      case 13:strcpy(buffer,"Ship"); break;
-      case 14:strcpy(buffer,"Dock"); break;
-      case 16:strcpy(buffer,"Cactus"); break;
-      case 17:strcpy(buffer,"Village"); break;
-      case 18:strcpy(buffer,"Rock"); break;
-      case 19:strcpy(buffer,"Pass"); break;
-      case 20:strcpy(buffer,"Tree"); break;
-      case 21:strcpy(buffer,"Wall"); break;
-      case 22:strcpy(buffer,"Closed Door"); break;
-      case 23:strcpy(buffer,"Open Door"); break;
-      case 24:strcpy(buffer,"Down Stairs"); break;
-      case 25:strcpy(buffer,"Up Stairs"); break;
-      case 26:strcpy(buffer,"Chair"); break;
-      case 27:strcpy(buffer,"Table"); break;
-      case 28:strcpy(buffer,"Merchant"); break;
-      case 29:strcpy(buffer,"Bed"); break;
-      case 30:strcpy(buffer,"Shelves"); break;
-      case 31:strcpy(buffer,"Gateway"); break;
-      case 32:strcpy(buffer,"Gateway"); break;
-      case 33:strcpy(buffer,"Jammed Door"); break;
-      case 36:strcpy(buffer,"Sleeping"); break;
-      case 38:strcpy(buffer,"Wall of Fire"); break;
-      case 39:strcpy(buffer,"Wall of Water"); break;
-      case 40:strcpy(buffer,"Disarmed Trap"); break;
-      case 41:strcpy(buffer,"Forbidding"); break;
-      case 42:strcpy(buffer,"Phase Door"); break;
-      case 79:strcpy(buffer,"Gold"); break;
-      case 84:strcpy(buffer,"Torch"); break;
-      case 99:strcpy(buffer,"Food"); break;
-      case 176:strcpy(buffer,"Rock"); break;
-      case 178:strcpy(buffer,"Rock"); break;
-      case 536:strcpy(buffer,"Gacha Machine"); break;
-      case 901:strcpy(buffer,"Altar"); break;
-      case 902:strcpy(buffer,"Dull Altar"); break;
-      case 903:strcpy(buffer,"Dull Runestone"); break;
-      case 904:strcpy(buffer,"Blue Runestone"); break;
-      case 905:strcpy(buffer,"Red Runestone"); break;
-      case 906:strcpy(buffer,"Purple Runestone"); break;
-      case 907:strcpy(buffer,"White Runestone"); break;
-      case 908:strcpy(buffer,"Yellow Runestone"); break;
-      case 909:strcpy(buffer,"Green Runestone"); break;
-      case 910:strcpy(buffer,"Cyan Runestone"); break;
-      case 951:strcpy(buffer,"Armed Trap"); break;
-      case 952:strcpy(buffer,"Armed Trap"); break;
-      case 953:strcpy(buffer,"Armed Trap"); break;
-      case 954:strcpy(buffer,"Armed Trap"); break;
-      case 955:strcpy(buffer,"Armed Trap"); break;
-      case 956:strcpy(buffer,"Armed Trap"); break;
-      case 957:strcpy(buffer,"Armed Trap"); break;
-      case 958:strcpy(buffer,"Armed Trap"); break;
-      case 959:strcpy(buffer,"Armed Trap"); break;
-      case 960:strcpy(buffer,"Armed Trap"); break;
-      case 961:strcpy(buffer,"Armed Trap"); break;
-      }
-    if (player.map[x+player.map_x][y+player.map_y] >= 1000) {
-      strcpy(buffer,get_name(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000])));
-      itemColor(&(player.map_objects[player.map[x+player.map_x][y+player.map_y] - 1000]));
-      }
+      color = CLR_YELLOW;
+      square_name(player.map[x+player.map_x][y+player.map_y],buffer,&color);
+      name_place(x+player.map_x,y+player.map_y,buffer);
     if (player.map[x+player.map_x][y+player.map_y] < 0 ||
         (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||
         (player.map[x+player.map_x][y+player.map_y] > 399 && player.map[x+player.map_x][y+player.map_y] < 500)) {
@@ -239,11 +262,10 @@ void view(Int32 floor) {
         }
       }
       } else strcpy(buffer,"Out of sight");
-    if (strlen(buffer) > 38) buffer[38] = 0;
-    outtextxyclr(screen_width-160, screen_height-15,buffer);
+    show_bottom_name(buffer,color);
     flush();
     }
-  outtextxyclr(screen_width-160, screen_height-15,"                                      ");
+  hide_bottom_name();
   show_spot(x + player.map_x,y + player.map_y);
   show_player();
   }

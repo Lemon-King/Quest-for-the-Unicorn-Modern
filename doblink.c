@@ -20,12 +20,19 @@ void do_blink() {
     if (x>1 && x<99 && y>1 && y<99 && player.map[x][y] == currentFloor) flag = '*';
     }
   player.x = x; player.y = y;
-  player.map_x = player.x-8;
-  player.map_y = player.y-8;
-  if (player.x<1) player.x = 1;
-  if (player.y<1) player.y = 1;
-  if (player.x>84) player.x = 84;
-  if (player.y>84) player.y = 84;
+
+  /* Without the Blink Landing change the player, not the view, is held to 1..84, which can land in a wall */
+  if (change_blink_landing == 'Y') {
+    center_view();
+    }
+  else {
+    player.map_x = player.x-8;
+    player.map_y = player.y-8;
+    if (player.x<1) player.x = 1;
+    if (player.y<1) player.y = 1;
+    if (player.x>84) player.x = 84;
+    if (player.y>84) player.y = 84;
+    }
   show_screen();
   }
 

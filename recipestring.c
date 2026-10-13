@@ -10,6 +10,23 @@
 
 #include "header.h"
 
+/* The link of recipe num's ingredient i, from 0 to 9; 0 for none */
+Int32 recipe_ingredient(Int32 num,Int32 i) {
+  switch (i) {
+    case 0: return recipes[num].object1;
+    case 1: return recipes[num].object2;
+    case 2: return recipes[num].object3;
+    case 3: return recipes[num].object4;
+    case 4: return recipes[num].object5;
+    case 5: return recipes[num].object6;
+    case 6: return recipes[num].object7;
+    case 7: return recipes[num].object8;
+    case 8: return recipes[num].object9;
+    case 9: return recipes[num].object10;
+    }
+  return 0;
+  }
+
 void add_ingredient(Int32 num,char* buffer) {
   OBJECT_REC* item;
   if (num != 0) {
@@ -39,16 +56,7 @@ void recipe_string(Int32 num,char* buffer) {
     strcat(buffer,"  none");
     }
   strcat(buffer,"\nIngredients:");
-  add_ingredient(recipes[num].object1,buffer);
-  add_ingredient(recipes[num].object2,buffer);
-  add_ingredient(recipes[num].object3,buffer);
-  add_ingredient(recipes[num].object4,buffer);
-  add_ingredient(recipes[num].object5,buffer);
-  add_ingredient(recipes[num].object6,buffer);
-  add_ingredient(recipes[num].object7,buffer);
-  add_ingredient(recipes[num].object8,buffer);
-  add_ingredient(recipes[num].object9,buffer);
-  add_ingredient(recipes[num].object10,buffer);
+  for (i=0; i<10; i++) add_ingredient(recipe_ingredient(num,i),buffer);
   for (i=0; i<strlen(buffer); i++)
     if (buffer[i] == '_') buffer[i] = ' ';
   }

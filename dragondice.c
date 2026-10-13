@@ -48,6 +48,7 @@ void dragon_dice() {
     strcpy(buffer,"");
     readln(buffer);
     sscanf(buffer,"%lf",&bet);
+    bet = typed_gold(bet);
     gotoxy(27,5); textcolor(10);
     txt_write("                                 ");
     textcolor(14);
