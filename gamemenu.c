@@ -235,7 +235,7 @@ static void verb_label(char* verb,char* name,char* label) {
     if (label[i] == '_') label[i] = ' ';
   }
 
-/* "<verb> <name>", with the name the look command gives a square of this value. Returns the rarity colour of an item's
+/* "<verb> <name>", with the name the look command gives a square of this value. Returns the colour it gives an item's
    name, or 0 for a square that holds no item. */
 static Int32 named_label(char* verb,Int32 value,char* label) {
   char  name[80];

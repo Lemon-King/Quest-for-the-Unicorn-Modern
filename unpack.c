@@ -43,14 +43,14 @@ void unpack_top(OBJECT_REC in_air,MENU* menu) {
     for (i=1; i<=16; i++) {
       if (player.pack[i].otype != O_NONE) {
         gotoxy(3,i+5);
-        sprintf(buffer,"%s",get_name(&(player.pack[i])));
+        marked_item_name(&(player.pack[i]),buffer);
         if (strlen(buffer) > 36) buffer[36] = 0;
         itemColor(&(player.pack[i]));
         txt_write(buffer);
         }
       if (player.pack[i+16].otype != O_NONE) {
         gotoxy(43,i+5);
-        sprintf(buffer,"%s",get_name(&(player.pack[i+16])));
+        marked_item_name(&(player.pack[i+16]),buffer);
         if (strlen(buffer) > 36) buffer[36] = 0;
         itemColor(&(player.pack[i+16]));
         txt_write(buffer);
@@ -59,7 +59,7 @@ void unpack_top(OBJECT_REC in_air,MENU* menu) {
     }
   gotoxy(23, 23); textcolor(CLR_WHITE); txt_write("In Air: ");
   if (in_air.otype != O_NONE) {
-    sprintf(buffer,"%s",get_name(&in_air));
+    marked_item_name(&in_air,buffer);
     if (strlen(buffer) > 36) buffer[36] = 0;
     itemColor(&in_air);
     gotoxy(31,23);

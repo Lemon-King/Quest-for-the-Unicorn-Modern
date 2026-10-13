@@ -10,10 +10,11 @@
 
 #include "header.h"
 
-/* The name of the item the player stands on, in its inventory colour, where view mode shows names */
+/* The name of the item the player stands on, in the colour view mode shows it in, where view mode shows names */
 void show_floor_item(void) {
   Int32       value;
   OBJECT_REC* item;
+  char        name[160];
 
   hide_bottom_name();
   if (floor_item_names != 'Y') return;
@@ -24,5 +25,6 @@ void show_floor_item(void) {
   item = &(player.map_objects[value-1000]);
   if (item->otype == O_NONE) return;
 
-  show_bottom_name(get_name(item), item_color(item));
+  marked_item_name(item,name);
+  show_bottom_name(name, floor_item_color(item));
   }

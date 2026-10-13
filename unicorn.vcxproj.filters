@@ -399,6 +399,9 @@
     <ClCompile Include="houseinventory.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="identify.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="inkey.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -865,6 +868,9 @@
       <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="touch.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="trade.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="transcribe.c">

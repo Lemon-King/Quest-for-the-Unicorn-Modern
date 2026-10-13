@@ -653,8 +653,19 @@
                               names on its last line; the Tab menu
                               covers that line too
          Floor Item Names     Show the name of the item you stand on in the
-                              bottom right, in its inventory colour, or
-                              under the message log (see Improved Status)
+                              bottom right, or under the message log (see
+                              Improved Status), in its item colour (see
+                              Item Colors)
+         Improved Item ID     Improved Item Identification: an item you
+                              have not identified shows in the colour of
+                              its rarity instead of cyan, with a * before
+                              its name on the floor, in your inventory
+                              and pack, a house and the portable hole,
+                              and a common item a monster drops is
+                              identified, as its first pickup would
+                              identify it anyway (see Auto-Identify).
+                              Off, such an item is cyan, and yellow on
+                              the floor
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a
@@ -1102,6 +1113,12 @@
      training a party member.  The game mode after rebirth, the library's
      kind of search and a party member's orders are chosen the same way.
 
+       At the pawn shop and the Mech-Merchant, Sell from Pack lists the
+     items in your pack with the merchant's offer for each, and Identify
+     from Pack the ones you have not identified with what each costs,
+     beside the selected item's card.  <Enter> sells or identifies the
+     item.  Off, they offer the items one at a time, as before.
+
        The inventory lists what you carry with the cursor and shows the
      selected item's info card on the right.  <Enter> opens a short menu
      of what to do with it: choose it for the command that opened the
@@ -1428,7 +1445,9 @@
 
      Item Colors
      ===========
-         Unidentified         Cyan
+         Unidentified         Cyan, and yellow on the floor; with
+                              Improved Item ID, the colour of its
+                              rarity, after a *
          Common               Gray
          Uncommon             White
          Rare                 Green
@@ -1441,14 +1460,16 @@
        When an item is picked up for the first time there is a chance that
      you will automatically identify the item.  The rarer the item is the
      less likely you will be able to auto identify it.  Increased Lore
-     skill will increase the chances for auto identification.
+     skill will increase the chances for auto identification.  With the
+     Improved Item ID preference a common item is identified as soon as a
+     monster drops it.
 
          Rarity         Base Chance     Increase per point of Lore
          Common         100.000%        
          Uncommon       25.000%         5.000%
-         Rare           2.500%          0.100%
-         Very Rare      0.250%          0.015%
-         Ultra Rare     0.025%          0.002%
+         Rare           2.500%          1.000%
+         Very Rare      0.250%          0.150%
+         Ultra Rare     0.025%          0.020%
 
      Rebirth
      =======

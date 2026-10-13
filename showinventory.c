@@ -18,18 +18,31 @@ void shorten_name(char* name,Int32 width) {
     }
   }
 
-/* An item's name for a list, cut to width with its "...", or blank for no item */
-void list_item_name(OBJECT_REC* item,Int32 width,char* name) {
+/* A name for a list, without its trailing spaces, cut to width with its "..." */
+static void fit_list_name(char* name,Int32 width) {
   Int32 end;
-
-  strcpy(name,"");
-  if (item->otype != O_NONE) strcpy(name,get_name(item));
 
   end = (Int32)strlen(name);
   while (end > 0 && name[end - 1] == ' ') end--;
   name[end] = 0;
 
   shorten_name(name,width - 3);
+  }
+
+/* An item's name for a list, cut to width with its "...", or blank for no item */
+void list_item_name(OBJECT_REC* item,Int32 width,char* name) {
+  strcpy(name,"");
+  if (item->otype != O_NONE) strcpy(name,get_name(item));
+
+  fit_list_name(name,width);
+  }
+
+/* An item you carry or store, named for a list as list_item_name() names it, with its * (marked_item_name()) */
+void kept_item_name(OBJECT_REC* item,Int32 width,char* name) {
+  strcpy(name,"");
+  if (item->otype != O_NONE) marked_item_name(item,name);
+
+  fit_list_name(name,width);
   }
 
 void show_inventory(OBJECT_REC* item) {
@@ -41,7 +54,7 @@ void show_inventory(OBJECT_REC* item) {
       itemColor(item);
       txt_write("                                                ");
       gotoxy(25,3);
-      strcpy(buffer,get_name(item));
+      marked_item_name(item,buffer);
       shorten_name(buffer,40);
       txt_write(buffer);
       } 
@@ -52,7 +65,7 @@ void show_inventory(OBJECT_REC* item) {
         itemColor(&(player.invent[i-3]));
         txt_write("                                                ");
         gotoxy(25,i);
-        strcpy(buffer,get_name(&(player.invent[i-3])));
+        marked_item_name(&(player.invent[i-3]),buffer);
         shorten_name(buffer,40);
         txt_write(buffer);
 //        txt_write(get_name(&(player.invent[i-3])));

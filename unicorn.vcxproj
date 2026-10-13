@@ -187,6 +187,7 @@
     <ClCompile Include="healing.c" />
     <ClCompile Include="holeinventory.c" />
     <ClCompile Include="houseinventory.c" />
+    <ClCompile Include="identify.c" />
     <ClCompile Include="inkey.c" />
     <ClCompile Include="inroom.c" />
     <ClCompile Include="insight.c" />
@@ -343,6 +344,7 @@
     <ClCompile Include="tickpolymorph.c" />
     <ClCompile Include="title.c" />
     <ClCompile Include="touch.c" />
+    <ClCompile Include="trade.c" />
     <ClCompile Include="transcribe.c" />
     <ClCompile Include="travel.c" />
     <ClCompile Include="triggertrap.c" />

@@ -70,7 +70,7 @@ static Int32 house_slots() {
     for (i=0; i<20; i++) {
       if (player.houses[hnum].inventory[i+base].otype != O_NONE) {
         gotoxy(3,i+5);
-        sprintf(buffer,"%s",get_name(&(player.houses[hnum].inventory[i+base])));
+        marked_item_name(&(player.houses[hnum].inventory[i+base]),buffer);
         if (strlen(buffer) > 30) {
           buffer[30] = 0;
           strcat(buffer,"...");
@@ -80,7 +80,7 @@ static Int32 house_slots() {
         }
       if (i+base+20 < 500 && player.houses[hnum].inventory[i+base+20].otype != O_NONE) {
         gotoxy(43,i+5);
-        sprintf(buffer,"%s",get_name(&(player.houses[hnum].inventory[i+base+20])));
+        marked_item_name(&(player.houses[hnum].inventory[i+base+20]),buffer);
         if (strlen(buffer) > 30) {
           buffer[30] = 0;
           strcat(buffer,"...");

@@ -44,3 +44,13 @@ double typed_gold(double amount) {
   if (change_negative_amounts == 'Y' && !(amount >= 0)) return 0;
   return amount;
   }
+
+/* "Gold = " and the gold you carry, padded so a smaller amount covers a larger one */
+void show_gold(Int32 column,Int32 line) {
+  char buffer[32];
+
+  sprintf(buffer,"Gold = %-11d",get_gold());
+  textcolor(14);
+  gotoxy(column,line);
+  txt_write(buffer);
+  }

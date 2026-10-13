@@ -681,6 +681,7 @@ static void buy_item(Int32* i) {
 /*      show_screen(); */
     restoreScreen();
     show_player();
+    show_side();
     }
   } /* void buy_item() */
 

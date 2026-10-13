@@ -189,9 +189,38 @@ void show_time() {
   outtext_xy(TEXT_GRID_WIDTH - 15,2,buffer);
   }
 
+#define NUM_HUNGER_BANDS   5
+
+/* A hunger band, from its least health */
+typedef struct {
+  Int32  least;
+  HUNGER hunger;
+  } HUNGER_BAND;
+
+/* From the most fed down; below the last you are dead */
+static const HUNGER_BAND hunger_bands[NUM_HUNGER_BANDS] = {
+  { 101, { "Satiated", CLR_LIGHTGREEN,  1 } },
+  {  75, { "Healthy",  CLR_GREEN,       0 } },
+  {  50, { "Hungry",   CLR_YELLOW,      1 } },
+  {  25, { "Starving", CLR_LIGHTRED,    1 } },
+  {   1, { "Faint",    CLR_LIGHTPURPLE, 1 } }
+  };
+
+static const HUNGER dead = { "DEAD!!", CLR_YELLOW, 1 };
+
+HUNGER hunger_status(void) {
+  Int32 i;
+
+  for (i=0; i<NUM_HUNGER_BANDS; i++)
+    if (player.health >= hunger_bands[i].least) return hunger_bands[i].hunger;
+
+  return dead;
+  }
+
 void show_side() {
   char        buffer[80];
   STATUS_MARK marks[STATUS_COUNT];
+  HUNGER      hunger;
   setfillstyle(1,0);
   bar(screen_width - 130,10,screen_width,100);
   settextstyle(0,0,1);
@@ -218,27 +247,10 @@ void show_side() {
   outtext_xy(TEXT_GRID_WIDTH - 15,5,make_str(player.level));
   sprintf(buffer,"(%s)",make_str(player.exp));
   outtext_xy(TEXT_GRID_WIDTH - 12,5,buffer);
-  if (player.health >= 101 && player.health <=999) {
-    setcolor(CLR_LIGHTGREEN);
-    outtext_xy(TEXT_GRID_WIDTH - 15,6,"Satiated");
-    }
-  if (player.health >= 75  && player.health <=100) {
-    outtext_xy(TEXT_GRID_WIDTH - 15,6,"        ");
-    }
-  if (player.health >= 50 && player.health <=74) {
-      setcolor(CLR_YELLOW);
-      outtext_xy(TEXT_GRID_WIDTH - 15,6,"Hungry  ");
-    }
-  if (player.health >= 25 && player.health <=49) {
-      setcolor(CLR_LIGHTRED);
-      outtext_xy(TEXT_GRID_WIDTH - 15,6,"Starving");
-    }
-  if (player.health >= 1 && player.health <=24) {
-      setcolor(CLR_LIGHTPURPLE);
-       outtext_xy(TEXT_GRID_WIDTH - 15,6,"Faint   ");
-    }
-  if (player.health <= 0) {
-    outtext_xy(TEXT_GRID_WIDTH - 15,6,"DEAD!!");
+  hunger = hunger_status();
+  if (hunger.on_panel) {
+    setcolor(hunger.color);
+    outtext_xy(TEXT_GRID_WIDTH - 15,6,hunger.name);
     }
   setcolor(CLR_YELLOW);
 /*  show_sprite(22,2,((player.fire != 0)?44:10)); */

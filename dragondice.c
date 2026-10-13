@@ -38,9 +38,7 @@ void dragon_dice() {
   gotoxy(6,17); txt_write("6 6 6           36");
   bet = 1;
   while (bet != 0) {
-    textcolor(14); gotoxy(35,24);
-    sprintf(buffer,"Gold = %d",get_gold());
-    txt_write(buffer);
+    show_gold(35,24);
     gotoxy(27,3); textcolor(11);
     txt_write("Enter bet (0 to leave) ?               ");
     gotoxy(27,3); textcolor(11);
@@ -64,9 +62,7 @@ void dragon_dice() {
         }
       else {
         sub_gold(bet);
-        textcolor(14); gotoxy(35,24);
-        sprintf(buffer,"Gold = %d",get_gold());
-        txt_write(buffer);
+        show_gold(35,24);
         for (i=1; i<=3; i++) {
           for (j=1; j<=u_random(50)+25; j++) {
             for (k=i; k<=3; k++) {

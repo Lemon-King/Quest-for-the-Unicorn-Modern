@@ -48,7 +48,7 @@
     for (i=0; i<20; i++) {
       if (player.hole[i+base].otype != O_NONE) {
         gotoxy(3,i+5);
-        sprintf(buffer,"%s",get_name(&(player.hole[i+base])));
+        marked_item_name(&(player.hole[i+base]),buffer);
         if (strlen(buffer) > 30) {
           buffer[30] = 0;
           strcat(buffer,"...");
@@ -58,7 +58,7 @@
         }
       if (player.hole[i+base+20].otype != O_NONE) {
         gotoxy(43,i+5);
-        sprintf(buffer,"%s",get_name(&(player.hole[i+base+20])));
+        marked_item_name(&(player.hole[i+base+20]),buffer);
         if (strlen(buffer) > 30) {
           buffer[30] = 0;
           strcat(buffer,"...");

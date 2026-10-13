@@ -193,6 +193,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   show_mount = 'Y';
   class_sprites = 'Y';
   floor_item_names = 'Y';
+  improved_item_id = 'Y';
   gothic_scrolls = 'N';
   improved_interface = 'Y';
   improved_status = 'I';

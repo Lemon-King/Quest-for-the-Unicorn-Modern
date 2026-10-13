@@ -10,8 +10,8 @@
 
 #include "header.h"
 
-/* The name of a square's tile, floor item or lore square, as the look command shows it, or "" for none; an item's
-   name sets color to its inventory colour */
+/* The name of a square's tile, floor item or lore square, as the look command shows it, or "" for none; an item is
+   named by marked_item_name() and sets color to floor_item_color() */
 void square_name(Int32 value,char* name,Int32* color) {
   strcpy(name,"");
 
@@ -88,8 +88,8 @@ void square_name(Int32 value,char* name,Int32* color) {
   if (value >= 2000 && value < 3000)
     strcpy(name,"Lore Book");
   else if (value >= 1000) {
-    strcpy(name,get_name(&(player.map_objects[value - 1000])));
-    *color = item_color(&(player.map_objects[value - 1000]));
+    marked_item_name(&(player.map_objects[value - 1000]),name);
+    *color = floor_item_color(&(player.map_objects[value - 1000]));
     }
   }
 

@@ -172,9 +172,25 @@ static void show_top(char* name,MENU* menu) {
   if (improved_interface == 'Y') draw_menu(menu);
     else show_numbered();
 
-  textcolor(14); gotoxy(35,24);
-  sprintf(buffer,"Gold = %d",get_gold());
+  show_gold(35,24);
+  }
+
+/* The meal or drink bought, with your hit points and how fed you are after it, shown until the next choice */
+static void show_fare_enjoyed(Int32 i) {
+  HUNGER hunger;
+  char   buffer[80];
+
+  sprintf(buffer,"You enjoy the %s.  HP %d/%d",fare[i].name,player.chp,get_mhp());
+  gotoxy(15,19); textcolor(11);
   txt_write(buffer);
+
+  hunger = hunger_status();
+  gotoxy(15,20);
+  txt_write("You are ");
+  textcolor(hunger.color);
+  txt_write(hunger.name);
+  textcolor(11);
+  txt_write(".");
   }
 
 void tavern(char* name) {
@@ -310,6 +326,7 @@ void tavern(char* name) {
                  break;
           }
         show_top(name,&menu);
+        if (option > 0) show_fare_enjoyed(option - 1);
         }
       }
     }

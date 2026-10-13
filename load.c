@@ -407,6 +407,7 @@ void load_options() {
       if (match(line, "ShowMount ")) show_mount = *next;
       if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
+      if (match(line, "ImprovedItemIdentification ")) improved_item_id = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
       if (match(line, "ImprovedStatus ")) improved_status = *next;

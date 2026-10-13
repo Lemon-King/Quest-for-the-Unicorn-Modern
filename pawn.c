@@ -105,9 +105,7 @@ static void show_top(char* name,byte city,MENU* menu) {
       }
     }
 
-  textcolor(14); gotoxy(35,24);
-  sprintf(buffer,"Gold = %d",get_gold());
-  txt_write(buffer);
+  show_gold(35,24);
   }
 
 static double sell_price(OBJECT_REC* item) {
@@ -133,6 +131,20 @@ static double sell_price(OBJECT_REC* item) {
   if (classes[player.class-1].flags & CF_NOBLE) discount += 0.15;
   price = price * discount;
   return price;
+  }
+
+/* The shop's offer for an item: at least 1, in the whole gold add_gold() pays */
+static double offer(OBJECT_REC* item) {
+  double price;
+
+  price = sell_price(item);
+  if (price < 1) price = 1;
+
+  return rcs_trunc(price);
+  }
+
+static double identify_price(OBJECT_REC* item) {
+  return rcs_trunc(item_cost(item) * 0.08);
   }
 
 void pawn(char* name, byte city) {
@@ -191,7 +203,7 @@ void pawn(char* name, byte city) {
       show_top(name,city,&menu);
       if (pItem != NULL && pItem->otype != O_NONE) {
         gotoxy(15,19);
-        price = rcs_trunc(item_cost(pItem) * 0.08);
+        price = identify_price(pItem);
         write_named("To identify a ",pItem,get_name(pItem),"",12);
         gotoxy(15,20); textcolor(14);
         sprintf(buffer," will cost %.0f Gold",price);
@@ -209,9 +221,7 @@ void pawn(char* name, byte city) {
             key = inkey();
             }
           if (key == 'y' || key == 'Y') {
-            sub_gold(price);
-            pItem->flags |= OF_IDENT;
-            if (pItem->effect == E_MUTA) mutable_set_name(pItem);
+            identify_item(pItem,price);
             gotoxy(15,22);
             write_named("It is a ",pItem,get_name(pItem)," (press a key)",15);
             key = inkey();
@@ -220,11 +230,14 @@ void pawn(char* name, byte city) {
         }
       show_top(name,city,&menu);
       }
-    if (option == 13)
+    if (option == 13 && improved_interface == 'Y') {
+      sell_from_pack(offer);
+      show_top(name,city,&menu);
+      }
+    else if (option == 13)
       for (i=1; i<=32; i++)
         if (player.pack[i].otype != O_NONE) {
-          price = sell_price(&(player.pack[i]));
-	  if (price < 1) price = 1;
+          price = offer(&(player.pack[i]));
           textcolor(11); gotoxy(22,19);
           sprintf(buffer,"You have ");
           txt_write(buffer);
@@ -243,26 +256,22 @@ void pawn(char* name, byte city) {
             while (key != 'Y' && key != 'y' &&
                    key != 'N' && key != 'n') key = inkey();
             }
-          if (key == 'Y' || key == 'y') {
-            player.pack[i].otype = O_NONE;
-            add_gold(price);
-            stats.counts[STAT_ITEMS_SOLD]++;
-            stats.counts[STAT_SOLD_GOLD] += price;
-            if (price > stats.counts[STAT_LARGEST_SALE]) stats.counts[STAT_LARGEST_SALE] = price;
-            }
-          textcolor(14); gotoxy(35,24);
-          sprintf(buffer,"Gold = %d",get_gold());
-          txt_write(buffer);
+          if (key == 'Y' || key == 'y') sell_item(&(player.pack[i]),price);
+          show_gold(35,24);
           for (j=18; j<=23; j++) {
             gotoxy(10,j); txt_write("                                                                    ");
             }
           option = 13;
         }
-    if (option == 14)
+    if (option == 14 && improved_interface == 'Y') {
+      identify_from_pack(identify_price);
+      show_top(name,city,&menu);
+      }
+    else if (option == 14)
       for (i=1; i<=32; i++)
         if (player.pack[i].otype != O_NONE && (player.pack[i].flags & OF_IDENT) == 0) {
           gotoxy(15,19);
-          price = rcs_trunc(item_cost(&(player.pack[i])) * 0.08);
+          price = identify_price(&(player.pack[i]));
           write_named("To identify a ",&(player.pack[i]),get_name(&(player.pack[i])),"",12);
           gotoxy(15,20); textcolor(14);
           sprintf(buffer," will cost %.0f Gold",price);
@@ -280,17 +289,13 @@ void pawn(char* name, byte city) {
               key = inkey();
               }
             if (key == 'y' || key == 'Y') {
-              sub_gold(price);
-              player.pack[i].flags |= OF_IDENT;
-              if (player.pack[i].effect == E_MUTA) mutable_set_name(&(player.pack[i]));
+              identify_item(&(player.pack[i]),price);
               gotoxy(15,22);
               write_named("It is a ",&(player.pack[i]),get_name(&(player.pack[i]))," (press a key)",15);
               key = inkey();
               }
             }
-          textcolor(14); gotoxy(35,24);
-          sprintf(buffer,"Gold = %d",get_gold());
-          txt_write(buffer);
+          show_gold(35,24);
           for (j=18; j<=23; j++) {
             gotoxy(10,j); txt_write("                                                                    ");
             }
@@ -300,8 +305,7 @@ void pawn(char* name, byte city) {
       pItem = inventory(0);
       show_top(name,city,&menu);
       if (pItem != NULL && pItem->otype != O_NONE) {
-        price = sell_price(pItem);
-	if (price < 1) price = 1;
+        price = offer(pItem);
         gotoxy(15,19);
         write_named("Ah, a ",pItem,get_name(pItem),"",12);
         gotoxy(15,21); textcolor(9);
@@ -324,13 +328,7 @@ void pawn(char* name, byte city) {
           gotoxy(15,22); txt_write("Do you wish to sell it ?");
           key = inkey();
           }
-        if (key == 'Y' || key == 'y') {
-          add_gold(price);
-          pItem->otype = O_NONE;
-          stats.counts[STAT_ITEMS_SOLD]++;
-          stats.counts[STAT_SOLD_GOLD] += price;
-          if (price > stats.counts[STAT_LARGEST_SALE]) stats.counts[STAT_LARGEST_SALE] = price;
-          }
+        if (key == 'Y' || key == 'y') sell_item(pItem,price);
         }
       show_top(name,city,&menu);
       }

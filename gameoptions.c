@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      17
+#define NUM_PREFS      18
 #define NUM_CHANGES    62
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -151,6 +151,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Floor Item Names",
     .help  = "Shows the name of the item you stand on, in the bottom right",
     .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },
+  { .label = "Improved Item ID",
+    .help  = "* marks unidentified items, rarity colour on floor; commons drop identified",
+    .kind  = OPT_SWITCH, .flag = &improved_item_id, .on = 'Y', .off = 'N' },
   { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },

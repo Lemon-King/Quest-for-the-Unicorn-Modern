@@ -938,6 +938,14 @@ typedef struct {
   Int32 x;
   } STATUS_NOTE;
 
+/* How fed you are, in the side panel's bands: the word, its colour, and whether the panel shows it (it leaves Healthy
+   blank) */
+typedef struct {
+  char* name;
+  Int32 color;
+  Int32 on_panel;
+  } HUNGER;
+
 typedef struct MENU MENU;
 
 struct MENU {
@@ -1156,6 +1164,7 @@ LINK Int32                delay_hit;
 LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
+LINK char               improved_item_id;
 LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
@@ -1554,6 +1563,7 @@ extern void show_player();
 extern void show_screen();
 extern void show_side();
 extern void describe_status(Int32 i,STATUS_NOTE* note);
+extern HUNGER hunger_status(void);
 extern void show_sm_land();
 extern void show_sm_map();
 extern void show_spot(Int32 x,Int32 y);
@@ -1687,6 +1697,7 @@ extern void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line);
 extern void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom);
 extern void shorten_name(char* name,Int32 width);
 extern void list_item_name(OBJECT_REC* item,Int32 width,char* name);
+extern void kept_item_name(OBJECT_REC* item,Int32 width,char* name);
 extern char* base_name(char* buffer,OBJECT_REC* item);
 
 extern Int32 get_skill(Int32 num);
@@ -1700,6 +1711,11 @@ extern void mutable(OBJECT_REC* it);
 extern Int32 item_color(OBJECT_REC* item);
 extern void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color);
 extern void itemColor(OBJECT_REC* item);
+extern Int32 floor_item_color(OBJECT_REC* item);
+extern void marked_item_name(OBJECT_REC* item,char* name);
+/* identify.c */
+extern void identify_on_pickup(OBJECT_REC* item);
+extern void identify_common_item(OBJECT_REC* item);
 extern Int32 passable(Int32 x,Int32 y,char monstPass,char doorPass);
 extern Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass);
 extern void activate(Int32 x,Int32 y);
@@ -1755,6 +1771,12 @@ extern Int32 get_coins();
 extern void add_gold(Int32 g);
 extern void sub_gold(Int32 g);
 extern double typed_gold(double amount);
+extern void show_gold(Int32 column,Int32 line);
+/* trade.c */
+extern void sell_item(OBJECT_REC* item,double price);
+extern void identify_item(OBJECT_REC* item,double price);
+extern void sell_from_pack(double (*offer)(OBJECT_REC* item));
+extern void identify_from_pack(double (*cost)(OBJECT_REC* item));
 extern Int32 can_be_seen();
 extern void enemy_hit(Int32 x,Int32 y);
 extern void mutable_legendary(OBJECT_REC* item);
