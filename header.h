@@ -925,6 +925,19 @@ typedef struct {
 
 #define TAB_LOAD_GAME   -1    /* open_tab_menu(): a game to load was picked, named in loadname */
 
+#define STATUS_COUNT    12    /* the statuses under the stats, Light to Ethereal */
+
+/* A status under the stats as the Tab Menu's Status Effects shows it: what it does, how long it lasts, its colour,
+   whether you have it, and the left of its letter's cell in pixels */
+typedef struct {
+  char  name[24];
+  char  effect[64];
+  char  lasting[40];
+  Int32 color;
+  Int32 active;
+  Int32 x;
+  } STATUS_NOTE;
+
 typedef struct MENU MENU;
 
 struct MENU {
@@ -1540,6 +1553,7 @@ extern void show_map();
 extern void show_player();
 extern void show_screen();
 extern void show_side();
+extern void describe_status(Int32 i,STATUS_NOTE* note);
 extern void show_sm_land();
 extern void show_sm_map();
 extern void show_spot(Int32 x,Int32 y);

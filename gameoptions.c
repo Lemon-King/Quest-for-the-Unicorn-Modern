@@ -145,7 +145,7 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Pick your spell from a list in the TAB menu, instead of typing its name",
     .kind  = OPT_SWITCH, .flag = &easy_spells, .on = 'Y', .off = 'N', .needs = &improved_interface },
   { .label = "Improved Status",
-    .help  = "Status row under your stats: grey letters, icon-coloured letters, or icons",
+    .help  = "Status row under your stats: grey letters, coloured letters, or icons",
     .kind  = OPT_SWITCH, .flag = &improved_status, .on = 'C', .off = 'N', .strict = 'I',
     .names = { "Off", "Color", "Icons" } },
   { .label = "Floor Item Names",

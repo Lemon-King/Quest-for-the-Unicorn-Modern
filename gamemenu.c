@@ -28,6 +28,8 @@
 #define BAR_COLUMN      26     /* the scroll bar's */
 #define KEY_COLUMN      24     /* a space after a command's label, the keys it types */
 #define MANA_COLUMN     23     /* a space after a spell's name, its mana */
+#define STATUS_WIDTH    25     /* the columns a status's description wraps at */
+#define STATUS_KEYS     "(4/6) Move  (ESC) Back"
 
 #define CONTEXT_COLOR   10
 #define COMMON_COLOR    14
@@ -37,9 +39,11 @@
 #define DO_SAVE          1
 #define DO_LOAD          2
 #define DO_SPELLS        3
+#define DO_STATUS        4
 
-/* A command: what it says, the keys it types (the first returned, the rest queued), or Save, Load or the Easy Spells
-   list. An item's name in its label, from name_start on, shows in its rarity colour, name_color; 0 for none. */
+/* A command: what it says, the keys it types (the first returned, the rest queued), or Save, Load, the Easy Spells
+   list or Status Effects. An item's name in its label, from name_start on, shows in its rarity colour, name_color; 0
+   for none. */
 typedef struct {
   char  label[LABEL_LENGTH];
   char  keys[4];
@@ -102,37 +106,52 @@ static void add_line(COMMANDS* commands,Int32 first,char* text,Int32 offset) {
   sprintf(line->text,"%*s%s",first ? 0 : INDENT,"",text);
   }
 
-/* Breaks the newest command's label into lines at its spaces; a word too long for a line is cut */
-static void wrap_label(COMMANDS* commands) {
-  char  words[LABEL_LENGTH];
-  char  line[LABEL_WIDTH + 1];
-  char* word;
-  Int32 first;
-  Int32 width;
+/* The words of text from *at that fit on a line width columns wide, into line; a word too long for a line is cut.
+   Sets *start to where the line begins in text and moves *at past it. Returns 0 when no words are left. */
+static Int32 next_line(char* text,Int32* at,Int32 width,char* line,Int32* start) {
   Int32 length;
+  Int32 size;
+  Int32 kept;
+
+  while (text[*at] == ' ') (*at)++;
+  if (text[*at] == 0) return 0;
+
+  *start = *at;
+  length = 0;
+  while (text[*at] != 0) {
+    for (size=0; text[*at + size] != 0 && text[*at + size] != ' '; size++);
+    if (length > 0 && length + 1 + size > width) break;
+
+    if (length > 0) line[length++] = ' ';
+    kept = (size < width - length) ? size : width - length;
+    memcpy(line + length,text + *at,kept);
+    length += kept;
+
+    *at += size;
+    while (text[*at] == ' ') (*at)++;
+    }
+  line[length] = 0;
+
+  return 1;
+  }
+
+/* Breaks the newest command's label into lines at its spaces, the later lines indented */
+static void wrap_label(COMMANDS* commands) {
+  char* label;
+  char  line[LABEL_WIDTH + 1];
+  Int32 at;
   Int32 start;
+  Int32 first;
 
-  strcpy(words,commands->list[commands->count - 1].label);
-  strcpy(line,"");
+  label = commands->list[commands->count - 1].label;
+  at = 0;
   first = 1;
-  width = commands->width;
-  start = 0;
-
-  for (word=strtok(words," "); word != NULL; word=strtok(NULL," ")) {
-    length = (Int32)strlen(line);
-    if (length > 0 && length + 1 + (Int32)strlen(word) > width) {
-      add_line(commands,first,line,start);
-      strcpy(line,"");
-      length = 0;
-      first = 0;
-      width = commands->width - INDENT;
-      }
-    if (length == 0) start = (Int32)(word - words);
-      else strcat(line," ");
-    strncat(line,word,width - (Int32)strlen(line));
+  while (next_line(label,&at,first ? commands->width : commands->width - INDENT,line,&start)) {
+    add_line(commands,first,line,start);
+    first = 0;
     }
 
-  add_line(commands,first,line,start);
+  if (first) add_line(commands,1,"",0);
   }
 
 /* Returns the command added, or NULL when the menu is full */
@@ -167,6 +186,36 @@ static void add_action(COMMANDS* commands,char* label,Int32 action) {
   add_command(commands,label,"",COMMON_COLOR);
   commands->list[commands->count - 1].action = action;
   commands->list[commands->count - 1].enabled = !has_permadeath();
+  }
+
+/* The next status you have after chosen, stepping by step (1 or -1) and wrapping round; -1 when you have none */
+static Int32 next_status(Int32 chosen,Int32 step) {
+  STATUS_NOTE note;
+  Int32       at;
+  Int32       i;
+
+  for (i=1; i<=STATUS_COUNT; i++) {
+    at = (chosen + step * i + STATUS_COUNT) % STATUS_COUNT;
+    describe_status(at,&note);
+    if (note.active) return at;
+    }
+
+  return -1;
+  }
+
+static Int32 first_status(void) {
+  return next_status(STATUS_COUNT - 1,1);
+  }
+
+/* Status Effects, greyed out while you have none */
+static void add_status_effects(COMMANDS* commands) {
+  COMMAND* command;
+
+  command = add_command(commands,"Status Effects","",COMMON_COLOR);
+  if (command == NULL) return;
+
+  command->action = DO_STATUS;
+  command->enabled = (first_status() >= 0);
   }
 
 /* Spells types m for the spell prompt, or with Easy Spells opens the list of your spells */
@@ -440,6 +489,7 @@ static void list_town_and_dungeon(COMMANDS* commands) {
   add_command(commands,"Quests","q",COMMON_COLOR);
   add_command(commands,"Message log","L",COMMON_COLOR);
   add_command(commands,"Character","R",COMMON_COLOR);
+  add_status_effects(commands);
   add_command(commands,"Crafting","C",COMMON_COLOR);
   add_command(commands,"Look around","v",COMMON_COLOR);
   add_command(commands,"Location","~",COMMON_COLOR);
@@ -500,6 +550,7 @@ static void list_overworld(COMMANDS* commands) {
   add_command(commands,"Hunt","h",COMMON_COLOR);
   add_command(commands,"Look around","v",COMMON_COLOR);
   add_command(commands,"Character","R",COMMON_COLOR);
+  add_status_effects(commands);
   add_command(commands,"Location","~",COMMON_COLOR);
   add_command(commands,"Icons","H",COMMON_COLOR);
   add_command(commands,"Help","?",COMMON_COLOR);
@@ -835,6 +886,56 @@ static Int32 spell_choice(void) {
   return (picked >= 0) ? known[picked] : 0;
   }
 
+/* text on the box's lines from line on, wrapped at its spaces. Returns the line after it. */
+static Int32 write_wrapped(SCROLL_LIST* panel,Int32 line,Int32 color,char* text) {
+  char  words[STATUS_WIDTH + 1];
+  Int32 at;
+  Int32 start;
+
+  at = 0;
+  while (next_line(text,&at,STATUS_WIDTH,words,&start)) list_text(panel,1,line++,color,words);
+
+  return line;
+  }
+
+/* A ^ under status chosen in the row above the box, and in the box its name, what it does and how long it lasts */
+static void show_status(SCROLL_LIST* panel,Int32 chosen) {
+  STATUS_NOTE note;
+  Int32       line;
+
+  describe_status(chosen,&note);
+  clear_messages();
+
+  /* The ^ goes under the status's own cell, which need not fall on the box's columns */
+  setcolor(15);
+  outtextxy(note.x,panel->y + 10,"^");
+
+  list_text(panel,1,2,note.active ? note.color : 8,note.name);
+  line = write_wrapped(panel,3,7,note.effect);
+  write_wrapped(panel,line + 1,note.active ? 14 : 8,note.lasting);
+  list_text(panel,1,NUM_MSG,3,STATUS_KEYS);
+  }
+
+/* Status Effects, chosen only while you have one: 4 and 6 move the ^ from status to status you have, and ESC goes
+   back */
+static void browse_statuses(void) {
+  SCROLL_LIST panel;
+  Int32       chosen;
+  char        key;
+
+  panel = panel_rows(0);
+  chosen = first_status();
+  if (chosen < 0) return;
+
+  key = 0;
+  while (key != 27) {
+    show_status(&panel,chosen);
+    key = inkey();
+    if (key == '4') chosen = next_status(chosen,-1);
+    if (key == '6') chosen = next_status(chosen,1);
+    }
+  }
+
 /* Opens the menu, and TAB or ESC closes it. Returns the first key of the command chosen, its others queued to follow;
    0 when none was; TAB_LOAD_GAME when a game to load was picked. */
 Int32 open_tab_menu(void) {
@@ -878,6 +979,10 @@ Int32 open_tab_menu(void) {
           result = (unsigned char)command->keys[0];
           }
         else choosing = 1;
+        }
+      else if (command->action == DO_STATUS) {
+        browse_statuses();
+        choosing = 1;
         }
       else {
         strcpy(currentMacro,command->keys + 1);

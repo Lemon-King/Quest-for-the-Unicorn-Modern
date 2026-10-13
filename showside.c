@@ -10,13 +10,12 @@
 
 #include "header.h"
 
-#define STATUS_COUNT      12
 #define STATUS_ETHER      11
 #define STATUS_LINE        8
 #define STATUS_BASELINE   (STATUS_LINE * 11)     /* outtext_xy()'s baseline for the line */
 #define NO_STATUS_TILE    10
 
-/* A status: its letter, the colour of its icon's art, its icon, and whether the player has it */
+/* A status: its letter, its colour, its icon, and whether the player has it */
 typedef struct {
   char  letter;
   Int32 color;
@@ -27,22 +26,50 @@ typedef struct {
 /* The mode the status row was last drawn in */
 static char status_mode_drawn;
 
+/* Each status's name and what it does, in the row's order */
+static const char* status_names[STATUS_COUNT] = {
+  "Light", "Shielded", "Poisoned", "Hasted", "Giant Strength", "Levitating", "Resist Fire", "Resist Cold",
+  "Resist Electricity", "Resist Arcane", "Resist Mind", "Ethereal"
+  };
+
+static const char* status_effects[STATUS_COUNT] = {
+  "Darkness bothers you no longer",
+  "Protection from spells",
+  "Poison lingers in your veins",
+  "Your movements are swift",
+  "You have the strength of a giant",
+  "You float just off the ground",
+  "You are protected from Fire",
+  "You are protected from Cold",
+  "You are protected from Electricity",
+  "You are protected from Arcane",
+  "You are resistant to Mind attacks",
+  "Your body is translucent like a ghost"
+  };
+
+/* The effect that times each status, -1 for none, and whether it counts down every turn in towns and dungeons rather
+   than every 1 + level/6 turns */
+static const Int32 status_timers[STATUS_COUNT][2] = {
+  { PE_LIGHT, 1 }, { PE_PROT, 0 }, { PE_POISON, 1 }, { PE_HASTE, 0 }, { PE_GIANT, 0 }, { PE_LEV, 1 },
+  { PE_FIRE, 0 }, { PE_COLD, 0 }, { PE_ELEC, 0 }, { PE_ARCN, 0 }, { PE_MIND, 0 }, { PE_ETHER, 1 }
+  };
+
 static void read_statuses(STATUS_MARK marks[STATUS_COUNT]) {
   Int32 ether;
 
   ether = player.effect[PE_ETHER];
 
-  marks[0]  = (STATUS_MARK){ 'L', CLR_BROWN,      43, can_see() != 0 };
-  marks[1]  = (STATUS_MARK){ 'S', CLR_LIGHTBLUE,  47, player.effect[PE_PROT] != 0 };
-  marks[2]  = (STATUS_MARK){ 'P', CLR_WHITE,      46, player.effect[PE_POISON] != 0 };
-  marks[3]  = (STATUS_MARK){ 'H', CLR_WHITE,      50, has_intrinsic(A_SPD) != 0 };
-  marks[4]  = (STATUS_MARK){ 'G', CLR_YELLOW,     45, player.effect[PE_GIANT] != 0 };
-  marks[5]  = (STATUS_MARK){ 'V', CLR_BROWN,     325, has_intrinsic(A_LEV) != 0 };
-  marks[6]  = (STATUS_MARK){ 'F', CLR_LIGHTRED,   44, has_intrinsic(A_RFIR) != 0 };
-  marks[7]  = (STATUS_MARK){ 'C', CLR_WHITE,     354, has_intrinsic(A_RCLD) != 0 };
-  marks[8]  = (STATUS_MARK){ 'Z', CLR_YELLOW,    355, has_intrinsic(A_RELC) != 0 };
-  marks[9]  = (STATUS_MARK){ 'A', CLR_PURPLE,    356, has_intrinsic(A_RDRK) != 0 };
-  marks[10] = (STATUS_MARK){ 'M', CLR_WHITE,     357, has_intrinsic(A_RPSI) != 0 };
+  marks[0]  = (STATUS_MARK){ 'L', CLR_BROWN,        43, can_see() != 0 };
+  marks[1]  = (STATUS_MARK){ 'S', CLR_LIGHTBLUE,    47, player.effect[PE_PROT] != 0 };
+  marks[2]  = (STATUS_MARK){ 'P', CLR_GREEN,        46, player.effect[PE_POISON] != 0 };
+  marks[3]  = (STATUS_MARK){ 'H', CLR_WHITE,        50, has_intrinsic(A_SPD) != 0 };
+  marks[4]  = (STATUS_MARK){ 'G', CLR_YELLOW,       45, player.effect[PE_GIANT] != 0 };
+  marks[5]  = (STATUS_MARK){ 'V', CLR_WHITE,       325, has_intrinsic(A_LEV) != 0 };
+  marks[6]  = (STATUS_MARK){ 'F', CLR_LIGHTRED,     44, has_intrinsic(A_RFIR) != 0 };
+  marks[7]  = (STATUS_MARK){ 'C', CLR_LIGHTBLUE,   354, has_intrinsic(A_RCLD) != 0 };
+  marks[8]  = (STATUS_MARK){ 'Z', CLR_CYAN,        355, has_intrinsic(A_RELC) != 0 };
+  marks[9]  = (STATUS_MARK){ 'A', CLR_PURPLE,      356, has_intrinsic(A_RDRK) != 0 };
+  marks[10] = (STATUS_MARK){ 'M', CLR_LIGHTPURPLE, 357, has_intrinsic(A_RPSI) != 0 };
 
   if (ether > 10) marks[STATUS_ETHER] = (STATUS_MARK){ 'E', CLR_WHITE, 48, 1 };
     else marks[STATUS_ETHER] = (STATUS_MARK){ 'e', CLR_GRAY, 49, ether > 0 };
@@ -50,6 +77,47 @@ static void read_statuses(STATUS_MARK marks[STATUS_COUNT]) {
 
 static Int32 status_column(Int32 i) {
   return TEXT_GRID_WIDTH - 24 + 2 * i;
+  }
+
+/* Where you have light from, in can_see()'s order */
+static void light_source(char* text) {
+  if (in_upland == 'Y') strcpy(text,"Always, on the overworld");
+  else if (player.effect[PE_LIGHT] > 0) sprintf(text,"Your light lasts %d more turns",player.effect[PE_LIGHT]);
+  else if (player.effect[PE_LIGHT] < 0) strcpy(text,"Your light never goes out");
+  else if (player.in_city == 'Y') strcpy(text,"Always, in towns");
+  else strcpy(text,"By infravision");
+  }
+
+/* How long a status you have lasts, or where it comes from */
+static void status_lasting(Int32 i,char* text) {
+  Int32 left;
+  Int32 turns;
+
+  left = player.effect[status_timers[i][0]];
+  turns = status_timers[i][1] ? left : left * (1 + player.level / 6);
+
+  if (i == 0) light_source(text);
+  else if (i == 2) sprintf(text,"Takes %d damage a turn",(left / 10 > 1) ? left / 10 : 1);
+  else if (left <= 0) strcpy(text,"From your gear, race or class");
+
+  /* Without the Mind Shield change nothing counts a Mind Shield down */
+  else if (i == 10 && change_mind_shield != 'Y') strcpy(text,"Does not wear off");
+  else if (status_timers[i][1]) sprintf(text,"Lasts %d more turns",turns);
+  else sprintf(text,"Lasts about %d more turns",turns);
+  }
+
+void describe_status(Int32 i,STATUS_NOTE* note) {
+  STATUS_MARK marks[STATUS_COUNT];
+
+  read_statuses(marks);
+  strcpy(note->name,status_names[i]);
+  strcpy(note->effect,status_effects[i]);
+  note->color = marks[i].color;
+  note->active = marks[i].active;
+  note->x = status_column(i) * 8;
+
+  if (note->active) status_lasting(i,note->lasting);
+    else strcpy(note->lasting,"Not active");
   }
 
 /* An icon is centred on its letter's 8x12 cell */

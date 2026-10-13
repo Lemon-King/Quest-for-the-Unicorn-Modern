@@ -642,16 +642,16 @@
                               while that is Off
          Improved Status      Show the status indicators under your
                               stats (see Status Indicators) as grey
-                              letters (Off), letters in the colours of
-                              their icons (Color), or the icons
-                              themselves at half size (Icons).  Icons
-                              also gives the row of icons along the
-                              bottom of the screen to the map, which
-                              shows one more row.  The small map moves
-                              down to the edge of the screen, and the
-                              message log grows into its place, with
-                              the compass and item names on its last
-                              line; the Tab menu covers that line too
+                              letters (Off), coloured letters (Color),
+                              or the icons themselves at half size
+                              (Icons).  Icons also gives the row of
+                              icons along the bottom of the screen to
+                              the map, which shows one more row.  The
+                              small map moves down to the edge of the
+                              screen, and the message log grows into
+                              its place, with the compass and item
+                              names on its last line; the Tab menu
+                              covers that line too
          Floor Item Names     Show the name of the item you stand on in the
                               bottom right, in its inventory colour, or
                               under the message log (see Improved Status)
@@ -949,9 +949,10 @@
          E - The player is ethereal
          e - The player is ethereal, but the effect is about to run out
 
-       With the Improved Status preference these letters are drawn in the
-     colours of their icons, or the icons themselves are drawn at half size
-     in their place.  Off, the letters are grey.
+       With the Improved Status preference these letters are drawn in
+     colour, or the icons themselves are drawn at half size in their place.
+     Off, the letters are grey.  The Tab Menu's Status Effects describes
+     each one you have (see Tab Menu).
 
      Macros
      ======
@@ -1162,6 +1163,12 @@
      throwing weapon in either hand, Heal when you are wounded, Transcribe
      a spell when you carry a spell scroll, and Say a Word of Power when
      a word may be said.
+
+       Status Effects puts a ^ under the status indicators (see Status
+     Indicators) and shows the one it points at in the box below: its
+     name, what it does, and how long it lasts or where it comes from.
+     <4> and <6> move to the next indicator you have, and <ESC> goes
+     back to the menu.  With none, Status Effects is greyed out.
 
        Spells, in a town or dungeon when you know a spell, asks for one
      to cast as <m> does.  With the Easy Spells preference it lists the
