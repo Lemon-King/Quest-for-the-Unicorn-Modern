@@ -54,10 +54,14 @@ bool InlineHost::closed() const {
   return input_.closed();
   }
 
-/* Handles every waiting window message; with wait, blocks until at least one arrives */
+/* Handles every waiting window message; with wait, blocks until at least one arrives. The window presents its frame
+   clock's ticks meanwhile. */
 void InlineHost::pump(bool wait) {
   MSG message;
-  if (wait && GetMessageW(&message, nullptr, 0, 0) > 0) dispatch(message);
+
+  if (wait) window_.awaitMessage();
+  else window_.presentIfDue();
+
   while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) dispatch(message);
   }
 

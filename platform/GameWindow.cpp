@@ -24,12 +24,16 @@ constexpr wchar_t CLASS_NAME[] = L"QuestForTheUnicorn";
 /* res/unicorn.rc: the unicorn sprite as the application icon */
 constexpr int APPLICATION_ICON = 1;
 
+/* The window shows a frame this often even while the game draws nothing, so screen recorders keep getting frames */
+constexpr int32_t BASE_FRAME_RATE = 60;
+
 }
 
 GameWindow::GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval,
                        bool integerScaling, FrameMailbox& frames, InputQueue& input)
   : window_(nullptr), canvasWidth_(canvasWidth), canvasHeight_(canvasHeight), frames_(frames), input_(input), keys_(),
-    layout_(canvasWidth, canvasHeight, integerScaling), placement_{0, 0, canvasWidth, canvasHeight}, presenter_() {
+    layout_(canvasWidth, canvasHeight, integerScaling), placement_{0, 0, canvasWidth, canvasHeight}, presenter_(),
+    clock_(BASE_FRAME_RATE) {
   WNDCLASSEXW windowClass = {};
   windowClass.cbSize = sizeof(windowClass);
   windowClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -78,6 +82,17 @@ HWND GameWindow::handle() const {
 /* Presents the newest frame, as published to the mailbox */
 void GameWindow::showFrame() {
   if (presenter_ != nullptr) presenter_->present(frames_, placement_);
+  shownSinceTick_ = true;
+  }
+
+/* Blocks until a message waits in this thread's queue, presenting at each tick of the frame clock meanwhile */
+void GameWindow::awaitMessage() {
+  presentTicks(INFINITE);
+  }
+
+/* Presents a tick of the frame clock that is already due, without waiting */
+void GameWindow::presentIfDue() {
+  presentTicks(0);
   }
 
 /* Safe from any thread; frames published while one is pending are shown together */
@@ -232,12 +247,29 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
       showFrame();
       return 0;
 
+    /* The frame again, unless the game has shown one since the tick before */
+    case WM_APP_TICK:
+      clock_.advance();
+      if (!shownSinceTick_) showFrame();
+      shownSinceTick_ = false;
+      return 0;
+
     case WM_APP_GAME_ENDED:
       PostQuitMessage(0);
       return 0;
     }
 
   return DefWindowProcW(window_, message, wParam, lParam);
+  }
+
+/* Ticks go through the window procedure, which reports a failure as it does for every message; a waiting message ends
+   the wait */
+void GameWindow::presentTicks(DWORD timeout) {
+  HANDLE due = clock_.due();
+
+  while (MsgWaitForMultipleObjectsEx(1, &due, timeout, QS_ALLINPUT, MWMO_INPUTAVAILABLE) == WAIT_OBJECT_0) {
+    SendMessageW(window_, WM_APP_TICK, 0, 0);
+    }
   }
 
 /* The whole-number scale nearest the monitor's DPI at which the window still fits its work area */
