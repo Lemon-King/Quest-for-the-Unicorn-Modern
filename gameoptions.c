@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      20
-#define NUM_CHANGES    62
+#define NUM_CHANGES    63
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -213,6 +213,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Upland Quit",
     .help  = "Q on the overworld asks before quitting, as it does in dungeons",
     .kind  = OPT_SWITCH, .flag = &change_upland_quit, .on = 'Y', .off = 'N', .key = "UplandQuit" },
+  { .label = "Explored Land",
+    .help  = "A game saved on the upland keeps the land you explored in your region",
+    .kind  = OPT_SWITCH, .flag = &change_explored_land, .on = 'Y', .off = 'N', .key = "ExploredLand" },
   { .label = "Hunting Skill",
     .help  = "Hunting on the upland improves with Scouting, the skill it trains, not Mace",
     .kind  = OPT_SWITCH, .flag = &change_hunting_skill, .on = 'Y', .off = 'N', .key = "HuntingSkill" },

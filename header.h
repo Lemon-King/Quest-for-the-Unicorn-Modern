@@ -1247,6 +1247,7 @@ LINK char               change_village_shops;
 LINK char               change_nether_core;
 LINK char               change_ship_improvements;
 LINK char               change_rarity_fix;
+LINK char               change_explored_land;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;

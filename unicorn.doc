@@ -358,6 +358,11 @@
          Upland Quit          Q in the upland asks before ending the
                               character, as it does in towns and
                               dungeons.  Off, it quits at once
+         Explored Land        A game saved on the upland with S or the
+                              TAB menu keeps the land you explored in
+                              the region you are in.  Off, loading it
+                              forgets what you explored there since you
+                              last entered the region
          Hunting Skill        Hunting on the upland (h, or s) finds
                               food more often as your Scouting grows,
                               the skill it trains.  Off, it goes by

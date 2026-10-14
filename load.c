@@ -955,6 +955,12 @@ void load() {
   if (change_quest_state == 'Y')
     for (i=0; i<1000; i++)
       if (player.quests[i] == 0) player.quests[i] = 'N';
+
+  /* A save made on the overworld keeps your region's known land only in CurrentLevel, and up_land() reads known_maps[];
+     without the Explored Land change the land explored since entering the region is lost */
+  if (change_explored_land == 'Y' && player.d_level == 0)
+    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
+
   read_character_rules();
   hold_save(loadname);
   }
