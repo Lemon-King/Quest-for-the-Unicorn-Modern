@@ -125,7 +125,9 @@ bool GameWindow::translate(const MSG& message) {
   }
 
 /* Borderless over the whole monitor the window is on, then back to exactly where the window was. A popup has no
-   frame, so the minimum size lets it cover the monitor, and WM_SIZE resizes the swap chain as for any size. */
+   frame, so the minimum size lets it cover the monitor, and WM_SIZE resizes the swap chain as for any size. The old
+   window's pixels are discarded rather than kept across the move, and the frame is shown at once at the new size:
+   Windows 10 could otherwise leave the old caption and borders on screen until the game next drew. */
 void GameWindow::toggleFullscreen() {
   MONITORINFO monitor = { sizeof(MONITORINFO) };
 
@@ -135,16 +137,18 @@ void GameWindow::toggleFullscreen() {
     SetWindowLongPtrW(window_, GWL_STYLE, WS_POPUP | WS_VISIBLE);
     SetWindowPos(window_, HWND_TOP, monitor.rcMonitor.left, monitor.rcMonitor.top,
                  monitor.rcMonitor.right - monitor.rcMonitor.left, monitor.rcMonitor.bottom - monitor.rcMonitor.top,
-                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+                 SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOOWNERZORDER);
     fullscreen_ = true;
-    return;
+    }
+  else {
+    SetWindowLongPtrW(window_, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+    SetWindowPlacement(window_, &restore_);
+    SetWindowPos(window_, nullptr, 0, 0, 0, 0,
+                 SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    fullscreen_ = false;
     }
 
-  SetWindowLongPtrW(window_, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
-  SetWindowPlacement(window_, &restore_);
-  SetWindowPos(window_, nullptr, 0, 0, 0, 0,
-               SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-  fullscreen_ = false;
+  showFrame();
   }
 
 bool GameWindow::route(const KeyRoute& route) {
