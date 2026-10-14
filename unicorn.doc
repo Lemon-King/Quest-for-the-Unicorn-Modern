@@ -1193,6 +1193,13 @@
      the cursor moves from command to command.  Off, <Tab> is not one of
      the game's commands, as before.
 
+       In an arena fight it offers each monster beside you to attack and
+     each item under you or a step away, though not one on the arena's
+     edge, as the step there would end the fight first.  With the Arena
+     Exit change, Leave Arena shows once every monster is dead.  Only the
+     arena's own commands follow, without Save, Load, or Save and Exit,
+     as a fight cannot be saved.
+
        Some commands show only when they can be used: Fire when your main
      hand holds a bow, wand or energy weapon, Throw for a dagger or
      throwing weapon in either hand, Heal when you are wounded, Transcribe
@@ -1205,12 +1212,12 @@
      <4> and <6> move to the next indicator you have, and <ESC> goes
      back to the menu.  With none, Status Effects is greyed out.
 
-       Spells, in a town or dungeon when you know a spell, asks for one
-     to cast as <m> does.  With the Easy Spells preference it lists the
-     spells you know instead, each with the mana it costs, and <Enter>
-     casts the one under the cursor.  Spells you lack the mana for are
-     grey and cannot be picked, and the cursor starts on the spell you
-     cast last.  <ESC> goes back to the menu.
+       Spells, in a town, dungeon or arena fight when you know a spell,
+     asks for one to cast as <m> does.  With the Easy Spells preference
+     it lists the spells you know instead, each with the mana it costs,
+     and <Enter> casts the one under the cursor.  Spells you lack the
+     mana for are grey and cannot be picked, and the cursor starts on
+     the spell you cast last.  <ESC> goes back to the menu.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved
