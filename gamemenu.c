@@ -9,8 +9,8 @@
 */
 
 /* The Tab Menu, for the Improved Interface preference: in the box that shows the log, the commands for where you
-   stand, then the common ones, then Save, Load and Save and Exit. A command types its keys into the game, as if
-   pressed. */
+   stand, then the common ones, then Save, Load and Save and Exit, which an arena fight leaves out. A command types its
+   keys into the game, as if pressed. */
 
 #include "header.h"
 
@@ -343,12 +343,19 @@ static Int32 may_join(NPC_REC* creature) {
   return ((creature->special & MS_FRIENDLY) != 0 && (creature->special & MS_JOIN) == 0);
   }
 
+/* Attack the creature in direction d by stepping into it */
+static void add_attack(COMMANDS* commands,NPC_REC* creature,Int32 d) {
+  char label[80];
+
+  sprintf(label,"Attack %s",creature->name);
+  add_step(commands,label,d,0);
+  }
+
 /* A creature beside you: talk to a friendly one, which t cannot reach beside a merchant, attack the others by stepping
    into them, and ask one that may join */
 static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
   NPC_REC* creature;
   char     label[80];
-  char     keys[2];
 
   creature = get_monster(player.x + step_x[d],player.y + step_y[d]);
   if (creature == NULL) return;
@@ -357,12 +364,7 @@ static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
     sprintf(label,"Talk to %s",creature->name);
     if (can_talk) add_aimed(commands,label,'t',item_dir(-1),d);
     }
-  else {
-    sprintf(label,"Attack %s",creature->name);
-    keys[0] = step_key[d];
-    keys[1] = 0;
-    add_command(commands,label,keys,CONTEXT_COLOR);
-    }
+  else add_attack(commands,creature,d);
 
   if (may_join(creature)) {
     sprintf(label,"Ask %s to join",creature->name);
@@ -462,13 +464,18 @@ static Int32 holds_spell_scroll(void) {
   return 0;
   }
 
-/* The commands your gear, spells and wounds allow */
-static void list_abilities(COMMANDS* commands) {
+/* The commands your gear, spells and wounds allow in an arena fight */
+static void list_combat_abilities(COMMANDS* commands) {
   if (knows_a_spell()) add_spells(commands);
   if (can_fire()) add_item_command(commands,"Fire",&(player.invent[I_RHND]),"f");
   if (is_thrown(&(player.invent[I_LHND]))) add_item_command(commands,"Throw",&(player.invent[I_LHND]),"-");
   if (is_thrown(&(player.invent[I_RHND]))) add_item_command(commands,"Throw",&(player.invent[I_RHND]),"=");
   if (player.chp < player.mhp) add_command(commands,"Heal","h",COMMON_COLOR);
+  }
+
+/* The commands your gear, spells and wounds allow */
+static void list_abilities(COMMANDS* commands) {
+  list_combat_abilities(commands);
   if (holds_spell_scroll()) add_command(commands,"Transcribe a spell","x",COMMON_COLOR);
   if (word_counter == 0 && player.gateway != '*') add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
   }
@@ -557,7 +564,53 @@ static void list_overworld(COMMANDS* commands) {
   add_command(commands,"Options","O",COMMON_COLOR);
   }
 
+/* A monster on the square in direction d to attack, and an item there to pick up, unless the step leaves the arena */
+static void list_arena_beside(COMMANDS* commands,Int32 d) {
+  NPC_REC* monster;
+  Int32    value;
+  Int32    x,y;
+
+  if (!square_beside(d,&x,&y)) return;
+
+  monster = get_monster(x,y);
+  if (monster != NULL) add_attack(commands,monster,d);
+
+  value = player.map[x][y];
+  if (value >= 1000 && value < 2000 && !off_arena(x,y)) add_pick_up(commands,value,d);
+  }
+
+/* In an arena fight: the item under you, the monsters and items around you, clockwise from north, the way out once the
+   fight is won, then the commands the arena takes */
+static void list_arena(COMMANDS* commands) {
+  Int32 here;
+  Int32 d;
+
+  here = player.map[player.x][player.y];
+  if (here >= 1000 && here < 2000) add_pick_up(commands,here,-1);
+
+  for (d=0; d<8; d++) list_arena_beside(commands,d);
+
+  /* Without the Arena Exit change ENTER never leaves */
+  if (change_arena_exit == 'Y' && monsters_dead()) add_command(commands,"Leave Arena","\r",CONTEXT_COLOR);
+
+  add_command(commands,"Inventory","i",COMMON_COLOR);
+  add_command(commands,"Use an item","u",COMMON_COLOR);
+  list_combat_abilities(commands);
+  add_command(commands,"Party","p",COMMON_COLOR);
+  add_command(commands,"Character","R",COMMON_COLOR);
+  add_status_effects(commands);
+  add_command(commands,"Look around","v",COMMON_COLOR);
+  add_command(commands,"Icons","H",COMMON_COLOR);
+  add_command(commands,"Help","?",COMMON_COLOR);
+  }
+
 static void list_commands(COMMANDS* commands) {
+  /* The arena takes no Save, Load or X: its field stands in for the map until the fight ends */
+  if (in_arena == 'Y') {
+    list_arena(commands);
+    return;
+    }
+
   if (in_upland == 'Y') list_overworld(commands);
     else list_town_and_dungeon(commands);
 
@@ -613,13 +666,17 @@ static void draw_command(MENU* menu,Int32 row,Int32 line) {
   COMMANDS*     commands;
   COMMAND_LINE* text;
   COMMAND*      command;
+  char*         shown;
   char          keys[8];
   Int32         at;
 
   commands = menu->screen;
   text = &commands->lines[row];
   command = &commands->list[text->command];
-  sprintf(keys,"%-*s",BAR_COLUMN - menu->value_column,text->first ? command->keys : "");
+
+  /* ENTER, which has no glyph, is typed but not shown */
+  shown = (text->first && isprint((unsigned char)command->keys[0])) ? command->keys : "";
+  sprintf(keys,"%-*s",BAR_COLUMN - menu->value_column,shown);
 
   draw_menu_text_in(menu,line,text->text,keys,command->enabled ? command->color : 8);
 

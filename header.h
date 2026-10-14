@@ -1292,6 +1292,8 @@ extern void cave();
 
 /* combat.c */
 extern void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy);
+extern Int32 off_arena(Int32 x,Int32 y);
+extern Int32 monsters_dead(void);
 
 /* help.c */
 extern void combat_help();

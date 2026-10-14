@@ -435,6 +435,11 @@ static void hit_enemy(void) {
     meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
   }
 
+/* Whether x,y lies off the arena's field, where a step leaves the fight */
+Int32 off_arena(Int32 x,Int32 y) {
+  return (x <= offset_x || y <= offset_y || x >= offset_x + ARENA_SIZE_X || y >= offset_y + ARENA_SIZE_Y);
+  }
+
 static void move(Int32 xdir,Int32 ydir) {
   Int32 x,y;
   last_target_x = 0;
@@ -445,10 +450,7 @@ static void move(Int32 xdir,Int32 ydir) {
   player.x += xdir;
   player.y += ydir;
 
-  if (player.effect[PE_FEAR] > 0 &&
-      (player.x <= offset_x || player.y <= offset_y ||
-       player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y)
-      ) {
+  if (player.effect[PE_FEAR] > 0 && off_arena(player.x,player.y)) {
     player.x -= xdir;
     player.y -= ydir;
     }
@@ -510,7 +512,7 @@ static void pick_spot(Int32* x,Int32* y,Int32 what) {
   }
 
 /* -1 when every monster of the arena's group is dead, else 0 */
-static Int32 monsters_dead(void) {
+Int32 monsters_dead(void) {
   Int32 i;
 
   for (i=1; i<=5; i++)
@@ -574,6 +576,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   Int32 all_dead;
   Int32 arena_x;
   Int32 arena_y;
+  Int32 command;
   char  floor_items[FLOOR_SLOTS];
 
   /* ************************************** */
@@ -739,6 +742,14 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
     show_time();
     if (player.effect[PE_SLEEP] != 0) key = ' ';
       else key = inkey();
+
+    /* TAB opens the Tab Menu, which types the command chosen */
+    if (key == 9 && improved_interface == 'Y') {
+      command = open_tab_menu();
+      if (command <= 0) continue;
+      key = (byte)command;
+      }
+
       if (player.effect[PE_FEAR] > 0 &&
           ((key >= '1' && key <= '9') || key == 'f')) {
         find_closest_mob(&x,&y);
@@ -1063,8 +1074,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         show_side();
         }
       if (player.chp < 1) exitf = 6;
-      if (player.x <= offset_x || player.y <= offset_y ||
-          player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y) exitf = 1;
+      if (off_arena(player.x,player.y)) exitf = 1;
       }
     show_floor_item();
     } /* while (exitf == 0) */
