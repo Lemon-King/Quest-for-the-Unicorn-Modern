@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      18
+#define NUM_PREFS      20
 #define NUM_CHANGES    62
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -163,6 +163,13 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Show Mount",
     .help  = "On the overworld, the mount you ride shows in place of your own sprite",
     .kind  = OPT_SWITCH, .flag = &show_mount, .on = 'Y', .off = 'N' },
+  { .label = "Seamless World Map",
+    .help  = "Overworld scrolls across region edges; minimap follows you, or per Region",
+    .kind  = OPT_SWITCH, .flag = &seamless_world_map, .on = 'Y', .off = 'N', .strict = 'R',
+    .names = { "Off", "On", "Region" } },
+  { .label = "Follow Camera",
+    .help  = "The view follows you once you leave its middle fifth, stopping at map edges",
+    .kind  = OPT_SWITCH, .flag = &follow_camera, .on = 'Y', .off = 'N' },
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },

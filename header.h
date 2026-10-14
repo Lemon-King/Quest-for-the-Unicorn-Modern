@@ -52,6 +52,14 @@ LINK Int32 NO_OF_MONSTERS;
 #define GATEWAY_REGION        12
 #define GATEWAY_X             80
 #define GATEWAY_Y             78
+
+/* The overworld: regions REGION_SQUARES a side, WORLD_COLUMNS across and WORLD_ROWS down (1-4, 5-8, 9-12) */
+#define REGION_SQUARES       100
+#define WORLD_COLUMNS          4
+#define WORLD_ROWS             3
+#define WORLD_WIDTH          (WORLD_COLUMNS * REGION_SQUARES)
+#define WORLD_HEIGHT         (WORLD_ROWS * REGION_SQUARES)
+#define MINIMAP_SQUARES      100              /* the minimap's squares a side */
 #define MESSAGE_HEIGHT        12
 #define MAX_MSG               60              /* Lines the message log keeps; NUM_MSG never shows more */
 
@@ -559,6 +567,9 @@ typedef char MSTRING[128];
 typedef int  MAP_TYPE[101][101];
 typedef byte KNOW_TYPE[101][101];
 typedef int  SPELLBOOK[1000];
+
+/* passable() or another test of one map square: 0 when it blocks */
+typedef Int32 (*PASS_TEST)(Int32 x,Int32 y,char monstPass,char doorPass);
 
 typedef struct {
   Int32  item;
@@ -1170,6 +1181,8 @@ LINK char               improved_interface;
 LINK char               improved_status;
 LINK char               easy_spells;
 LINK char               show_mount;
+LINK char               seamless_world_map;
+LINK char               follow_camera;
 LINK char               class_sprites;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
@@ -1557,6 +1570,7 @@ extern void remove_land_player();
 extern void remove_player();
 extern void show_headings();
 extern void show_land();
+extern void show_land_square(Int32 x,Int32 y);
 extern void show_land_player();
 extern void show_map();
 extern void show_player();
@@ -1717,12 +1731,36 @@ extern void marked_item_name(OBJECT_REC* item,char* name);
 extern void identify_on_pickup(OBJECT_REC* item);
 extern void identify_common_item(OBJECT_REC* item);
 extern Int32 passable(Int32 x,Int32 y,char monstPass,char doorPass);
+extern Int32 value_passable(Int32 value,char monstPass,char doorPass);
 extern Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass);
+extern Int32 los_through(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass,PASS_TEST pass);
 extern void activate(Int32 x,Int32 y);
 extern char adjust_map();
+extern Int32 camera_follows(void);
+extern void camera_arrive(void);
 extern Int32 compass(Int32 suggest);
 extern Int32 getPX(Int32 r,Int32 x);
 extern Int32 getPY(Int32 r,Int32 y);
+extern Int32 world_region(Int32 px,Int32 py);
+
+/* worldmap.c */
+extern Int32 seamless_world(void);
+extern Int32 land_region(Int32* x,Int32* y);
+extern Int32 square_value(Int32 x,Int32 y);
+extern Int32 square_known(Int32 x,Int32 y);
+extern Int32 reveal_land(Int32 x,Int32 y);
+extern Int32 land_passable(Int32 x,Int32 y,char monstPass,char doorPass);
+extern Int32 gateway_tile(void);
+extern void view_from_region(Int32 region);
+extern void land_view_bounds(Int32* min_x,Int32* max_x,Int32* min_y,Int32* max_y);
+
+/* minimap.c */
+extern Int32 minimap_left(void);
+extern Int32 minimap_top(void);
+extern void plot_minimap(Int32 x,Int32 y,Int32 color);
+extern Int32 land_color(Int32 tile);
+extern Int32 minimap_moved(void);
+extern void minimap_drawn(void);
 extern void level_legacy(OBJECT_REC* item);
 extern Int32 mutable_enchant();
 extern void check_level_legacy();

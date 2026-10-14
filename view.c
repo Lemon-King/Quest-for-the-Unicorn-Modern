@@ -103,10 +103,18 @@ static void name_place(Int32 x,Int32 y,char* name) {
   if (place != NULL) strcpy(name,place);
   }
 
+/* Whether you see square x,y; on the joined overworld, across its region edges too */
+static Int32 sees(Int32 x,Int32 y) {
+  if (seamless_world()) return los_through(player.x,player.y,x,y,'Y',land_passable);
+
+  return los(player.x,player.y,x,y,'Y');
+  }
+
 void view(Int32 floor) {
   Int32  i = 0,x,y;
   Int32  key;
   Int32  color;
+  Int32  value;
   char buffer[255];
 /*
   char mflag;
@@ -169,18 +177,15 @@ void view(Int32 floor) {
 
       }
     show_sprite(x,y,100);
-    if (los(player.x,player.y,x+player.map_x,y+player.map_y,'Y')) {
+    if (sees(x+player.map_x,y+player.map_y)) {
       color = CLR_YELLOW;
-      square_name(player.map[x+player.map_x][y+player.map_y],buffer,&color);
+      value = square_value(x+player.map_x,y+player.map_y);
+      square_name(value,buffer,&color);
       name_place(x+player.map_x,y+player.map_y,buffer);
-    if (player.map[x+player.map_x][y+player.map_y] < 0 ||
-        (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400) ||
-        (player.map[x+player.map_x][y+player.map_y] > 399 && player.map[x+player.map_x][y+player.map_y] < 500)) {
-      if (player.map[x+player.map_x][y+player.map_y] < 0) i = player.monster[1][0-player.map[x+player.map_x][y+player.map_y]].sprite;
-      if (player.map[x+player.map_x][y+player.map_y] > 299 && player.map[x+player.map_x][y+player.map_y] < 400)
-        i = player.party[player.map[x+player.map_x][y+player.map_y] - 300].sprite;
-      if (player.map[x+player.map_x][y+player.map_y] > 399 && player.map[x+player.map_x][y+player.map_y] < 500)
-        i = player.monster[player.map[x+player.map_x][y+player.map_y] - 400][a_mon].sprite;
+    if (value < 0 || (value > 299 && value < 400) || (value > 399 && value < 500)) {
+      if (value < 0) i = player.monster[1][0-value].sprite;
+      if (value > 299 && value < 400) i = player.party[value - 300].sprite;
+      if (value > 399 && value < 500) i = player.monster[value - 400][a_mon].sprite;
       switch (i) {
         case  101:strcpy(buffer,"Air Elemental"); break;
         case  102:strcpy(buffer,"Insectoid"); break;

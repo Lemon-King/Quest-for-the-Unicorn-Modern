@@ -303,6 +303,7 @@ static void down_level(Int32 check_clear) {
     if (player.map_y < 1) player.map_y = 1;
     if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
     if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    camera_arrive();
     show_screen();
 /*      activeDelay = 2; */
     if (in_room(player.x,player.y) && can_see()) light_room();
@@ -334,6 +335,7 @@ static void up_level(void) {
     if (player.map_y < 1) player.map_y = 1;
     if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
     if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    camera_arrive();
     if (player.d_level != 0) show_screen();
 /*      activeDelay = 2; */
     if (in_room(player.x,player.y) && can_see()) light_room();
@@ -776,6 +778,7 @@ void cave() {
   char buffer[20];
   Int32  in_corridor = 0;
   Int32  command;
+  char   camera;
 
 /*  Int32  activeDelay; */
 
@@ -882,6 +885,7 @@ void cave() {
   if (player.map_y < 1) player.map_y = 1;
   if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
   if (player.in_city == 'Y') {
     for (x=1; x<=100; x++)
       for (y=1; y<=100; y++)
@@ -1071,8 +1075,11 @@ void cave() {
               break;
         case 'O':
               saveScreen();
+              camera = follow_camera;
               game_options();
-              if (set_screen_layout()) {
+
+              /* Turning the follow camera on or off moves the view */
+              if (set_screen_layout() || follow_camera != camera) {
                 adjust_map();
                 show_screen();
                 }

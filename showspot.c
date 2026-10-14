@@ -60,6 +60,13 @@ static void show_creature(Int32 x,Int32 y,NPC_REC* creature,char on_stone) {
 
 void show_spot(Int32 x,Int32 y) {
   Int32 value;
+
+  /* The joined overworld draws squares past the region's edges too */
+  if (seamless_world()) {
+    show_land_square(x,y);
+    return;
+    }
+
   if (x < 1 || y < 1 || x > 100 || y > 100) return;
   if (in_sight(x,y) != '*') return;
   if (can_see() == 0 || player.known[x][y] == 0) {

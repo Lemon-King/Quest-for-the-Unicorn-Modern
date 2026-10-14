@@ -120,6 +120,7 @@ static void move_player(void) {
   if (player.map_y<1) player.map_y = 1;
   if (player.map_x>84) player.map_x = 84;
   if (player.map_y>84) player.map_y = 84;
+  camera_arrive();
   restoreScreen();
   show_screen();
   saveScreen();

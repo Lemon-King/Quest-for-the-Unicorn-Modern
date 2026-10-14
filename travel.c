@@ -91,6 +91,7 @@ static void new_town(Int32 where) {
   if (player.map_y<1) player.map_y = 1;
   if (player.map_x>100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y>100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
   i = 0;
   while (i >= 0) {
     if (forsale[i].region != 999) {

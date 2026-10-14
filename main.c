@@ -191,6 +191,8 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_trap = 100;
   enhanced_sprites = 'Y';
   show_mount = 'Y';
+  seamless_world_map = 'N';
+  follow_camera = 'N';
   class_sprites = 'Y';
   floor_item_names = 'Y';
   improved_item_id = 'Y';

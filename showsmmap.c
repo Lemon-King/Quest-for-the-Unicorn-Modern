@@ -13,6 +13,13 @@
 void show_sm_map() {
   Int32 x,y;
   Int32 color;
+
+  /* The joined overworld draws its own minimap, in the overworld's colours */
+  if (seamless_world()) {
+    show_sm_land();
+    return;
+    }
+
   pixel = 0;
   setfillstyle(1,0);
   bar(smap_offset_x,smap_offset_y,smap_offset_x+99,smap_offset_y+99);
@@ -37,11 +44,7 @@ void show_sm_map() {
           case 39:color = 1; break;
           case 41:color = 9; break;
           }
-        plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
-        plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
-        plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);
-        plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,color);
+        plot_minimap(x,y,color);
         }
   close_display();
   }
-

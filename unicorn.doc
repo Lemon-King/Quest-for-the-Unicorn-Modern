@@ -677,6 +677,24 @@
                               in place of your own figure: the first
                               flying mount in your party when you fly,
                               otherwise the first mount
+         Seamless World Map   The overworld is one map: walking off a
+                              region's edge goes on into the next with
+                              no change of screen, and you see and
+                              explore across the edge.  The small map
+                              follows you, centred where the world
+                              allows (On), or shows the region you are
+                              in (Region).  Off, each region is its own
+                              screen, as before
+         Follow Camera        The map view follows you, on the overworld
+                              and in towns and dungeons: you walk freely
+                              in the middle fifth of it, and beyond that
+                              the view moves with you a square at a time
+                              instead of jumping, stopping at the map's
+                              edges.  Arriving somewhere (a level, a
+                              town, the overworld, stairs, a teleport or
+                              a Tardis) centres the view on you, as far
+                              as the edges allow.  The arena's view stays
+                              as it is
          Gothic Scrolls       Write scrolls, lore and the library in
                               Gothic instead of the hand-drawn scroll
                               letters.  Either way each line is centred,

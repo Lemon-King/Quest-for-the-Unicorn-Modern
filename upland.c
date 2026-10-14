@@ -23,150 +23,86 @@ static Int32 light_distance(void) {
 
 static void land_discover(void) {
   Int32 i,j,color = 0;
+  Int32 tile;
   Int32 see_dist;
   see_dist = light_distance();
   for (i=player.x-see_dist; i<=player.x+see_dist; i++)
     for (j=player.y-see_dist; j<=player.y+see_dist; j++)
-      if (i>0 && i<101 && j>0 && j<101 && player.known[i][j] == 0) {
-        player.known[i][j] = 1;
+      if (reveal_land(i,j)) {
+        tile = square_value(i,j);
         if (i-player.map_x >= 0 && i-player.map_x <= TILES_X &&
             j-player.map_y >= 0 && j-player.map_y <= TILES_Y)
-          show_sprite(i-player.map_x,j-player.map_y,player.map[i][j]);
-        switch (player.map[i][j]) {
-          case  1:color = 10; break;
-          case  2:color = 2; break;
-          case  3:color = 6; break;
-          case  4:color = 1; break;
-          case  5:color = 4; break;
-          case  6:color = 3; break;
-          case  7:color = 8; break;
-          case  8:color = 14; break;
-          case  9:color = 5; break;
-          case 11:color = 4; break;
-          case 17:color = 4; break;
-          case 19:color = 6; break;
-          }
-        plot(smap_offset_x-2+i*2,smap_offset_y-1+j*2,color);
-        plot(smap_offset_x-1+i*2,smap_offset_y-1+j*2,color);
-        plot(smap_offset_x-2+i*2,smap_offset_y-0+j*2,color);
-        plot(smap_offset_x-1+i*2,smap_offset_y-0+j*2,color);
+          show_sprite(i-player.map_x,j-player.map_y,tile);
+
+        /* Without the Seamless World Map preference a tile with no colour of its own keeps the one before it */
+        if (land_color(tile) != 0 || seamless_world()) color = land_color(tile);
+        plot_minimap(i,j,color);
         }
   close_display();
   } /* void land_discover() */
 
-/* The Gateway's entrance: seen with A_GATE, and open with A_GACT as well */
+/* The Gateway's entrance, in its region while it shows */
 static void place_gateway(void) {
-  if (player.region != GATEWAY_REGION) return;
-  if (player.gateway != ' ' || !has_intrinsic(A_GATE)) return;
+  if (player.region != GATEWAY_REGION || gateway_tile() == 0) return;
 
-  if (has_intrinsic(A_GACT)) player.map[GATEWAY_X][GATEWAY_Y] = 31;
-    else player.map[GATEWAY_X][GATEWAY_Y] = 32;
+  player.map[GATEWAY_X][GATEWAY_Y] = gateway_tile();
+  }
+
+/* The player steps into region: the squares known in the one they leave are kept, and the new one's map comes in */
+static void enter_region(Int32 region) {
+  memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
+  player.region = region;
+  memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
+  copyMap(&player.map,player.region);
+  }
+
+/* The view follows the player out of region: with the Seamless World Map preference over the same part of the world,
+   or else to the new region's corner map_x,map_y, or centred on the player with the follow camera */
+static void follow_view(Int32 region,Int32 map_x,Int32 map_y) {
+  if (seamless_world()) {
+    view_from_region(region);
+    adjust_map();
+    return;
+    }
+
+  player.map_x = map_x;
+  player.map_y = map_y;
+  adjust_map();
+  camera_arrive();
   }
 
 static void check_region(void) {
-  char flag;
-//    Int32  m_file;
+  char  flag;
+  Int32 from;
   flag = ' ';
   if (player.y == 0 && player.region>4) {
-//#ifdef MINGW
-//      m_file = open("temp01.$$$",O_RDWR | O_BINARY);
-//#else
-//      m_file = open("temp01.$$$",O_RDWR);
-//#endif
-//      if (m_file < 0) {
-//        printf("Fatal Error: Could not open temp01.$$$\n");
-//        exit(1);
-//        }
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      write(m_file,&(player.known),sizeof(KNOW_TYPE));
-    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
-    player.region = player.region-4;
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//      close(m_file);
-    memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
-    copyMap(&player.map,player.region);
+    from = player.region;
+    enter_region(player.region-4);
     player.y = 100;
-    player.map_x = player.x-8;
-    player.map_y = player.y-15;
-    adjust_map();
+    follow_view(from,player.x-8,player.y-15);
     flag = '*';
     }
   if (player.y == 101 && player.region<9) {
-//#ifdef MINGW
-//      m_file = open("temp01.$$$",O_RDWR | O_BINARY);
-//#else
-//      m_file = open("temp01.$$$",O_RDWR);
-//#endif
-//      if (m_file < 0) {
-//        printf("Fatal Error: Could not open temp01.$$$\n");
-//        exit(1);
-//        }
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      write(m_file,&(player.known),sizeof(KNOW_TYPE));
-    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
-    player.region = player.region+4;
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//      close(m_file);
-    memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
-    copyMap(&player.map,player.region);
+    from = player.region;
+    enter_region(player.region+4);
     player.y = 1;
-    player.map_x = player.x-8;
-    player.map_y = player.y-8;
-    adjust_map();
+    follow_view(from,player.x-8,player.y-8);
     flag = '*';
     }
   if (player.x == 101 && player.region != 4 && player.region != 8 &&
       player.region != 12) {
-//#ifdef MINGW
-//      m_file = open("temp01.$$$",O_RDWR | O_BINARY);
-//#else
-//      m_file = open("temp01.$$$",O_RDWR);
-//#endif
-//      if (m_file < 0) {
-//        printf("Fatal Error: Could not open temp01.$$$\n");
-//        exit(1);
-//        }
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      write(m_file,&(player.known),sizeof(KNOW_TYPE));
-    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
-    player.region = player.region+1;
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//      close(m_file);
-    memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
-    copyMap(&player.map,player.region);
+    from = player.region;
+    enter_region(player.region+1);
     player.x = 1;
-    player.map_x = player.x-8;
-    player.map_y = player.y-8;
-    adjust_map();
+    follow_view(from,player.x-8,player.y-8);
     flag = '*';
     }
   if (player.x == 0 && player.region != 1 && player.region != 5 &&
       player.region != 9) {
-//#ifdef MINGW
-//      m_file = open("temp01.$$$",O_RDWR | O_BINARY);
-//#else
-//      m_file = open("temp01.$$$",O_RDWR);
-//#endif
-//      if (m_file < 0) {
-//        printf("Fatal Error: Could not open temp01.$$$\n");
-//        exit(1);
-//        }
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      write(m_file,&(player.known),sizeof(KNOW_TYPE));
-    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
-    player.region = player.region-1;
-//      lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//      read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//      close(m_file);
-    memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
-    copyMap(&player.map,player.region);
+    from = player.region;
+    enter_region(player.region-1);
     player.x = 100;
-    player.map_x = player.x-15;
-    player.map_y = player.y-8;
-    adjust_map();
+    follow_view(from,player.x-15,player.y-8);
     flag = '*';
     }
   strcpy(player.d_name,regions[player.region-1].name);
@@ -178,7 +114,11 @@ static void check_region(void) {
   if (player.x>100) player.x = 100;
   if (player.y<=1) player.y = 1;
   if (player.y>100) player.y = 100;
-  if (flag != ' ')
+
+  /* The joined overworld already shows the new region, but the region's name on the frame changes, and the view may
+     have scrolled with the player; move_land() draws the player and the minimap */
+  if (flag != ' ' && seamless_world()) show_land();
+  else if (flag != ' ')
     { show_land(); show_sm_land(); show_land_player(); }
   } /* void check_region() */
 
@@ -277,6 +217,7 @@ static char move_land(Int32 dx,Int32 dy) {
     }
   else walk_aboard();
   if (adjust_map() == 'Y') show_land();
+  if (seamless_world() && minimap_moved()) show_sm_land();
   show_land_player();
 
   moved = (player.x != old_x || player.y != old_y || player.region != old_region) ? 'Y' : 'N';
@@ -516,39 +457,29 @@ static void new_tardis(Int32 i) {
   } /* void new_tardis(Int32 i) */
 
 static void tardis(Int32 i) {
-//    Int32 m_file;
   if (has_intrinsic(A_TARD))
     if (player.tardis_r[i] != 0) {
-//#ifdef MINGW
-//        m_file = open("temp01.$$$",O_RDWR | O_BINARY);
-//#else
-//        m_file = open("temp01.$$$",O_RDWR);
-//#endif
-//        if (m_file < 0) {
-//          printf("Fatal Error: Could not open temp01.$$$\n");
-//          exit(1);
-//          }
-//        lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//        write(m_file,&(player.known),sizeof(KNOW_TYPE));
-      memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
-      player.region = player.tardis_r[i];
-//        lseek(m_file,sizeof(KNOW_TYPE) * player.region,SEEK_SET);
-//        read(m_file,&(player.known),sizeof(KNOW_TYPE));
-//        close(m_file);
-      memcpy(&(player.known), &(known_maps[player.region]), sizeof(KNOW_TYPE));
-      copyMap(&player.map,player.region);
+      enter_region(player.tardis_r[i]);
       player.x = player.tardis_x[i];
       player.y = player.tardis_y[i];
       player.map_x = player.x-8;
       player.map_y = player.y-8;
-      if (player.map_x<1) player.map_x = 1;
-      if (player.map_y<1) player.map_y = 1;
-      if (player.map_x>86) player.map_x = 86;
-      if (player.map_y>86) player.map_y = 86;
+
+      /* The joined overworld's view stops only at the world's edges, where adjust_map() keeps it */
+      if (!seamless_world()) {
+        if (player.map_x<1) player.map_x = 1;
+        if (player.map_y<1) player.map_y = 1;
+        if (player.map_x>86) player.map_x = 86;
+        if (player.map_y>86) player.map_y = 86;
+        }
       adjust_map();
+      camera_arrive();
       if (player.inship == ' ' && player.ship_r == player.region) {
             player.map[player.ship_x][player.ship_y] = 12;
         }
+
+      /* The joined overworld names the region it lands in; 7.0 kept the old name until the next region crossing */
+      if (seamless_world()) strcpy(player.d_name,regions[player.region-1].name);
       place_gateway();
       show_map();
       show_sm_map();
@@ -683,6 +614,8 @@ void up_land() {
   Int32  sug_level;
   char   turn;
   Int32  command;
+  char   seamless;
+  char   camera;
 
 /* ******************************************* */
 /* ***** Actual beginning of upland code ***** */
@@ -715,6 +648,7 @@ void up_land() {
   player.map_x = player.x-8;
   player.map_y = player.y-8;
   adjust_map();
+  camera_arrive();
   track_ship();
   if (player.inship == ' ' && player.ship_r == player.region) {
       player.map[player.ship_x][player.ship_y] = 12;
@@ -810,8 +744,12 @@ void up_land() {
           turn = 'N';
           break;
       case 'O':
+          seamless = seamless_world_map;
+          camera = follow_camera;
           game_options();
-          if (set_screen_layout()) adjust_map();
+
+          /* Turning Seamless World Map off can leave the view past the region's edges, and the follow camera moves it */
+          if (set_screen_layout() || seamless_world_map != seamless || follow_camera != camera) adjust_map();
           graphmode();
           show_land();
           show_sm_land();

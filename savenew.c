@@ -280,6 +280,8 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
   sprintf(line, "  ShowMount %c", show_mount);              write_line(file, line);
+  sprintf(line, "  SeamlessWorldMap %c", seamless_world_map); write_line(file, line);
+  sprintf(line, "  FollowCamera %c", follow_camera);        write_line(file, line);
   sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  ImprovedItemIdentification %c", improved_item_id); write_line(file, line);

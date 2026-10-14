@@ -227,6 +227,7 @@
     <ClCompile Include="mechmerchant.c" />
     <ClCompile Include="meleehit.c" />
     <ClCompile Include="menu.c" />
+    <ClCompile Include="minimap.c" />
     <ClCompile Include="missile.c" />
     <ClCompile Include="mounts.c" />
     <ClCompile Include="moveenemy.c" />
@@ -363,6 +364,7 @@
     <ClCompile Include="view.c" />
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
+    <ClCompile Include="worldmap.c" />
     <ClCompile Include="worldpos.c" />
     <ClCompile Include="writefont.c" />
     <ClCompile Include="yesno.c" />

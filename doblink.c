@@ -32,6 +32,7 @@ void do_blink() {
     if (player.y<1) player.y = 1;
     if (player.x>84) player.x = 84;
     if (player.y>84) player.y = 84;
+    camera_arrive();
     }
   show_screen();
   }

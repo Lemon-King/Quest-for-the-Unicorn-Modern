@@ -35,6 +35,7 @@ void go_up() {
     if (player.map_x > 84) player.map_x = 84;
     if (player.map_y > 84) player.map_y = 84;
 */
+    camera_arrive();
     show_screen();
     }
   }
