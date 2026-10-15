@@ -251,6 +251,12 @@ void put_half_image(Int32 x,Int32 y,char** img) {
   canvas_half_sprite(screen,sprites,x,y,(const char* const*)img);
   }
 
+/* A sprite repeated across x1,y1 to x2,y2, right and bottom left out as bar() leaves them, its pixels counted from
+   origin_x,origin_y */
+void put_tiled_image(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 origin_x,Int32 origin_y,char** img) {
+  canvas_tiled_sprite(screen,sprites,x1,y1,x2-x1,y2-y1,origin_x,origin_y,(const char* const*)img);
+  }
+
 void delay(Int32 tm) {
   present();
   host_sleep(host,tm);

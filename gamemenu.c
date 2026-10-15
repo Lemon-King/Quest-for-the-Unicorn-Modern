@@ -72,11 +72,6 @@ typedef struct {
   Int32         width;
   } COMMANDS;
 
-/* The eight squares around you, clockwise from north, with the key that steps there */
-static const Int32 step_x[8]   = { 0, 1, 1, 1, 0, -1, -1, -1 };
-static const Int32 step_y[8]   = { -1, -1, 0, 1, 1, 1, 0, -1 };
-static const char  step_key[8] = { '8', '9', '6', '3', '2', '1', '4', '7' };
-
 static char* save_choices[3] = { "Overwrite", "Save as New", "Cancel" };
 static char* overwrite_choices[2] = { "Yes", "No" };
 
@@ -258,8 +253,8 @@ static void add_item_command(COMMANDS* commands,char* verb,OBJECT_REC* item,char
 
 /* The square in direction d, as x,y; returns 0 off the map's edge */
 static Int32 square_beside(Int32 d,Int32* x,Int32* y) {
-  *x = player.x + step_x[d];
-  *y = player.y + step_y[d];
+  *x = player.x + step_x(d);
+  *y = player.y + step_y(d);
 
   return (*x >= 1 && *x <= 100 && *y >= 1 && *y <= 100);
   }
@@ -292,8 +287,8 @@ static void add_aimed(COMMANDS* commands,char* label,char key,char aimed,Int32 d
   keys[0] = key;
   keys[1] = 0;
   keys[2] = 0;
-  if (aimed == ' ') keys[1] = step_key[d];
-    else if (aimed != step_key[d]) return;
+  if (aimed == ' ') keys[1] = step_key(d);
+    else if (aimed != step_key(d)) return;
 
   add_command(commands,label,keys,CONTEXT_COLOR);
   }
@@ -302,7 +297,7 @@ static void add_aimed(COMMANDS* commands,char* label,char key,char aimed,Int32 d
 static COMMAND* add_step(COMMANDS* commands,char* label,Int32 d,char then) {
   char keys[3];
 
-  keys[0] = step_key[d];
+  keys[0] = step_key(d);
   keys[1] = then;
   keys[2] = 0;
   return add_command(commands,label,keys,CONTEXT_COLOR);
@@ -357,7 +352,7 @@ static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
   NPC_REC* creature;
   char     label[80];
 
-  creature = get_monster(player.x + step_x[d],player.y + step_y[d]);
+  creature = get_monster(player.x + step_x(d),player.y + step_y(d));
   if (creature == NULL) return;
 
   if ((creature->special & MS_FRIENDLY) != 0) {
@@ -559,6 +554,7 @@ static void list_overworld(COMMANDS* commands) {
   add_command(commands,"Character","R",COMMON_COLOR);
   add_status_effects(commands);
   add_command(commands,"Location","~",COMMON_COLOR);
+  if (world_map != 'N') add_command(commands,"World map","M",COMMON_COLOR);
   add_command(commands,"Icons","H",COMMON_COLOR);
   add_command(commands,"Help","?",COMMON_COLOR);
   add_command(commands,"Options","O",COMMON_COLOR);

@@ -36,6 +36,7 @@ Options:
   Music Volume: 100
   Game Thread: Y
   Integer Scaling: N
+  World Map: A
 Macros:
   F1 = 
   F2 = 

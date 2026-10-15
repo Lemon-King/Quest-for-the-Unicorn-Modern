@@ -949,6 +949,23 @@ typedef struct {
   Int32 x;
   } STATUS_NOTE;
 
+#define MAX_WORLD_PLACES 256   /* 173 on the shipped maps: you, 9 towns, 60 dungeons, 101 villages, Gateway, ship */
+
+/* A place the world map marks: its overworld position, the sprite of its marker (a place's tile is its sprite) and its
+   name */
+typedef struct {
+  Int32 px;
+  Int32 py;
+  Int32 sprite;
+  char  name[33];
+  } WORLD_PLACE;
+
+/* The places find_world_places() found, you first */
+typedef struct {
+  WORLD_PLACE list[MAX_WORLD_PLACES];
+  Int32       count;
+  } WORLD_PLACES;
+
 /* How fed you are, in the side panel's bands: the word, its colour, and whether the panel shows it (it leaves Healthy
    blank) */
 typedef struct {
@@ -1183,6 +1200,7 @@ LINK char               easy_spells;
 LINK char               show_mount;
 LINK char               seamless_world_map;
 LINK char               follow_camera;
+LINK char               world_map;            /* the World Map preference: 'N' Off, 'C' Color, 'A' Art */
 LINK char               class_sprites;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
@@ -1432,6 +1450,7 @@ extern void outtextxyclr(Int32 x,Int32 y,char* buffer);
 extern void outtext_xy(Int32 x,Int32 y,char* buffer);
 extern void putimage(Int32 x,Int32 y,char** img,Int32 typ);
 extern void put_half_image(Int32 x,Int32 y,char** img);
+extern void put_tiled_image(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 origin_x,Int32 origin_y,char** img);
 extern Int32 readkey();
 extern void readln(char* buffer);
 extern Int32 p_read(char* buffer);
@@ -1756,6 +1775,21 @@ extern Int32 land_passable(Int32 x,Int32 y,char monstPass,char doorPass);
 extern Int32 gateway_tile(void);
 extern void view_from_region(Int32 region);
 extern void land_view_bounds(Int32* min_x,Int32* max_x,Int32* min_y,Int32* max_y);
+extern Int32 world_tile(Int32 px,Int32 py);
+extern Int32 world_known(Int32 px,Int32 py);
+
+/* worldplaces.c */
+extern void find_world_places(WORLD_PLACES* places);
+extern Int32 next_world_place(const WORLD_PLACES* places,Int32 from,Int32 dx,Int32 dy);
+
+/* worldmapview.c */
+extern void show_world_map(void);
+
+/* steps.c */
+extern Int32 step_x(Int32 d);
+extern Int32 step_y(Int32 d);
+extern char step_key(Int32 d);
+extern Int32 key_step(char key);
 
 /* minimap.c */
 extern Int32 minimap_left(void);
@@ -1843,11 +1877,13 @@ extern Int32 offhand_weapon();
 extern void show_time();
 extern void process_config(char* name);
 extern void save_config_value(char* name,char* key,Int32 value);
+extern void save_config_text(char* name,char* key,char* value);
 extern Int32 process_option(char* pChar);
 extern void remember_built_in_defaults();
 extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();
+extern void set_config_switch(char* key,char* name);
 extern void read_character_rules();
 extern void clear_gameplay_changes();
 extern void save_gameplay_changes(FILE* file);

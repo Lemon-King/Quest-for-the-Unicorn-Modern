@@ -72,6 +72,28 @@ Save-Screen "look"                       # look-mode cursor on the city west of 
 Invoke-Driver keys esc
 Invoke-Driver quit
 
+# The world map, from a save that knows every region
+Reset-WorkFolder
+Copy-Item (Join-Path $Fixtures "World.sav") $Work
+Invoke-Driver launch World -nmu
+Invoke-Driver keys enter enter
+Invoke-Driver keys enter
+Invoke-Driver keys M
+Save-Screen "world-map-art"              # every region in tile art, every marker, "You" under your figure
+Invoke-Driver keys 4 4 8 6
+Save-Screen "world-map-select"           # 4 4 8 6 from you: Radon, Areth Knoll, The Mines of the Desert, Goldville
+Invoke-Driver quit
+
+Reset-WorkFolder
+Copy-Item (Join-Path $Fixtures "World.sav") $Work
+Add-Content -Encoding ascii (Join-Path $Work "unicorn.cfg") "WorldMap=Color"
+Invoke-Driver launch World -nmu
+Invoke-Driver keys enter enter
+Invoke-Driver keys enter
+Invoke-Driver keys M
+Save-Screen "world-map-color"            # every region in the minimap's colours
+Invoke-Driver quit
+
 # Window captures: what the window shows at fixed client sizes
 Reset-WorkFolder
 Invoke-Driver launch -nmu

@@ -66,6 +66,15 @@ extern "C" void canvas_half_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_
     }
   }
 
+extern "C" void canvas_tiled_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, int32_t width,
+                                    int32_t height, int32_t originX, int32_t originY, const char* const* xpm) {
+  try {
+    canvas->canvas.tile(platform::Rect{x, y, x + width, y + height}, originX, originY, sprites->cache.sprite(xpm));
+    }
+  catch (const std::exception&) {
+    }
+  }
+
 extern "C" void canvas_copy(CANVAS* target, const CANVAS* source) {
   try {
     target->canvas.copyFrom(source->canvas);

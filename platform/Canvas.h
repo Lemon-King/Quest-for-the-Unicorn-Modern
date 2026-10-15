@@ -33,6 +33,7 @@ class Canvas {
     void point(int32_t x, int32_t y, uint32_t rgb);
     void mask(int32_t x, int32_t y, const uint8_t* rows, int32_t height, uint32_t rgb);
     void image(int32_t x, int32_t y, const Image& image);
+    void tile(const Rect& area, int32_t originX, int32_t originY, const Image& image);
     void copyFrom(const Canvas& source);
 
     Rect takeDirty();

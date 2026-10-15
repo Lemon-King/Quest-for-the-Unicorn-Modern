@@ -11,7 +11,7 @@
 /* The overworld as one map, for the Seamless World Map preference. Only the region you are in lives in player.map, so
    its squares keep their numbers and the squares past its edges are its neighbours': x 0 is the last column of the
    region to the west, x 101 the first of the region to the east. Without the preference every square is the region's
-   own, as before. */
+   own, as before. The world map reads any square of the world by its overworld position. */
 
 #include "header.h"
 
@@ -74,6 +74,14 @@ Int32 square_value(Int32 x,Int32 y) {
   return region_tile(region,x,y);
   }
 
+/* Where square x,y of region keeps whether it is known: the region you walk keeps its squares in player.known until
+   you leave it */
+static byte* region_known(Int32 region,Int32 x,Int32 y) {
+  if (in_upland == 'Y' && region == player.region) return &(player.known[x][y]);
+
+  return &(known_maps[region][x][y]);
+  }
+
 /* Where the map keeps whether square x,y is known, or NULL off the world */
 static byte* known_square(Int32 x,Int32 y) {
   Int32 region;
@@ -83,7 +91,7 @@ static byte* known_square(Int32 x,Int32 y) {
   region = land_region(&x,&y);
   if (region == 0) return NULL;
 
-  return &(known_maps[region][x][y]);
+  return region_known(region,x,y);
   }
 
 Int32 square_known(Int32 x,Int32 y) {
@@ -92,6 +100,26 @@ Int32 square_known(Int32 x,Int32 y) {
   known = known_square(x,y);
 
   return (known != NULL && *known != 0);
+  }
+
+/* The tile at overworld position px,py as up_land() shows it; 0 off the world */
+Int32 world_tile(Int32 px,Int32 py) {
+  Int32 region;
+
+  region = world_region(px,py);
+  if (region == 0) return 0;
+
+  return region_tile(region,px - getPX(region,0),py - getPY(region,0));
+  }
+
+/* Whether you have found the square at overworld position px,py */
+Int32 world_known(Int32 px,Int32 py) {
+  Int32 region;
+
+  region = world_region(px,py);
+  if (region == 0) return 0;
+
+  return (*region_known(region,px - getPX(region,0),py - getPY(region,0)) != 0);
   }
 
 /* Marks land square x,y known. Returns 1 when it was not known before. */

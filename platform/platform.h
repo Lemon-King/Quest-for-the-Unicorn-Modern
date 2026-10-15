@@ -27,7 +27,8 @@ typedef struct GLYPH_FONT   GLYPH_FONT;
 typedef struct SPRITE_CACHE SPRITE_CACHE;
 typedef struct GAME_HOST    GAME_HOST;
 
-/* A back buffer of 0x00RRGGBB pixels. Drawing outside it is clipped. */
+/* A back buffer of 0x00RRGGBB pixels. Drawing outside it is clipped. A tiled sprite fills its rectangle with the
+   sprite repeated from originX,originY. */
 CANVAS*           canvas_create(int32_t width, int32_t height);
 void              canvas_destroy(CANVAS* canvas);
 void              canvas_fill(CANVAS* canvas, int32_t x, int32_t y, int32_t width, int32_t height, uint32_t rgb);
@@ -36,6 +37,8 @@ void              canvas_point(CANVAS* canvas, int32_t x, int32_t y, uint32_t rg
 void              canvas_text(CANVAS* canvas, const GLYPH_FONT* font, int32_t x, int32_t baseline, const char* text, uint32_t rgb);
 void              canvas_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, const char* const* xpm);
 void              canvas_half_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, const char* const* xpm);
+void              canvas_tiled_sprite(CANVAS* canvas, SPRITE_CACHE* sprites, int32_t x, int32_t y, int32_t width,
+                                      int32_t height, int32_t originX, int32_t originY, const char* const* xpm);
 void              canvas_copy(CANVAS* target, const CANVAS* source);
 int32_t           canvas_save_bmp(const CANVAS* canvas, const char* filename);
 

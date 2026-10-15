@@ -816,6 +816,9 @@
     <ClCompile Include="statstakedamage.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="steps.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="stockencounter.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -931,6 +934,12 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="worldmap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="worldmapview.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="worldplaces.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="worldpos.c">

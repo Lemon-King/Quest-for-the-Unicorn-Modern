@@ -214,6 +214,8 @@
                               between pixels.  The default
          MusicVolume=percent  Volume of the background music, 0 to 100 in
                               steps of 10.  The default is 100
+         WorldMap=style       What M shows on the upland: Off, Color or
+                              Art (see World Map).  The default is Art
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -700,6 +702,10 @@
                               a Tardis) centres the view on you, as far
                               as the edges allow.  The arena's view stays
                               as it is
+         World Map            What M shows on the upland (see World
+                              Map): nothing (Off), the world in the
+                              small map's colours (Color), or with each
+                              tile's own art (Art)
          Gothic Scrolls       Write scrolls, lore and the library in
                               Gothic instead of the hand-drawn scroll
                               letters.  Either way each line is centred,
@@ -711,9 +717,10 @@
          Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
-     unicorn.cfg as MusicVolume, so it applies to every character.  All
-     the other options are saved with the character, so every saved
-     game keeps its own options.  A game saved by an older version keeps
+     unicorn.cfg as MusicVolume, so it applies to every character.  World
+     Map is kept there too, as WorldMap.  All the other options are saved
+     with the character, so every saved game keeps its own options.  A
+     game saved by an older version keeps
      its mode, depth, monster count and arena setting, and takes the other
      options from unicorn.cfg and the command line the first time it is
      loaded.
@@ -782,6 +789,7 @@
          h - Hunt for food
          E - Enter/Exit a ship
          R - Show player record
+         M - World map
          O - Options
          { - Save weapon set
          [ - Recall weapon set
@@ -1230,6 +1238,24 @@
      newest first, and the one you pick starts at once.  For a character
      with permadeath both are greyed out.  Save and Exit saves and leaves
      the game, as <X> does.
+
+     World Map
+     =========
+       On the upland, <M> shows the whole world: the twelve regions side
+     by side, as large as the screen allows, with only the land you have
+     seen.  Markers show where you are, your ship where you left it, and
+     each town, dungeon, village and the Gateway you have found.  The
+     direction keys move to the nearest marker that way, and the one
+     chosen is named in yellow under it.  When you stand on a town or
+     dungeon, your own marker takes its name.  <ESC>, <Enter> or <M> goes
+     back.  The map takes no time, though without the Free Upland Keys
+     change <M> passes a turn, as every upland key does.
+
+       The World Map preference (O) draws the land in the small map's
+     colours (Color) or with each tile's own art (Art), or turns the map
+     off (Off), and then <M> does nothing.  It is kept in unicorn.cfg as
+     WorldMap, so it applies to every character.  While the map is on,
+     the Tab Menu offers it on the upland as World map.
 
      Persistant Dungeons
      ===================

@@ -531,6 +531,16 @@ static void gps(void) {
   msg(buffer,15);
   }
 
+/* The overworld's whole screen, after a screen that covered it */
+static void redraw_land(void) {
+  graphmode();
+  show_land();
+  show_sm_land();
+  show_land_player();
+  show_side();
+  show_messages();
+  }
+
 /* An overworld turn: regeneration, the clock and food, and the chance of an encounter */
 static void land_turn(void) {
   Int32 i;
@@ -711,6 +721,12 @@ void up_land() {
       case 'H':show_icons();
                turn = 'N';
                break;
+      case 'M':if (world_map != 'N') {
+                 show_world_map();
+                 redraw_land();
+                 }
+               turn = 'N';
+               break;
       case 'h':hunt(); break;
       case 's':hunt(); break;
       case 'i':turn = do_inventory(); break;
@@ -750,12 +766,7 @@ void up_land() {
 
           /* Turning Seamless World Map off can leave the view past the region's edges, and the follow camera moves it */
           if (set_screen_layout() || seamless_world_map != seamless || follow_camera != camera) adjust_map();
-          graphmode();
-          show_land();
-          show_sm_land();
-          show_land_player();
-          show_side();
-          show_messages();
+          redraw_land();
           turn = 'N';
           break;
       case '~':gps();

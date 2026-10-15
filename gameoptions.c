@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      20
+#define NUM_PREFS      21
 #define NUM_CHANGES    63
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -47,9 +47,9 @@
 /* units follows a number's value; strict is a switch's third value, after On, and extra a fourth, after Strict, which
    needs names; names replaces Off, On, Strict and the fourth as a switch's value names; standard is a number's or
    mode's own default, and initial the value a new game starts with, after unicorn.cfg and the command line; config
-   names the unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect; key
-   names a gameplay change in the save; start is the value a new game starts a gameplay change at, when not On or
-   Strict; needs is a preference that must be On for this one to change */
+   names the unicorn.cfg key of a number or switch kept there instead of in the save, a switch by its value's name;
+   apply puts a new value into effect; key names a gameplay change in the save; start is the value a new game starts a
+   gameplay change at, when not On or Strict; needs is a preference that must be On for this one to change */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -170,6 +170,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Follow Camera",
     .help  = "The view follows you once you leave its middle fifth, stopping at map edges",
     .kind  = OPT_SWITCH, .flag = &follow_camera, .on = 'Y', .off = 'N' },
+  { .label = "World Map",
+    .help  = "What M shows on the upland: the world you have found, in colours or tile art",
+    .kind  = OPT_SWITCH, .flag = &world_map, .on = 'C', .off = 'N', .strict = 'A',
+    .names = { "Off", "Color", "Art" }, .config = "WorldMap" },
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
@@ -500,6 +504,30 @@ static char* switch_name(OPTION_ROW* row, char flag) {
   return names[0];
   }
 
+/* A row kept in unicorn.cfg: a number as itself, a switch as its value's name */
+static void save_config_row(OPTION_ROW* row) {
+  if (row->kind == OPT_SWITCH) save_config_text("unicorn",row->config,switch_name(row,*row->flag));
+    else save_config_value("unicorn",row->config,*row->number);
+  }
+
+/* Sets the switch unicorn.cfg keeps under key to the value called name, as save_config_row() writes it; any other
+   name leaves it as it is */
+void set_config_switch(char* key,char* name) {
+  OPTION_ROW* row;
+  Int32       i;
+
+  while (*name == ' ') name++;
+  for (i=0; i<NUM_OPTIONS; i++) {
+    row = &option_rows[i];
+    if (row->kind != OPT_SWITCH || row->config == NULL || _stricmp(row->config,key) != 0) continue;
+
+    if (_stricmp(name,switch_name(row,row->off)) == 0) *row->flag = row->off;
+    if (_stricmp(name,switch_name(row,row->on)) == 0) *row->flag = row->on;
+    if (row->strict != 0 && _stricmp(name,switch_name(row,row->strict)) == 0) *row->flag = row->strict;
+    if (row->extra != 0 && _stricmp(name,switch_name(row,row->extra)) == 0) *row->flag = row->extra;
+    }
+  }
+
 /* Steps a switch through Off and On, then Strict and the fourth value when it has them, wrapping either way */
 static char next_switch_value(OPTION_ROW* row, Int32 dir) {
   char  values[4];
@@ -566,7 +594,7 @@ static void change_option(OPTION_ROW* row, Int32 dir) {
     }
 
   if (row->apply != NULL) row->apply();
-  if (row->config != NULL) save_config_value("unicorn",row->config,*row->number);
+  if (row->config != NULL) save_config_row(row);
   }
 
 /* The label is padded to the value column, so a scrolled row covers the one it replaces */

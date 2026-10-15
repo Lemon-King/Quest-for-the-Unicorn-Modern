@@ -193,6 +193,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   show_mount = 'Y';
   seamless_world_map = 'N';
   follow_camera = 'N';
+  world_map = 'A';
   class_sprites = 'Y';
   floor_item_names = 'Y';
   improved_item_id = 'Y';
@@ -305,6 +306,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     printf("  Music Volume: %d\n", music_volume);
     printf("  Game Thread: %c\n", game_thread);
     printf("  Integer Scaling: %c\n", integer_scaling);
+    printf("  World Map: %c\n", world_map);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);

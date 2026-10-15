@@ -326,6 +326,7 @@
     <ClCompile Include="sqr.c" />
     <ClCompile Include="statsdodamage.c" />
     <ClCompile Include="statstakedamage.c" />
+    <ClCompile Include="steps.c" />
     <ClCompile Include="stockencounter.c" />
     <ClCompile Include="stockmonsters.c" />
     <ClCompile Include="stocktown.c" />
@@ -365,6 +366,8 @@
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
     <ClCompile Include="worldmap.c" />
+    <ClCompile Include="worldmapview.c" />
+    <ClCompile Include="worldplaces.c" />
     <ClCompile Include="worldpos.c" />
     <ClCompile Include="writefont.c" />
     <ClCompile Include="yesno.c" />
