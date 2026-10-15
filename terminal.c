@@ -15,7 +15,7 @@
 /* What shows the game's frames and brings its keys */
 static GAME_HOST*        host;
 
-/* Drawing goes to the canvas only; present() hands it to the host when the game flushes or waits.
+/* Drawing goes to the canvas only; present() hands it to the host when the game waits.
    saved is the copy saveScreen() keeps; sprites and font draw on either. */
 static CANVAS*           screen;
 static CANVAS*           saved;
@@ -81,7 +81,8 @@ static void clear_buffer() {
   canvas_fill(screen,0,0,screen_width,screen_height,palette_rgb(CLR_BLACK));
   }
 
-/* What the game drew since the last call reaches the window */
+/* What the game drew since the last call reaches the window. Only a wait for a key or a delay calls it, so a screen
+   still being drawn, such as a step's with the player erased, never shows. */
 static void present() {
   host_present(host,screen);
   }
@@ -224,13 +225,12 @@ Int32 readkey() {
   return key;
   }
 
+/* Nothing to do: the screen reaches the window at the game's next wait */
 void flush() {
-  present();
   }
 
-/* Its callers pair it with their batches of plot() */
+/* Its callers pair it with their batches of plot(); as flush(), it leaves the screen to the next wait */
 void close_display() {
-  present();
   }
 
 void plot(Int32 x,Int32 y,Int32 clr) {

@@ -30,9 +30,9 @@ int InlineHost::run() {
   return 0;
   }
 
-/* Shown at once: there is no other thread to show it */
+/* Shown at the window's next tick, which comes while the game waits for or polls a key, or sleeps */
 void InlineHost::present(Canvas& canvas) {
-  if (frames_.publish(canvas)) window_.showFrame();
+  frames_.publish(canvas);
   }
 
 int32_t InlineHost::peekKey() {
@@ -45,9 +45,9 @@ int32_t InlineHost::readKey() {
   return input_.pop();
   }
 
-/* The window is not serviced while the game sleeps, as before */
+/* The window presents its frame clock's ticks while the game sleeps, but handles no messages, as before */
 void InlineHost::sleep(int32_t milliseconds) {
-  Sleep(static_cast<DWORD>(std::max(milliseconds, 0)));
+  window_.presentFor(static_cast<DWORD>(std::max(milliseconds, 0)));
   }
 
 bool InlineHost::closed() const {

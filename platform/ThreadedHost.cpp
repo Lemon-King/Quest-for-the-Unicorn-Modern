@@ -40,9 +40,9 @@ int ThreadedHost::run() {
     }
   }
 
-/* The rest run on the game thread */
+/* The rest run on the game thread. The window shows the frame at its clock's next tick. */
 void ThreadedHost::present(Canvas& canvas) {
-  if (frames_.publish(canvas)) window_.requestFrame();
+  frames_.publish(canvas);
   }
 
 int32_t ThreadedHost::peekKey() {
