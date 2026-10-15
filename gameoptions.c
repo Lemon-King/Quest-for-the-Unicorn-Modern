@@ -18,8 +18,8 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      21
-#define NUM_CHANGES    64
+#define NUM_PREFS      22
+#define NUM_CHANGES    65
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -177,6 +177,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
+  { .label = "Color Palette",
+    .help  = "Text and map colours: X11, as on Windows, or the DOS (CGA/EGA/VGA) colours",
+    .kind  = OPT_SWITCH, .flag = &color_palette, .on = 'D', .off = 'X',
+    .names = { "X11", "DOS" }, .config = "ColorPalette" },
   { .label = "Ranged Delay (ms)",
     .help  = "Ranged attack flight delay",
     .kind  = OPT_NUMBER, .number = &delay_ranged, .min = 0, .max = 1000, .step = 5 },
@@ -362,6 +366,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Shop Boots and Wands",
     .help  = "Armor shops sell boots, and magic shops sell wands",
     .kind  = OPT_SWITCH, .flag = &change_shop_boots_wands, .on = 'Y', .off = 'N', .key = "ShopBootsAndWands" },
+  { .label = "Shop Dagger",
+    .help  = "Weapon shops sell the Dagger once, not again from the item table's first row",
+    .kind  = OPT_SWITCH, .flag = &change_shop_dagger, .on = 'Y', .off = 'N', .key = "ShopDagger" },
   { .label = "Platinum Dragon Mount",
     .help  = "A Platinum Dragon bought at the stable is a flying mount like other dragons",
     .kind  = OPT_SWITCH, .flag = &change_platinum_dragon_mount, .on = 'Y', .off = 'N', .key = "PlatinumDragonMount" },
@@ -665,6 +672,7 @@ static void edit_options(char* title, char rules_editable) {
   Int32 group;
   Int32 group_row[NUM_GROUPS];
   char  key;
+  char  palette;
 
   for (group=0; group<NUM_GROUPS; group++) option_groups[group].rows.top = 0;
   draw_screen(title, rules_editable);
@@ -694,8 +702,12 @@ static void edit_options(char* title, char rules_editable) {
     if (key == '4' || key == '-') dir = -1;
     if (key == '6' || key == '+' || key == '=') dir = 1;
     if (dir != 0 && is_editable(i, rules_editable)) {
+      palette = color_palette;
       change_option(&option_rows[i], dir);
-      draw_options(rules_editable);
+
+      /* A new palette shows only in what is drawn after it */
+      if (color_palette != palette) draw_screen(title, rules_editable);
+        else draw_options(rules_editable);
       }
     }
   }

@@ -148,6 +148,7 @@ Int32 process_option(char* pChar) {
            music_volume = (music_volume + 5) / 10 * 10;
            }
     else if (_strnicmp(option,"WorldMap=",9) == 0) set_config_switch("WorldMap",option+9);
+    else if (_strnicmp(option,"ColorPalette=",13) == 0) set_config_switch("ColorPalette",option+13);
     else if (_strnicmp(option,"Width=",6) == 0) {
            screen_width = option_value(option);
            }

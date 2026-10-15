@@ -37,6 +37,7 @@ Options:
   Game Thread: Y
   Integer Scaling: N
   World Map: A
+  Color Palette: X
 Macros:
   F1 = 
   F2 = 

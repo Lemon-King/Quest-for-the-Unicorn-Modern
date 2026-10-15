@@ -22,8 +22,9 @@ static CANVAS*           saved;
 static SPRITE_CACHE*     sprites;
 static const GLYPH_FONT* font;
 
-/* CLR_BLACK..CLR_WHITE as the GDI build resolved their X11 names */
-static const UInt32 PALETTE[16] = {
+/* CLR_BLACK..CLR_WHITE in the Color Palette preference's palettes. X11 is the GDI build's, which resolved their X11
+   names, so light red (red1) is red itself; DOS is the 16 colours of CGA, EGA and VGA. */
+static const UInt32 X11_PALETTE[16] = {
   0x000000,   /* black      */
   0x0000cd,   /* blue3      */
   0x00cd00,   /* green3     */
@@ -42,18 +43,42 @@ static const UInt32 PALETTE[16] = {
   0xffffff    /* white      */
   };
 
+static const UInt32 DOS_PALETTE[16] = {
+  0x000000,   /* black         */
+  0x0000aa,   /* blue          */
+  0x00aa00,   /* green         */
+  0x00aaaa,   /* cyan          */
+  0xaa0000,   /* red           */
+  0xaa00aa,   /* magenta       */
+  0xaa5500,   /* brown         */
+  0xaaaaaa,   /* light gray    */
+  0x555555,   /* dark gray     */
+  0x5555ff,   /* light blue    */
+  0x55ff55,   /* light green   */
+  0x55ffff,   /* light cyan    */
+  0xff5555,   /* light red     */
+  0xff55ff,   /* light magenta */
+  0xffff55,   /* yellow        */
+  0xffffff    /* white         */
+  };
+
 Int32 cursor_x;
 Int32 cursor_y;
 Int32 text_color;
 Int32 g_color;
 
-/* The GDI build left a colour outside the palette at the GC's default, black */
+/* The colour in the palette the Color Palette preference picks. The GDI build left a colour outside the palette at the
+   GC's default, black. */
 static UInt32 palette_rgb(Int32 color) {
-  return (color >= 0 && color < 16) ? PALETTE[color] : PALETTE[CLR_BLACK];
+  const UInt32* palette;
+
+  palette = (color_palette == 'D') ? DOS_PALETTE : X11_PALETTE;
+
+  return (color >= 0 && color < 16) ? palette[color] : palette[CLR_BLACK];
   }
 
 static void clear_buffer() {
-  canvas_fill(screen,0,0,screen_width,screen_height,PALETTE[CLR_BLACK]);
+  canvas_fill(screen,0,0,screen_width,screen_height,palette_rgb(CLR_BLACK));
   }
 
 /* What the game drew since the last call reaches the window */
@@ -133,7 +158,7 @@ void txt_write(char* buffer) {
     x = cursor_x + text_offset_x;
     y = cursor_y + text_offset_y;
     b2[0] = buffer[i];
-    canvas_fill(screen,x*8,y*19,8,19,PALETTE[CLR_BLACK]);
+    canvas_fill(screen,x*8,y*19,8,19,palette_rgb(CLR_BLACK));
     canvas_text(screen,font,x * 8,10+y * 19,b2,palette_rgb(text_color));
     cursor_x++;
     if (cursor_x == 80) {
@@ -238,7 +263,7 @@ void outtextxy(Int32 x,Int32 y,char* buffer) {
 
 /* Text on black, as txt_write() draws it, so spaces erase what was there */
 void outtextxyclr(Int32 x,Int32 y,char* buffer) {
-  canvas_fill(screen,x,y-10,8*(Int32)strlen(buffer),12,PALETTE[CLR_BLACK]);
+  canvas_fill(screen,x,y-10,8*(Int32)strlen(buffer),12,palette_rgb(CLR_BLACK));
   canvas_text(screen,font,x,y,buffer,palette_rgb(g_color));
   }
 

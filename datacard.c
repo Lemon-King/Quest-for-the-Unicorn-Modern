@@ -159,7 +159,12 @@ void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
       strcpy(buffer,"Legacy");
       gotoxy(column+22,line+1); txt_write(buffer);
       }
-    /* The band ends at column 30; 7.0 named none at a rarity of 0, which the Improved Items preference calls Special */
+    /* The band ends at column 30. With the Improved Items preference a unique or legendary item is named as such in its
+       place, and a rarity of 0, which 7.0 named nothing, is Special. */
+    else if (improved_items == 'Y' && named_gear_kind(item) != NULL) {
+      strcpy(buffer,named_gear_kind(item));
+      gotoxy(column+30-(Int32)strlen(buffer),line+1); txt_write(buffer);
+      }
     else if (rarity_band(item) != RB_SPECIAL || improved_items == 'Y') {
       strcpy(buffer,band_name(rarity_band(item)));
       gotoxy(column+30-(Int32)strlen(buffer),line+1); txt_write(buffer);

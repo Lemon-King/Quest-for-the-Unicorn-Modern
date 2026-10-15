@@ -779,6 +779,7 @@ void cave() {
   Int32  in_corridor = 0;
   Int32  command;
   char   camera;
+  char   palette;
 
 /*  Int32  activeDelay; */
 
@@ -1076,10 +1077,11 @@ void cave() {
         case 'O':
               saveScreen();
               camera = follow_camera;
+              palette = color_palette;
               game_options();
 
-              /* Turning the follow camera on or off moves the view */
-              if (set_screen_layout() || follow_camera != camera) {
+              /* Turning the follow camera on or off moves the view, and a new palette shows once all is drawn again */
+              if (set_screen_layout() || follow_camera != camera || color_palette != palette) {
                 adjust_map();
                 show_screen();
                 }

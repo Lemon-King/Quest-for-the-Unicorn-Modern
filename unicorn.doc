@@ -216,6 +216,9 @@
                               steps of 10.  The default is 100
          WorldMap=style       What M shows on the upland: Off, Color or
                               Art (see World Map).  The default is Art
+         ColorPalette=name    The 16 colours of text, frames and maps:
+                              X11 or DOS (see Color Palette).  The
+                              default is X11
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -603,6 +606,12 @@
                               boots, and magic shops sell the Wands of
                               Pine, Ceder and Redwood.  Off, no shop
                               sells boots or wands
+         Shop Dagger          Weapon shops list the Dagger once, as
+                              version 5 did.  Off, they list it twice,
+                              as 6.x and 7.0 did: a second copy comes
+                              from a placeholder at the head of the
+                              item table, the same dagger but of no
+                              rarity, so its name is yellow
          Platinum Dragon Mount
                               A Platinum Dragon bought at Nichorville's
                               stable carries you and flies, like the
@@ -675,18 +684,23 @@
                               Item Colors)
          Improved Items       Names show in the colour of the rarity
                               their item card names (see Item Colors),
-                              and an identified unique, legendary or
-                              legacy item in yellow.  An item you have
-                              not identified shows in its rarity's
-                              colour too instead of cyan, with a *
-                              before its name on the floor, in your
-                              inventory and pack, a house and the
-                              portable hole, and a common item a
-                              monster drops is identified, as its
-                              first pickup would identify it anyway
-                              (see Auto-Identify).  Off, names follow
-                              older colour bands, and an unidentified
-                              item is cyan, and yellow on the floor
+                              except a quest item's, in cyan, and,
+                              once identified, a unique item's, in
+                              brown, a legendary one's, in light red,
+                              or red if unique too, and legacy gear's,
+                              in yellow, and the card says Unique,
+                              Legendary or Unique Legendary in place
+                              of the rarity.  An item you have not
+                              identified shows in its rarity's colour
+                              instead of cyan, with a * before its
+                              name on the floor, in your inventory and
+                              pack, a house and the portable hole, and
+                              a common item a monster drops is
+                              identified, as its first pickup would
+                              identify it anyway (see Auto-Identify).
+                              Off, names follow older colour bands,
+                              and an unidentified item is cyan, and
+                              yellow on the floor
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a
@@ -725,6 +739,13 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
+         Color Palette        The 16 colours the game draws its text,
+                              frames and maps in: X11, the colours the
+                              Windows game has always drawn, or DOS,
+                              the CGA, EGA and VGA colours of the DOS
+                              release, whose reds, greens and blues
+                              are softer.  The tile art keeps its own
+                              colours either way
          Ranged Delay (ms)    Ranged attack flight delay
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
@@ -732,7 +753,8 @@
 
        Music Volume is heard at once as it changes, and is saved in
      unicorn.cfg as MusicVolume, so it applies to every character.  World
-     Map is kept there too, as WorldMap.  All the other options are saved
+     Map and Color Palette are kept there too, as WorldMap and
+     ColorPalette.  All the other options are saved
      with the character, so every saved game keeps its own options.  A
      game saved by an older version keeps
      its mode, depth, monster count and arena setting, and takes the other
@@ -1445,14 +1467,15 @@
      Legendary Gear
      ==============
        Legendary gear is the most powerful gear that can be found in the
-     game. Legendary gear is extremely rare and can be identified by its
-     yellow colored name in your inventory.  Legendary gear is normally
-     named after the NPCs that first appear in the Legends score table. 
-     Legendary gear always has 3 enchants on it, typically of use to the
-     class that the original owner was. For example, if you find Nina's
-     item the enchants are most benificial to the wizard class, while
-     Elan's item is most useful to a warrior.  Legendary items also always
-     come with 3 open sockets.
+     game.  Legendary gear is extremely rare, and with the Improved Items
+     preference its name shows brown in your inventory once identified,
+     as every unique item's does.  Legendary gear is normally named after
+     the NPCs that first appear in the Legends score table.  Legendary
+     gear always has 3 enchants on it, typically of use to the class that
+     the original owner was.  For example, if you find Nina's item the
+     enchants are most benificial to the wizard class, while Elan's item
+     is most useful to a warrior.  Legendary items also always come with
+     3 open sockets.
 
      Magic Spells
      ============
@@ -1524,15 +1547,22 @@
          Rare                 Green
          Very Rare            Blue
          Ultra Rare           Purple
-         Legendary/Unique     Yellow, once identified, as is legacy
-                              gear
+         Unique               Brown, once identified
+         Legendary            Light red, once identified, or red if
+                              it is unique too
+         Legacy               Yellow, once identified
          Special              Yellow: an item never found as loot,
                               such as shop goods and crafted items
+         Quest Item           Cyan: a dungeon's treasure or another
+                              piece of a quest, whatever its rarity
 
-       These are the rarities an item's card names.  With the Improved
-     Items preference Off, names follow older colour bands: some Very
-     Rare items show purple, the very rarest show yellow, and uniques
-     and legacy gear show the colour of their rarity.
+       These are the rarities an item's card names, though it names a
+     unique or legendary item Unique, Legendary or Unique Legendary
+     instead, and legacy gear Legacy.  Unique, Legendary, Legacy and
+     Quest Item need the Improved Items preference.  With it Off, names
+     follow older colour bands: some Very Rare items show purple, the
+     very rarest show yellow, and uniques, legendary and legacy gear and
+     quest items show the colour of their rarity.
 
      Auto-Identify
      =============

@@ -194,6 +194,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   seamless_world_map = 'N';
   follow_camera = 'N';
   world_map = 'A';
+  color_palette = 'X';
   class_sprites = 'Y';
   floor_item_names = 'Y';
   improved_items = 'Y';
@@ -307,6 +308,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     printf("  Game Thread: %c\n", game_thread);
     printf("  Integer Scaling: %c\n", integer_scaling);
     printf("  World Map: %c\n", world_map);
+    printf("  Color Palette: %c\n", color_palette);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);

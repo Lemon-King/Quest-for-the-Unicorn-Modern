@@ -1210,6 +1210,7 @@ LINK char               show_mount;
 LINK char               seamless_world_map;
 LINK char               follow_camera;
 LINK char               world_map;            /* the World Map preference: 'N' Off, 'C' Color, 'A' Art */
+LINK char               color_palette;        /* the Color Palette preference: 'X' X11, 'D' DOS */
 LINK char               class_sprites;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
@@ -1276,6 +1277,7 @@ LINK char               change_ship_improvements;
 LINK char               change_rarity_fix;
 LINK char               change_explored_land;
 LINK char               change_unified_pickup;
+LINK char               change_shop_dagger;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1758,6 +1760,7 @@ extern void mutable(OBJECT_REC* it);
 extern Int32 rarity_band(OBJECT_REC* item);
 extern char* band_name(Int32 band);
 extern Int32 band_color(Int32 band);
+extern char* named_gear_kind(OBJECT_REC* item);
 extern Int32 item_color(OBJECT_REC* item);
 extern void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color);
 extern void itemColor(OBJECT_REC* item);

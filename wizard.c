@@ -1066,11 +1066,12 @@ static Int32 show_objects(OBJECT_LIST* list,Int32 top) {
   return count;
   }
 
-/* With the Improved Items preference the colour of the item card's band; without, the wizard's own bands */
+/* With the Improved Items preference cyan for a quest item, as its name shows, or the colour of the item card's band;
+   without, the wizard's own bands */
 static void wizard_item_color(OBJECT_REC* item) {
   if (item == NULL) return;
   if (improved_items == 'Y') {
-    textcolor(band_color(rarity_band(item)));
+    textcolor((item->flags & OF_QUEST) ? CLR_CYAN : band_color(rarity_band(item)));
     return;
     }
   if (abs(item->rarity) > 2500) {               /* Common */
