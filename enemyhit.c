@@ -13,7 +13,7 @@
   void enemy_hit(Int32 x,Int32 y) {
     Int32 i;
     Int32 hit;
-    char buffer[20];
+    char buffer[40];
     char elem[20];
     Int32 amt;
     NPC_REC* monster;

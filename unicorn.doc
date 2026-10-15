@@ -535,6 +535,16 @@
                               both as G does, and Band C as G does but
                               with those Ultra Rare ones counted.  A
                               new character starts at Band A
+         Unified Pickup       Packing an item from the floor with G
+                              does all that getting it with g does: a
+                              trading card joins your collection, a
+                              dungeon's treasure on its last level
+                              completes the quest and is identified, a
+                              recipe item gets its recipe, and a
+                              mutable item's level is set as g sets
+                              it, so the Tab menu's Pick Up packs every
+                              item unless the pack is full.  Off, only
+                              g does those
          Floor Items          Putting an item from the floor straight
                               into your pack frees its place in the
                               level's list of floor items, as does
@@ -663,16 +673,20 @@
                               bottom right, or under the message log (see
                               Improved Status), in its item colour (see
                               Item Colors)
-         Improved Item ID     Improved Item Identification: an item you
-                              have not identified shows in the colour of
-                              its rarity instead of cyan, with a * before
-                              its name on the floor, in your inventory
-                              and pack, a house and the portable hole,
-                              and a common item a monster drops is
-                              identified, as its first pickup would
-                              identify it anyway (see Auto-Identify).
-                              Off, such an item is cyan, and yellow on
-                              the floor
+         Improved Items       Names show in the colour of the rarity
+                              their item card names (see Item Colors),
+                              and an identified unique, legendary or
+                              legacy item in yellow.  An item you have
+                              not identified shows in its rarity's
+                              colour too instead of cyan, with a *
+                              before its name on the floor, in your
+                              inventory and pack, a house and the
+                              portable hole, and a common item a
+                              monster drops is identified, as its
+                              first pickup would identify it anyway
+                              (see Auto-Identify).  Off, names follow
+                              older colour bands, and an unidentified
+                              item is cyan, and yellow on the floor
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a
@@ -1197,14 +1211,15 @@
      open, close or jam, and the items, chests, torches, lore, stairs and
      altars under you or a step away (a step away, the command steps there
      first).  Pick Up puts an item in your pack, as <G> does, or takes it
-     up as <g> does when only that counts it or the pack is full: a
-     trading card joins your collection, and a dungeon's treasure on its
-     last level completes the quest.  On the upland it offers the town or
-     dungeon you stand on or beside, by its name, and your ship.  The
-     common commands follow, then Save, Load, and Save and Exit.  A name
-     too long for a line, such as a shop's, carries on over the next, and
-     the cursor moves from command to command.  Off, <Tab> is not one of
-     the game's commands, as before.
+     up as <g> does when the pack is full or, without the Unified Pickup
+     change, when only that counts it: a trading card joins your
+     collection, and a dungeon's treasure on its last level completes
+     the quest.  On the upland it offers the town or dungeon you stand on
+     or beside, by its name, and your ship.  The common commands follow,
+     then Save, Load, and Save and Exit.  A name too long for a line,
+     such as a shop's, carries on over the next, and the cursor moves
+     from command to command.  Off, <Tab> is not one of the game's
+     commands, as before.
 
        In an arena fight it offers each monster beside you to attack and
      each item under you or a step away, though not one on the arena's
@@ -1502,14 +1517,22 @@
      Item Colors
      ===========
          Unidentified         Cyan, and yellow on the floor; with
-                              Improved Item ID, the colour of its
+                              Improved Items, the colour of its
                               rarity, after a *
          Common               Gray
          Uncommon             White
          Rare                 Green
          Very Rare            Blue
-         Utra Rare            Purple
-         Legendary/Unique     Yellow
+         Ultra Rare           Purple
+         Legendary/Unique     Yellow, once identified, as is legacy
+                              gear
+         Special              Yellow: an item never found as loot,
+                              such as shop goods and crafted items
+
+       These are the rarities an item's card names.  With the Improved
+     Items preference Off, names follow older colour bands: some Very
+     Rare items show purple, the very rarest show yellow, and uniques
+     and legacy gear show the colour of their rarity.
 
      Auto-Identify
      =============
@@ -1517,7 +1540,7 @@
      you will automatically identify the item.  The rarer the item is the
      less likely you will be able to auto identify it.  Increased Lore
      skill will increase the chances for auto identification.  With the
-     Improved Item ID preference a common item is identified as soon as a
+     Improved Items preference a common item is identified as soon as a
      monster drops it.
 
          Rarity         Base Chance     Increase per point of Lore
@@ -1601,10 +1624,10 @@
        more powerful than gear normally found at the same level.
      - Legacy gear levels when you do, so it is worth holding on to even if
        it is not more powerful than what you currently have equipped, in
-       time it will be better.  Legacy gear can be easily identified in
-       your inventory by looking for a simple name that is colored yellow. 
-       Remember the item must be identified first before the color will be
-       yellow.
+       time it will be better.  With the Improved Items preference legacy
+       gear is easy to spot in your inventory: a simple name colored
+       yellow.  Remember the item must be identified first before the
+       color will be yellow.
 
      Note about Score Tables
      =======================

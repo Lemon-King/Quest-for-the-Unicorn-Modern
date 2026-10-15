@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      21
-#define NUM_CHANGES    63
+#define NUM_CHANGES    64
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -151,9 +151,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Floor Item Names",
     .help  = "Shows the name of the item you stand on, in the bottom right",
     .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },
-  { .label = "Improved Item ID",
-    .help  = "* marks unidentified items, rarity colour on floor; commons drop identified",
-    .kind  = OPT_SWITCH, .flag = &improved_item_id, .on = 'Y', .off = 'N' },
+  { .label = "Improved Items",
+    .help  = "Card's rarity colours, * marks unidentified items, common drops identified",
+    .kind  = OPT_SWITCH, .flag = &improved_items, .on = 'Y', .off = 'N' },
   { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },
@@ -323,6 +323,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Pickups count rarity alike: A as g and its card, B as G, C as B with 5 ultra",
     .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'A', .off = 'N', .strict = 'B', .extra = 'C',
     .names = { "Off", "Band A", "Band B", "Band C" }, .key = "RarityFix", .start = 'A' },
+  { .label = "Unified Pickup",
+    .help  = "Packing with G adds cards to your collection and completes quests, as g does",
+    .kind  = OPT_SWITCH, .flag = &change_unified_pickup, .on = 'Y', .off = 'N', .key = "UnifiedPickup" },
   { .label = "Floor Items",
     .help  = "Packed items and arena loot free their spots, and a full floor drops nothing",
     .kind  = OPT_SWITCH, .flag = &change_floor_items, .on = 'Y', .off = 'N', .key = "FloorItems" },

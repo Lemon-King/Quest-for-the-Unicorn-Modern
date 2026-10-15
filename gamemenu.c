@@ -303,11 +303,13 @@ static COMMAND* add_step(COMMANDS* commands,char* label,Int32 d,char then) {
   return add_command(commands,label,keys,CONTEXT_COLOR);
   }
 
-/* The key Pick Up types: g, which takes the item through the inventory, for what only its first pickup there counts
-   (a dungeon's quest treasure completes the quest, a trading card joins the collection) and to hold an item when the
-   pack is full; G packs anything else */
+/* The key Pick Up types: g, which takes the item through the inventory, to hold an item when the pack is full and,
+   without the Unified Pickup change, for what only its pickup there counts (a dungeon's quest treasure completes the
+   quest, a trading card joins the collection); G packs anything else */
 static char pick_up_key(OBJECT_REC* item) {
-  if (item->otype == O_CARD || pack_count() == PACK_SLOTS) return 'g';
+  if (pack_count() == PACK_SLOTS) return 'g';
+  if (change_unified_pickup == 'Y') return 'G';
+  if (item->otype == O_CARD) return 'g';
 
   /* The Gateway has no row in links[] for is_quest_treasure() to read */
   if (player.dungeon_number != GATEWAY_DUNGEON && is_quest_treasure(item)) return 'g';

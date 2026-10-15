@@ -9,7 +9,7 @@
 */
 
 /* Identifying an item without a scroll or a shop: the roll its first pickup makes, by its rarity and your Lore, and with
-   the Improved Item Identification preference a common item identified as it is made, since that roll never fails. */
+   the Improved Items preference a common item identified as it is made, since that roll never fails. */
 
 #include "header.h"
 
@@ -31,9 +31,9 @@ void identify_on_pickup(OBJECT_REC* item) {
   else if (item->rarity > 0 && (u_random(100000)-get_skill(SK_LORE)*20) < 25) item->flags |= OF_IDENT;
   }
 
-/* With the Improved Item Identification preference, a new item on the floor that its first pickup is sure to identify */
+/* With the Improved Items preference, a new item on the floor that its first pickup is sure to identify */
 void identify_common_item(OBJECT_REC* item) {
-  if (improved_item_id != 'Y') return;
+  if (improved_items != 'Y') return;
 
   if (may_identify(item) && item->rarity > COMMON_RARITY) item->flags |= OF_IDENT;
   }

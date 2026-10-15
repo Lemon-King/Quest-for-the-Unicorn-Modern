@@ -409,14 +409,16 @@ void load_options() {
       if (match(line, "FollowCamera ")) follow_camera = *next;
       if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
-      if (match(line, "ImprovedItemIdentification ")) improved_item_id = *next;
+      if (match(line, "ImprovedItems ")) improved_items = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
       if (match(line, "ImprovedStatus ")) improved_status = *next;
       if (match(line, "EasySpells ")) easy_spells = *next;
 
-      /* Saves from before Improved Interface kept its menus as Cursor Menus */
+      /* Saves from before Improved Interface kept its menus as Cursor Menus, and from before Improved Items kept it as
+         Improved Item Identification */
       if (match(line, "CursorMenus ")) improved_interface = *next;
+      if (match(line, "ImprovedItemIdentification ")) improved_items = *next;
       load_gameplay_change(line);
       }
     }

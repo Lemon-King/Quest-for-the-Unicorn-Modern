@@ -538,7 +538,7 @@ void special46() {
   key = 0;
   while (key != 13) {
     key = inkey();
-    if (key > 31) {
+    if (key > 31 && strlen(invoke) < sizeof(invoke) - 1) {
       invoke[strlen(invoke) + 1] = 0;
       invoke[strlen(invoke)] = key;
       sprintf(buffer,"Function ? %s_",invoke);

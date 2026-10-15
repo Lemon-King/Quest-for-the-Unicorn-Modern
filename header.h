@@ -97,6 +97,15 @@ LINK Int32 NO_OF_MONSTERS;
 #define OF_COUNTED   (1 << 5)      /* Object counted already for stats purposes */
 #define OF_IDENT     (1 << 6)      /* Object has been identified */
 
+/* An item's rarity band, as its card names it (rarity_band()), from the rarest up */
+#define RB_SPECIAL         0       /* a rarity of 0: shop goods and crafted or quest items, never loot */
+#define RB_ULTRA_RARE      1
+#define RB_VERY_RARE       2
+#define RB_RARE            3
+#define RB_UNCOMMON        4
+#define RB_COMMON          5
+#define NUM_RARITY_BANDS   6
+
 #define CF_MONK         (1 << 0)   /*     1  must check monk_weapon() for armor and weapons */
 #define CF_CASTER       (1 << 1)   /*     2  Class selects a spell when character is created */
 #define CF_NOBLE        (1 << 2)   /*     4  Gains 10,000 gp per level */
@@ -1192,7 +1201,7 @@ LINK Int32                delay_hit;
 LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
-LINK char               improved_item_id;
+LINK char               improved_items;
 LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
@@ -1266,6 +1275,7 @@ LINK char               change_nether_core;
 LINK char               change_ship_improvements;
 LINK char               change_rarity_fix;
 LINK char               change_explored_land;
+LINK char               change_unified_pickup;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1497,6 +1507,7 @@ extern OBJECT_REC* inventory(OBJECT_REC* item);
 extern Int32 pack_count(void);
 extern Int32 is_quest_treasure(OBJECT_REC* item);
 extern void count_rarity(OBJECT_REC* item,char key);
+extern void pick_up_item(OBJECT_REC* item,char key);
 extern char inv_valid(OBJECT_REC* item,Int32 line);
 extern void show_inventory(OBJECT_REC* item);
 extern void compress();
@@ -1744,6 +1755,9 @@ extern void fire_wand(Int32 damage);
 extern void enchant(Int32 ench,Int32 limit);
 extern void show_legends();
 extern void mutable(OBJECT_REC* it);
+extern Int32 rarity_band(OBJECT_REC* item);
+extern char* band_name(Int32 band);
+extern Int32 band_color(Int32 band);
 extern Int32 item_color(OBJECT_REC* item);
 extern void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color);
 extern void itemColor(OBJECT_REC* item);

@@ -597,6 +597,9 @@
     <ClCompile Include="permadeath.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="pickup.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="pittrap.c">
       <Filter>Game</Filter>
     </ClCompile>

@@ -36,7 +36,7 @@ Int32 get_spell_name(Int32 column,Int32 search,Int32 level,Int32 allign) {
       if (key == KY_F10) strcpy(spell_name,player.fspell[10]);
       if (key == KY_F11) strcpy(spell_name,player.fspell[11]);
       if (key == KY_F12) strcpy(spell_name,player.fspell[12]);
-      if (key < 127) {
+      if (key < 127 && strlen(spell_name) < sizeof(spell_name) - 1) {
         buffer[0] = key;
         buffer[1] = 0;
         gotoxy(column,1); txt_write(buffer); txt_write("_");

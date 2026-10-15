@@ -434,36 +434,7 @@ OBJECT_REC* inventory(OBJECT_REC* it) {
                   .color = 2, .keys = INVENTORY_KEYS, .keys_line = 25, .draw_row = draw_slot };
 
   takes_time = 'N';
-  if (it != NULL) {
-    if ((it->flags & OF_COUNTED) == 0) {
-      if (it->otype == O_CARD) stats.counts[it->control] |= (1 << it->control2);
-      count_rarity(it,'g');
-      identify_on_pickup(it);
-
-      i = 0;
-      while (trophies[i].criteria_type < 999) {
-        if (trophies[i].criteria_type == TC_PICKT) {
-          if (it->otype == trophies[i].control[0]) stats.counts[trophies[i].control[2]]++;
-          if (trophies[i].control[3] > 0)
-            if (it->otype == trophies[i].control[3]) stats.counts[trophies[i].control[5]]++;
-          }
-        if (trophies[i].criteria_type == TC_PICKI) {
-          if (it->link == trophies[i].control[0]) stats.counts[trophies[i].control[2]]++;
-          if (trophies[i].control[3] > 0)
-            if (it->link == trophies[i].control[3]) stats.counts[trophies[i].control[5]]++;
-          }
-        if (trophies[i].criteria_type == TC_PICKR) {
-          if (it->link >= trophies[i].control[0] && it->link <= trophies[i].control[1]) {
-            stats.counts[trophies[i].control[2]] |= (1 << (it->link - trophies[i].control[0]));
-            }
-          }
-        i++;
-        }
-      }
-    if (it->effect == E_MUTA) it->level = player.diff + player.d_level / 3;
-    if (it->effect == E_SPCL && it->control == 79) convert_recipe(it);
-    it->flags |= OF_COUNTED;
-    }
+  if (it != NULL) pick_up_item(it,'g');
   in_air.otype = O_NONE;
   if (it != NULL) in_air = *it;
     else in_air.otype = O_NONE;
