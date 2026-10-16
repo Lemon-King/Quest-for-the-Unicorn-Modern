@@ -532,6 +532,11 @@
                               key and drops it: before a fight the
                               map you were on stays, and after one
                               the map shows without you
+         Safe Arena Loot      Items, gold and torches still lying on
+                              the arena's floor when a dungeon fight
+                              ends are laid on the free ground nearest
+                              you.  Off, they are lost with the arena.
+                              Upland fights leave theirs either way
          Rarity Fix           How picking up an item counts it
                               towards your finds (the Eye for
                               Treasure, Treasure Hunter and Lucky!

@@ -536,6 +536,45 @@ static void free_arena_items(char* in_use) {
     if (!in_use[i]) player.map_objects[i].otype = O_NONE;
   }
 
+/* Whether a map value is something a fight can leave on the floor: a floor item, gold or a torch */
+static Int32 is_loot(Int32 value) {
+  return ((value >= 1000 && value < 2000) || value == 79 || value == 84);
+  }
+
+/* What lies on arena square x,y, under any creature standing there */
+static Int32 ground_at(Int32 x,Int32 y) {
+  Int32 value;
+
+  value = player.map[x][y];
+  if (value >= 300 && value < 400) return player.party[value-300].prev;
+  if (value > 400 && value < 500) return player.monster[value-400][a_mon].prev;
+
+  return value;
+  }
+
+/* Gathers what the fight left on the arena's floor, before the level's map is put back */
+static void gather_loot(ARENA_LOOT* loot) {
+  Int32 x,y;
+  Int32 value;
+
+  for (x=1; x<=100; x++)
+    for (y=1; y<=100; y++) {
+      value = ground_at(x,y);
+      if (is_loot(value) && loot->count < ARENA_LOOT_SLOTS) {
+        loot->values[loot->count] = value;
+        loot->count++;
+        }
+      }
+  }
+
+/* Marks the floor slots of the loot taken back, so freeing the fight's slots keeps them */
+static void keep_loot_slots(ARENA_LOOT* loot,char* in_use) {
+  Int32 i;
+
+  for (i=0; i<loot->count; i++)
+    if (loot->values[i] >= 1000) in_use[loot->values[i] - 1000] = 1;
+  }
+
 /* Drops the keys typed ahead as a fight starts or ends. Without the Arena Held Keys change it then waits for one more
    key, on the screen being left, and drops that too. */
 static void drop_held_keys(void) {
@@ -564,7 +603,7 @@ static void find_closest_mob(Int32* x,Int32* y) {
   target_y = closestY;
   }
 
-void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
+void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy,ARENA_LOOT* loot) {
   KNOW_TYPE tmp_known;
   MAP_TYPE  tmp_map;
   byte key;
@@ -1087,13 +1126,19 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
     } /* while (exitf == 0) */
   hide_bottom_name();
   exitf = 0;
+
+  /* With the Safe Arena Loot change a caller that takes the loot gets back what the fight left on its floor, to lay
+     around you; the overworld takes none */
+  if (loot != NULL) loot->count = 0;
+  if (loot != NULL && change_safe_arena_loot == 'Y') gather_loot(loot);
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {
       player.known[x][y] = tmp_known[x][y];
       player.map[x][y] = tmp_map[x][y];
       }
 
-  /* Without the Floor Items change the items left on the arena's floor keep their slots */
+  /* The loot taken back keeps its slots; without the Floor Items change so do the items left on the arena's floor */
+  if (loot != NULL) keep_loot_slots(loot,floor_items);
   if (change_floor_items == 'Y') free_arena_items(floor_items);
   player.x = hold_x;
   player.y = hold_y;

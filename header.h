@@ -903,6 +903,14 @@ typedef struct {
   Int32          treasurey;
   } DUNGEON;
 
+/* What an arena fight left on its floor, as map values: floor items, gold and torches */
+#define ARENA_LOOT_SLOTS 1000
+
+typedef struct {
+  Int32        count;
+  Int32        values[ARENA_LOOT_SLOTS];
+  } ARENA_LOOT;
+
 /* What the Load Game screen shows of a save, read by load_summary(). */
 typedef struct {
   Int32       class;
@@ -1279,6 +1287,7 @@ LINK char               change_explored_land;
 LINK char               change_unified_pickup;
 LINK char               change_shop_dagger;
 LINK char               change_arena_held_keys;
+LINK char               change_safe_arena_loot;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1323,7 +1332,7 @@ extern void advance_stat();
 extern void cave();
 
 /* combat.c */
-extern void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy);
+extern void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy,ARENA_LOOT* loot);
 extern Int32 off_arena(Int32 x,Int32 y);
 extern Int32 monsters_dead(void);
 

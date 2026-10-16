@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define LOOT_RANGE  100     /* find_empty() reaches across the whole level */
+
 static void cave_take_time(void) {
   player.min++;
   if (player.min > 59) {
@@ -123,9 +125,22 @@ static void search(void) {
   if (u_random(10) == 1) add_skill(SK_SCOUT,1);
   } /* void search() */
 
+/* Lays what an arena fight left on its floor on the free floor nearest you */
+static void lay_loot(ARENA_LOOT* loot) {
+  Int32 i;
+  Int32 x,y;
+
+  for (i=0; i<loot->count; i++)
+    if (find_empty(player.x,player.y,LOOT_RANGE,currentFloor,&x,&y)) {
+      player.map[x][y] = loot->values[i];
+      show_spot(x,y);
+      }
+  }
+
 static void attack(void) {
   Int32 xdir,ydir;
   char key;
+  ARENA_LOOT loot;
   clear_prompt();
   prompt("Attack who ?");
   key = inkey();
@@ -141,15 +156,17 @@ static void attack(void) {
     case '7':ydir = -1; xdir = -1; break;
     case '9':ydir = -1; xdir = 1; break;
     }
+  loot.count = 0;
   player.x += xdir;
   player.y += ydir;
   if (player.map[player.x][player.y] < 0) {
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0))
-      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y,&loot);
     else hit_enemy();
     }
   player.x -= xdir;
   player.y -= ydir;
+  lay_loot(&loot);
   } /* void attack() */
 
 /*
@@ -201,6 +218,7 @@ static void move(Int32 xdir,Int32 ydir) {
   Int32 previous;
   Int32 ex,ey;
   Int32 blocked;
+  ARENA_LOOT loot;
   last_target_x = 0;
   last_target_y = 0;
   remove_player();
@@ -236,11 +254,12 @@ static void move(Int32 xdir,Int32 ydir) {
   else walk_aboard();
   if (player.map[player.x][player.y] < 0 &&
       (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
+    loot.count = 0;
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
       ex = player.x;
       ey = player.y;
       previous = player.monster[1][0-player.map[ex][ey]].prev;
-      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y,&loot);
       if (player.map[ex][ey] == 7) player.map[ex][ey] = previous;
       show_spot(ex,ey);
       }
@@ -254,6 +273,7 @@ static void move(Int32 xdir,Int32 ydir) {
       }
     player.x = x;
     player.y = y;
+    lay_loot(&loot);
     }
   if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
   if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }

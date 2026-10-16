@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      22
-#define NUM_CHANGES    66
+#define NUM_CHANGES    67
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -326,6 +326,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Arena Held Keys",
     .help  = "Keys held as a fight starts or ends no longer make the game wait for another",
     .kind  = OPT_SWITCH, .flag = &change_arena_held_keys, .on = 'Y', .off = 'N', .key = "ArenaHeldKeys" },
+  { .label = "Safe Arena Loot",
+    .help  = "Items left on a dungeon arena's floor lie around you when the fight ends",
+    .kind  = OPT_SWITCH, .flag = &change_safe_arena_loot, .on = 'Y', .off = 'N', .key = "SafeArenaLoot" },
   { .label = "Rarity Fix",
     .help  = "Pickups count rarity alike: A as g and its card, B as G, C as B with 5 ultra",
     .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'A', .off = 'N', .strict = 'B', .extra = 'C',
