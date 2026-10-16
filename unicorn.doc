@@ -526,6 +526,12 @@
          Arena Exit           ENTER or ESC leaves an arena fight once
                               every monster is dead.  Off, the only way
                               out is to walk off the arena's edge
+         Arena Held Keys      Keys held down or typed ahead as an
+                              arena fight starts or ends are dropped.
+                              Off, the game also waits for one more
+                              key and drops it: before a fight the
+                              map you were on stays, and after one
+                              the map shows without you
          Rarity Fix           How picking up an item counts it
                               towards your finds (the Eye for
                               Treasure, Treasure Hunter and Lucky!

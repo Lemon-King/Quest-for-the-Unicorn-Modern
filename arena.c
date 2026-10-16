@@ -536,6 +536,13 @@ static void free_arena_items(char* in_use) {
     if (!in_use[i]) player.map_objects[i].otype = O_NONE;
   }
 
+/* Drops the keys typed ahead as a fight starts or ends. Without the Arena Held Keys change it then waits for one more
+   key, on the screen being left, and drops that too. */
+static void drop_held_keys(void) {
+  if (change_arena_held_keys == 'Y') drop_keys();
+    else while (keypressed()) inkey();
+  }
+
 static void find_closest_mob(Int32* x,Int32* y) {
   Int32 dist;
   Int32 closestX;
@@ -586,7 +593,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   arena_y = srcy;
   all_dead = 0;
   note_floor_items(floor_items);
-  while (keypressed()) key=inkey();
+  drop_held_keys();
   lastFloor = currentFloor;
   snakes = 0;
   haste_flag = ' ';
@@ -1139,6 +1146,6 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   show_map();
   show_sm_map();
   show_side();
-  while (keypressed()) key=inkey();
+  drop_held_keys();
   }
 

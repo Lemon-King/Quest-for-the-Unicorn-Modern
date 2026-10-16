@@ -184,11 +184,8 @@ static void window_closed() {
   }
 
 /* Ctrl+P and Ctrl+M waiting at the front of the queue are handled here, so a check for keys never stops on them */
-Int32 keypressed() {
+static Int32 peek_key() {
   Int32 key;
-  if (strlen(currentMacro) > 0) return 1;
-
-  present();
   key = host_peek_key(host);
   while (key == KY_SCREENSHOT || key == KY_MUSIC) {
     host_read_key(host);
@@ -197,7 +194,21 @@ Int32 keypressed() {
     key = host_peek_key(host);
     }
   if (key == HOST_KEY_CLOSED) window_closed();
-  return (key == HOST_KEY_NONE) ? 0 : -1;
+  return key;
+  }
+
+Int32 keypressed() {
+  if (strlen(currentMacro) > 0) return 1;
+
+  present();
+  return (peek_key() == HOST_KEY_NONE) ? 0 : -1;
+  }
+
+/* Throws away the keys typed ahead and the rest of a macro. It neither waits nor presents, so a screen still being
+   drawn stays off the window. */
+void drop_keys() {
+  currentMacro[0] = 0;
+  while (peek_key() != HOST_KEY_NONE) host_read_key(host);
   }
 
 static Int32 next_key() {
