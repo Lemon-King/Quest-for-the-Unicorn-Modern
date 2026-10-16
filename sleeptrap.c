@@ -23,7 +23,7 @@ void sleep_trap() {
       if (amt < 1) amt = 1;
       player.effect[PE_SLEEP] = amt;
       clear_prompt();
-      prompt("Slept!!");
+      log_sleep_trap();
       show_player();
     }
   run_x = 0;

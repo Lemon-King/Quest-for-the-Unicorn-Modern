@@ -17,9 +17,10 @@ void enemy_missile(Int32 ex,Int32 ey) {
   double xdir,ydir;
   NPC_REC* monster;
   char elem[20];
-  char buffer[60];
   Int32  ring;
   Int32  i,j;
+  Int32  dodged;
+  Int32  melted;
   monster = get_monster(ex,ey);
   if (monster == NULL) return;
   if (abs(player.x - ex) < 2 && abs(player.y - ey) < 2) return;
@@ -64,8 +65,10 @@ void enemy_missile(Int32 ex,Int32 ey) {
     i -= get_bonus(S_DDG) * 2;
     if (i > 90) i = 90;
     if (i < 10) i = 10;
+    dodged = 0;
     if (u_random(100) < get_dodge()) {
-      msg("Dodged",7);
+      log_dodge(monster,BY_BOLT);
+      dodged = 1;
       i = 0;
       }
     if (u_random(100) < i) {
@@ -116,27 +119,31 @@ void enemy_missile(Int32 ex,Int32 ey) {
           }
         i = magic_adjust(i);
         if (u_random(100) < (20+player.ability[5] * 20)) i /= 2;
-        sprintf(buffer,"ZAP for %d%s",i,elem);
-        msg(buffer,12);
+        log_creature_bolt(monster,i,elem);
         stats_take_damage(i);
         player.chp -= i;
         show_player();
         }
       if (ring != 0) {
+        log_bolt_reflected(&(player.invent[ring]));
+        set_attack_source("reflected bolt");
         r_missile(monster->mana / 4 + 1);
+        clear_attack_source();
         i = get_skill(8) + (player.level - monster->level);
         i += player.ability[10] * 5;
         if (i > 0) i = 75 + i;
         if (i > 98) i = 98;
+        melted = 0;
         if (i < 0) {
           player.invent[ring].otype = O_NONE;
           clear_prompt();
-          prompt("Ring Melted!!!");
+          log_ring_melted(&(player.invent[ring]),melted);
+          melted = 1;
           }
         if (u_random(101) > i) {
           player.invent[ring].otype = O_NONE;
           clear_prompt();
-          prompt("Ring Melted!!!");
+          log_ring_melted(&(player.invent[ring]),melted);
           }
         }
       show_player();
@@ -144,7 +151,7 @@ void enemy_missile(Int32 ex,Int32 ey) {
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_bolt_miss(monster,dodged);
       show_player();
       }
     }

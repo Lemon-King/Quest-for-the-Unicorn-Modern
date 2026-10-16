@@ -24,3 +24,9 @@ NPC_REC* get_monster(Int32 x,Int32 y) {
   return ret;
   }
 
+/* The creature a spell's mon index names: in the arena's group, or on the level */
+NPC_REC* monster_record(Int32 mon) {
+  if (in_arena == 'Y') return &(player.monster[mon][a_mon]);
+  return &(player.monster[1][mon]);
+  }
+

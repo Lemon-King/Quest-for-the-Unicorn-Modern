@@ -10,27 +10,6 @@
 
 #include "header.h"
 
-static void show_advancement_gain(Int32 g) {
-  switch (g) {
-    case 1:msg("Gained Missile",14); break;
-    case 2:msg("Gained Edge",14); break;
-    case 3:msg("Gained Pole",14); break;
-    case 4:msg("Gained Blunt",14); break;
-    case 5:msg("Gained Scouting",14); break;
-    case 6:msg("Gained Language",14); break;
-    case 7:msg("Gained Lore",14); break;
-    case 8:msg("Gained Magic",14); break;
-    case 9:msg("Gained Healing",14); break;
-    case 10:msg("Gained Medicine",14); break;
-    case 11:msg("Gained Riding",14); break;
-    case 12:msg("Gained Boating",14); break;
-    case 13:msg("Gained Oracle",14); break;
-    case 14:msg("Gained Charm",14); break;
-    case 15:msg("Gained Survival",14); break;
-    case 16:msg("Gained Combat",14); break;
-    }
-  }
-
 static void skills1(void) {
   Int32 i;
   Int32 j;
@@ -55,7 +34,7 @@ static void skills1(void) {
     if (j>=26 && j<=28) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -86,7 +65,7 @@ static void skills2(void) {
     if (j>=39 && j<=41) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -117,7 +96,7 @@ static void skills3(void) {
     if (j==41) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -148,7 +127,7 @@ static void skills4(void) {
     if (j==21) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -179,7 +158,7 @@ static void skills5(void) {
     if (j==29) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -210,7 +189,7 @@ static void skills6(void) {
     if (j==23) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
@@ -238,16 +217,15 @@ static void skills7(void) {
     if (j>=36 && j<=40) s=16;
     if (s>0) {
       player.skill[s] += 100000;
-      show_advancement_gain(s);
+      log_level_skill(s);
       }
     }
   }
 
 void advancement() {
   Int32 i;
-  char buffer[40];
 
-  msg("Gained a Level !!!",15);
+  log_level_up();
   player.level++;
   check_level_legacy();
   player_attack_defense();
@@ -255,8 +233,7 @@ void advancement() {
   if (get_con() > 14) i += ((get_con() - 10) / 3);
   player.chp += i;
   player.mhp += i;
-  sprintf(buffer,"Gained %d Hit Points",i);
-  msg(buffer,10);
+  log_hp_gain(i);
 /*
   switch(classes[player.class-1].skill_table) {
     case 1:skills1(); break;
@@ -277,8 +254,7 @@ void advancement() {
     if (get_wis() > 15) i += ((get_wis() - 10) / 4);
     player.mmana += i;
     player.cmana += i;
-    sprintf(buffer,"Gained %d Mana Points",i);
-    msg(buffer,10);
+    log_mana_gain(i);
 /*    new_spell();  */
     show_screen();
     }
@@ -288,8 +264,7 @@ void advancement() {
     i = u_random(classes[player.class-1].mana) + classes[player.class-1].mana;
     player.mmana += i;
     player.cmana += i;
-    sprintf(buffer,"Gained %d Mana Points",i);
-    msg(buffer,10);
+    log_mana_gain(i);
 /*    new_spell();  */
     show_screen();
     }
@@ -299,7 +274,7 @@ void advancement() {
   i = u_random(4);
   if (classes[player.class-1].level_skills[i] > 0) {
     player.skill[classes[player.class-1].level_skills[i]] += 100000;
-    show_advancement_gain(classes[player.class-1].level_skills[i]);
+    log_level_skill(classes[player.class-1].level_skills[i]);
     }
   set_title();
   }

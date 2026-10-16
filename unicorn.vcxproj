@@ -106,6 +106,7 @@
     <ClCompile Include="clearprompt.c" />
     <ClCompile Include="closedoor.c" />
     <ClCompile Include="combathelp.c" />
+    <ClCompile Include="combatlog.c" />
     <ClCompile Include="compass.c" />
     <ClCompile Include="convertrecipe.c" />
     <ClCompile Include="converttime.c" />
@@ -296,7 +297,6 @@
     <ClCompile Include="showfkeys.c" />
     <ClCompile Include="showflooritem.c" />
     <ClCompile Include="showflt.c" />
-    <ClCompile Include="showgain.c" />
     <ClCompile Include="showgen.c" />
     <ClCompile Include="showinventory.c" />
     <ClCompile Include="showicons.c" />

@@ -16,11 +16,12 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
   NPC_REC* monster;
   monster = get_monster(x,y);
   if (monster != NULL) monster->prev = 7;
+  log_trap_sprung(monster,trap_type);
   if (trap_type == 951 || trap_type == 952 || trap_type == 953) {        /* Small explosive trap */
     show_sprite(x-player.map_x,y-player.map_y,80);
     delay(delay_trap);
     show_spot(x,y);
-    msg("Explosive trap triggered",12);
+    log_explosion();
     dmg = 5 + u_random(4);
     monster = get_monster(x,y);
     if (monster != NULL) {
@@ -45,7 +46,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
           }
         if (rx == player.x && ry == player.y) {
           dmg = 7 + u_random(6);
-          msg("OUCH!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -69,7 +70,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
           }
         if (rx == player.x && ry == player.y) {
           dmg = 7 + u_random(6);
-          msg("OUCH!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -94,7 +95,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
           }
         if (rx == player.x && ry == player.y) {
           dmg = 10 + u_random(10);
-          msg("BURNING!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.effect[PE_DOT] += dmg;
           show_side();
           }
@@ -121,7 +122,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 10 + u_random(10);
           player.effect[PE_ROOT] += dmg;
-          msg("ROOTED!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -148,7 +149,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 10 + u_random(10);
           player.cmana /= 2;
-          msg("ZAP!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -175,7 +176,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 5 + u_random(4);
           player.effect[PE_SLEEP] += dmg + player.diff + (player.d_level / 3);
-          msg("SLEPT!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -202,7 +203,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 5 + u_random(4);
           player.effect[PE_FEAR] += dmg + player.diff + (player.d_level / 3);
-          msg("SCARED!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           }
@@ -229,7 +230,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 5 + u_random(4);
           player.effect[PE_BLIND] += dmg + player.diff + (player.d_level / 3);
-          msg("BLIND!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           show_map();
@@ -257,7 +258,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 5 + u_random(4);
           player.effect[PE_POISON] += dmg * 5;
-          msg("POISONED!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           show_map();
@@ -285,7 +286,7 @@ void trigger_trap(Int32 x,Int32 y,Int32 trap_type) {
         if (rx == player.x && ry == player.y) {
           dmg = 5 + u_random(4);
           player.effect[PE_CONFUSED] += dmg + player.diff + (player.d_level / 3);
-          msg("CONFUSED!!!",12);
+          log_trap_blast(trap_type,dmg);
           player.chp -= dmg;
           show_side();
           show_map();

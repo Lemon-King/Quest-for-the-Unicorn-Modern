@@ -10,13 +10,20 @@
 
 #include "header.h"
 
+/* Restores the player's hit points up to their maximum; returns the hit points gained */
+Int32 heal_player(Int32 amount) {
+  Int32 before;
+
+  before = player.chp;
+  player.chp += amount;
+  if (player.chp > get_mhp()) player.chp = get_mhp();
+
+  return player.chp - before;
+  }
+
 void do_heal(Int32 amount,Int32 who) {
-  char buffer[64];
   if (who == 0) {                                   /* player */
-    player.chp += amount;
-    if (player.chp > get_mhp()) player.chp = get_mhp();
-    sprintf(buffer,"Healed %d",amount);
-    msg(buffer,15);
+    log_heal(amount,heal_player(amount));
     }
   if (who > 0) {                                    /* party member */
     player.party[who].hp += amount;

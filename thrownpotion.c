@@ -12,13 +12,15 @@
 
 void thrown_potion(OBJECT_REC* item,Int32 x,Int32 y) {
   NPC_REC* monster;
+  Int32 healed;
   if (item == NULL) return;
   if (item->otype != O_POTN) return;
   monster = get_monster(x,y);
   if (monster == NULL) return;
   if (item->user_hp != 0) {
-    monster->hp += item->charges * abs(u_random(item->user_hp));
-    prompt("Healed !!!");
+    healed = item->charges * abs(u_random(item->user_hp));
+    monster->hp += healed;
+    log_creature_healed(monster,healed);
     }
   if (item->effect == E_DAMG) {
     monster->hp -= u_random(item->control);
@@ -26,22 +28,22 @@ void thrown_potion(OBJECT_REC* item,Int32 x,Int32 y) {
   if (item->effect == E_SPCL &&
       item->control == 60) {
     monster->sleep = item->charges * u_random(5) + 3;
-    prompt("Slept !!!");
+    log_creature_asleep(monster);
     }
   if (item->effect == E_SPCL &&
       item->control == 61) {
     monster->fear = item->charges * u_random(10);
-    prompt("Scared !!!");
+    log_creature_afraid(monster);
     }
   if (item->effect == E_SPCL &&
       item->control == 62) {
     monster->blind = item->charges * u_random(10);
-    prompt("Blinded !!!");
+    log_creature_blinded(monster);
     }
   if (item->effect == E_SPCL &&
       item->control == 63) {
     monster->confused = item->charges * u_random(10);
-    prompt("Confused !!!");
+    log_creature_confused(monster);
     }
   if (item->effect == E_SPCL &&
       item->control == 64) {
@@ -64,7 +66,7 @@ void thrown_potion(OBJECT_REC* item,Int32 x,Int32 y) {
     }
   if (item->effect == E_POSN) {
     monster->poison = item->charges * u_random(20);
-    prompt("Poisoned !!!");
+    log_creature_poisoned(monster);
     }
   }
 

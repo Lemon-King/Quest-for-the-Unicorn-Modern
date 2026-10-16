@@ -27,7 +27,7 @@ void drain(Int32 damage,Int32 elem) {
     if (u_random(100) < i) {
       clear_prompt();
       noise(1000,100);
-      prompt("HIT !!!");
+      log_hit_shout();
       if (in_arena != 'Y' && (player.monster[1][mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
         player.align -= 20;
         player.monster[1][mon].special -= MS_FRIENDLY;
@@ -47,6 +47,7 @@ void drain(Int32 damage,Int32 elem) {
       if (in_arena == 'Y') i = figure_damage(i,elem,&(player.monster[mon][a_mon]));
         else  i = figure_damage(i,elem,&(player.monster[1][mon]));
       stats_do_damage(i);
+      log_spell_hit(monster_record(mon),i,HIT_NORMAL);
       player.chp += i;
       if (player.chp > player.mhp) player.chp = player.mhp;
       if (in_arena == 'Y') player.monster[mon][a_mon].hp -= i;
@@ -72,7 +73,7 @@ void drain(Int32 damage,Int32 elem) {
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_miss(monster_record(mon),(i == 0) ? RESISTED : MISSED);
       }
     }
   }

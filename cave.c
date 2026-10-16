@@ -795,7 +795,6 @@ void cave() {
   double d;
   byte key;
   Int32 dmg;
-  char buffer[20];
   Int32  in_corridor = 0;
   Int32  command;
   char   camera;
@@ -1188,7 +1187,7 @@ void cave() {
           player.map[player.x][player.y] == 145) {
         if (player.gateway == '*' || has_intrinsic(A_FCNG) == 0) {
           clear_prompt();
-          msg("ZZZZAAAAPPPP!!!!!",12);
+          log_force_field(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
@@ -1196,14 +1195,14 @@ void cave() {
         }
       if (player.map[player.x][player.y] == 38) {
           clear_prompt();
-          msg("SIZZLE!!!!!",12);
+          log_fire_tile(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
         }
       if (player.map[player.x][player.y] == 39) {
           clear_prompt();
-          msg("GLUB GLUB!!!",12);
+          log_water_tile(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
@@ -1267,18 +1266,16 @@ void cave() {
               if (player.monster[1][x].sleep<0) player.monster[1][x].sleep++;
               if (player.monster[1][x].fear>0) {
                 player.monster[1][x].fear--;
-                if (player.monster[1][x].fear == 0) msg("Mob no longer scared",7);
+                if (player.monster[1][x].fear == 0) log_creature_fear_over(&(player.monster[1][x]));
                 }
               if (player.monster[1][x].blind>0) player.monster[1][x].blind--;
               if (player.monster[1][x].confused>0) player.monster[1][x].confused--;
               if (player.monster[1][x].poison>0) {
-  msg("here",15);
-  sprintf(buffer,"poison=%d",player.monster[1][x].poison);
-  msg(buffer,15);
+                log_creature_poison_tick(&(player.monster[1][x]));
                 player.monster[1][x].poison--;
                 player.monster[1][x].hp -= 2;
                 poison_kill(&(player.monster[1][x]));
-  msg("done",15);
+                log_creature_poison_done();
                 }
             }
         }
@@ -1293,7 +1290,7 @@ void cave() {
               player.effect[PE_PROT]--;
               if (player.effect[PE_PROT] == 0) {
                 show_side();
-                msg("Protection fades",7);
+                log_protection_over();
                 }
             }
           if (player.effect[PE_FIRE]>0) {
@@ -1346,8 +1343,7 @@ void cave() {
             dmg = player.effect[PE_POISON] / 10;
             if (dmg < 1) dmg = 1;
             player.effect[PE_POISON] -= dmg;
-            sprintf(buffer,"%d poison damage",dmg);
-            msg(buffer,13);
+            log_poison_damage(dmg);
             stats_take_damage(dmg);
             player.chp -= dmg;
             show_side();
@@ -1356,8 +1352,7 @@ void cave() {
             dmg = player.effect[PE_DOT] / 10;
             if (dmg < 1) dmg = 1;
             player.effect[PE_DOT] -= dmg;
-            sprintf(buffer,"%d DOT damage",dmg);
-            msg(buffer,12);
+            log_wound_damage(dmg);
             stats_take_damage(dmg);
             player.chp -= dmg; show_side();
           }
@@ -1367,11 +1362,11 @@ void cave() {
         if (player.effect[PE_READLANG]>0) player.effect[PE_READLANG]--;
         if (player.effect[PE_FEAR]>0) {
           player.effect[PE_FEAR]--;
-          if (player.effect[PE_FEAR] == 0) msg("No longer afraid",14);
+          if (player.effect[PE_FEAR] == 0) log_fear_over();
           }
         if (player.effect[PE_CONFUSED]>0) {
           player.effect[PE_CONFUSED]--;
-          if (player.effect[PE_CONFUSED] == 0) msg("Your head clears",14);
+          if (player.effect[PE_CONFUSED] == 0) log_confusion_over();
           }
         if (player.effect[PE_LEV]>0) {
           player.effect[PE_LEV]--;

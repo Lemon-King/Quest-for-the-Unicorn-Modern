@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      22
+#define NUM_PREFS      23
 #define NUM_CHANGES    67
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -154,6 +154,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Improved Items",
     .help  = "Card's rarity colours, * marks unidentified items, common drops identified",
     .kind  = OPT_SWITCH, .flag = &improved_items, .on = 'Y', .off = 'N' },
+  { .label = "Improved Combat Logs",
+    .help  = "Log lines say who hits whom, for how much, in a wider message box",
+    .kind  = OPT_SWITCH, .flag = &improved_combat_logs, .on = 'Y', .off = 'N' },
   { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },

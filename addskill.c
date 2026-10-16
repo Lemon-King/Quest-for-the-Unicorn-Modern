@@ -27,7 +27,7 @@ void add_skill(Int32 skill,Int32 num) {
   if (n < 1) n = 1;
   player.skill[skill] += n;
   if (player.skill[skill] > 9900000) player.skill[skill] = 9900000;
-  if ((player.skill[skill] / 100000) != start) show_gain(skill);
+  if ((player.skill[skill] / 100000) != start) log_skill_gain(skill);
   }
 
 

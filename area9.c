@@ -15,6 +15,7 @@ void area9(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
   Int32  x1,y1;
   Int32  mon;
   Int32  i;
+  Int32  crit;
   x1 = center_x; y1 = center_y;
   if (x1<1) x1=1; else if (x1>99) x1 = 99;
   if (y1<1) y1=1; else if (y1>99) y1 = 99;
@@ -29,7 +30,7 @@ void area9(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
         if (u_random(100) < i) {
           clear_prompt();
           noise(1000,100);
-          prompt("HIT !!!");
+          log_hit_shout();
           add_skill(SK_MAGIC,1);
           if (in_arena != 'Y' && (player.monster[1][mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
             player.align -= 20;
@@ -47,13 +48,16 @@ void area9(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
             show_spot(x,y);
             }
           i = u_random(damage) + 1;
+          crit = HIT_NORMAL;
           if (u_random(100) < get_crit()) {
             i *= 2;
             stats.counts[STAT_CRITS]++;
+            crit = HIT_CRITICAL;
             }
           if (in_arena == 'Y') i = figure_damage(i,elem,&(player.monster[mon][a_mon]));
             else  i = figure_damage(i,elem,&(player.monster[1][mon]));
           stats_do_damage(i);
+          log_spell_hit(monster_record(mon),i,crit);
           if (in_arena == 'Y') player.monster[mon][a_mon].hp -= i;
             else player.monster[1][mon].hp -= i;
           if (in_arena == 'Y') i=player.monster[mon][a_mon].hp;
@@ -64,7 +68,7 @@ void area9(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
               dead_monster(&(player.monster[1][mon]),'Y',x,y);
               }
             if (in_arena == 'Y') {
-              gain_exp(player.monster[mon][a_mon].exp,0);
+              gain_exp(&(player.monster[mon][a_mon]),0);
               player.map[x][y] = player.monster[mon][a_mon].prev;
               }
             show_spot(x,y);
@@ -82,7 +86,7 @@ void area9(Int32 damage,Int32 elem,Int32 center_x,Int32 center_y) {
           }
         else {
           clear_prompt();
-          prompt("Fizzle. . .");
+          log_miss(monster_record(mon),(i == 0) ? RESISTED : MISSED);
           stats.counts[STAT_MISSES]++;
           }
         }

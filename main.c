@@ -198,6 +198,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   class_sprites = 'Y';
   floor_item_names = 'Y';
   improved_items = 'Y';
+  improved_combat_logs = 'Y';
   gothic_scrolls = 'N';
   improved_interface = 'Y';
   improved_status = 'I';

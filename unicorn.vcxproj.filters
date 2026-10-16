@@ -156,6 +156,9 @@
     <ClCompile Include="combathelp.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="combatlog.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="compass.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -724,9 +727,6 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="showflt.c">
-      <Filter>Display</Filter>
-    </ClCompile>
-    <ClCompile Include="showgain.c">
       <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="showgen.c">

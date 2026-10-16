@@ -15,7 +15,6 @@ void arena_party_heal(Int32 healer) {
   Int32 diff;
   Int32 i;
   Int32 n;
-  char buffer[128];
   n = player.party[healer].mana;
   n /= 20;
   if (n < 2) n = 2;
@@ -33,16 +32,14 @@ void arena_party_heal(Int32 healer) {
     }
   if (ch == 0) {
     if (player.chp < get_mhp()) {
-      do_heal(n,0);
-      sprintf(buffer,"%s healed you for %d",player.party[healer].name,n);
-      msg(buffer,10);
+      heal_player(n);
+      log_ally_heals_you(&(player.party[healer]),n);
       }
     }
   else {
       if (player.party[ch].hp < player.party[ch].level * 9) {
       do_heal(n,ch);
-      sprintf(buffer,"%s healed %s for %d",player.party[healer].name,player.party[ch].name,n);
-      msg(buffer,10);
+      log_ally_heals(&(player.party[healer]),&(player.party[ch]),n);
       }
     }
   }

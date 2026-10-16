@@ -67,7 +67,7 @@ void missile9(Int32 damage,Int32 elem) {
               dead_monster(&(player.monster[1][mon]),'Y',x,y);
               }
             if (in_arena == 'Y') {
-              gain_exp(player.monster[mon][a_mon].exp,0);
+              gain_exp(&(player.monster[mon][a_mon]),0);
               player.map[x][y] = player.monster[mon][a_mon].prev;
               }
             show_spot(x,y);

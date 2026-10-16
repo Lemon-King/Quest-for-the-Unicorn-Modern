@@ -410,6 +410,7 @@ void load_options() {
       if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
       if (match(line, "ImprovedItems ")) improved_items = *next;
+      if (match(line, "ImprovedCombatLogs ")) improved_combat_logs = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
       if (match(line, "ImprovedStatus ")) improved_status = *next;

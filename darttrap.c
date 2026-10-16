@@ -17,7 +17,7 @@ void dart_trap() {
   player.chp -= i;
   if (player.chp < 0) player.chp = 0;
   clear_prompt();
-  msg("Hit by a dart!",11);
+  log_dart_trap(i);
   show_side();
   run_x = 0;
   run_y = 0;

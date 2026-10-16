@@ -62,6 +62,8 @@ LINK Int32 NO_OF_MONSTERS;
 #define MINIMAP_SQUARES      100              /* the minimap's squares a side */
 #define MESSAGE_HEIGHT        12
 #define MAX_MSG               60              /* Lines the message log keeps; NUM_MSG never shows more */
+#define LOG_WIDTH             21              /* Characters on a log line */
+#define WIDE_LOG_WIDTH        26              /* ... with Improved Combat Logs: the box's whole width */
 
 
 /*
@@ -551,22 +553,63 @@ LINK Int32 NO_OF_MONSTERS;
 #define M_BOW                  2
 #define M_PHYSICAL             3
 
-#define CLR_BLACK              0
-#define CLR_BLUE               1
-#define CLR_GREEN              2
-#define CLR_CYAN               3
-#define CLR_RED                4
-#define CLR_PURPLE             5
-#define CLR_BROWN              6
-#define CLR_GRAY               7
-#define CLR_DARKGRAY           8
-#define CLR_LIGHTBLUE          9
-#define CLR_LIGHTGREEN        10
-#define CLR_LIGHTCYAN         11
-#define CLR_LIGHTRED          12
-#define CLR_LIGHTPURPLE       13
-#define CLR_YELLOW            14
-#define CLR_WHITE             15
+/* The palette's 16 colours, by their index in X11_PALETTE and DOS_PALETTE (terminal.c) */
+typedef enum {
+  CLR_BLACK       =  0,
+  CLR_BLUE        =  1,
+  CLR_GREEN       =  2,
+  CLR_CYAN        =  3,
+  CLR_RED         =  4,
+  CLR_PURPLE      =  5,
+  CLR_BROWN       =  6,
+  CLR_GRAY        =  7,
+  CLR_DARKGRAY    =  8,
+  CLR_LIGHTBLUE   =  9,
+  CLR_LIGHTGREEN  = 10,
+  CLR_LIGHTCYAN   = 11,
+  CLR_LIGHTRED    = 12,
+  CLR_LIGHTPURPLE = 13,
+  CLR_YELLOW      = 14,
+  CLR_WHITE       = 15,
+  CLR_COUNT       = 16
+  } PALETTE_COLOR;
+
+/* The player's attributes, by their index in player.stat[] */
+typedef enum {
+  ATTR_STRENGTH     = 1,
+  ATTR_DEXTERITY    = 2,
+  ATTR_CONSTITUTION = 3,
+  ATTR_INTELLIGENCE = 4,
+  ATTR_WISDOM       = 5,
+  ATTR_CHARISMA     = 6
+  } ATTRIBUTE;
+
+/* What an altar's boon (special31()) raises */
+typedef enum {
+  ALTAR_STRENGTH,
+  ALTAR_DEXTERITY,
+  ALTAR_CONSTITUTION,
+  ALTAR_HIT_POINTS,
+  ALTAR_MANA,
+  ALTAR_SKILL,
+  ALTAR_CHARISMA,
+  ALTAR_BOONS
+  } ALTAR_BOON;
+
+/* The traps the player sets, by their map value */
+typedef enum {
+  TRAP_SMALL_EXPLOSIVE = 951,
+  TRAP_LARGE_EXPLOSIVE = 952,
+  TRAP_HUGE_EXPLOSIVE  = 953,
+  TRAP_FIRE            = 954,
+  TRAP_FROST           = 955,
+  TRAP_ELECTRIC        = 956,
+  TRAP_SLEEP           = 957,
+  TRAP_FEAR            = 958,
+  TRAP_BLINDNESS       = 959,
+  TRAP_POISON          = 960,
+  TRAP_CONFUSION       = 961
+  } PLAYER_TRAP;
 
 typedef char OUTSTRING[32];
 typedef char STRING32[32];
@@ -1210,6 +1253,8 @@ LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
 LINK char               improved_items;
+LINK char               improved_combat_logs;
+LINK char               attack_source[40];    /* the spell, item or weapon the player attacks with, for the log */
 LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
@@ -1691,7 +1736,9 @@ extern void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y);
 extern void poison_kill(NPC_REC* mon);
 extern void show_messages();
 extern void msg(char* message,Int32 color);
+extern void msgf(Int32 color,char* format,...);
 extern void msg_named(char* words,char* name,Int32 color,Int32 name_color);
+extern Int32 log_width(void);
 extern void crafting();
 extern void wizard();
 extern void show_gen(Int32 item);
@@ -1699,7 +1746,7 @@ extern void buy_house(Int32 hnum);
 extern void new_month();
 extern void auto_detect();
 extern void house_inventory(Int32 hnum);
-extern void gain_exp(double amt,Int32 who);
+extern void gain_exp(NPC_REC* slain,Int32 who);
 extern void show_quest();
 extern void new_game();
 extern void convert_time(Int32 t,char* buffer);
@@ -1762,7 +1809,6 @@ extern char* base_name(char* buffer,OBJECT_REC* item);
 
 extern Int32 get_skill(Int32 num);
 extern void add_skill(Int32 skill,Int32 num);
-extern void show_gain(Int32 g);
 extern Int32 get_bonus(Int32 typ);
 extern void fire_wand(Int32 damage);
 extern void enchant(Int32 ench,Int32 limit);
@@ -1846,7 +1892,131 @@ extern Int32 set_trap(Int32 n);
 extern void arena_party_heal(Int32 healer);
 extern void trigger_trap(Int32 x,Int32 y,Int32 trap_type);
 extern NPC_REC* get_monster(Int32 x,Int32 y);
+extern NPC_REC* monster_record(Int32 mon);
 extern void do_heal(Int32 amount,Int32 who);
+extern Int32 heal_player(Int32 amount);
+
+/* combatlog.c */
+
+/* Where the_name() puts a creature's name: within a line, or starting one, with a capital */
+typedef enum {
+  MID_LINE,
+  LINE_START
+  } NAME_POSITION;
+
+/* How a creature attacks: a blow from beside the player, or a bolt from afar */
+typedef enum {
+  BY_BLOW,
+  BY_BOLT
+  } ATTACK_FORM;
+
+/* How the player's attack fails: it misses, or the creature resists it */
+typedef enum {
+  MISSED,
+  RESISTED
+  } MISS_KIND;
+
+/* How the player's attack lands; aoe() and touch() mark a critical hit with any value but HIT_NORMAL */
+typedef enum {
+  HIT_NORMAL,
+  HIT_CRITICAL
+  } HIT_KIND;
+
+extern char* the_name(char* name,NAME_POSITION position);
+extern char* a_name(char* name);
+extern void set_attack_source(char* name);
+extern void set_attack_item(char* prefix,OBJECT_REC* item);
+extern void clear_attack_source(void);
+extern void log_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_wand_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_hit_shout(void);
+extern void log_spell_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_miss(NPC_REC* target,MISS_KIND kind);
+extern void log_resist(NPC_REC* target);
+extern void log_melee_miss(NPC_REC* target);
+extern void log_shot_miss(NPC_REC* target);
+extern void log_paralyzing_blow(NPC_REC* target);
+extern void log_killing_blow(NPC_REC* target);
+extern void log_creature_healed(NPC_REC* target,Int32 amount);
+extern void log_creature_asleep(NPC_REC* target);
+extern void log_sleep_spell(NPC_REC* target);
+extern void log_creature_afraid(NPC_REC* target);
+extern void log_fear_spell(NPC_REC* target);
+extern void log_creature_blinded(NPC_REC* target);
+extern void log_creature_confused(NPC_REC* target);
+extern void log_creature_poisoned(NPC_REC* target);
+extern void log_charmed(NPC_REC* target);
+extern void log_charm_failed(NPC_REC* target);
+extern void log_pacified(NPC_REC* target);
+extern void log_creature_fear_over(NPC_REC* creature);
+extern void log_creature_poison_tick(NPC_REC* creature);
+extern void log_creature_poison_done(void);
+extern void log_slain(NPC_REC* slain,double exp);
+extern void log_spell_slain(NPC_REC* slain);
+extern void log_ally_level(NPC_REC* member);
+extern void log_dodge(NPC_REC* attacker,ATTACK_FORM form);
+extern void log_creature_hit(NPC_REC* attacker,Int32 damage,char* elem);
+extern void log_creature_dot(NPC_REC* attacker,Int32 damage);
+extern void log_creature_miss(NPC_REC* attacker,Int32 dodged);
+extern void log_creature_bolt(NPC_REC* attacker,Int32 damage,char* elem);
+extern void log_bolt_miss(NPC_REC* attacker,Int32 dodged);
+extern void log_bolt_reflected(OBJECT_REC* ring);
+extern void log_ring_melted(OBJECT_REC* ring,Int32 again);
+extern void log_rooted(NPC_REC* attacker);
+extern void log_slept(NPC_REC* attacker);
+extern void log_poisoned(NPC_REC* attacker);
+extern void log_scared(NPC_REC* attacker);
+extern void log_confused(NPC_REC* attacker);
+extern void log_level_drained(NPC_REC* attacker);
+extern void log_ally_struck(NPC_REC* attacker,NPC_REC* member,Int32 damage);
+extern void log_ally_bolted(NPC_REC* attacker,NPC_REC* member,Int32 damage);
+extern void log_ally_bolt_miss(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_hit(NPC_REC* member,NPC_REC* target,Int32 damage);
+extern void log_ally_spell_hit(NPC_REC* member,NPC_REC* target,Int32 damage);
+extern void log_ally_spell_miss(NPC_REC* member,NPC_REC* target);
+extern void log_ally_asleep(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_afraid(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_fallen(NPC_REC* member);
+extern void log_ally_heals_you(NPC_REC* healer,Int32 amount);
+extern void log_ally_heals(NPC_REC* healer,NPC_REC* member,Int32 amount);
+extern void log_snake_bite(NPC_REC* target,Int32 damage);
+extern void log_poison_damage(Int32 damage);
+extern void log_wound_damage(Int32 damage);
+extern void log_fear_over(void);
+extern void log_confusion_over(void);
+extern void log_protection_over(void);
+extern void log_polymorph(Int32 monster);
+extern void log_polymorph_failed(void);
+extern void log_polymorph_ending(Int32 turns);
+extern void log_polymorph_ended(void);
+extern void log_heal(Int32 amount,Int32 healed);
+extern void log_item_damage(Int32 damage);
+extern void log_item_poison(void);
+extern void log_dart_trap(Int32 damage);
+extern void log_poison_dart(void);
+extern void log_fire_trap(void);
+extern void log_blind_trap(void);
+extern void log_pit_trap(void);
+extern void log_root_trap(void);
+extern void log_sleep_trap(void);
+extern void log_force_field(Int32 loss);
+extern void log_fire_tile(Int32 loss);
+extern void log_water_tile(Int32 loss);
+extern void log_trap_sprung(NPC_REC* creature,Int32 trap_type);
+extern void log_explosion(void);
+extern void log_trap_blast(Int32 trap_type,Int32 damage);
+extern void log_level_up(void);
+extern void log_hp_gain(Int32 amount);
+extern void log_mana_gain(Int32 amount);
+extern void log_stat_gain(ATTRIBUTE stat);
+extern void log_skill_gain(Int32 skill);
+extern void log_level_skill(Int32 skill);
+extern void log_altar_boon(ALTAR_BOON boon,Int32 amount);
+extern void log_gold_found(Int32 gold);
+extern void log_know_enemy(NPC_REC* creature);
+extern void log_called(NPC_REC* ally);
+extern void log_summoned(NPC_REC* ally);
+extern void log_summon_failed(void);
 extern Int32 is_weapon(OBJECT_REC* item);
 extern Int32 meleehit(Int32 who,OBJECT_REC* weapon,Int32 dmg,NPC_REC* target,char hand);
 extern OBJECT_REC* get_item(Int32 x,Int32 y);

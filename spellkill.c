@@ -12,18 +12,15 @@
 
 /* A creature killed by area49(), super(), drain() or r_missile(). Without the Spell Kills change it only adds its exp. */
 void spell_kill(NPC_REC* target,Int32 x,Int32 y) {
-  char buffer[32];
-
   if (change_spell_kills != 'Y') {
-    sprintf(buffer,"Exp=%.0f",target->exp);
-    prompt(buffer);
+    log_spell_slain(target);
     player.exp += target->exp;
     player.map[x][y] = target->prev;
     return;
     }
 
   if (in_arena == 'Y') {
-    gain_exp(target->exp,0);
+    gain_exp(target,0);
     player.map[x][y] = target->prev;
     }
   else dead_monster(target,'Y',x,y);

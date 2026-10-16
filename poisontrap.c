@@ -24,7 +24,7 @@ void poison_trap() {
       if (i < 1) i = 1;
       player.effect[PE_POISON] += i;
       clear_prompt();
-      msg("Poisoned dart!!!",13);
+      log_poison_dart();
       stats.counts[STAT_POISONED]++;
       show_side();
     }

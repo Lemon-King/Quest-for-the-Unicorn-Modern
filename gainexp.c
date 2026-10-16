@@ -10,13 +10,16 @@
 
 #include "header.h"
 
-void gain_exp(double amt,Int32 who) {
+/* The experience for slaying a creature, shared with the living party; who is the party member who slew it, 0 the
+   player */
+void gain_exp(NPC_REC* slain,Int32 who) {
   Int32 i;
   Int32 sc;
-  char buffer[80];
   Int32  count;
+  double amt;
   double player_amt;
   double portion;
+  amt = slain->exp;
   if (has_intrinsic(A_DEXP)) amt *= 2;
   if (has_intrinsic(A_IEXP)) amt *= 1.15;
   amt *= get_exp_multiplier();
@@ -27,8 +30,7 @@ void gain_exp(double amt,Int32 who) {
   player_amt = portion;
   if (who == 0) player_amt += portion;
   player.exp += player_amt;
-  sprintf(buffer,"Exp=%.0f",player_amt);
-  msg(buffer,15);
+  log_slain(slain,player_amt);
   sc = (player.effect[PE_HEROIC] > 0) ? player.effect[PE_HEROIC] : 1;
   for (i=1; i<=5; i++)
     if (player.party[i].hp > 0) {
@@ -41,8 +43,7 @@ void gain_exp(double amt,Int32 who) {
         if (player.party[i].mana > 0)
           player.party[i].mana = 25 * player.party[i].level;
         player.party[i].hp = player.party[i].level * 9 * sc;
-        sprintf(buffer,"%s leveled",player.party[i].name);
-        msg(buffer,15);
+        log_ally_level(&(player.party[i]));
         }
       }
   }

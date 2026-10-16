@@ -285,6 +285,7 @@ void save_options(FILE* file) {
   sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
   sprintf(line, "  ImprovedItems %c", improved_items);      write_line(file, line);
+  sprintf(line, "  ImprovedCombatLogs %c", improved_combat_logs); write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
   sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);

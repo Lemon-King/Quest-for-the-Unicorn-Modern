@@ -26,7 +26,7 @@ void do_sleep() {
     if (in_arena != 'Y' && (player.monster[1][mon].special & MS_AMAGIC) == MS_AMAGIC) i=0;
     if (u_random(100) < i) {
       clear_prompt();
-      prompt("SLEPT !!!");
+      log_sleep_spell(monster_record(mon));
       if (in_sight(x,y) == '*') {
         show_sprite(x-player.map_x,y-player.map_y,80);
         delay(delay_hit);
@@ -39,7 +39,7 @@ void do_sleep() {
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . . ");
+      log_resist(monster_record(mon));
       }
     }
   }

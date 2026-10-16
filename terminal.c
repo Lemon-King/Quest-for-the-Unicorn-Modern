@@ -24,7 +24,7 @@ static const GLYPH_FONT* font;
 
 /* CLR_BLACK..CLR_WHITE in the Color Palette preference's palettes. X11 is the GDI build's, which resolved their X11
    names, so light red (red1) is red itself; DOS is the 16 colours of CGA, EGA and VGA. */
-static const UInt32 X11_PALETTE[16] = {
+static const UInt32 X11_PALETTE[CLR_COUNT] = {
   0x000000,   /* black      */
   0x0000cd,   /* blue3      */
   0x00cd00,   /* green3     */
@@ -43,7 +43,7 @@ static const UInt32 X11_PALETTE[16] = {
   0xffffff    /* white      */
   };
 
-static const UInt32 DOS_PALETTE[16] = {
+static const UInt32 DOS_PALETTE[CLR_COUNT] = {
   0x000000,   /* black         */
   0x0000aa,   /* blue          */
   0x00aa00,   /* green         */
@@ -74,7 +74,7 @@ static UInt32 palette_rgb(Int32 color) {
 
   palette = (color_palette == 'D') ? DOS_PALETTE : X11_PALETTE;
 
-  return (color >= 0 && color < 16) ? palette[color] : palette[CLR_BLACK];
+  return (color >= 0 && color < CLR_COUNT) ? palette[color] : palette[CLR_BLACK];
   }
 
 static void clear_buffer() {

@@ -712,6 +712,18 @@
                               Off, names follow older colour bands,
                               and an unidentified item is cyan, and
                               yellow on the floor
+         Improved Combat Logs Each line of the message log says who hit
+                              whom and for how much, and how a fight
+                              ends: "The Goblin hits you for 3", "You
+                              miss the Goblin", "The Goblin dies! (+9
+                              exp)".  Spells name themselves, as do
+                              your bow, wand or what you throw, and
+                              traps, effects that wear off, and the
+                              levels, stats and skills you gain say
+                              what changed and by how much.  The log
+                              fills the whole width of its box.  Off,
+                              the log keeps the game's first lines,
+                              such as "OUCH! for 3" and "Exp=9"
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a

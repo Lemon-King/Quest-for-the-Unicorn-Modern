@@ -16,6 +16,13 @@ static Int32 is_bow(OBJECT_REC* weapon) {
   return (weapon->otype == O_BOW);
   }
 
+/* The log names a shot by its bow or the thrown item, and a throw with no weapon as a throw */
+static void name_shot(OBJECT_REC* weapon) {
+  if (weapon == NULL) set_attack_source("throw");
+    else if (weapon->otype == O_BOW) set_attack_item("",weapon);
+    else set_attack_item("thrown ",weapon);
+  }
+
 void fire(Int32 damage,OBJECT_REC* weapon) {
   Int32 sprt = 0;
   Int32  x,y;
@@ -36,6 +43,7 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
   y = target_y;
   monster = get_monster(x,y);
   item = get_item(x,y);
+  name_shot(weapon);
   if (monster != NULL) {
     skill = (weapon != NULL && weapon->otype == O_BOW) ? weapon->skill : SK_THROWN;
     if (weapon != NULL && weapon->otype == O_WAND) skill = SK_MAGIC;
@@ -62,7 +70,7 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
         aoe(x,y,weapon->effect,weapon->control,weapon->damage,0,0,0,-100);
       clear_prompt();
       noise(1000,100);
-      prompt("HIT !!!");
+      log_hit_shout();
       if (weapon != NULL && weapon->otype == O_BOW) add_skill(weapon->skill,1);
       else add_skill(SK_THROWN,1);
       if (in_sight(x,y) == '*') {
@@ -86,7 +94,7 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
       }
     else {
       clear_prompt();
-      prompt("Missed. . .");
+      log_shot_miss(monster);
       stats.counts[STAT_MISSES]++;
       }
     }
@@ -123,4 +131,6 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
       if (in_sight(x,y) == '*') show_spot(x,y);
       }
     }
+
+  clear_attack_source();
   }

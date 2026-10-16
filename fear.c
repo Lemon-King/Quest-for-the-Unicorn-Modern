@@ -31,7 +31,7 @@ void fear(Int32 radius) {
       if ((monster->special & MS_AMAGIC) == MS_AMAGIC) i=0;
       if (u_random(100) < i) {
         clear_prompt();
-        prompt("SCARED!!!");
+        log_fear_spell(monster);
         if (in_sight(x,y) == '*') {
           show_sprite(x-player.map_x,y-player.map_y,80);
           delay(delay_hit);
@@ -41,7 +41,7 @@ void fear(Int32 radius) {
         }
       else {
         clear_prompt();
-        prompt("Fizzle. . . ");
+        log_resist(monster);
         }
         }
     }

@@ -14,7 +14,7 @@ void root_trap() {
   if (player.effect[PE_ROOT] > 0) return;
   player.effect[PE_ROOT] = 2 * ((player.diff+player.d_level) + u_random(player.diff+player.d_level / 3));
   clear_prompt();
-  prompt("Cannot move!!");
+  log_root_trap();
   show_player();
   run_x = 0;
   run_y = 0;
