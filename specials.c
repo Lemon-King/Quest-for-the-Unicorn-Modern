@@ -21,7 +21,7 @@ void display_msg(Int32 msg,char ext) {
   show_screen();
   }
 
-void special1() {
+void special1(void) {
   Int32 x,y;
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++)
@@ -70,7 +70,7 @@ void special5() {
   if (player.effect[PE_ETHER] > 100) player.effect[PE_ETHER] = 100;
   }
 
-void special6() {
+void special6(void) {
   player.effect[PE_LIGHT] += 5000;
   if (player.effect[PE_LIGHT] > 10000) player.effect[PE_LIGHT] = 10000;
   }
@@ -193,7 +193,7 @@ void special14() {
   add_skill(SK_ORACLE,1);
   }
 
-void special15() {
+void special15(void) {
   if (player.d_level > 0 && player.in_city != 'Y') save_level();
   player.d_level = 0;
   }
@@ -236,11 +236,11 @@ void special20() {
   restoreScreen();
   }
 
-void special21() {
+void special21(void) {
   player.effect[PE_READLANG] = 20;
   }
 
-void special22() {
+void special22(void) {
   Int32 x,y;
   for (x=player.map_x; x<=player.map_x+15; x++)
     for (y=player.map_y; y<=player.map_y+15; y++)
@@ -253,7 +253,7 @@ void special22() {
   show_screen();
   }
 
-void special23() {
+void special23(void) {
   char mflag;
   Int32  x,y;
   Int32  xdir,ydir;
@@ -337,7 +337,7 @@ void special27(Int32 level) {
     }
   }
 
-void special28() {
+void special28(void) {
   player.effect[PE_READLORE] = 20;
   }
 
@@ -514,7 +514,7 @@ void special42(Int32 mon) {
  
   }
 
-void special43() {
+void special43(void) {
   Int32 l;
   Int32 x,y;
   special37();
@@ -528,37 +528,56 @@ void special43() {
 //  show_screen();
   }
 
-void special46() {
-  char invoke[33];
-  char buffer[80];
-  char key;
-  strcpy(invoke,"");
-  prompt("Function ? _");
-  key = 0;
-  while (key != 13) {
-    key = inkey();
-    if (key > 31 && strlen(invoke) < sizeof(invoke) - 1) {
-      invoke[strlen(invoke) + 1] = 0;
-      invoke[strlen(invoke)] = key;
-      sprintf(buffer,"Function ? %s_",invoke);
-      clear_prompt();
-      promptNS(buffer);
-      }
-    if (key == 8 && strlen(invoke) > 1) {
-      invoke[strlen(invoke) - 1] = 0;
-      sprintf(buffer,"Function ? %s_",invoke);
-      clear_prompt();
-      promptNS(buffer);
+/* The Talning rod's eight functions */
+static WORD_OF_POWER rod_functions[] = {
+  { "Auralal", "Clairaudience",         special1 },
+  { "Litraal", "Light",                 special6 },
+  { "Suraal",  "Return to the surface", special15 },
+  { "Reahl",   "Understand languages",  special21 },
+  { "Mala",    "Detect magic",          special22 },
+  { "Loeer",   "Understand lore",       special28 },
+  { "Detral",  "Find all traps",        special43 },
+  { "Idahl",   "Identify an enemy",     special23 }
+  };
+
+static WORD_BOOK rod_book = { rod_functions, sizeof(rod_functions) / sizeof(rod_functions[0]) };
+
+/* The function picked from those you know with Easy Words, or else the one typed; ESC backs out with Improved
+   Interface. Returns 0 when none is said. */
+static Int32 read_function(char* name,Int32 size) {
+  TEXT_FIELD field;
+  Int32      picked;
+
+  strcpy(name,"");
+  if (easy_words_on()) {
+    picked = word_choice(&rod_book,"Use which function?","Type a function");
+    show_messages();
+    if (picked == WORD_NONE) return 0;
+    if (picked >= 0) {
+      sprintf(name,"%.*s",size - 1,rod_functions[picked].word);
+      return 1;
       }
     }
-  if (_stricmp(invoke,"auralal") == 0) special1();
-  if (_stricmp(invoke,"litraal") == 0) special6();
-  if (_stricmp(invoke,"suraal") == 0) special15();
-  if (_stricmp(invoke,"reahl") == 0) special21();
-  if (_stricmp(invoke,"mala") == 0) special22();
-  if (_stricmp(invoke,"loeer") == 0) special28();
-  if (_stricmp(invoke,"detral") == 0) special43();
-  if (_stricmp(invoke,"idahl") == 0) special23();
+
+  open_log_field(&field,name,size,"Function ? ",10);
+  field.cancel = (improved_interface == 'Y');
+  if (easy_words_on()) {
+    field.complete = complete_word;
+    field.data = &rod_book;
+    }
+
+  return read_field(&field);
+  }
+
+void special46() {
+  WORD_OF_POWER* function;
+  char           name[33];
+
+  if (!read_function(name,sizeof(name))) return;
+
+  function = find_word(&rod_book,name);
+  if (function != NULL) function->say();
+    else if (easy_words_on() && name[0] != 0) msg("The rod does not respond",12);
   }
 
 void special47() {
@@ -602,14 +621,7 @@ void special49() {
     txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
     key = inkey();
     if (key == 'q' || key == 'Q') flag = '*';
-    if (key == 'l' || key == 'L') {
-      strcpy(search,"");
-      while (strlen(search) < 5) {
-        gotoxy(10,9); textcolor(9);
-        txt_write("Enter Search String (5 chars min.) ? ");
-        strcpy(search,"");
-        readln(search);
-        }
+    if ((key == 'l' || key == 'L') && read_search(search,sizeof(search))) {
       msg = find_lore(search);
       if (msg == 0) {
         gotoxy(10,9); textcolor(12);
@@ -622,14 +634,7 @@ void special49() {
         display_msg(msg,'L');
         }
       }
-    if (key == 'g' || key == 'G') {
-      strcpy(search,"");
-      while (strlen(search) < 5) {
-        gotoxy(10,9); textcolor(9);
-        txt_write("Enter Search String (5 chars min.) ? ");
-        strcpy(search,"");
-        readln(search);
-        }
+    if ((key == 'g' || key == 'G') && read_search(search,sizeof(search))) {
       msg = find_gen(search);
       if (msg == 0) {
         gotoxy(10,9); textcolor(12);

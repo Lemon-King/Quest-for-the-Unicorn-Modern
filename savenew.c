@@ -290,6 +290,7 @@ void save_options(FILE* file) {
   sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
   sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);
   sprintf(line, "  EasySpells %c", easy_spells);            write_line(file, line);
+  sprintf(line, "  EasyWords %c", easy_words);              write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }
@@ -534,7 +535,7 @@ void save_new() {
     if (strlen(filename) == 0) strcpy(filename,player.name);
     gotoxy(1,1); textcolor(14);
     txt_write("Filename to save under (No Extension) ?");
-    readln(filename);
+    readln(filename,sizeof(filename));
     }
   save_game(filename);
   }

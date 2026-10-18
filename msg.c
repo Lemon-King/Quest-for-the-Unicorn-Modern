@@ -124,3 +124,8 @@ void msg_named(char* words,char* name,Int32 color,Int32 name_color) {
   add_message(message,color,(Int32)strlen(words) + 1,name_color);
   }
 
+/* message in color, and from column at on in second_color, 0 for none; with color below 0 it replaces the newest line */
+void msg_split(char* message,Int32 color,Int32 at,Int32 second_color) {
+  add_message(message,color,at,second_color);
+  }
+

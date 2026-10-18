@@ -864,6 +864,9 @@
     <ClCompile Include="terminal.c">
       <Filter>Display</Filter>
     </ClCompile>
+    <ClCompile Include="textfield.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="throw.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -934,6 +937,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="wizard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="words.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="worldmap.c">

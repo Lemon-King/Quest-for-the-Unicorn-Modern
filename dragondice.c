@@ -44,7 +44,7 @@ void dragon_dice() {
     gotoxy(27,3); textcolor(11);
     txt_write("Enter bet (0 to leave) ? ");
     strcpy(buffer,"");
-    readln(buffer);
+    readln(buffer,sizeof(buffer));
     sscanf(buffer,"%lf",&bet);
     bet = typed_gold(bet);
     gotoxy(27,5); textcolor(10);

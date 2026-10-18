@@ -80,7 +80,7 @@ void buy_house(Int32 hnum) {
     if (key == '1') {
       gotoxy(27,15); textcolor(2); txt_write("New Down Payment: ");
       textcolor(15);
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%lf",&down);
         } else down = 0;
       down = typed_gold(down);

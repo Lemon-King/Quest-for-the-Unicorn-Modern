@@ -18,8 +18,8 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      23
-#define NUM_CHANGES    67
+#define NUM_PREFS      24
+#define NUM_CHANGES    66
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -144,6 +144,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Easy Spells",
     .help  = "Pick your spell from a list in the TAB menu, instead of typing its name",
     .kind  = OPT_SWITCH, .flag = &easy_spells, .on = 'Y', .off = 'N', .needs = &improved_interface },
+  { .label = "Easy Words",
+    .help  = "Words of Power you have read of: listed in the TAB menu, completed as typed",
+    .kind  = OPT_SWITCH, .flag = &easy_words, .on = 'Y', .off = 'N', .needs = &improved_interface },
   { .label = "Improved Status",
     .help  = "Status row under your stats: grey letters, coloured letters, or icons",
     .kind  = OPT_SWITCH, .flag = &improved_status, .on = 'C', .off = 'N', .strict = 'I',
@@ -239,9 +242,6 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Travel Saves",
     .help  = "Saves keep a relic's destinations without losing lore or your position",
     .kind  = OPT_SWITCH, .flag = &change_tardis_saves, .on = 'Y', .off = 'N', .key = "TardisSaves" },
-  { .label = "Travel Descriptions",
-    .help  = "Destination descriptions stop at 31 characters instead of overrunning memory",
-    .kind  = OPT_SWITCH, .flag = &change_tardis_descriptions, .on = 'Y', .off = 'N', .key = "TardisDescriptions" },
   { .label = "Sleep Traps",
     .help  = "Sleep traps put you to sleep instead of never springing",
     .kind  = OPT_SWITCH, .flag = &change_sleep_traps, .on = 'Y', .off = 'N', .key = "SleepTraps" },

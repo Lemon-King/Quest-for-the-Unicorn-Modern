@@ -299,55 +299,38 @@ void delay(Int32 tm) {
   if (host_closed(host)) window_closed();
   }
 
-Int32 p_read(char* buffer) {
-  Int32 temp_x,temp_y;
-  unsigned char key;
-/*  strcpy(buffer,""); */
-  key = 0;
-  temp_x = cursor_x;
-  temp_y = cursor_y;
-  gotoxy(temp_x+1,temp_y+1);
-  txt_write(buffer);
-  txt_write("_");
-  while (key != 13 && key != 27) {
-    key = inkey();
-    if (key == KY_F1) strcpy(currentMacro, macros[0]);
-    if (key == KY_F2) strcpy(currentMacro, macros[1]);
-    if (key == KY_F3) strcpy(currentMacro, macros[2]);
-    if (key == KY_F4) strcpy(currentMacro, macros[3]);
-    if (key == KY_F5) strcpy(currentMacro, macros[4]);
-    if (key == KY_F6) strcpy(currentMacro, macros[5]);
-    if (key == KY_F7) strcpy(currentMacro, macros[6]);
-    if (key == KY_F8) strcpy(currentMacro, macros[7]);
-    if (key == KY_F9) strcpy(currentMacro, macros[8]);
-    if (key == KY_F10) strcpy(currentMacro, macros[9]);
-    if (key == KY_F11) strcpy(currentMacro, macros[10]);
-    if (key == KY_F12) strcpy(currentMacro, macros[11]);
-    if (key > 31 && key < 127) {
-      buffer[strlen(buffer) + 1] = 0;
-      buffer[strlen(buffer)] = key;
-      gotoxy(temp_x+1,temp_y+1);
-      txt_write(buffer);
-      txt_write("_");
-      }
-    if ((key == 8 || key == 127) && strlen(buffer) > 0) {
-      buffer[strlen(buffer) - 1] = 0;
-      gotoxy(temp_x+1,temp_y+1);
-      txt_write(buffer);
-      txt_write("_ ");
-      }
-    }
-  gotoxy(temp_x+1,temp_y+1);
-  txt_write(buffer);
-  txt_write("  ");
-  cursor_x = temp_x;
-  cursor_y = temp_y;
-  if (key == 27) return -1;
+/* F1-F12 type their macros */
+static Int32 type_macro(TEXT_FIELD* field,Int32 key) {
+  Int32 n;
+
+  n = fkey_number(key);
+  if (n == 0) return key;
+
+  strcpy(currentMacro,macros[n - 1]);
   return 0;
   }
 
-void readln(char* buffer) {
-  p_read(buffer);
+/* Reads a line into buffer, of size characters, after what it holds, where the cursor stands and in the text colour.
+   Returns -1 when ESC backs out. */
+Int32 p_read(char* buffer,Int32 size) {
+  TEXT_FIELD field;
+  Int32      temp_x,temp_y;
+  Int32      typed;
+
+  temp_x = cursor_x;
+  temp_y = cursor_y;
+  open_grid_field(&field,buffer,size,temp_x+1,temp_y+1,text_color);
+  field.cancel = 1;
+  field.key = type_macro;
+  typed = read_field(&field);
+
+  cursor_x = temp_x;
+  cursor_y = temp_y;
+  return typed ? 0 : -1;
+  }
+
+void readln(char* buffer,Int32 size) {
+  p_read(buffer,size);
   /*
   cursor_y++;
   cursor_x = 0;

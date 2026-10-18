@@ -399,9 +399,6 @@
                               messages and lore you have read, and in a
                               town or dungeon puts you at a destination's
                               coordinates
-         Travel Descriptions  A destination's description stops at 31
-                              characters.  Off, a longer one overruns
-                              the game's memory
          Sleep Traps          A sleep trap puts you to sleep.  Off, it
                               never springs
          Words of Power       Rising by a word of power from the first
@@ -677,6 +674,15 @@
                               you to type one (see Tab Menu).  It needs
                               Improved Interface, and is greyed out
                               while that is Off
+         Easy Words           Say a Word of Power in the Tab menu lists
+                              the words you have read of to pick from,
+                              a word you type is filled in once its
+                              first letters fit only one of them, and
+                              the message log says when a word fails
+                              (see Words of Power), and so does a relic
+                              that answers to words.  It needs
+                              Improved Interface, and is greyed out
+                              while that is Off.  Off by default
          Improved Status      Show the status indicators under your
                               stats (see Status Indicators) as grey
                               letters (Off), coloured letters (Color),
@@ -1203,6 +1209,10 @@
      training a party member.  The game mode after rebirth, the library's
      kind of search and a party member's orders are chosen the same way.
 
+       Where the game asks you to type a word of power, a word for a relic,
+     the hours of a nap or a travel destination's description, <ESC>
+     backs out without doing anything.  Off, only <Enter> ends them.
+
        At the pawn shop and the Mech-Merchant, Sell from Pack lists the
      items in your pack with the merchant's offer for each, and Identify
      from Pack the ones you have not identified with what each costs,
@@ -1291,6 +1301,12 @@
      and <Enter> casts the one under the cursor.  Spells you lack the
      mana for are grey and cannot be picked, and the cursor starts on
      the spell you cast last.  <ESC> goes back to the menu.
+
+       Say a Word of Power, in a town or dungeon while your voice is
+     rested, asks for a word as <w> does.  With the Easy Words preference
+     it lists the words of power you have read of in lore, each with what
+     the lore says it does, and <Enter> says the one under the cursor;
+     Type a word asks for one instead.  <ESC> goes back to the menu.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved
@@ -1507,20 +1523,34 @@
      spells into F2 .. F12 for easy access.  F1 always contains the last
      spell cast. To program a function key, press 'm' for magic, then
      type the name of the spell, when the full spell name appears, press
-     the F-key you want to store the spell into, then press <ENTER>.  Now
-     all you have to do to cast that spell is press the F-key you assigned
-     the spell to and that spell will be cast.
+     the F-key you want to store the spell into, then press <ESC>, or
+     <ENTER> to cast it as well.  Now all you have to do to cast that
+     spell is press the F-key you assigned the spell to, then <ENTER>.
 
-       Spell name entry has been made as easy to swallow as possible, start
-     type the name of your spell, as soon as the computer can see your
-     character string as a unique spell name, it will come up with the rest
-     of the name for you, if this is the spell you wish to cast, just press
-     <ENTER>, otherwise you can press the backspace to continue entering a
-     name.
+       Spell name entry has been made as easy to swallow as possible: start
+     to type the name of your spell, and as soon as the computer can see
+     your letters as the start of only one spell you know, it shows the
+     rest of the name in grey.  If this is the spell you wish to cast,
+     press <ENTER>, or <Tab> to fill in the name, otherwise keep typing.
+     A spell whose whole name you type is cast even when a longer name
+     begins with it, as Heal is beside Healing.  <?> lists the spells you
+     know, and <ESC> casts nothing.
 
        The spell "Sticks to Snakes" works only in the combat mode and not
      in the standard dungeon mode. so dont cast this spell unless you are
      in the combat mode.
+
+     Words of Power
+     ==============
+       Lore tells of words of power, said with <w> in towns and dungeons.
+     Once said, a word rests your voice for a while, whether it works or
+     not; a word that is no word of power costs nothing, nor does <ESC>
+     with the Improved Interface preference.  With the Easy Words
+     preference the Tab menu lists the words you have read of, a word you
+     type is filled in once its first letters fit only one of them, and
+     the message log says when a word fails or backfires, when what you
+     said is no word of power, and how long your voice still needs.  A
+     relic that answers to words lists and fills in its own the same way.
 
      Sockets
      =======

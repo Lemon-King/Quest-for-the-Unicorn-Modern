@@ -172,7 +172,7 @@ void pawn(char* name, byte city) {
       txt_write("Which item would you like (<ESC> to leave) ?        ");
       gotoxy(60,19); textcolor(15);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }

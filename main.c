@@ -203,6 +203,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   improved_interface = 'Y';
   improved_status = 'I';
   easy_spells = 'Y';
+  easy_words = 'N';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);

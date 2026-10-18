@@ -80,7 +80,7 @@ void bank(char* name) {
       gotoxy(30,19); textcolor(14);
       txt_write("How much to deposit ?");
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%lf",&amt);
         } else amt = 0;
       amt = typed_gold(amt);
@@ -99,7 +99,7 @@ void bank(char* name) {
       gotoxy(30,19); textcolor(14);
       txt_write("How much to withdraw ?");
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%lf",&amt);
         } else amt = 0;
       amt = typed_gold(amt);

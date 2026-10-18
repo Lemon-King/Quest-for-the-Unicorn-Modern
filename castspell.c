@@ -10,13 +10,6 @@
 
 #include "header.h"
 
-/* The spell being typed at the "Spell ?" prompt */
-typedef struct {
-  Int32 spell_num;
-  Int32 newone;
-  char  spell_name[33];
-  } SPELL_ENTRY;
-
 /* A spell picked from the Tab Menu's list, which the next cast takes without asking; 0 for none */
 static Int32 picked_spell = 0;
 
@@ -42,50 +35,41 @@ void pick_spell(Int32 spell) {
   picked_spell = spell;
   }
 
-static void match_spell(SPELL_ENTRY* entry) {
+/* The one spell you know whose name begins with name; 0 when none or several do */
+static Int32 matching_spell(char* name) {
   Int32 i;
   Int32 count;
-  Int32 found = 0;
-  byte key;
-  char buffer[80];
+  Int32 found;
+
   count = 0;
-  entry->newone = 0;
+  found = 0;
   for (i=1; i<=num_spells; i++)
-    if (has_spell(i) != 0)
-      if (_strnicmp(entry->spell_name,spells[i].name,strlen(entry->spell_name))  == 0) {
-        count++;
-        found = i;
-        }
-  if (count != 1) entry->newone = 0;
-  else {
-    clear_prompt();
-    sprintf(buffer,"Spell ? %s_",spells[found].name);
-    promptNS(buffer);
-    key = inkey();
-    if (key == 8) {
-      clear_prompt();
-      sprintf(buffer,"Spell ? %s_",entry->spell_name);
-      promptNS(buffer);
+    if (has_spell(i) != 0 && _strnicmp(name,spells[i].name,strlen(name)) == 0) {
+      count++;
+      found = i;
       }
-    if (key == 13) {
-      entry->newone = found;
-      clear_prompt();
-      sprintf(buffer,"Spell ? %s ",spells[found].name);
-      promptNS(buffer);
-      }
-    if (key == KY_F1) strcpy(player.fspell[1],spells[found].name);
-    if (key == KY_F2) strcpy(player.fspell[2],spells[found].name);
-    if (key == KY_F3) strcpy(player.fspell[3],spells[found].name);
-    if (key == KY_F4) strcpy(player.fspell[4],spells[found].name);
-    if (key == KY_F5) strcpy(player.fspell[5],spells[found].name);
-    if (key == KY_F6) strcpy(player.fspell[6],spells[found].name);
-    if (key == KY_F7) strcpy(player.fspell[7],spells[found].name);
-    if (key == KY_F8) strcpy(player.fspell[8],spells[found].name);
-    if (key == KY_F9) strcpy(player.fspell[9],spells[found].name);
-    if (key == KY_F10) strcpy(player.fspell[10],spells[found].name);
-    if (key == KY_F11) strcpy(player.fspell[11],spells[found].name);
-    if (key == KY_F12) strcpy(player.fspell[12],spells[found].name);
-    }
+
+  return (count == 1) ? found : 0;
+  }
+
+/* The spell you know called name, in any case; 0 for none */
+static Int32 find_spell(char* name) {
+  Int32 i;
+
+  for (i=1; i<=num_spells; i++)
+    if (has_spell(i) != 0 && _stricmp(name,spells[i].name) == 0) return i;
+
+  return 0;
+  }
+
+static Int32 complete_spell(TEXT_FIELD* field,char* word) {
+  Int32 spell;
+
+  spell = matching_spell(field->text);
+  if (spell == 0) return 0;
+
+  strcpy(word,spells[spell].name);
+  return 1;
   }
 
 static void show_list(void) {
@@ -122,98 +106,54 @@ static void show_list(void) {
   show_player();
   }
 
-static Int32 read_spell_name(SPELL_ENTRY* entry,Int32 column,Int32 search) {
-  byte key;
-  char buffer[80];
-//  Int32 first;
+/* ? lists the spells you know. F1-F12 keep the one spell the name begins in their slot, or bring back the spell kept
+   there. */
+static Int32 spell_key(TEXT_FIELD* field,Int32 key) {
+  Int32 slot;
+  Int32 spell;
 
-  entry->newone = 0;
-//  first = column;
-  textcolor(15);
-  strcpy(entry->spell_name,"");
-  key = 0;
-  if (entry->spell_num != 0) {
-    strcpy(entry->spell_name,player.fspell[entry->spell_num]);
-    sprintf(buffer,"Spell ? %s_",entry->spell_name);
-    promptNS(buffer);
-    if (search == 1) match_spell(entry);
-    entry->spell_num = 0;
-    key = 13;
+  if (key == '?') {
+    show_list();
+    return 0;
     }
-  while (key != 13) {
-    if (entry->spell_num == 0) key = inkey();
-      else entry->spell_num = 0;
-    if (key == '?') {
-      show_list();
-      key = 3;
-      clear_prompt();
-      sprintf(buffer,"Spell ? %s_",entry->spell_name);
-      promptNS(buffer);
-      }
-    if (key > 31) {
-      if (key == KY_F1) strcpy(entry->spell_name,player.fspell[1]);
-      if (key == KY_F2) strcpy(entry->spell_name,player.fspell[2]);
-      if (key == KY_F3) strcpy(entry->spell_name,player.fspell[3]);
-      if (key == KY_F4) strcpy(entry->spell_name,player.fspell[4]);
-      if (key == KY_F5) strcpy(entry->spell_name,player.fspell[5]);
-      if (key == KY_F6) strcpy(entry->spell_name,player.fspell[6]);
-      if (key == KY_F7) strcpy(entry->spell_name,player.fspell[7]);
-      if (key == KY_F8) strcpy(entry->spell_name,player.fspell[8]);
-      if (key == KY_F9) strcpy(entry->spell_name,player.fspell[9]);
-      if (key == KY_F10) strcpy(entry->spell_name,player.fspell[10]);
-      if (key == KY_F11) strcpy(entry->spell_name,player.fspell[11]);
-      if (key == KY_F12) strcpy(entry->spell_name,player.fspell[12]);
-      if (key < 127) {
-        entry->spell_name[strlen(entry->spell_name) + 1] = 0;
-        entry->spell_name[strlen(entry->spell_name)] = key;
-        sprintf(buffer,"Spell ? %s_",entry->spell_name);
-        promptNS(buffer);
-        }
-      if (search == 1) match_spell(entry);
-      if (entry->newone != 0) key = 13;
-      }
-    if (key == 127) key = 8;
-    if (key == 8 && strlen(entry->spell_name) > 0) {
-      entry->spell_name[strlen(entry->spell_name) - 1] = 0;
-        clear_prompt();
-        sprintf(buffer,"Spell ? %s_",entry->spell_name);
-        promptNS(buffer);
-      }
-    if (key == 27) {
-      strcpy(entry->spell_name,"");
-      entry->newone = 0;
-      key = 13;
-      }
-    }
-  return entry->newone;
+
+  slot = fkey_number(key);
+  if (slot == 0) return key;
+
+  spell = (field->text[0] != 0) ? matching_spell(field->text) : 0;
+  if (spell != 0) strcpy(player.fspell[slot],spells[spell].name);
+    else sprintf(field->text,"%.*s",field->length,player.fspell[slot]);
+
+  return 0;
+  }
+
+/* The spell typed at the prompt, which an F-key's slot fills when not 0; 0 for none, and for an empty slot */
+static Int32 read_spell(Int32 slot) {
+  TEXT_FIELD field;
+  char       name[33];
+
+  strcpy(name,(slot != 0) ? player.fspell[slot] : "");
+  if (slot != 0 && name[0] == 0) return 0;
+
+  open_log_field(&field,name,sizeof(name),"Spell ? ",10);
+  field.cancel = 1;
+  field.complete = complete_spell;
+  field.key = spell_key;
+  if (!read_field(&field)) return 0;
+
+  return find_spell(name);
   }
 
 Int32 castspell(Int32 spell_num) {
-  SPELL_ENTRY entry;
-  char        flag;
-  Int32       newone;
-//  Int32  allign;
-//  Int32  level;
+  Int32 newone;
 
-  entry.spell_num = spell_num;
-  entry.newone = 0;
-  strcpy(entry.spell_name,"");
-//  allign = classes[player.class-1].spell_group;
-//  level = (player.level - classes[player.class-1].becomes_caster) + 1;
-  flag = ' ';
   if (picked_spell != 0) {
     newone = picked_spell;
     picked_spell = 0;
-    flag = '*';
     }
-  while (flag == ' ') {
-    clear_prompt();
-    prompt("Spell ? _");
-    newone = read_spell_name(&entry,22,1);
-    flag = '*';
-    }
+  else newone = read_spell(spell_num);
+
   if (newone != 0) strcpy(player.fspell[1],spells[newone].name);
-  clear_prompt();
   return newone;
   }
 

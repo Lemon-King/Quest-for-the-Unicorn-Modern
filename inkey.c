@@ -10,20 +10,26 @@
 
 #include "header.h"
 
-char inkey() {
+/* The macro's next key, $E standing for ENTER and $e for ESC. Returns 0 when no macro is playing. */
+static Int32 macro_key(char* key) {
   Int32 i;
-  char key;
-  if (strlen(currentMacro) > 0) {
-    key = currentMacro[0];
+  if (strlen(currentMacro) == 0) return 0;
+
+  *key = currentMacro[0];
+  for (i=0; i<=strlen(currentMacro); i++) currentMacro[i] = currentMacro[i+1];
+  if (*key == '$' && strlen(currentMacro) > 0) {
+    *key = currentMacro[0];
     for (i=0; i<=strlen(currentMacro); i++) currentMacro[i] = currentMacro[i+1];
-    if (key == '$' && strlen(currentMacro) > 0) {
-      key = currentMacro[0];
-      for (i=0; i<=strlen(currentMacro); i++) currentMacro[i] = currentMacro[i+1];
-      if (key == 'E') return 13;
-      if (key == 'e') return 27;
-      }
-    return key;
+    if (*key == 'E') *key = 13;
+      else if (*key == 'e') *key = 27;
     }
+  return 1;
+  }
+
+char inkey() {
+  char key;
+  if (macro_key(&key)) return key;
+
   while (keypressed()) key = readkey();
   key = readkey();
 
@@ -65,3 +71,10 @@ char inkey() {
   return key;
   }
 
+/* inkey() for typing: it keeps the keys typed ahead, so none of a word is lost */
+char typed_key() {
+  char key;
+  if (macro_key(&key)) return key;
+
+  return readkey();
+  }

@@ -40,10 +40,11 @@
 #define DO_LOAD          2
 #define DO_SPELLS        3
 #define DO_STATUS        4
+#define DO_WORDS         5
 
 /* A command: what it says, the keys it types (the first returned, the rest queued), or Save, Load, the Easy Spells
-   list or Status Effects. An item's name in its label, from name_start on, shows in its rarity colour, name_color; 0
-   for none. */
+   or Easy Words list or Status Effects. An item's name in its label, from name_start on, shows in its rarity colour,
+   name_color; 0 for none. */
 typedef struct {
   char  label[LABEL_LENGTH];
   char  keys[4];
@@ -219,6 +220,14 @@ static void add_spells(COMMANDS* commands) {
 
   command = add_command(commands,"Spells","m",COMMON_COLOR);
   if (command != NULL && easy_spells == 'Y') command->action = DO_SPELLS;
+  }
+
+/* Say a Word of Power types w for the prompt, or with Easy Words opens the list of the words you have read of */
+static void add_say_word(COMMANDS* commands) {
+  COMMAND* command;
+
+  command = add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
+  if (command != NULL && easy_words == 'Y') command->action = DO_WORDS;
   }
 
 /* "<verb> <name>", with any underscores in the name as spaces */
@@ -474,7 +483,7 @@ static void list_combat_abilities(COMMANDS* commands) {
 static void list_abilities(COMMANDS* commands) {
   list_combat_abilities(commands);
   if (holds_spell_scroll()) add_command(commands,"Transcribe a spell","x",COMMON_COLOR);
-  if (word_counter == 0 && player.gateway != '*') add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
+  if (word_counter == 0 && player.gateway != '*') add_say_word(commands);
   }
 
 static void list_town_and_dungeon(COMMANDS* commands) {
@@ -798,12 +807,14 @@ static Int32 ask_save_name(char* name) {
   char        problem[LABEL_WIDTH + 1];
   char        key;
   Int32       length;
+  Int32       first;
 
   panel = panel_rows(0);
   show_name_prompt(&panel);
 
   strcpy(name,"");
   strcpy(problem,"");
+  first = 1;
   key = 0;
   while (key != 13) {
     sprintf(typed,"%s_",name);
@@ -812,7 +823,8 @@ static Int32 ask_save_name(char* name) {
     sprintf(field,"%-*s",LABEL_WIDTH,problem);
     list_text(&panel,1,5,12,field);
 
-    key = inkey();
+    key = first ? inkey() : typed_key();
+    first = 0;
     length = (Int32)strlen(name);
     strcpy(problem,"");
 
@@ -941,6 +953,42 @@ static Int32 spell_choice(void) {
   return (picked >= 0) ? known[picked] : 0;
   }
 
+/* Easy Words: picks one of the words of book you have read of, each with what its lore says it does in grey, or other
+   to type one. Returns the word's place in book, WORD_TYPED for other, or WORD_NONE when TAB or ESC backs out. */
+Int32 word_choice(WORD_BOOK* book,char* heading,char* other) {
+  Int32          known[MAX_WORDS];
+  COMMANDS       choices;
+  WORD_OF_POWER* word;
+  MENU           menu;
+  char           label[LABEL_LENGTH];
+  Int32          count;
+  Int32          picked;
+  Int32          i;
+
+  count = known_words(book,known);
+  open_commands(&choices,count + 1,LABEL_WIDTH);
+  for (i=0; i<count; i++) {
+    word = &book->words[known[i]];
+    sprintf(label,"%s %s",word->word,(word->hint != NULL) ? word->hint : "");
+    color_item_name(add_command(&choices,label,"",COMMON_COLOR),word->word,CLR_GRAY);
+    }
+  add_command(&choices,other,"",COMMON_COLOR);
+
+  picked = -1;
+  if (choices.line_count > 0) {
+    open_panel(&menu,choices.line_count,draw_command,&choices);
+    show_panel(&menu,heading);
+    picked = choose_command(&menu,&choices);
+    }
+
+  close_commands(&choices);
+
+  if (picked < 0) return WORD_NONE;
+  if (picked == count) return WORD_TYPED;
+
+  return known[picked];
+  }
+
 /* text on the box's lines from line on, wrapped at its spaces. Returns the line after it. */
 static Int32 write_wrapped(SCROLL_LIST* panel,Int32 line,Int32 color,char* text) {
   char  words[STATUS_WIDTH + 1];
@@ -1002,6 +1050,7 @@ Int32 open_tab_menu(void) {
   Int32    choosing;
   Int32    picked;
   Int32    spell;
+  Int32    word;
   char     text[sizeof(loadname) + 16];
 
   open_commands(&commands,MAX_COMMANDS,LABEL_WIDTH);
@@ -1031,6 +1080,14 @@ Int32 open_tab_menu(void) {
         spell = spell_choice();
         if (spell != 0) {
           pick_spell(spell);
+          result = (unsigned char)command->keys[0];
+          }
+        else choosing = 1;
+        }
+      else if (command->action == DO_WORDS) {
+        word = word_choice(words_of_power(),"Say which word?","Type a word");
+        if (word != WORD_NONE) {
+          if (word >= 0) pick_word(words_of_power()->words[word].word);
           result = (unsigned char)command->keys[0];
           }
         else choosing = 1;

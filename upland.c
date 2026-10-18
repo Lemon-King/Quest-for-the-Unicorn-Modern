@@ -417,41 +417,20 @@ static void land_go_ship(void) {
   show_land_player();
   } /* void land_go_ship() */
 
-/* Without the Tardis Descriptions change a description has no length limit, and overruns invoke and tardis_d */
-static Int32 description_has_room(char* invoke) {
-  if (change_tardis_descriptions != 'Y') return 1;
-  return (strlen(invoke) < sizeof(STRING32) - 1);
-  }
-
+/* Programs destination i with your square and the description typed; ESC, with Improved Interface, leaves it as it was */
 static void new_tardis(Int32 i) {
-  char invoke[33];
-  char key;
-  char buffer[80];
+  TEXT_FIELD field;
+  STRING32   description;
   if (has_intrinsic(A_TARD)) {
+    strcpy(description,"");
+    open_log_field(&field,description,sizeof(description),"Desc ? ",10);
+    field.cancel = (improved_interface == 'Y');
+    if (!read_field(&field)) return;
+
     player.tardis_x[i] = player.x;
     player.tardis_y[i] = player.y;
     player.tardis_r[i] = player.region;
-    strcpy(invoke,"");
-    promptNS("Desc ? _");
-    key = 255;
-    while (key != 13) {
-      key = inkey();
-      if (key>31 && description_has_room(invoke)) {
-        invoke[strlen(invoke) + 1] = 0;
-        invoke[strlen(invoke)] = key;
-        clear_prompt();
-        sprintf(buffer,"Desc ? %s_",invoke);
-        promptNS(buffer);
-        }
-      if (key == 8 && strlen(invoke)>0) {
-        invoke[strlen(invoke) - 1] = 0;
-        clear_prompt();
-        sprintf(buffer,"Desc ? %s_",invoke);
-        promptNS(buffer);
-        }
-      }
-    strcpy(player.tardis_d[i],invoke);
-    clear_prompt();
+    strcpy(player.tardis_d[i],description);
     prompt("Tardis Programmed");
     }
   } /* void new_tardis(Int32 i) */
@@ -499,7 +478,7 @@ static void tardis_log(void) {
   textcolor(14);
   for (i=1; i<=10; i++) {
     gotoxy(23,i+4);
-    sprintf(buffer,"%2d      %2d    %2d  %2d   %s\n",i,
+    sprintf(buffer,"%2d      %2d    %2d  %2d   %s",i,
             player.tardis_r[i], player.tardis_x[i],
             player.tardis_y[i], player.tardis_d[i]);
     txt_write(buffer);

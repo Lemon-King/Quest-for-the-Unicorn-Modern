@@ -1071,6 +1071,7 @@ void cave() {
                  break;
         case 'w':if (player.gateway != '*') {
                   if (word_counter == 0) say_word();
+                    else if (easy_words_on()) msgf(12,"Your voice returns in %d turns",word_counter);
                   }
                  else {
                  clear_prompt();

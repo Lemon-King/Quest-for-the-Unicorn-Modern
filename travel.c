@@ -208,7 +208,7 @@ void travel(char* name) {
       txt_write("Where would you like to travel to (<ESC> to leave) ?      ");
       gotoxy(73,ndest+4);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }

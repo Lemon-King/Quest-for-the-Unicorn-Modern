@@ -1058,6 +1058,44 @@ typedef struct {
 
 #define STORAGE_MOVED   'M'   /* storage_key(), storage_action(): items were moved or sorted, so draw them again */
 
+#define TEXT_LENGTH     80    /* the most a TEXT_FIELD takes */
+
+/* A line of typed text (textfield.c): in the log after its label, or on the text grid from column x of row y. accepts
+   says which keys it types, complete puts in word the one word the text begins, and key sees each key first, returning
+   the key to go on with or 0 when it used it up. */
+typedef struct TEXT_FIELD TEXT_FIELD;
+
+struct TEXT_FIELD {
+  char*  text;
+  Int32  length;
+  char*  label;
+  Int32  x;
+  Int32  y;
+  Int32  color;
+  Int32  cancel;
+  Int32  (*accepts)(Int32 key);
+  Int32  (*complete)(TEXT_FIELD* field,char* word);
+  Int32  (*key)(TEXT_FIELD* field,Int32 key);
+  void*  data;
+  Int32  drawn;
+  };
+
+#define MAX_WORDS       16    /* in a WORD_BOOK */
+#define WORD_NONE       -1    /* word_choice(): ESC backed out */
+#define WORD_TYPED      -2    /* word_choice(): the word is to be typed */
+
+/* A Word of Power or a Talning rod function: as the lore writes it, what the lore says it does, and saying it */
+typedef struct {
+  char* word;
+  char* hint;
+  void  (*say)(void);
+  } WORD_OF_POWER;
+
+typedef struct {
+  WORD_OF_POWER* words;
+  Int32          count;
+  } WORD_BOOK;
+
 typedef struct {
   char      name[21];
   byte      age;
@@ -1259,6 +1297,7 @@ LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
 LINK char               easy_spells;
+LINK char               easy_words;
 LINK char               show_mount;
 LINK char               seamless_world_map;
 LINK char               follow_camera;
@@ -1276,7 +1315,6 @@ LINK char               change_blink_only;
 LINK char               change_blink_landing;
 LINK char               change_sleep_traps;
 LINK char               change_tardis_saves;
-LINK char               change_tardis_descriptions;
 LINK char               change_item_deck;
 LINK char               change_tripped_card;
 LINK char               change_lore_search;
@@ -1404,6 +1442,7 @@ extern void gamble();
 extern Int32 haggle(double price,OBJECT_REC item);
 extern void cavalier(char* name);
 extern void library(char* name);
+extern Int32 read_search(char* search,Int32 size);
 extern void mounts(char* name);
 extern void non_magic_weapons(char* name);
 extern void pawn(char* name, byte city);
@@ -1481,6 +1520,7 @@ extern char* transfer_action(OBJECT_REC* item);
 extern void show_in_air(OBJECT_REC* in_air,Int32 line);
 extern char ask_action(Int32 column,Int32 line,Int32 color,char* action,char* cancel,Int32 row);
 extern Int32 open_tab_menu(void);
+extern Int32 word_choice(WORD_BOOK* book,char* heading,char* other);
 extern Int32 merchant_beside(void);
 extern void clear_messages(void);
 extern void special8();
@@ -1520,8 +1560,8 @@ extern void putimage(Int32 x,Int32 y,char** img,Int32 typ);
 extern void put_half_image(Int32 x,Int32 y,char** img);
 extern void put_tiled_image(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 origin_x,Int32 origin_y,char** img);
 extern Int32 readkey();
-extern void readln(char* buffer);
-extern Int32 p_read(char* buffer);
+extern void readln(char* buffer,Int32 size);
+extern Int32 p_read(char* buffer,Int32 size);
 extern void restoreScreen();
 extern void saveScreen();
 extern void screenshot();
@@ -1611,6 +1651,7 @@ extern Int32 find_gen(char* search);
 extern Int32 find_lore(char* search);
 extern Int32 found_row(Int32 found);
 extern char inkey();
+extern char typed_key();
 extern void load();
 extern Int32 load_summary(char* name, SAVE_SUMMARY* summary);
 extern void make_c();
@@ -1700,6 +1741,8 @@ extern void pack_it(Int32 floor);
 extern void party();
 extern void poison_trap();
 extern void say_word();
+extern WORD_BOOK* words_of_power(void);
+extern void pick_word(char* word);
 extern void show_log();
 extern void sleep_trap();
 extern void super(Int32 damage,Int32 elem);
@@ -1721,6 +1764,18 @@ extern STROKE_FONT* gothic_font();
 /* scrolltext.c */
 extern void scroll_text(char* message);
 
+/* textfield.c */
+extern void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* label,Int32 color);
+extern void open_grid_field(TEXT_FIELD* field,char* text,Int32 size,Int32 x,Int32 y,Int32 color);
+extern Int32 read_field(TEXT_FIELD* field);
+extern Int32 is_digit_key(Int32 key);
+
+/* words.c */
+extern Int32 easy_words_on(void);
+extern Int32 known_words(WORD_BOOK* book,Int32* list);
+extern WORD_OF_POWER* find_word(WORD_BOOK* book,char* text);
+extern Int32 complete_word(TEXT_FIELD* field,char* word);
+
 extern Int32 check_intrinsic(OBJECT_REC obj,Int32 intr);
 extern Int32 find_item_slot();
 extern Int32 has_intrinsic(Int32 intr);
@@ -1738,6 +1793,7 @@ extern void show_messages();
 extern void msg(char* message,Int32 color);
 extern void msgf(Int32 color,char* format,...);
 extern void msg_named(char* words,char* name,Int32 color,Int32 name_color);
+extern void msg_split(char* message,Int32 color,Int32 at,Int32 second_color);
 extern Int32 log_width(void);
 extern void crafting();
 extern void wizard();
@@ -2111,6 +2167,7 @@ extern void get_shop_recipes();
 extern Int32 check_level_cleared(Int32 lvl);
 extern void pit_trap();
 extern void fkey_pressed(Int32 n);
+extern Int32 fkey_number(Int32 key);
 extern void shift_fkey_pressed(Int32 n);
 extern void alt_key_pressed(Int32 n);
 extern void ctrl_fkey_pressed(Int32 n);

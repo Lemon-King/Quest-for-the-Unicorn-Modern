@@ -111,7 +111,7 @@ void school(char* name) {
       txt_write("Which course would you like to take (<ESC> to leave) ?        ");
       gotoxy(70,17); textcolor(15);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }

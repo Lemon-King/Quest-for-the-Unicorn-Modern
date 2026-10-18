@@ -342,6 +342,7 @@
     <ClCompile Include="teleporttrap.c" />
     <ClCompile Include="temple.c" />
     <ClCompile Include="terminal.c" />
+    <ClCompile Include="textfield.c" />
     <ClCompile Include="throw.c" />
     <ClCompile Include="thrownpotion.c" />
     <ClCompile Include="tickpolymorph.c" />
@@ -366,6 +367,7 @@
     <ClCompile Include="view.c" />
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
+    <ClCompile Include="words.c" />
     <ClCompile Include="worldmap.c" />
     <ClCompile Include="worldmapview.c" />
     <ClCompile Include="worldplaces.c" />

@@ -132,7 +132,7 @@ void make_char(Int32 rebirth) {
   if (rebirth == 0) {
     strcpy(player.name,"");
     while (strlen(player.name) < 2) {
-      gotoxy(10,1); p_read(player.name);
+      gotoxy(10,1); p_read(player.name,sizeof(player.name));
       }
     player.age = u_random(10)+18;
     } else {

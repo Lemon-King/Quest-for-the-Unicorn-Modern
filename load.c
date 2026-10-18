@@ -415,6 +415,7 @@ void load_options() {
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
       if (match(line, "ImprovedStatus ")) improved_status = *next;
       if (match(line, "EasySpells ")) easy_spells = *next;
+      if (match(line, "EasyWords ")) easy_words = *next;
 
       /* Saves from before Improved Interface kept its menus as Cursor Menus, and from before Improved Items kept it as
          Improved Item Identification */
