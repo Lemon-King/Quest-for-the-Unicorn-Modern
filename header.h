@@ -74,7 +74,7 @@ LINK Int32 NO_OF_MONSTERS;
 #define NO_OF_SPELLS        215
 */
 #define GAME          "UNICORN"
-#define VERSION        "v7.1.0"
+#define VERSION        "v7.2.0"
 #define RECIPE_BASE        4000
 #define NPC_DIV              10
 
