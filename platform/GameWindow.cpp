@@ -14,6 +14,7 @@
 #include <stdexcept>
 
 #include "ErrorReport.h"
+#include "platform.h"
 
 namespace platform {
 
@@ -252,8 +253,13 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
       if ((wParam & 0xfff0) == SC_KEYMENU && lParam == 0) return 0;
       break;
 
+    case WM_SETFOCUS:
+      window_focused(1);
+      return 0;
+
     case WM_KILLFOCUS:
       keys_.reset();
+      window_focused(0);
       return 0;
 
     /* The game ends at its next key read or delay, without saving, as the close button always did */

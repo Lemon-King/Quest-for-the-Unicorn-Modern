@@ -34,6 +34,7 @@ Options:
   Screen Size: 640 x 480
   Music: Y
   Music Volume: 100
+  Mute When Unfocused: Y
   Game Thread: Y
   Integer Scaling: N
   World Map: A

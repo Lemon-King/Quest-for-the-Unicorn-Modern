@@ -62,6 +62,9 @@ typedef struct {
 int32_t           configure_game(int32_t argc, char** argv, GAME_SETUP* setup);
 void              run_game(GAME_HOST* host);
 
+/* The window gained (1) or lost (0) the keyboard focus; called on the window's thread, which may not be the game's */
+void              window_focused(int32_t focused);
+
 /* Answers of host_peek_key() and host_read_key() that are not keys */
 #define HOST_KEY_NONE    (-2)
 #define HOST_KEY_CLOSED  (-1)

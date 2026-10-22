@@ -15,6 +15,9 @@
  * Opening a song takes MCI about a second, so all MCI work happens on a music thread with its own message-only
  * window. The game only posts requests to that window and never waits. Each song is opened once and kept open, as
  * DOS kept all four in EMS; after the first song starts, the thread opens the others in the background.
+ *
+ * With Mute When Unfocused the game is silent while its window is out of focus. The window's thread reports the
+ * focus, so the volume is kept under a lock that it and the game's thread share.
  */
 
 #include <windows.h>
@@ -49,6 +52,13 @@ static Int32 requested = -1;
 /* Music thread: which songs MCI has open, and which one is playing */
 static char  opened[MUSIC_COUNT];
 static Int32 playing = -1;
+
+/* Game and window threads, under volume_lock: the level the game asked for, whether it mutes while the window is out
+   of focus, and whether the window has the focus */
+static SRWLOCK volume_lock = SRWLOCK_INIT;
+static DWORD   volume_level = 0xFFFF;
+static Int32   volume_mutes = 0;
+static Int32   window_focus = 0;
 
 static void mci_command(char* verb,Int32 song,char* options,HWND notify) {
   char command[MAX_PATH + 64];
@@ -163,10 +173,27 @@ void toggle_music() {
   }
 
 /* The GS Wavetable Synth plays in the game's own audio session, and the wave mapper's volume is that session's, so
-   no song needs to be open. Both channels get music_volume percent. */
-void set_music_volume() {
+   no song needs to be open, and a level of 0 mutes all of the game's audio. Called under volume_lock. */
+static void apply_volume() {
   DWORD level;
 
-  level = (DWORD)(0xFFFF * music_volume / 100);
+  level = (volume_mutes && !window_focus) ? 0 : volume_level;
   waveOutSetVolume((HWAVEOUT)(UINT_PTR)WAVE_MAPPER,(level << 16) | level);
+  }
+
+/* Both channels get music_volume percent, or none while the window is out of focus with Mute When Unfocused */
+void set_music_volume() {
+  AcquireSRWLockExclusive(&volume_lock);
+  volume_level = (DWORD)(0xFFFF * music_volume / 100);
+  volume_mutes = (mute_when_unfocused == 'Y');
+  apply_volume();
+  ReleaseSRWLockExclusive(&volume_lock);
+  }
+
+/* The window's thread: the window gained or lost the focus */
+void window_focused(Int32 focused) {
+  AcquireSRWLockExclusive(&volume_lock);
+  window_focus = focused;
+  if (volume_mutes) apply_volume();
+  ReleaseSRWLockExclusive(&volume_lock);
   }

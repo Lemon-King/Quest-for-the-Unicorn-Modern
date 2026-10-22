@@ -18,7 +18,7 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      24
+#define NUM_PREFS      25
 #define NUM_CHANGES    67
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
@@ -127,6 +127,10 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Music Volume from 0% to 100%", .units = "%",
     .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
     .config = "MusicVolume", .apply = set_music_volume },
+  { .label = "Mute When Unfocused",
+    .help  = "Mutes all audio while the game's window is out of focus",
+    .kind  = OPT_SWITCH, .flag = &mute_when_unfocused, .on = 'Y', .off = 'N',
+    .config = "MuteWhenUnfocused", .apply = set_music_volume },
   { .label = "Color Palette",
     .help  = "Text and map colours: X11, as on Windows, or the DOS (CGA/EGA/VGA) colours",
     .kind  = OPT_SWITCH, .flag = &color_palette, .on = 'D', .off = 'X',
