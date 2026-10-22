@@ -97,6 +97,7 @@ jobs:
           Copy-Item "$out\unicorn.exe", "$out\unicorn.cfg", "$out\unicorn.doc", "$out\editing.doc", LICENSE.md $stage
           Copy-Item "$out\music" $stage -Recurse
           Copy-Item "$out\maps" $stage -Recurse
+          Copy-Item "$out\guide" $stage -Recurse
           "name=$name" >> $env:GITHUB_OUTPUT
           "dir=$stage" >> $env:GITHUB_OUTPUT
 

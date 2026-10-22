@@ -415,6 +415,13 @@
     </CopyFileToFolders>
   </ItemGroup>
 
+  <!-- The player guide, with its images in their folders, for the player to open beside the game -->
+  <ItemGroup>
+    <CopyFileToFolders Include="guide\**\*">
+      <DestinationFolders>$(OutDir)guide\%(RecursiveDir)</DestinationFolders>
+    </CopyFileToFolders>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="platform\platform.vcxproj">
       <Project>{9E4BFC1F-414C-464D-8847-9875EA6A7B04}</Project>
