@@ -170,6 +170,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   bottom = 5;
   music = 'Y';
   music_volume = 100;
+  mute_when_unfocused = 'Y';
   game_thread = 'Y';
   integer_scaling = 'N';
   heroicMode = 0;
@@ -307,6 +308,7 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     printf("  Screen Size: %d x %d\n", screen_width, screen_height);
     printf("  Music: %c\n", music);
     printf("  Music Volume: %d\n", music_volume);
+    printf("  Mute When Unfocused: %c\n", mute_when_unfocused);
     printf("  Game Thread: %c\n", game_thread);
     printf("  Integer Scaling: %c\n", integer_scaling);
     printf("  World Map: %c\n", world_map);

@@ -214,6 +214,9 @@
                               between pixels.  The default
          MusicVolume=percent  Volume of the background music, 0 to 100 in
                               steps of 10.  The default is 100
+         MuteWhenUnfocused=On Mute all audio while the game's window is
+                              out of focus (see Music).  Off keeps it
+                              playing.  The default is On
          WorldMap=style       What M shows on the upland: Off, Color or
                               Art (see World Map).  The default is Art
          ColorPalette=name    The 16 colours of text, frames and maps:
@@ -657,6 +660,9 @@
      in towns and in dungeons:
 
          Music Volume         Volume of the background music, 0% to 100%
+         Mute When Unfocused  Mute all audio while the game's window is
+                              out of focus.  With the focus back, the
+                              music plays at its volume again
          Color Palette        The 16 colours the game draws its text,
                               frames and maps in: X11, the colours the
                               Windows game has always drawn, or DOS,
@@ -788,14 +794,13 @@
          Trap Delay (ms)      Trap effects delay
 
        Music Volume is heard at once as it changes, and is saved in
-     unicorn.cfg as MusicVolume, so it applies to every character.  World
-     Map and Color Palette are kept there too, as WorldMap and
-     ColorPalette.  All the other options are saved
-     with the character, so every saved game keeps its own options.  A
-     game saved by an older version keeps
-     its mode, depth, monster count and arena setting, and takes the other
-     options from unicorn.cfg and the command line the first time it is
-     loaded.
+     unicorn.cfg as MusicVolume, so it applies to every character.  Mute
+     When Unfocused, World Map and Color Palette are kept there too, as
+     MuteWhenUnfocused, WorldMap and ColorPalette.  All the other options
+     are saved with the character, so every saved game keeps its own
+     options.  A game saved by an older version keeps its mode, depth,
+     monster count and arena setting, and takes the other options from
+     unicorn.cfg and the command line the first time it is loaded.
 
      Modes of Play
      =============
@@ -1016,6 +1021,11 @@
          The Music Volume preference (O) sets how loud it plays, from
          0 to 100 percent in steps of 10.  It is the game's slider in
          the Windows volume mixer, and is saved in unicorn.cfg.
+         With the Mute When Unfocused preference (O), on by default,
+         the game falls silent while its window is out of focus, and
+         its slider in the volume mixer reads 0.  Once you return to
+         the window, the music plays at its volume again.  It is
+         saved in unicorn.cfg as MuteWhenUnfocused.
 
      Maps
      ====

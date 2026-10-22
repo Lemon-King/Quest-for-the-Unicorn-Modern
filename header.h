@@ -1244,6 +1244,7 @@ LINK Int32                hall_position;
 LINK Int32                death_position;
 LINK char               music;
 LINK Int32                music_volume;
+LINK char               mute_when_unfocused;  /* the Mute When Unfocused preference: 'Y' On, 'N' Off */
 LINK char               game_thread;
 LINK char               integer_scaling;
 LINK Int32                target_x;

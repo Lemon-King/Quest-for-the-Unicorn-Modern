@@ -147,6 +147,7 @@ Int32 process_option(char* pChar) {
            if (music_volume > 100) music_volume = 100;
            music_volume = (music_volume + 5) / 10 * 10;
            }
+    else if (_strnicmp(option,"MuteWhenUnfocused=",18) == 0) set_config_switch("MuteWhenUnfocused",option+18);
     else if (_strnicmp(option,"WorldMap=",9) == 0) set_config_switch("WorldMap",option+9);
     else if (_strnicmp(option,"ColorPalette=",13) == 0) set_config_switch("ColorPalette",option+13);
     else if (_strnicmp(option,"Width=",6) == 0) {
