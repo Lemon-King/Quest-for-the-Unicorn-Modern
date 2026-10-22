@@ -207,6 +207,7 @@ Int32 place_object(Int32 level) {
       }
     if (player.map_objects[s].effect == E_LGND) mutable_legendary(&(player.map_objects[s]));
     if (player.map_objects[s].effect == E_SPCL && player.map_objects[s].control == 79) convert_recipe(&(player.map_objects[s]));
+    identify_common_item(&(player.map_objects[s]));
     }
   return s;
   }

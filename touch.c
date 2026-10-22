@@ -52,9 +52,7 @@ void touch(Int32 damage,Int32 elem) {
         else  i = figure_damage(i,elem,&(player.monster[1][mon]));
       if (in_arena == 'Y' && (player.monster[mon][a_mon].special & MS_AMAGIC) == MS_AMAGIC) i = 0;
       if (in_arena != 'Y' && (player.monster[1][mon].special & MS_AMAGIC) == MS_AMAGIC) i = 0;
-      if (crit) sprintf(buffer,"Crit hit for %d",i); /* Added by Brian Stovall */
-        else sprintf(buffer,"Hit for %d",i);
-      prompt(buffer);
+      log_hit(monster_record(mon),i,crit); /* Crits added by Brian Stovall */
       stats_do_damage(i);
       if (in_arena == 'Y') player.monster[mon][a_mon].hp -= i;
         else player.monster[1][mon].hp -= i;
@@ -66,7 +64,7 @@ void touch(Int32 damage,Int32 elem) {
           dead_monster(&(player.monster[1][mon]),'Y',x,y);
           }
         if (in_arena == 'Y') {
-          gain_exp(player.monster[mon][a_mon].exp,0);
+          gain_exp(&(player.monster[mon][a_mon]),0);
           player.map[x][y] = player.monster[mon][a_mon].prev;
           }
         show_spot(x,y);
@@ -84,7 +82,7 @@ void touch(Int32 damage,Int32 elem) {
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_miss(monster_record(mon),MISSED);
       stats.counts[STAT_MISSES]++;
       }
     }

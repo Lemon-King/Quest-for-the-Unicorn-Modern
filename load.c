@@ -405,15 +405,22 @@ void load_options() {
       if (match(line, "DelayTraps ")) delay_trap = atoi(next);
       if (match(line, "EnhancedSprites ")) enhanced_sprites = *next;
       if (match(line, "ShowMount ")) show_mount = *next;
+      if (match(line, "SeamlessWorldMap ")) seamless_world_map = *next;
+      if (match(line, "FollowCamera ")) follow_camera = *next;
       if (match(line, "UniqueClassSprites ")) class_sprites = *next;
       if (match(line, "FloorItemNames ")) floor_item_names = *next;
+      if (match(line, "ImprovedItems ")) improved_items = *next;
+      if (match(line, "ImprovedCombatLogs ")) improved_combat_logs = *next;
       if (match(line, "GothicScrolls ")) gothic_scrolls = *next;
       if (match(line, "ImprovedInterface ")) improved_interface = *next;
       if (match(line, "ImprovedStatus ")) improved_status = *next;
       if (match(line, "EasySpells ")) easy_spells = *next;
+      if (match(line, "EasyWords ")) easy_words = *next;
 
-      /* Saves from before Improved Interface kept its menus as Cursor Menus */
+      /* Saves from before Improved Interface kept its menus as Cursor Menus, and from before Improved Items kept it as
+         Improved Item Identification */
       if (match(line, "CursorMenus ")) improved_interface = *next;
+      if (match(line, "ImprovedItemIdentification ")) improved_items = *next;
       load_gameplay_change(line);
       }
     }
@@ -831,10 +838,12 @@ static Int32 read_version(FILE* file, char* version) {
   offset = 1;
   read_line(version);
 
-  /* Saves from 7.0.0 load too; an "e" after the version marks an obfuscated save */
-  if (strcmp(version, VERSION) == 0 || strcmp(version, "v7.0.0") == 0) return 1;
+  /* Saves from 7.1.0 and 7.0.0 load too; an "e" after the version marks an obfuscated save */
+  if (strcmp(version, VERSION) == 0 || strcmp(version, "v7.1.0") == 0 ||
+      strcmp(version, "v7.0.0") == 0) return 1;
 
-  if (strcmp(version, VERSION "e") == 0 || strcmp(version, "v7.0.0e") == 0) {
+  if (strcmp(version, VERSION "e") == 0 || strcmp(version, "v7.1.0e") == 0 ||
+      strcmp(version, "v7.0.0e") == 0) {
     encrypted = 0xff;
     return 1;
     }
@@ -952,6 +961,12 @@ void load() {
   if (change_quest_state == 'Y')
     for (i=0; i<1000; i++)
       if (player.quests[i] == 0) player.quests[i] = 'N';
+
+  /* A save made on the overworld keeps your region's known land only in CurrentLevel, and up_land() reads known_maps[];
+     without the Explored Land change the land explored since entering the region is lost */
+  if (change_explored_land == 'Y' && player.d_level == 0)
+    memcpy(&(known_maps[player.region]), &(player.known), sizeof(KNOW_TYPE));
+
   read_character_rules();
   hold_save(loadname);
   }

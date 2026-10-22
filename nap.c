@@ -10,34 +10,20 @@
 
 #include "header.h"
 
+/* Hours typed in digits; ESC, with Improved Interface, naps not at all */
 void nap() {
-  char invoke[20];
-  char buffer[80];
-  char key;
-  word_counter = 120;
-  strcpy(invoke,"");
-  msg("How long ? _",11);
-  key = 0;
-  while (key != 13) {
-    key = inkey();
-    if (key > 31) {
-      invoke[strlen(invoke) + 1] = 0;
-      invoke[strlen(invoke)] = key;
-      sprintf(buffer,"How long ? %s_",invoke);
-      msg(buffer,-11);
-      }
-    if (key == 8 && strlen(invoke) > 0) {
-      invoke[strlen(invoke) - 1] = 0;
-      sprintf(buffer,"How long ? %s_",invoke);
-      msg(buffer,-11);
-      }
-    }
-  sprintf(buffer,"How long ? %s",invoke);
-  msg(buffer,-11);
-  player.effect[PE_SLEEP] = mval(invoke) * 60;
+  TEXT_FIELD field;
+  char       hours[5];
+
+  strcpy(hours,"");
+  open_log_field(&field,hours,sizeof(hours),"How long",11);
+  field.cancel = (improved_interface == 'Y');
+  field.accepts = is_digit_key;
+  if (!read_field(&field)) strcpy(hours,"");
+
+  player.effect[PE_SLEEP] = mval(hours) * 60;
   if (player.effect[PE_SLEEP] > 0) napping = '*';
-  if (mval(invoke) > 0) stats.counts[STAT_HOURS_NAPPED] += mval(invoke);
+  if (mval(hours) > 0) stats.counts[STAT_HOURS_NAPPED] += mval(hours);
   clear_prompt();
   show_player();
   }
-

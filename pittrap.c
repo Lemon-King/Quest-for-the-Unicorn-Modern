@@ -39,9 +39,10 @@ void pit_trap() {
   if (player.map_y < 1) player.map_y = 1;
   if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
 /*      activeDelay = 2; */
   if (in_room(player.x,player.y) && can_see()) light_room();
-  msg("Fell down a pit",11);
+  log_pit_trap();
   if (player.party[0].hp > 0) {
     x = player.party[0].treasure & 0xff;
     y = (player.party[0].treasure >> 8) & 0xff;

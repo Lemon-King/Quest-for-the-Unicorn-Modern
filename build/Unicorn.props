@@ -38,4 +38,18 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
   </ItemDefinitionGroup>
+
+  <!-- Debug programs are signed with the self-signed certificate that debug-cert.ps1 makes and names in
+       DebugSigning.user.props. Without that file, as on CI, they build unsigned. The linker sees a signed
+       program as changed, so each relink of one is a full link. -->
+  <Import Project="$(MSBuildThisFileDirectory)DebugSigning.user.props"
+          Condition="exists('$(MSBuildThisFileDirectory)DebugSigning.user.props')" />
+
+  <Target Name="SignDebugBuild" AfterTargets="Build"
+          Condition="'$(Configuration)'=='Debug' and '$(ConfigurationType)'=='Application' and '$(DebugSigningThumbprint)'!=''"
+          Inputs="$(TargetPath)" Outputs="$(IntDir)$(TargetName).signed">
+    <Exec Command="&quot;$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\signtool.exe&quot; sign /q /fd sha256 /sha1 $(DebugSigningThumbprint) &quot;$(TargetPath)&quot;" />
+    <Touch Files="$(IntDir)$(TargetName).signed" AlwaysCreate="true" />
+    <Message Importance="high" Text="$(TargetFileName) signed with the local debug certificate" />
+  </Target>
 </Project>

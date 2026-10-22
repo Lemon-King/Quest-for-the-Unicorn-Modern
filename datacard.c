@@ -159,12 +159,15 @@ void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line) {
       strcpy(buffer,"Legacy");
       gotoxy(column+22,line+1); txt_write(buffer);
       }
-    else {
-      if (abs(item->rarity) > 2500) { gotoxy(column+24,line+1);                             txt_write("Common"); }
-      if (abs(item->rarity) > 500 && abs(item->rarity) <= 2500) { gotoxy(column+22,line+1); txt_write("Uncommon"); }
-      if (abs(item->rarity) > 100 && abs(item->rarity) <= 500) { gotoxy(column+26,line+1);  txt_write("Rare"); }
-      if (abs(item->rarity) > 5 && abs(item->rarity) <= 100) { gotoxy(column+21,line+1);   txt_write("Very Rare"); }
-      if (abs(item->rarity) > 0 && abs(item->rarity) <= 5) { gotoxy(column+20,line+1);     txt_write("Ultra Rare"); }
+    /* The band ends at column 30. With the Improved Items preference a unique or legendary item is named as such in its
+       place, and a rarity of 0, which 7.0 named nothing, is Special. */
+    else if (improved_items == 'Y' && named_gear_kind(item) != NULL) {
+      strcpy(buffer,named_gear_kind(item));
+      gotoxy(column+30-(Int32)strlen(buffer),line+1); txt_write(buffer);
+      }
+    else if (rarity_band(item) != RB_SPECIAL || improved_items == 'Y') {
+      strcpy(buffer,band_name(rarity_band(item)));
+      gotoxy(column+30-(Int32)strlen(buffer),line+1); txt_write(buffer);
       }
     }
   else {

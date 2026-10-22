@@ -13,7 +13,7 @@
   void enemy_hit(Int32 x,Int32 y) {
     Int32 i;
     Int32 hit;
-    char buffer[20];
+    Int32 dodged;
     char elem[20];
     Int32 amt;
     NPC_REC* monster;
@@ -32,8 +32,10 @@
     i -= u_random(get_dex() / 5);
     if (i < 10) i = 10;
     if (i > 90) i = 90;
+    dodged = 0;
     if (u_random(100) < get_dodge()) {
-      msg("Dodged",7);
+      log_dodge(monster,BY_BLOW);
+      dodged = 1;
       i = 0;
       }
     clear_prompt();
@@ -80,7 +82,7 @@
                             player.ability[5] * 2;
                  if (u_random(100) < hit) {
                    clear_prompt();
-                   msg("Rooted!!!",9);
+                   log_rooted(monster);
                    if (player.effect[PE_ROOT] == 0)
                      player.effect[PE_ROOT] = u_random(monster->level);
                    if (player.effect[PE_ROOT] < 0) player.effect[PE_ROOT] = 0;
@@ -98,7 +100,7 @@
                  if (player.effect[PE_SLEEP] > 0) hit = 0;
                  if (u_random(100) < hit) {
                    clear_prompt();
-                   msg("Slept!!!",9);
+                   log_slept(monster);
                    amt = u_random(monster->level);
                    if (has_intrinsic(A_RSSL)) amt /= 2;
                    if (amt < 1) amt = 1;
@@ -117,7 +119,7 @@
                  if (has_intrinsic(A_RSPS) && u_random(100) < 50) hit = 0;
                  if (u_random(100) < hit) {
                    clear_prompt();
-                   msg("Poisoned!!!",13);
+                   log_poisoned(monster);
                    stats.counts[STAT_POISONED]++;
                    amt = u_random(monster->attack) * 20;
                    if (has_intrinsic(A_RSPS)) amt /= 2;
@@ -136,7 +138,7 @@
                  if (has_intrinsic(A_RSFR) && u_random(100) < 50) hit = 0;
                  if (u_random(100) < hit) {
                    clear_prompt();
-                   msg("Scared!!!",9);
+                   log_scared(monster);
                    amt = 5 + u_random(monster->level);
                    if (has_intrinsic(A_RSFR)) amt /= 2;
                    if (amt < 1) amt = 1;
@@ -151,7 +153,7 @@
                             player.ability[5] * 2;
                  if (u_random(100) < hit) {
                    clear_prompt();
-                   msg("Confused!!!",9);
+                   log_confused(monster);
                    player.effect[PE_CONFUSED] = 5 + u_random(monster->level);
                    if (player.effect[PE_CONFUSED] < 0) player.effect[PE_CONFUSED] = 0;
                    show_side();
@@ -160,8 +162,8 @@
       if ((monster->special2 & M2_DRAIN) == M2_DRAIN && has_intrinsic(A_NDRN) == 0) {
                  if (u_random(100) < 10) {
                    clear_prompt();
-                   msg("You feel weaker!!!",12);
                    player.level--;
+                   log_level_drained(monster);
                    player.chp -= 8;
                    player.mhp -= 8;
                    if (player.level <= 0) player.chp = 0;
@@ -171,11 +173,10 @@
       i = damage_reduction(i);
       if (i<1) i = 1;
       if ((monster->special & MS_DOT) == MS_DOT) {
-        msg("DOT taken",12);
+        log_creature_dot(monster,i);
         player.effect[PE_DOT] += i;
         } else {
-        sprintf(buffer,"OUCH! for %d%s",i,elem);
-        msg(buffer,12);
+        log_creature_hit(monster,i,elem);
         player.chp -= i;
         stats_take_damage(i);
         if (player.chp < 0) player.chp = 0;
@@ -184,7 +185,7 @@
       show_side();
       }
     else {
-      msg("Missed . . .",1);
+      log_creature_miss(monster,dodged);
       if (u_random(10) <= 5) add_skill(SK_COMBAT,1);
       noise(100,100);
       }

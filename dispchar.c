@@ -10,6 +10,18 @@
 
 #include "header.h"
 
+#define LEFT_WIDTH     21     /* column 10 up to the labels at 31 */
+#define MIDDLE_WIDTH   15     /* column 40 up to the labels at 55 */
+#define RIGHT_WIDTH    16     /* column 64 up to the screen's edge */
+
+/* A value padded to its field, so it covers a longer one drawn there before */
+static void write_value(Int32 x,Int32 y,Int32 width,char* value) {
+  char field[81];
+
+  sprintf(field,"%-*s",width,value);
+  gotoxy(x,y); txt_write(field);
+  }
+
 void skillcolor(Int32 skill) {
   if (skill >= 90) {
     textcolor(14);   /* Yellow */
@@ -153,34 +165,32 @@ void char_sheet_data() {
     if (i==6) sprintf(buffer,"%2d/%2d",get_chr(),get_base_chr());
     txt_write(buffer);
     }
-  gotoxy(40,7); txt_write(show_int(player.chp));
+  write_value(40,7,MIDDLE_WIDTH,show_int(player.chp));
   sprintf(buffer,"%d/%d",get_mhp(),get_base_mhp());
-  gotoxy(40,8); txt_write(buffer);
-  gotoxy(40,9); txt_write(show_int(player.cmana));
+  write_value(40,8,MIDDLE_WIDTH,buffer);
+  write_value(40,9,MIDDLE_WIDTH,show_int(player.cmana));
   sprintf(buffer,"%d/%d",get_mmana(),get_base_mmana());
-  gotoxy(40,10); txt_write(buffer);
+  write_value(40,10,MIDDLE_WIDTH,buffer);
   display_abilities();
   textcolor(14);
-  gotoxy(10,12); txt_write(show_int(player.torch));
+  write_value(10,12,LEFT_WIDTH,show_int(player.torch));
   sprintf(buffer,"%d/%d/%d",player.adamantite_coins,player.mithril_coins,player.gold_coins);
-  gotoxy(10,13); txt_write(buffer);
-  gotoxy(10,14);
-  if (player.mount == 0) txt_write("No"); else txt_write("Yes");
-  gotoxy(10,15);
-  if (player.peg == 0) txt_write("No"); else txt_write("Yes");
+  write_value(10,13,LEFT_WIDTH,buffer);
+  write_value(10,14,LEFT_WIDTH,(player.mount == 0) ? "No" : "Yes");
+  write_value(10,15,LEFT_WIDTH,(player.peg == 0) ? "No" : "Yes");
   sprintf(buffer,"%d/%d",get_armour(),get_base_armour());
-  gotoxy(64,12); txt_write(buffer);
+  write_value(64,12,RIGHT_WIDTH,buffer);
   sprintf(buffer,"%d/%d",get_weapon(),get_base_weapon());
-  gotoxy(64,13); txt_write(buffer);
-  sprintf(buffer,"%+d",get_attack_power()); gotoxy(64,14); txt_write(buffer);
-  sprintf(buffer,"%+d",get_spell_power()); gotoxy(64,15); txt_write(buffer);
-  sprintf(buffer,"%+d",(Int32)(get_magic_resistance() * 100)); gotoxy(64,16); txt_write(buffer);
-  sprintf(buffer,"%+d",get_magic_find()); gotoxy(10,16); txt_write(buffer);
-  sprintf(buffer,"%+d",get_hit()); gotoxy(40,12); txt_write(buffer);
-  sprintf(buffer,"%+d",get_crit()); gotoxy(40,13); txt_write(buffer);
-  sprintf(buffer,"%+d",get_dodge()); gotoxy(40,14); txt_write(buffer);
-  sprintf(buffer,"%d/%d",get_weight(),get_max_weight()); gotoxy(40,15); txt_write(buffer);
-  sprintf(buffer,"%+d",get_monster_level_plus()); gotoxy(40,16); txt_write(buffer);
+  write_value(64,13,RIGHT_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_attack_power()); write_value(64,14,RIGHT_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_spell_power()); write_value(64,15,RIGHT_WIDTH,buffer);
+  sprintf(buffer,"%+d",(Int32)(get_magic_resistance() * 100)); write_value(64,16,RIGHT_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_magic_find()); write_value(10,16,LEFT_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_hit()); write_value(40,12,MIDDLE_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_crit()); write_value(40,13,MIDDLE_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_dodge()); write_value(40,14,MIDDLE_WIDTH,buffer);
+  sprintf(buffer,"%d/%d",get_weight(),get_max_weight()); write_value(40,15,MIDDLE_WIDTH,buffer);
+  sprintf(buffer,"%+d",get_monster_level_plus()); write_value(40,16,MIDDLE_WIDTH,buffer);
   }
 
 void do_disp_char() {
@@ -188,8 +198,6 @@ void do_disp_char() {
   char_sheet_labels('Y');
   char_sheet_data();
   show_skills();
-  textcolor(14);
-  gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, <F>keys");
   if (player.effect[PE_HEROIC] < 0) {
     textcolor(10);
     gotoxy(1,25); txt_write("Casual");
@@ -204,30 +212,67 @@ void do_disp_char() {
     }
   }
 
-void disp_char() {
-  char key;
+static Int32 is_restart_key(char key) {
+  return key == 'r' || key == 'R';
+  }
+
+/* The sheet's key tips, with s<K>ills in place of <F>keys while the F keys show. Making a character, they are centred on
+   two lines, starting or restarting above the sheet's other keys. */
+static void draw_sheet_keys(Int32 restart,Int32 fkeys) {
+  char views[41];
+
+  sprintf(views,"<T>rophies, <S>tatistics, %s",fkeys ? "s<K>ills" : "<F>keys ");
+
+  if (restart) {
+    write_centred(24,14,"<ENTER,ESC> to Start, <R> to Restart");
+    write_centred(25,14,views);
+    return;
+    }
+
+  textcolor(14);
+  gotoxy(14,24); txt_write("<ENTER,ESC> to exit, "); txt_write(views);
+  }
+
+static void draw_sheet(Int32 restart) {
   do_disp_char();
+  draw_sheet_keys(restart,0);
+  }
+
+/* Reads the sheet's keys until ENTER or ESC, or R where it offers a restart. Returns the key that closed it. */
+static char read_sheet(Int32 restart) {
+  char key;
+  draw_sheet(restart);
   key = ' ';
   while (key != 13 && key != 27) {
     key = inkey();
+    if (restart && is_restart_key(key)) return key;
     if (key == 's' || key == 'S') {
       show_stats();
-      do_disp_char();
+      draw_sheet(restart);
       }
     if (key == 't' || key == 'T') {
       show_trophies();
-      do_disp_char();
+      draw_sheet(restart);
       }
     if (key == 'f' || key == 'F') {
       show_f_keys();
-      textcolor(14);
-      gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, s<K>ills");
+      draw_sheet_keys(restart,1);
       }
     if (key == 'k' || key == 'K') {
       show_skills();
-      textcolor(14);
-      gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, <F>keys ");
+      draw_sheet_keys(restart,0);
       }
     }
+
+  return key;
+  }
+
+void disp_char() {
+  read_sheet(0);
+  }
+
+/* The sheet as the last step of making a character, where with Improved Interface R starts over. Returns 1 for R. */
+Int32 confirm_char() {
+  return is_restart_key(read_sheet(improved_interface == 'Y'));
   }
 

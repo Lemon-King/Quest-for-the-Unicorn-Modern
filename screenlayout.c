@@ -16,6 +16,7 @@
 #include "header.h"
 
 #define FRAME_WIDTH       10
+#define SIDE_PANEL_WIDTH 220     /* from the frame right of the map to the screen's right edge */
 #define FRAME_ROWS        21     /* the top and bottom bands, and the row between the map and the bottom band */
 #define MINIMAP_BOX      223     /* the top of the minimap's box, above the frames' bottom edge */
 #define MINIMAP_TOP      212     /* the top of the minimap itself */
@@ -30,6 +31,11 @@ Int32 half_tile_width(void) {
 
 Int32 half_tile_height(void) {
   return (tile_height + 1) / 2;
+  }
+
+/* The side panel starts right of the frame beside the map */
+Int32 side_panel_left(void) {
+  return screen_width - SIDE_PANEL_WIDTH;
   }
 
 Int32 has_bottom_strip(void) {
@@ -68,10 +74,10 @@ Int32 set_screen_layout(void) {
 /* The red frames around the map and the minimap */
 void show_map_frames(void) {
   setfillstyle(1,12);
-  bar(0,0,screen_width-220,FRAME_WIDTH);
-  bar(0,frame_bottom-FRAME_WIDTH,screen_width-220,frame_bottom);
+  bar(0,0,side_panel_left(),FRAME_WIDTH);
+  bar(0,frame_bottom-FRAME_WIDTH,side_panel_left(),frame_bottom);
   bar(0,0,FRAME_WIDTH,frame_bottom);
-  bar(screen_width-230,0,screen_width-220,frame_bottom);
+  bar(side_panel_left()-FRAME_WIDTH,0,side_panel_left(),frame_bottom);
 
   bar(screen_width-221,frame_bottom-MINIMAP_BOX,screen_width-10,frame_bottom-MINIMAP_BOX+FRAME_WIDTH);
   bar(screen_width-221,frame_bottom-FRAME_WIDTH,screen_width-10,frame_bottom);

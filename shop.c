@@ -197,7 +197,7 @@ static void erase_arrows(Int32 shop_type,Int32 line) {
 
 static void ask_which(void) {
   gotoxy(15,22); textcolor(10);
-  txt_write("Which item would you like (<ESC> to leave) ?");
+  write_question("Which item would you like (<ESC> to leave)");
   }
 
 static void show_info(OBJECT_REC* item) {

@@ -43,6 +43,7 @@ void cast_spell(Int32 number) {
       player.health += u_random(spells[spell].user_health) + 1;
       if (player.health > 100) player.health = 100;
       }
+    set_attack_source(spells[spell].name);
     switch (spells[spell].effect) {
       case 1:do_blink();
              if (change_blink_only == 'Y') break;
@@ -69,6 +70,7 @@ void cast_spell(Int32 number) {
            else enchant(spells[spell].control,3);
            break;
       }
+    clear_attack_source();
     }
   else {
     clear_prompt();

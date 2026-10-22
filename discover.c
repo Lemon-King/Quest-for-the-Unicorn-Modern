@@ -57,14 +57,7 @@ void discover() {
           case   9:color = 5; break;
           case   2:color = 2; break;
           }
-//        plot(419+i*2,240+j*2,color);
-//        plot(420+i*2,240+j*2,color);
-//        plot(419+i*2,241+j*2,color);
-//        plot(420+i*2,241+j*2,color);
-        plot(smap_offset_x-2+i*2,smap_offset_y-1+j*2,color);
-        plot(smap_offset_x-1+i*2,smap_offset_y-1+j*2,color);
-        plot(smap_offset_x-2+i*2,smap_offset_y-0+j*2,color);
-        plot(smap_offset_x-1+i*2,smap_offset_y-0+j*2,color);
+        plot_minimap(i,j,color);
 
         }
   close_display();

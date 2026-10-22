@@ -280,12 +280,17 @@ void save_options(FILE* file) {
   sprintf(line, "  DelayTraps %d", delay_trap);             write_line(file, line);
   sprintf(line, "  EnhancedSprites %c", enhanced_sprites);  write_line(file, line);
   sprintf(line, "  ShowMount %c", show_mount);              write_line(file, line);
+  sprintf(line, "  SeamlessWorldMap %c", seamless_world_map); write_line(file, line);
+  sprintf(line, "  FollowCamera %c", follow_camera);        write_line(file, line);
   sprintf(line, "  UniqueClassSprites %c", class_sprites);  write_line(file, line);
   sprintf(line, "  FloorItemNames %c", floor_item_names);   write_line(file, line);
+  sprintf(line, "  ImprovedItems %c", improved_items);      write_line(file, line);
+  sprintf(line, "  ImprovedCombatLogs %c", improved_combat_logs); write_line(file, line);
   sprintf(line, "  GothicScrolls %c", gothic_scrolls);      write_line(file, line);
   sprintf(line, "  ImprovedInterface %c", improved_interface); write_line(file, line);
   sprintf(line, "  ImprovedStatus %c", improved_status);    write_line(file, line);
   sprintf(line, "  EasySpells %c", easy_spells);            write_line(file, line);
+  sprintf(line, "  EasyWords %c", easy_words);              write_line(file, line);
   save_gameplay_changes(file);
   sprintf(line, "  }");                                     write_line(file, line);
   }
@@ -529,8 +534,9 @@ void save_new() {
     strcpy(filename,loadname);
     if (strlen(filename) == 0) strcpy(filename,player.name);
     gotoxy(1,1); textcolor(14);
-    txt_write("Filename to save under (No Extension) ?");
-    readln(filename);
+    write_question("Filename to save under (No Extension)");
+    if (improved_interface == 'Y') txt_write(" ");
+    readln(filename,sizeof(filename));
     }
   save_game(filename);
   }

@@ -27,6 +27,7 @@ void upland_help() {
   txt_writeln("                           E - Enter/Exit a ship");
   txt_writeln("                           h - Hunt");
   txt_writeln("                           H - Show Icons");
+  if (world_map != 'N') txt_writeln("                           M - World map");
   txt_writeln("                           O - Options");
   txt_writeln("                           R - Show player record");
   txt_writeln("                           Q - Quit, NO SAVE");
@@ -39,7 +40,8 @@ void upland_help() {
       txt_writeln("                    F1 - F10 - Go to Tardis Destination");
       txt_writeln("            <SHIFT> F1 - F10 - Program Tardis Destination");
     }
-  gotoxy(28,24); textcolor(10);
+  /* The world map's line and the Tardis's three take the list to line 24 */
+  gotoxy(28,(world_map != 'N' && has_intrinsic(A_TARD)) ? 25 : 24); textcolor(10);
   txt_write("Press any key to continue");
   inkey();
   graphmode();

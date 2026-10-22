@@ -26,6 +26,11 @@ int32_t floorDivide(int32_t numerator, int32_t denominator) {
   return quotient;
   }
 
+int32_t floorModulo(int32_t value, int32_t divisor) {
+  int32_t remainder = value % divisor;
+  return (remainder < 0) ? remainder + divisor : remainder;
+  }
+
 }
 
 Rect Rect::unite(const Rect& other) const {
@@ -109,6 +114,23 @@ void Canvas::image(int32_t x, int32_t y, const Image& image) {
       if (image.opaque(column, row)) plot(x + column, y + row, image.pixel(column, row));
 
   touch(Rect{x, y, x + image.width(), y + image.height()});
+  }
+
+/* Fills area with image repeated from originX,originY: each pixel shows the image's pixel at its offset from the
+   origin. Only the opaque pixels are drawn. */
+void Canvas::tile(const Rect& area, int32_t originX, int32_t originY, const Image& image) {
+  Rect clipped = area.intersect(Rect{0, 0, width_, height_});
+  if (clipped.empty()) return;
+
+  for (int32_t y = clipped.top; y < clipped.bottom; y++) {
+    int32_t row = floorModulo(y - originY, image.height());
+    for (int32_t x = clipped.left; x < clipped.right; x++) {
+      int32_t column = floorModulo(x - originX, image.width());
+      if (image.opaque(column, row)) plot(x, y, image.pixel(column, row));
+      }
+    }
+
+  touch(clipped);
   }
 
 void Canvas::copyFrom(const Canvas& source) {

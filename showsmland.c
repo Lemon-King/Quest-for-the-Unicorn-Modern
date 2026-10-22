@@ -12,34 +12,18 @@
 
 void show_sm_land() {
   Int32 x,y;
+  Int32 left,top;
   Int32 color;
   pixel = 0;
   setfillstyle(1,0);
   bar(smap_offset_x,smap_offset_y,smap_offset_x+99,smap_offset_y+99);
-  for (x=1; x<=100; x++)
-    for (y=1; y<=100; y++) {
-      color = 0;
-      if (player.known[x][y] != 0) {
-        switch (player.map[x][y]) {
-          case 1:color = 10; break;
-          case 2:color = 2; break;
-          case 3:color = 6; break;
-          case 4:color = 1; break;
-          case 5:color = 4; break;
-          case 6:color = 3; break;
-          case 7:color = 8; break;
-          case 8:color = 14; break;
-          case 9:color = 5; break;
-          case 11:color = 4; break;
-          case 17:color = 4; break;
-          case 19:color = 6; break;
-          }
-        }
-      plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
-      plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
-      plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);
-      plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,color);
+  left = minimap_left();
+  top = minimap_top();
+  for (x=left; x<left+MINIMAP_SQUARES; x++)
+    for (y=top; y<top+MINIMAP_SQUARES; y++) {
+      color = square_known(x,y) ? land_color(square_value(x,y)) : 0;
+      plot_minimap(x,y,color);
       }
-    close_display();
+  minimap_drawn();
+  close_display();
   }
-

@@ -9,8 +9,8 @@
 */
 
 /* The Tab Menu, for the Improved Interface preference: in the box that shows the log, the commands for where you
-   stand, then the common ones, then Save, Load and Save and Exit. A command types its keys into the game, as if
-   pressed. */
+   stand, then the common ones, then Save, Load and Save and Exit, which an arena fight leaves out. A command types its
+   keys into the game, as if pressed. */
 
 #include "header.h"
 
@@ -40,10 +40,11 @@
 #define DO_LOAD          2
 #define DO_SPELLS        3
 #define DO_STATUS        4
+#define DO_WORDS         5
 
 /* A command: what it says, the keys it types (the first returned, the rest queued), or Save, Load, the Easy Spells
-   list or Status Effects. An item's name in its label, from name_start on, shows in its rarity colour, name_color; 0
-   for none. */
+   or Easy Words list or Status Effects. An item's name in its label, from name_start on, shows in its rarity colour,
+   name_color; 0 for none. */
 typedef struct {
   char  label[LABEL_LENGTH];
   char  keys[4];
@@ -71,11 +72,6 @@ typedef struct {
   Int32         line_count;
   Int32         width;
   } COMMANDS;
-
-/* The eight squares around you, clockwise from north, with the key that steps there */
-static const Int32 step_x[8]   = { 0, 1, 1, 1, 0, -1, -1, -1 };
-static const Int32 step_y[8]   = { -1, -1, 0, 1, 1, 1, 0, -1 };
-static const char  step_key[8] = { '8', '9', '6', '3', '2', '1', '4', '7' };
 
 static char* save_choices[3] = { "Overwrite", "Save as New", "Cancel" };
 static char* overwrite_choices[2] = { "Yes", "No" };
@@ -226,6 +222,14 @@ static void add_spells(COMMANDS* commands) {
   if (command != NULL && easy_spells == 'Y') command->action = DO_SPELLS;
   }
 
+/* Say a Word of Power types w for the prompt, or with Easy Words opens the list of the words you have read of */
+static void add_say_word(COMMANDS* commands) {
+  COMMAND* command;
+
+  command = add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
+  if (command != NULL && easy_words == 'Y') command->action = DO_WORDS;
+  }
+
 /* "<verb> <name>", with any underscores in the name as spaces */
 static void verb_label(char* verb,char* name,char* label) {
   Int32 i;
@@ -235,7 +239,7 @@ static void verb_label(char* verb,char* name,char* label) {
     if (label[i] == '_') label[i] = ' ';
   }
 
-/* "<verb> <name>", with the name the look command gives a square of this value. Returns the rarity colour of an item's
+/* "<verb> <name>", with the name the look command gives a square of this value. Returns the colour it gives an item's
    name, or 0 for a square that holds no item. */
 static Int32 named_label(char* verb,Int32 value,char* label) {
   char  name[80];
@@ -258,8 +262,8 @@ static void add_item_command(COMMANDS* commands,char* verb,OBJECT_REC* item,char
 
 /* The square in direction d, as x,y; returns 0 off the map's edge */
 static Int32 square_beside(Int32 d,Int32* x,Int32* y) {
-  *x = player.x + step_x[d];
-  *y = player.y + step_y[d];
+  *x = player.x + step_x(d);
+  *y = player.y + step_y(d);
 
   return (*x >= 1 && *x <= 100 && *y >= 1 && *y <= 100);
   }
@@ -292,8 +296,8 @@ static void add_aimed(COMMANDS* commands,char* label,char key,char aimed,Int32 d
   keys[0] = key;
   keys[1] = 0;
   keys[2] = 0;
-  if (aimed == ' ') keys[1] = step_key[d];
-    else if (aimed != step_key[d]) return;
+  if (aimed == ' ') keys[1] = step_key(d);
+    else if (aimed != step_key(d)) return;
 
   add_command(commands,label,keys,CONTEXT_COLOR);
   }
@@ -302,17 +306,19 @@ static void add_aimed(COMMANDS* commands,char* label,char key,char aimed,Int32 d
 static COMMAND* add_step(COMMANDS* commands,char* label,Int32 d,char then) {
   char keys[3];
 
-  keys[0] = step_key[d];
+  keys[0] = step_key(d);
   keys[1] = then;
   keys[2] = 0;
   return add_command(commands,label,keys,CONTEXT_COLOR);
   }
 
-/* The key Pick Up types: g, which takes the item through the inventory, for what only its first pickup there counts
-   (a dungeon's quest treasure completes the quest, a trading card joins the collection) and to hold an item when the
-   pack is full; G packs anything else */
+/* The key Pick Up types: g, which takes the item through the inventory, to hold an item when the pack is full and,
+   without the Unified Pickup change, for what only its pickup there counts (a dungeon's quest treasure completes the
+   quest, a trading card joins the collection); G packs anything else */
 static char pick_up_key(OBJECT_REC* item) {
-  if (item->otype == O_CARD || pack_count() == PACK_SLOTS) return 'g';
+  if (pack_count() == PACK_SLOTS) return 'g';
+  if (change_unified_pickup == 'Y') return 'G';
+  if (item->otype == O_CARD) return 'g';
 
   /* The Gateway has no row in links[] for is_quest_treasure() to read */
   if (player.dungeon_number != GATEWAY_DUNGEON && is_quest_treasure(item)) return 'g';
@@ -343,26 +349,28 @@ static Int32 may_join(NPC_REC* creature) {
   return ((creature->special & MS_FRIENDLY) != 0 && (creature->special & MS_JOIN) == 0);
   }
 
+/* Attack the creature in direction d by stepping into it */
+static void add_attack(COMMANDS* commands,NPC_REC* creature,Int32 d) {
+  char label[80];
+
+  sprintf(label,"Attack %s",creature->name);
+  add_step(commands,label,d,0);
+  }
+
 /* A creature beside you: talk to a friendly one, which t cannot reach beside a merchant, attack the others by stepping
    into them, and ask one that may join */
 static void add_creature(COMMANDS* commands,Int32 d,Int32 can_talk) {
   NPC_REC* creature;
   char     label[80];
-  char     keys[2];
 
-  creature = get_monster(player.x + step_x[d],player.y + step_y[d]);
+  creature = get_monster(player.x + step_x(d),player.y + step_y(d));
   if (creature == NULL) return;
 
   if ((creature->special & MS_FRIENDLY) != 0) {
     sprintf(label,"Talk to %s",creature->name);
     if (can_talk) add_aimed(commands,label,'t',item_dir(-1),d);
     }
-  else {
-    sprintf(label,"Attack %s",creature->name);
-    keys[0] = step_key[d];
-    keys[1] = 0;
-    add_command(commands,label,keys,CONTEXT_COLOR);
-    }
+  else add_attack(commands,creature,d);
 
   if (may_join(creature)) {
     sprintf(label,"Ask %s to join",creature->name);
@@ -462,15 +470,20 @@ static Int32 holds_spell_scroll(void) {
   return 0;
   }
 
-/* The commands your gear, spells and wounds allow */
-static void list_abilities(COMMANDS* commands) {
+/* The commands your gear, spells and wounds allow in an arena fight */
+static void list_combat_abilities(COMMANDS* commands) {
   if (knows_a_spell()) add_spells(commands);
   if (can_fire()) add_item_command(commands,"Fire",&(player.invent[I_RHND]),"f");
   if (is_thrown(&(player.invent[I_LHND]))) add_item_command(commands,"Throw",&(player.invent[I_LHND]),"-");
   if (is_thrown(&(player.invent[I_RHND]))) add_item_command(commands,"Throw",&(player.invent[I_RHND]),"=");
   if (player.chp < player.mhp) add_command(commands,"Heal","h",COMMON_COLOR);
+  }
+
+/* The commands your gear, spells and wounds allow */
+static void list_abilities(COMMANDS* commands) {
+  list_combat_abilities(commands);
   if (holds_spell_scroll()) add_command(commands,"Transcribe a spell","x",COMMON_COLOR);
-  if (word_counter == 0 && player.gateway != '*') add_command(commands,"Say a Word of Power","w",COMMON_COLOR);
+  if (word_counter == 0 && player.gateway != '*') add_say_word(commands);
   }
 
 static void list_town_and_dungeon(COMMANDS* commands) {
@@ -552,12 +565,59 @@ static void list_overworld(COMMANDS* commands) {
   add_command(commands,"Character","R",COMMON_COLOR);
   add_status_effects(commands);
   add_command(commands,"Location","~",COMMON_COLOR);
+  if (world_map != 'N') add_command(commands,"World map","M",COMMON_COLOR);
   add_command(commands,"Icons","H",COMMON_COLOR);
   add_command(commands,"Help","?",COMMON_COLOR);
   add_command(commands,"Options","O",COMMON_COLOR);
   }
 
+/* A monster on the square in direction d to attack, and an item there to pick up, unless the step leaves the arena */
+static void list_arena_beside(COMMANDS* commands,Int32 d) {
+  NPC_REC* monster;
+  Int32    value;
+  Int32    x,y;
+
+  if (!square_beside(d,&x,&y)) return;
+
+  monster = get_monster(x,y);
+  if (monster != NULL) add_attack(commands,monster,d);
+
+  value = player.map[x][y];
+  if (value >= 1000 && value < 2000 && !off_arena(x,y)) add_pick_up(commands,value,d);
+  }
+
+/* In an arena fight: the item under you, the monsters and items around you, clockwise from north, the way out once the
+   fight is won, then the commands the arena takes */
+static void list_arena(COMMANDS* commands) {
+  Int32 here;
+  Int32 d;
+
+  here = player.map[player.x][player.y];
+  if (here >= 1000 && here < 2000) add_pick_up(commands,here,-1);
+
+  for (d=0; d<8; d++) list_arena_beside(commands,d);
+
+  /* Without the Arena Exit change ENTER never leaves */
+  if (change_arena_exit == 'Y' && monsters_dead()) add_command(commands,"Leave Arena","\r",CONTEXT_COLOR);
+
+  add_command(commands,"Inventory","i",COMMON_COLOR);
+  add_command(commands,"Use an item","u",COMMON_COLOR);
+  list_combat_abilities(commands);
+  add_command(commands,"Party","p",COMMON_COLOR);
+  add_command(commands,"Character","R",COMMON_COLOR);
+  add_status_effects(commands);
+  add_command(commands,"Look around","v",COMMON_COLOR);
+  add_command(commands,"Icons","H",COMMON_COLOR);
+  add_command(commands,"Help","?",COMMON_COLOR);
+  }
+
 static void list_commands(COMMANDS* commands) {
+  /* The arena takes no Save, Load or X: its field stands in for the map until the fight ends */
+  if (in_arena == 'Y') {
+    list_arena(commands);
+    return;
+    }
+
   if (in_upland == 'Y') list_overworld(commands);
     else list_town_and_dungeon(commands);
 
@@ -613,13 +673,17 @@ static void draw_command(MENU* menu,Int32 row,Int32 line) {
   COMMANDS*     commands;
   COMMAND_LINE* text;
   COMMAND*      command;
+  char*         shown;
   char          keys[8];
   Int32         at;
 
   commands = menu->screen;
   text = &commands->lines[row];
   command = &commands->list[text->command];
-  sprintf(keys,"%-*s",BAR_COLUMN - menu->value_column,text->first ? command->keys : "");
+
+  /* ENTER, which has no glyph, is typed but not shown */
+  shown = (text->first && isprint((unsigned char)command->keys[0])) ? command->keys : "";
+  sprintf(keys,"%-*s",BAR_COLUMN - menu->value_column,shown);
 
   draw_menu_text_in(menu,line,text->text,keys,command->enabled ? command->color : 8);
 
@@ -743,12 +807,14 @@ static Int32 ask_save_name(char* name) {
   char        problem[LABEL_WIDTH + 1];
   char        key;
   Int32       length;
+  Int32       first;
 
   panel = panel_rows(0);
   show_name_prompt(&panel);
 
   strcpy(name,"");
   strcpy(problem,"");
+  first = 1;
   key = 0;
   while (key != 13) {
     sprintf(typed,"%s_",name);
@@ -757,7 +823,8 @@ static Int32 ask_save_name(char* name) {
     sprintf(field,"%-*s",LABEL_WIDTH,problem);
     list_text(&panel,1,5,12,field);
 
-    key = inkey();
+    key = first ? inkey() : typed_key();
+    first = 0;
     length = (Int32)strlen(name);
     strcpy(problem,"");
 
@@ -886,6 +953,42 @@ static Int32 spell_choice(void) {
   return (picked >= 0) ? known[picked] : 0;
   }
 
+/* Easy Words: picks one of the words of book you have read of, each with what its lore says it does in grey, or other
+   to type one. Returns the word's place in book, WORD_TYPED for other, or WORD_NONE when TAB or ESC backs out. */
+Int32 word_choice(WORD_BOOK* book,char* heading,char* other) {
+  Int32          known[MAX_WORDS];
+  COMMANDS       choices;
+  WORD_OF_POWER* word;
+  MENU           menu;
+  char           label[LABEL_LENGTH];
+  Int32          count;
+  Int32          picked;
+  Int32          i;
+
+  count = known_words(book,known);
+  open_commands(&choices,count + 1,LABEL_WIDTH);
+  for (i=0; i<count; i++) {
+    word = &book->words[known[i]];
+    sprintf(label,"%s %s",word->word,(word->hint != NULL) ? word->hint : "");
+    color_item_name(add_command(&choices,label,"",COMMON_COLOR),word->word,CLR_GRAY);
+    }
+  add_command(&choices,other,"",COMMON_COLOR);
+
+  picked = -1;
+  if (choices.line_count > 0) {
+    open_panel(&menu,choices.line_count,draw_command,&choices);
+    show_panel(&menu,heading);
+    picked = choose_command(&menu,&choices);
+    }
+
+  close_commands(&choices);
+
+  if (picked < 0) return WORD_NONE;
+  if (picked == count) return WORD_TYPED;
+
+  return known[picked];
+  }
+
 /* text on the box's lines from line on, wrapped at its spaces. Returns the line after it. */
 static Int32 write_wrapped(SCROLL_LIST* panel,Int32 line,Int32 color,char* text) {
   char  words[STATUS_WIDTH + 1];
@@ -947,6 +1050,7 @@ Int32 open_tab_menu(void) {
   Int32    choosing;
   Int32    picked;
   Int32    spell;
+  Int32    word;
   char     text[sizeof(loadname) + 16];
 
   open_commands(&commands,MAX_COMMANDS,LABEL_WIDTH);
@@ -976,6 +1080,14 @@ Int32 open_tab_menu(void) {
         spell = spell_choice();
         if (spell != 0) {
           pick_spell(spell);
+          result = (unsigned char)command->keys[0];
+          }
+        else choosing = 1;
+        }
+      else if (command->action == DO_WORDS) {
+        word = word_choice(words_of_power(),"Say which word?","Type a word");
+        if (word != WORD_NONE) {
+          if (word >= 0) pick_word(words_of_power()->words[word].word);
           result = (unsigned char)command->keys[0];
           }
         else choosing = 1;

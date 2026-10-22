@@ -18,8 +18,8 @@
 
 #define NUM_MODES       4
 #define NUM_RULES       7
-#define NUM_PREFS      17
-#define NUM_CHANGES    62
+#define NUM_PREFS      24
+#define NUM_CHANGES    67
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -47,9 +47,9 @@
 /* units follows a number's value; strict is a switch's third value, after On, and extra a fourth, after Strict, which
    needs names; names replaces Off, On, Strict and the fourth as a switch's value names; standard is a number's or
    mode's own default, and initial the value a new game starts with, after unicorn.cfg and the command line; config
-   names the unicorn.cfg key of a number kept there instead of in the save; apply puts a new value into effect; key
-   names a gameplay change in the save; start is the value a new game starts a gameplay change at, when not On or
-   Strict; needs is a preference that must be On for this one to change */
+   names the unicorn.cfg key of a number or switch kept there instead of in the save, a switch by its value's name;
+   apply puts a new value into effect; key names a gameplay change in the save; start is the value a new game starts a
+   gameplay change at, when not On or Strict; needs is a preference that must be On for this one to change */
 typedef struct {
   char   label[24];
   char   help[80];
@@ -123,6 +123,14 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Full Party Combat",
     .help  = "Monsters and party members take full damage",
     .kind  = OPT_SWITCH, .flag = &party_combat_mode, .on = 'F', .off = 'R' },
+  { .label = "Music Volume",
+    .help  = "Music Volume from 0% to 100%", .units = "%",
+    .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
+    .config = "MusicVolume", .apply = set_music_volume },
+  { .label = "Color Palette",
+    .help  = "Text and map colours: X11, as on Windows, or the DOS (CGA/EGA/VGA) colours",
+    .kind  = OPT_SWITCH, .flag = &color_palette, .on = 'D', .off = 'X',
+    .names = { "X11", "DOS" }, .config = "ColorPalette" },
   { .label = "Auto-Target",
     .help  = "Target the nearest monster automatically",
     .kind  = OPT_SWITCH, .flag = &auto_target, .on = 'Y', .off = 'N' },
@@ -144,6 +152,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Easy Spells",
     .help  = "Pick your spell from a list in the TAB menu, instead of typing its name",
     .kind  = OPT_SWITCH, .flag = &easy_spells, .on = 'Y', .off = 'N', .needs = &improved_interface },
+  { .label = "Easy Words",
+    .help  = "Words of Power you have read of: listed in the TAB menu, completed as typed",
+    .kind  = OPT_SWITCH, .flag = &easy_words, .on = 'Y', .off = 'N', .needs = &improved_interface },
   { .label = "Improved Status",
     .help  = "Status row under your stats: grey letters, coloured letters, or icons",
     .kind  = OPT_SWITCH, .flag = &improved_status, .on = 'C', .off = 'N', .strict = 'I',
@@ -151,6 +162,12 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Floor Item Names",
     .help  = "Shows the name of the item you stand on, in the bottom right",
     .kind  = OPT_SWITCH, .flag = &floor_item_names, .on = 'Y', .off = 'N' },
+  { .label = "Improved Items",
+    .help  = "Card's rarity colours, * marks unidentified items, common drops identified",
+    .kind  = OPT_SWITCH, .flag = &improved_items, .on = 'Y', .off = 'N' },
+  { .label = "Improved Combat Logs",
+    .help  = "Log lines say who hits whom, for how much, in a wider message box",
+    .kind  = OPT_SWITCH, .flag = &improved_combat_logs, .on = 'Y', .off = 'N' },
   { .label = "Enhanced Sprites",
     .help  = "Improves tile display for Sprites",
     .kind  = OPT_SWITCH, .flag = &enhanced_sprites, .on = 'Y', .off = 'N' },
@@ -160,6 +177,17 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Show Mount",
     .help  = "On the overworld, the mount you ride shows in place of your own sprite",
     .kind  = OPT_SWITCH, .flag = &show_mount, .on = 'Y', .off = 'N' },
+  { .label = "Seamless World Map",
+    .help  = "Overworld scrolls across region edges; minimap follows you, or per Region",
+    .kind  = OPT_SWITCH, .flag = &seamless_world_map, .on = 'Y', .off = 'N', .strict = 'R',
+    .names = { "Off", "On", "Region" } },
+  { .label = "Follow Camera",
+    .help  = "The view follows you once you leave its middle fifth, stopping at map edges",
+    .kind  = OPT_SWITCH, .flag = &follow_camera, .on = 'Y', .off = 'N' },
+  { .label = "World Map",
+    .help  = "What M shows on the upland: the world you have found, in colours or tile art",
+    .kind  = OPT_SWITCH, .flag = &world_map, .on = 'C', .off = 'N', .strict = 'A',
+    .names = { "Off", "Color", "Art" }, .config = "WorldMap" },
   { .label = "Gothic Scrolls",
     .help  = "Writes scrolls in Gothic instead of the hand-drawn scroll letters",
     .kind  = OPT_SWITCH, .flag = &gothic_scrolls, .on = 'Y', .off = 'N' },
@@ -172,10 +200,6 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Trap Delay (ms)",
     .help  = "Trap effects delay",
     .kind  = OPT_NUMBER, .number = &delay_trap, .min = 0, .max = 1000, .step = 25 },
-  { .label = "Music Volume",
-    .help  = "Music Volume from 0% to 100%", .units = "%",
-    .kind  = OPT_NUMBER, .number = &music_volume, .min = 0, .max = 100, .step = 10,
-    .config = "MusicVolume", .apply = set_music_volume },
   { .label = "World Seed",
     .help  = "New worlds pick from 2 billion dungeon layouts, not 32,767",
     .kind  = OPT_SWITCH, .flag = &change_world_seed, .on = 'Y', .off = 'N', .key = "WorldSeed" },
@@ -203,6 +227,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Upland Quit",
     .help  = "Q on the overworld asks before quitting, as it does in dungeons",
     .kind  = OPT_SWITCH, .flag = &change_upland_quit, .on = 'Y', .off = 'N', .key = "UplandQuit" },
+  { .label = "Explored Land",
+    .help  = "A game saved on the upland keeps the land you explored in your region",
+    .kind  = OPT_SWITCH, .flag = &change_explored_land, .on = 'Y', .off = 'N', .key = "ExploredLand" },
   { .label = "Hunting Skill",
     .help  = "Hunting on the upland improves with Scouting, the skill it trains, not Mace",
     .kind  = OPT_SWITCH, .flag = &change_hunting_skill, .on = 'Y', .off = 'N', .key = "HuntingSkill" },
@@ -215,9 +242,6 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Travel Saves",
     .help  = "Saves keep a relic's destinations without losing lore or your position",
     .kind  = OPT_SWITCH, .flag = &change_tardis_saves, .on = 'Y', .off = 'N', .key = "TardisSaves" },
-  { .label = "Travel Descriptions",
-    .help  = "Destination descriptions stop at 31 characters instead of overrunning memory",
-    .kind  = OPT_SWITCH, .flag = &change_tardis_descriptions, .on = 'Y', .off = 'N', .key = "TardisDescriptions" },
   { .label = "Sleep Traps",
     .help  = "Sleep traps put you to sleep instead of never springing",
     .kind  = OPT_SWITCH, .flag = &change_sleep_traps, .on = 'Y', .off = 'N', .key = "SleepTraps" },
@@ -254,6 +278,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Thrown Weapons",
     .help  = "Thrown rocks and stars no longer crash the game when they land on an item",
     .kind  = OPT_SWITCH, .flag = &change_thrown_weapons, .on = 'Y', .off = 'N', .key = "ThrownWeapons" },
+  { .label = "Flask of Oil",
+    .help  = "An arrow breaks a Flask of Oil on the floor, which bursts into flame",
+    .kind  = OPT_SWITCH, .flag = &change_flask_of_oil, .on = 'Y', .off = 'N', .key = "FlaskOfOil" },
   { .label = "Poison Kills",
     .help  = "A creature killed by poison leaves the map where it died, not under you",
     .kind  = OPT_SWITCH, .flag = &change_poison_kills, .on = 'Y', .off = 'N', .key = "PoisonKills" },
@@ -302,12 +329,21 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Arena Exit",
     .help  = "ENTER or ESC leaves the arena once every monster is dead",
     .kind  = OPT_SWITCH, .flag = &change_arena_exit, .on = 'Y', .off = 'N', .key = "ArenaExit" },
+  { .label = "Arena Held Keys",
+    .help  = "Keys held as a fight starts or ends no longer make the game wait for another",
+    .kind  = OPT_SWITCH, .flag = &change_arena_held_keys, .on = 'Y', .off = 'N', .key = "ArenaHeldKeys" },
+  { .label = "Safe Arena Loot",
+    .help  = "Items left on a dungeon arena's floor lie around you when the fight ends",
+    .kind  = OPT_SWITCH, .flag = &change_safe_arena_loot, .on = 'Y', .off = 'N', .key = "SafeArenaLoot" },
   { .label = "Rarity Fix",
     .help  = "Pickups count rarity alike: A as g and its card, B as G, C as B with 5 ultra",
     .kind  = OPT_SWITCH, .flag = &change_rarity_fix, .on = 'A', .off = 'N', .strict = 'B', .extra = 'C',
     .names = { "Off", "Band A", "Band B", "Band C" }, .key = "RarityFix", .start = 'A' },
+  { .label = "Unified Pickup",
+    .help  = "Packing with G adds cards to your collection and completes quests, as g does",
+    .kind  = OPT_SWITCH, .flag = &change_unified_pickup, .on = 'Y', .off = 'N', .key = "UnifiedPickup" },
   { .label = "Floor Items",
-    .help  = "Packed items and arena loot free their spots, and a full floor drops nothing",
+    .help  = "Packed, broken and arena items free their spots; a full floor drops nothing",
     .kind  = OPT_SWITCH, .flag = &change_floor_items, .on = 'Y', .off = 'N', .key = "FloorItems" },
   { .label = "Lore Books",
     .help  = "G and P on a lore book do nothing, instead of copying a Portable Hole item",
@@ -342,6 +378,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Shop Boots and Wands",
     .help  = "Armor shops sell boots, and magic shops sell wands",
     .kind  = OPT_SWITCH, .flag = &change_shop_boots_wands, .on = 'Y', .off = 'N', .key = "ShopBootsAndWands" },
+  { .label = "Shop Dagger",
+    .help  = "Weapon shops sell the Dagger once, not again from the item table's first row",
+    .kind  = OPT_SWITCH, .flag = &change_shop_dagger, .on = 'Y', .off = 'N', .key = "ShopDagger" },
   { .label = "Platinum Dragon Mount",
     .help  = "A Platinum Dragon bought at the stable is a flying mount like other dragons",
     .kind  = OPT_SWITCH, .flag = &change_platinum_dragon_mount, .on = 'Y', .off = 'N', .key = "PlatinumDragonMount" },
@@ -487,6 +526,30 @@ static char* switch_name(OPTION_ROW* row, char flag) {
   return names[0];
   }
 
+/* A row kept in unicorn.cfg: a number as itself, a switch as its value's name */
+static void save_config_row(OPTION_ROW* row) {
+  if (row->kind == OPT_SWITCH) save_config_text("unicorn",row->config,switch_name(row,*row->flag));
+    else save_config_value("unicorn",row->config,*row->number);
+  }
+
+/* Sets the switch unicorn.cfg keeps under key to the value called name, as save_config_row() writes it; any other
+   name leaves it as it is */
+void set_config_switch(char* key,char* name) {
+  OPTION_ROW* row;
+  Int32       i;
+
+  while (*name == ' ') name++;
+  for (i=0; i<NUM_OPTIONS; i++) {
+    row = &option_rows[i];
+    if (row->kind != OPT_SWITCH || row->config == NULL || _stricmp(row->config,key) != 0) continue;
+
+    if (_stricmp(name,switch_name(row,row->off)) == 0) *row->flag = row->off;
+    if (_stricmp(name,switch_name(row,row->on)) == 0) *row->flag = row->on;
+    if (row->strict != 0 && _stricmp(name,switch_name(row,row->strict)) == 0) *row->flag = row->strict;
+    if (row->extra != 0 && _stricmp(name,switch_name(row,row->extra)) == 0) *row->flag = row->extra;
+    }
+  }
+
 /* Steps a switch through Off and On, then Strict and the fourth value when it has them, wrapping either way */
 static char next_switch_value(OPTION_ROW* row, Int32 dir) {
   char  values[4];
@@ -553,7 +616,7 @@ static void change_option(OPTION_ROW* row, Int32 dir) {
     }
 
   if (row->apply != NULL) row->apply();
-  if (row->config != NULL) save_config_value("unicorn",row->config,*row->number);
+  if (row->config != NULL) save_config_row(row);
   }
 
 /* The label is padded to the value column, so a scrolled row covers the one it replaces */
@@ -621,6 +684,7 @@ static void edit_options(char* title, char rules_editable) {
   Int32 group;
   Int32 group_row[NUM_GROUPS];
   char  key;
+  char  palette;
 
   for (group=0; group<NUM_GROUPS; group++) option_groups[group].rows.top = 0;
   draw_screen(title, rules_editable);
@@ -650,8 +714,12 @@ static void edit_options(char* title, char rules_editable) {
     if (key == '4' || key == '-') dir = -1;
     if (key == '6' || key == '+' || key == '=') dir = 1;
     if (dir != 0 && is_editable(i, rules_editable)) {
+      palette = color_palette;
       change_option(&option_rows[i], dir);
-      draw_options(rules_editable);
+
+      /* A new palette shows only in what is drawn after it */
+      if (color_palette != palette) draw_screen(title, rules_editable);
+        else draw_options(rules_editable);
       }
     }
   }

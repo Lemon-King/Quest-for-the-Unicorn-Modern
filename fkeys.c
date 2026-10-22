@@ -10,6 +10,18 @@
 
 #include "header.h"
 
+static const Int32 FKEYS[12] = { KY_F1, KY_F2, KY_F3, KY_F4, KY_F5, KY_F6, KY_F7, KY_F8, KY_F9, KY_F10, KY_F11, KY_F12 };
+
+/* 1 to 12 for F1 to F12; 0 for any other key */
+Int32 fkey_number(Int32 key) {
+  Int32 n;
+
+  for (n=0; n<12; n++)
+    if (key == FKEYS[n]) return n + 1;
+
+  return 0;
+  }
+
 void fkey_pressed(Int32 n) {
   if (fkey_mode == 'S') cast_spell(n);
   if (fkey_mode == 'W') {

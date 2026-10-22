@@ -106,6 +106,7 @@
     <ClCompile Include="clearprompt.c" />
     <ClCompile Include="closedoor.c" />
     <ClCompile Include="combathelp.c" />
+    <ClCompile Include="combatlog.c" />
     <ClCompile Include="compass.c" />
     <ClCompile Include="convertrecipe.c" />
     <ClCompile Include="converttime.c" />
@@ -187,6 +188,7 @@
     <ClCompile Include="healing.c" />
     <ClCompile Include="holeinventory.c" />
     <ClCompile Include="houseinventory.c" />
+    <ClCompile Include="identify.c" />
     <ClCompile Include="inkey.c" />
     <ClCompile Include="inroom.c" />
     <ClCompile Include="insight.c" />
@@ -226,6 +228,7 @@
     <ClCompile Include="mechmerchant.c" />
     <ClCompile Include="meleehit.c" />
     <ClCompile Include="menu.c" />
+    <ClCompile Include="minimap.c" />
     <ClCompile Include="missile.c" />
     <ClCompile Include="mounts.c" />
     <ClCompile Include="moveenemy.c" />
@@ -251,6 +254,7 @@
     <ClCompile Include="passable.c" />
     <ClCompile Include="pawn.c" />
     <ClCompile Include="permadeath.c" />
+    <ClCompile Include="pickup.c" />
     <ClCompile Include="pittrap.c" />
     <ClCompile Include="placeobject.c" />
     <ClCompile Include="playersprite.c" />
@@ -293,7 +297,6 @@
     <ClCompile Include="showfkeys.c" />
     <ClCompile Include="showflooritem.c" />
     <ClCompile Include="showflt.c" />
-    <ClCompile Include="showgain.c" />
     <ClCompile Include="showgen.c" />
     <ClCompile Include="showinventory.c" />
     <ClCompile Include="showicons.c" />
@@ -324,6 +327,7 @@
     <ClCompile Include="sqr.c" />
     <ClCompile Include="statsdodamage.c" />
     <ClCompile Include="statstakedamage.c" />
+    <ClCompile Include="steps.c" />
     <ClCompile Include="stockencounter.c" />
     <ClCompile Include="stockmonsters.c" />
     <ClCompile Include="stocktown.c" />
@@ -338,11 +342,13 @@
     <ClCompile Include="teleporttrap.c" />
     <ClCompile Include="temple.c" />
     <ClCompile Include="terminal.c" />
+    <ClCompile Include="textfield.c" />
     <ClCompile Include="throw.c" />
     <ClCompile Include="thrownpotion.c" />
     <ClCompile Include="tickpolymorph.c" />
     <ClCompile Include="title.c" />
     <ClCompile Include="touch.c" />
+    <ClCompile Include="trade.c" />
     <ClCompile Include="transcribe.c" />
     <ClCompile Include="travel.c" />
     <ClCompile Include="triggertrap.c" />
@@ -361,6 +367,10 @@
     <ClCompile Include="view.c" />
     <ClCompile Include="winner.c" />
     <ClCompile Include="wizard.c" />
+    <ClCompile Include="words.c" />
+    <ClCompile Include="worldmap.c" />
+    <ClCompile Include="worldmapview.c" />
+    <ClCompile Include="worldplaces.c" />
     <ClCompile Include="worldpos.c" />
     <ClCompile Include="writefont.c" />
     <ClCompile Include="yesno.c" />

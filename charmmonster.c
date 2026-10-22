@@ -23,17 +23,17 @@ void charmmonster() {
     clear_prompt();
     noise(1000,100);
     if (in_arena != 'Y' && (player.monster[1][mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
-      prompt("Fizzle");
+      log_charm_failed(monster_record(mon));
       return;
       }
     if (in_arena == 'Y' && (player.monster[mon][a_mon].special & MS_FRIENDLY) == MS_FRIENDLY) {
-      prompt("Fizzle");
+      log_charm_failed(monster_record(mon));
       return;
       }
-    prompt("Charmed");
+    log_charmed(monster_record(mon));
     if (in_arena == 'Y') player.monster[mon][a_mon].special |= MS_FRIENDLY;
       else player.monster[1][mon].special |= MS_FRIENDLY;
     }
   else
-    prompt("Fizzle");
+    log_charm_failed(NULL);
   }

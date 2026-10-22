@@ -11,9 +11,6 @@
 #include "header.h"
 
 void show_player() {
-  Int32 x,y;
-  x = player.x;
-  y = player.y;
   if (player.effect[PE_SLEEP] == 0) {
     if (player.inship == ' ')
       show_sprite(player.x-player.map_x,player.y-player.map_y,player_sprite());
@@ -22,10 +19,7 @@ void show_player() {
     }
   else
     show_sprite(player.x-player.map_x,player.y-player.map_y,36);
-  plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,15);
-  plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,15);
-  plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,15);
-  plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,15);
+  plot_minimap(player.x,player.y,15);
   close_display();
   }
 

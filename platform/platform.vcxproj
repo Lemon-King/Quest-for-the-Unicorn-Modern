@@ -55,6 +55,7 @@
     <ClCompile Include="Direct3DError.cpp" />
     <ClCompile Include="ErrorApi.cpp" />
     <ClCompile Include="ErrorReport.cpp" />
+    <ClCompile Include="FrameClock.cpp" />
     <ClCompile Include="FrameMailbox.cpp" />
     <ClCompile Include="GameThread.cpp" />
     <ClCompile Include="GameWindow.cpp" />
@@ -80,6 +81,7 @@
     <ClInclude Include="Canvas.h" />
     <ClInclude Include="Direct3DError.h" />
     <ClInclude Include="ErrorReport.h" />
+    <ClInclude Include="FrameClock.h" />
     <ClInclude Include="FrameMailbox.h" />
     <ClInclude Include="GameHost.h" />
     <ClInclude Include="GameThread.h" />

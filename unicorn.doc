@@ -1,5 +1,5 @@
                               Quest for the Unicorn
-                                      v 7.1
+                                      v 7.2
                                     4/7/2017
                                        by
                                    Mike Riley
@@ -214,6 +214,11 @@
                               between pixels.  The default
          MusicVolume=percent  Volume of the background music, 0 to 100 in
                               steps of 10.  The default is 100
+         WorldMap=style       What M shows on the upland: Off, Color or
+                              Art (see World Map).  The default is Art
+         ColorPalette=name    The 16 colours of text, frames and maps:
+                              X11 or DOS (see Color Palette).  The
+                              default is X11
 
 
        note: The game option switches (-d, -h, -e, -n, -c, -at, -nat,
@@ -358,6 +363,11 @@
          Upland Quit          Q in the upland asks before ending the
                               character, as it does in towns and
                               dungeons.  Off, it quits at once
+         Explored Land        A game saved on the upland with S or the
+                              TAB menu keeps the land you explored in
+                              the region you are in.  Off, loading it
+                              forgets what you explored there since you
+                              last entered the region
          Hunting Skill        Hunting on the upland (h, or s) finds
                               food more often as your Scouting grows,
                               the skill it trains.  Off, it goes by
@@ -389,9 +399,6 @@
                               messages and lore you have read, and in a
                               town or dungeon puts you at a destination's
                               coordinates
-         Travel Descriptions  A destination's description stops at 31
-                              characters.  Off, a longer one overruns
-                              the game's memory
          Sleep Traps          A sleep trap puts you to sleep.  Off, it
                               never springs
          Words of Power       Rising by a word of power from the first
@@ -450,6 +457,10 @@
                               and every hit is counted twice
          Thrown Weapons       Thrown rocks and stars that land on an
                               item do nothing.  Off, the game crashes
+         Flask of Oil         An arrow that hits a Flask of Oil on the
+                              floor breaks it, and it bursts into
+                              flame, burning the creatures beside it.
+                              Off, the arrow does nothing to it
          Poison Kills         A creature that poison kills leaves the
                               map, and drops its loot, where it died.
                               Off, it stays standing there, dead, and
@@ -516,6 +527,17 @@
          Arena Exit           ENTER or ESC leaves an arena fight once
                               every monster is dead.  Off, the only way
                               out is to walk off the arena's edge
+         Arena Held Keys      Keys held down or typed ahead as an
+                              arena fight starts or ends are dropped.
+                              Off, the game also waits for one more
+                              key and drops it: before a fight the
+                              map you were on stays, and after one
+                              the map shows without you
+         Safe Arena Loot      Items, gold and torches still lying on
+                              the arena's floor when a dungeon fight
+                              ends are laid on the free ground nearest
+                              you.  Off, they are lost with the arena.
+                              Upland fights leave theirs either way
          Rarity Fix           How picking up an item counts it
                               towards your finds (the Eye for
                               Treasure, Treasure Hunter and Lucky!
@@ -528,13 +550,24 @@
                               both as G does, and Band C as G does but
                               with those Ultra Rare ones counted.  A
                               new character starts at Band A
+         Unified Pickup       Packing an item from the floor with G
+                              does all that getting it with g does: a
+                              trading card joins your collection, a
+                              dungeon's treasure on its last level
+                              completes the quest and is identified, a
+                              recipe item gets its recipe, and a
+                              mutable item's level is set as g sets
+                              it, so the Tab menu's Pick Up packs every
+                              item unless the pack is full.  Off, only
+                              g does those
          Floor Items          Putting an item from the floor straight
                               into your pack frees its place in the
                               level's list of floor items, as does
-                              leaving an item on an arena's floor or in
-                              the final boss's realm, which is laid out
-                              afresh at each visit, and when that list
-                              is full a slain monster drops nothing
+                              an arrow breaking one, or leaving an
+                              item on an arena's floor or in the final
+                              boss's realm, which is laid out afresh
+                              at each visit, and when that list is
+                              full a slain monster drops nothing
                               instead of an item.  Off, those items
                               keep their place, and a full list leaves
                               a stray tile where the item should have
@@ -586,6 +619,12 @@
                               boots, and magic shops sell the Wands of
                               Pine, Ceder and Redwood.  Off, no shop
                               sells boots or wands
+         Shop Dagger          Weapon shops list the Dagger once, as
+                              version 5 did.  Off, they list it twice,
+                              as 6.x and 7.0 did: a second copy comes
+                              from a placeholder at the head of the
+                              item table, the same dagger but of no
+                              rarity, so its name is yellow
          Platinum Dragon Mount
                               A Platinum Dragon bought at Nichorville's
                               stable carries you and flies, like the
@@ -617,6 +656,14 @@
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 
+         Music Volume         Volume of the background music, 0% to 100%
+         Color Palette        The 16 colours the game draws its text,
+                              frames and maps in: X11, the colours the
+                              Windows game has always drawn, or DOS,
+                              the CGA, EGA and VGA colours of the DOS
+                              release, whose reds, greens and blues
+                              are softer.  The tile art keeps its own
+                              colours either way
          Auto-Target          Target the nearest monster automatically
          Auto-Open Doors      Doors open automatically
          Auto-Search Walls    Search walls automatically
@@ -631,15 +678,25 @@
                               Item Merchants), see the names of towns
                               and dungeons when you look around (v),
                               read scrolls in the middle of the screen,
-                              and open a menu of the commands you can
-                              use where you stand with Tab (see Tab
-                              Menu).  Off, the game looks and asks as it
-                              first did
+                              see how far you are through your level on
+                              a yellow bar under Level, and open a menu
+                              of the commands you can use where you
+                              stand with Tab (see Tab Menu).  Off, the
+                              game looks and asks as it first did
          Easy Spells          Spells in the Tab menu lists the spells
                               you know to pick from, instead of asking
                               you to type one (see Tab Menu).  It needs
                               Improved Interface, and is greyed out
                               while that is Off
+         Easy Words           Say a Word of Power in the Tab menu lists
+                              the words you have read of to pick from,
+                              a word you type is filled in once its
+                              first letters fit only one of them, and
+                              the message log says when a word fails
+                              (see Words of Power), and so does a relic
+                              that answers to words.  It needs
+                              Improved Interface, and is greyed out
+                              while that is Off.  Off by default
          Improved Status      Show the status indicators under your
                               stats (see Status Indicators) as grey
                               letters (Off), coloured letters (Color),
@@ -653,8 +710,41 @@
                               names on its last line; the Tab menu
                               covers that line too
          Floor Item Names     Show the name of the item you stand on in the
-                              bottom right, in its inventory colour, or
-                              under the message log (see Improved Status)
+                              bottom right, or under the message log (see
+                              Improved Status), in its item colour (see
+                              Item Colors)
+         Improved Items       Names show in the colour of the rarity
+                              their item card names (see Item Colors),
+                              except a quest item's, in cyan, and,
+                              once identified, a unique item's, in
+                              brown, a legendary one's, in light red,
+                              or red if unique too, and legacy gear's,
+                              in yellow, and the card says Unique,
+                              Legendary or Unique Legendary in place
+                              of the rarity.  An item you have not
+                              identified shows in its rarity's colour
+                              instead of cyan, with a * before its
+                              name on the floor, in your inventory and
+                              pack, a house and the portable hole, and
+                              a common item a monster drops is
+                              identified, as its first pickup would
+                              identify it anyway (see Auto-Identify).
+                              Off, names follow older colour bands,
+                              and an unidentified item is cyan, and
+                              yellow on the floor
+         Improved Combat Logs Each line of the message log says who hit
+                              whom and for how much, and how a fight
+                              ends: "The Goblin hits you for 3", "You
+                              miss the Goblin", "The Goblin dies! (+9
+                              exp)".  Spells name themselves, as do
+                              your bow, wand or what you throw, and
+                              traps, effects that wear off, and the
+                              levels, stats and skills you gain say
+                              what changed and by how much.  A shot
+                              that destroys an item on the floor names
+                              it.  The log fills the whole width of its
+                              box.  Off, the log keeps the game's first
+                              lines, such as "OUCH! for 3" and "Exp=9"
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a
@@ -666,6 +756,28 @@
                               in place of your own figure: the first
                               flying mount in your party when you fly,
                               otherwise the first mount
+         Seamless World Map   The overworld is one map: walking off a
+                              region's edge goes on into the next with
+                              no change of screen, and you see and
+                              explore across the edge.  The small map
+                              follows you, centred where the world
+                              allows (On), or shows the region you are
+                              in (Region).  Off, each region is its own
+                              screen, as before
+         Follow Camera        The map view follows you, on the overworld
+                              and in towns and dungeons: you walk freely
+                              in the middle fifth of it, and beyond that
+                              the view moves with you a square at a time
+                              instead of jumping, stopping at the map's
+                              edges.  Arriving somewhere (a level, a
+                              town, the overworld, stairs, a teleport or
+                              a Tardis) centres the view on you, as far
+                              as the edges allow.  The arena's view stays
+                              as it is
+         World Map            What M shows on the upland (see World
+                              Map): nothing (Off), the world in the
+                              small map's colours (Color), or with each
+                              tile's own art (Art)
          Gothic Scrolls       Write scrolls, lore and the library in
                               Gothic instead of the hand-drawn scroll
                               letters.  Either way each line is centred,
@@ -674,12 +786,13 @@
          Ranged Delay (ms)    Ranged attack flight delay
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
-         Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
-     unicorn.cfg as MusicVolume, so it applies to every character.  All
-     the other options are saved with the character, so every saved
-     game keeps its own options.  A game saved by an older version keeps
+     unicorn.cfg as MusicVolume, so it applies to every character.  World
+     Map and Color Palette are kept there too, as WorldMap and
+     ColorPalette.  All the other options are saved
+     with the character, so every saved game keeps its own options.  A
+     game saved by an older version keeps
      its mode, depth, monster count and arena setting, and takes the other
      options from unicorn.cfg and the command line the first time it is
      loaded.
@@ -748,6 +861,7 @@
          h - Hunt for food
          E - Enter/Exit a ship
          R - Show player record
+         M - World map
          O - Options
          { - Save weapon set
          [ - Recall weapon set
@@ -1088,6 +1202,13 @@
      ask for the member with the cursor), and a new character's sex, race
      and class.
 
+       A new character's sex, race and class menus also take <R>, which
+     makes that choice and every one after it at random, spends the stat
+     points at random too, and shows the finished character sheet.  On
+     the sheet that ends making a character, <Enter> or <ESC> starts the
+     game and <R> starts over: from the name, or from the class after
+     rebirth.
+
        With the preference an item merchant lists the goods down the left
      and shows the selected item's info card on the right, as <I> would:
      its name in the colour of its rarity, its kind and rarity, what it
@@ -1101,6 +1222,16 @@
      travel agency, a search at the library, joining the Cavaliers and
      training a party member.  The game mode after rebirth, the library's
      kind of search and a party member's orders are chosen the same way.
+
+       Where the game asks you to type a word of power, a word for a relic,
+     the hours of a nap or a travel destination's description, <ESC>
+     backs out without doing anything.  Off, only <Enter> ends them.
+
+       At the pawn shop and the Mech-Merchant, Sell from Pack lists the
+     items in your pack with the merchant's offer for each, and Identify
+     from Pack the ones you have not identified with what each costs,
+     beside the selected item's card.  <Enter> sells or identifies the
+     item.  Off, they offer the items one at a time, as before.
 
        The inventory lists what you carry with the cursor and shows the
      selected item's info card on the right.  <Enter> opens a short menu
@@ -1149,14 +1280,22 @@
      open, close or jam, and the items, chests, torches, lore, stairs and
      altars under you or a step away (a step away, the command steps there
      first).  Pick Up puts an item in your pack, as <G> does, or takes it
-     up as <g> does when only that counts it or the pack is full: a
-     trading card joins your collection, and a dungeon's treasure on its
-     last level completes the quest.  On the upland it offers the town or
-     dungeon you stand on or beside, by its name, and your ship.  The
-     common commands follow, then Save, Load, and Save and Exit.  A name
-     too long for a line, such as a shop's, carries on over the next, and
-     the cursor moves from command to command.  Off, <Tab> is not one of
-     the game's commands, as before.
+     up as <g> does when the pack is full or, without the Unified Pickup
+     change, when only that counts it: a trading card joins your
+     collection, and a dungeon's treasure on its last level completes
+     the quest.  On the upland it offers the town or dungeon you stand on
+     or beside, by its name, and your ship.  The common commands follow,
+     then Save, Load, and Save and Exit.  A name too long for a line,
+     such as a shop's, carries on over the next, and the cursor moves
+     from command to command.  Off, <Tab> is not one of the game's
+     commands, as before.
+
+       In an arena fight it offers each monster beside you to attack and
+     each item under you or a step away, though not one on the arena's
+     edge, as the step there would end the fight first.  With the Arena
+     Exit change, Leave Arena shows once every monster is dead.  Only the
+     arena's own commands follow, without Save, Load, or Save and Exit,
+     as a fight cannot be saved.
 
        Some commands show only when they can be used: Fire when your main
      hand holds a bow, wand or energy weapon, Throw for a dagger or
@@ -1170,12 +1309,18 @@
      <4> and <6> move to the next indicator you have, and <ESC> goes
      back to the menu.  With none, Status Effects is greyed out.
 
-       Spells, in a town or dungeon when you know a spell, asks for one
-     to cast as <m> does.  With the Easy Spells preference it lists the
-     spells you know instead, each with the mana it costs, and <Enter>
-     casts the one under the cursor.  Spells you lack the mana for are
-     grey and cannot be picked, and the cursor starts on the spell you
-     cast last.  <ESC> goes back to the menu.
+       Spells, in a town, dungeon or arena fight when you know a spell,
+     asks for one to cast as <m> does.  With the Easy Spells preference
+     it lists the spells you know instead, each with the mana it costs,
+     and <Enter> casts the one under the cursor.  Spells you lack the
+     mana for are grey and cannot be picked, and the cursor starts on
+     the spell you cast last.  <ESC> goes back to the menu.
+
+       Say a Word of Power, in a town or dungeon while your voice is
+     rested, asks for a word as <w> does.  With the Easy Words preference
+     it lists the words of power you have read of in lore, each with what
+     the lore says it does, and <Enter> says the one under the cursor;
+     Type a word asks for one instead.  <ESC> goes back to the menu.
 
        Save offers Overwrite, Save as New and Cancel.  Save as New asks
      for a name, and asks Yes or No before replacing a game already saved
@@ -1183,6 +1328,24 @@
      newest first, and the one you pick starts at once.  For a character
      with permadeath both are greyed out.  Save and Exit saves and leaves
      the game, as <X> does.
+
+     World Map
+     =========
+       On the upland, <M> shows the whole world: the twelve regions side
+     by side, as large as the screen allows, with only the land you have
+     seen.  Markers show where you are, your ship where you left it, and
+     each town, dungeon, village and the Gateway you have found.  The
+     direction keys move to the nearest marker that way, and the one
+     chosen is named in yellow under it.  When you stand on a town or
+     dungeon, your own marker takes its name.  <ESC>, <Enter> or <M> goes
+     back.  The map takes no time, though without the Free Upland Keys
+     change <M> passes a turn, as every upland key does.
+
+       The World Map preference (O) draws the land in the small map's
+     colours (Color) or with each tile's own art (Art), or turns the map
+     off (Off), and then <M> does nothing.  It is kept in unicorn.cfg as
+     WorldMap, so it applies to every character.  While the map is on,
+     the Tab Menu offers it on the upland as World map.
 
      Persistant Dungeons
      ===================
@@ -1357,14 +1520,15 @@
      Legendary Gear
      ==============
        Legendary gear is the most powerful gear that can be found in the
-     game. Legendary gear is extremely rare and can be identified by its
-     yellow colored name in your inventory.  Legendary gear is normally
-     named after the NPCs that first appear in the Legends score table. 
-     Legendary gear always has 3 enchants on it, typically of use to the
-     class that the original owner was. For example, if you find Nina's
-     item the enchants are most benificial to the wizard class, while
-     Elan's item is most useful to a warrior.  Legendary items also always
-     come with 3 open sockets.
+     game.  Legendary gear is extremely rare, and with the Improved Items
+     preference its name shows brown in your inventory once identified,
+     as every unique item's does.  Legendary gear is normally named after
+     the NPCs that first appear in the Legends score table.  Legendary
+     gear always has 3 enchants on it, typically of use to the class that
+     the original owner was.  For example, if you find Nina's item the
+     enchants are most benificial to the wizard class, while Elan's item
+     is most useful to a warrior.  Legendary items also always come with
+     3 open sockets.
 
      Magic Spells
      ============
@@ -1373,20 +1537,34 @@
      spells into F2 .. F12 for easy access.  F1 always contains the last
      spell cast. To program a function key, press 'm' for magic, then
      type the name of the spell, when the full spell name appears, press
-     the F-key you want to store the spell into, then press <ENTER>.  Now
-     all you have to do to cast that spell is press the F-key you assigned
-     the spell to and that spell will be cast.
+     the F-key you want to store the spell into, then press <ESC>, or
+     <ENTER> to cast it as well.  Now all you have to do to cast that
+     spell is press the F-key you assigned the spell to, then <ENTER>.
 
-       Spell name entry has been made as easy to swallow as possible, start
-     type the name of your spell, as soon as the computer can see your
-     character string as a unique spell name, it will come up with the rest
-     of the name for you, if this is the spell you wish to cast, just press
-     <ENTER>, otherwise you can press the backspace to continue entering a
-     name.
+       Spell name entry has been made as easy to swallow as possible: start
+     to type the name of your spell, and as soon as the computer can see
+     your letters as the start of only one spell you know, it shows the
+     rest of the name in grey.  If this is the spell you wish to cast,
+     press <ENTER>, or <Tab> to fill in the name, otherwise keep typing.
+     A spell whose whole name you type is cast even when a longer name
+     begins with it, as Heal is beside Healing.  <?> lists the spells you
+     know, and <ESC> casts nothing.
 
        The spell "Sticks to Snakes" works only in the combat mode and not
      in the standard dungeon mode. so dont cast this spell unless you are
      in the combat mode.
+
+     Words of Power
+     ==============
+       Lore tells of words of power, said with <w> in towns and dungeons.
+     Once said, a word rests your voice for a while, whether it works or
+     not; a word that is no word of power costs nothing, nor does <ESC>
+     with the Improved Interface preference.  With the Easy Words
+     preference the Tab menu lists the words you have read of, a word you
+     type is filled in once its first letters fit only one of them, and
+     the message log says when a word fails or backfires, when what you
+     said is no word of power, and how long your voice still needs.  A
+     relic that answers to words lists and fills in its own the same way.
 
      Sockets
      =======
@@ -1428,27 +1606,46 @@
 
      Item Colors
      ===========
-         Unidentified         Cyan
+         Unidentified         Cyan, and yellow on the floor; with
+                              Improved Items, the colour of its
+                              rarity, after a *
          Common               Gray
          Uncommon             White
          Rare                 Green
          Very Rare            Blue
-         Utra Rare            Purple
-         Legendary/Unique     Yellow
+         Ultra Rare           Purple
+         Unique               Brown, once identified
+         Legendary            Light red, once identified, or red if
+                              it is unique too
+         Legacy               Yellow, once identified
+         Special              Yellow: an item never found as loot,
+                              such as shop goods and crafted items
+         Quest Item           Cyan: a dungeon's treasure or another
+                              piece of a quest, whatever its rarity
+
+       These are the rarities an item's card names, though it names a
+     unique or legendary item Unique, Legendary or Unique Legendary
+     instead, and legacy gear Legacy.  Unique, Legendary, Legacy and
+     Quest Item need the Improved Items preference.  With it Off, names
+     follow older colour bands: some Very Rare items show purple, the
+     very rarest show yellow, and uniques, legendary and legacy gear and
+     quest items show the colour of their rarity.
 
      Auto-Identify
      =============
        When an item is picked up for the first time there is a chance that
      you will automatically identify the item.  The rarer the item is the
      less likely you will be able to auto identify it.  Increased Lore
-     skill will increase the chances for auto identification.
+     skill will increase the chances for auto identification.  With the
+     Improved Items preference a common item is identified as soon as a
+     monster drops it.
 
          Rarity         Base Chance     Increase per point of Lore
          Common         100.000%        
          Uncommon       25.000%         5.000%
-         Rare           2.500%          0.100%
-         Very Rare      0.250%          0.015%
-         Ultra Rare     0.025%          0.002%
+         Rare           2.500%          1.000%
+         Very Rare      0.250%          0.150%
+         Ultra Rare     0.025%          0.020%
 
      Rebirth
      =======
@@ -1524,10 +1721,10 @@
        more powerful than gear normally found at the same level.
      - Legacy gear levels when you do, so it is worth holding on to even if
        it is not more powerful than what you currently have equipped, in
-       time it will be better.  Legacy gear can be easily identified in
-       your inventory by looking for a simple name that is colored yellow. 
-       Remember the item must be identified first before the color will be
-       yellow.
+       time it will be better.  With the Improved Items preference legacy
+       gear is easy to spot in your inventory: a simple name colored
+       yellow.  Remember the item must be identified first before the
+       color will be yellow.
 
      Note about Score Tables
      =======================

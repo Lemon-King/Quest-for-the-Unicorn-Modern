@@ -39,7 +39,7 @@ void close_door() {
   return;
 
   char key;
-  prompt("Dir ?");
+  prompt_question("Dir",10);
   key = ' ';
   while (key != '2' && key != '8' && key != '4' && key != '6') key = inkey();
   switch (key) {

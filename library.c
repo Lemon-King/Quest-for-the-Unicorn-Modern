@@ -50,6 +50,32 @@ static void show_top(char* name) {
   if (improved_interface == 'Y') draw_menu_keys(MENU_KEYS,25);
   } /* void show_top()() */
 
+#define SEARCH_QUESTION "Enter Search String (5 chars min.)"
+
+/* A search of at least 5 characters, asked on line 9, each try over a cleared field; ESC backs out. Returns 0 when it
+   did. */
+Int32 read_search(char* search,Int32 size) {
+  char  asked[48];
+  char  blank[81];
+  Int32 column;
+
+  sprintf(asked,"%s%s ",SEARCH_QUESTION,question_mark());
+  column = 10 + (Int32)strlen(asked);
+  sprintf(blank,"%*s",80 - column,"");
+
+  strcpy(search,"");
+  while (strlen(search) < 5) {
+    gotoxy(10,9); textcolor(9);
+    txt_write(asked);
+    txt_write(blank);
+    gotoxy(column,9);
+    strcpy(search,"");
+    if (p_read(search,size) != 0) return 0;
+    }
+
+  return 1;
+  }
+
 void library(char* name) {
   char flag;
   char search[33];
@@ -74,15 +100,8 @@ void library(char* name) {
           txt_write("You do not have enough gold!!");
           delay(1000);
           }
-        else {
+        else if (read_search(search,sizeof(search))) {
           sub_gold(500);
-          strcpy(search,"");
-          while (strlen(search)<5) {
-            gotoxy(10,9); textcolor(9);
-            txt_write("Enter Search String (5 chars min.) ? ");
-            strcpy(search,"");
-            readln(search);
-            }
           msg = find_lore(search);
           if (msg == 0) {
             gotoxy(10,9); textcolor(12);
@@ -110,15 +129,8 @@ void library(char* name) {
           txt_write("You do not have enough gold!!");
           delay(1000);
           }
-        else {
-          strcpy(search,"");
+        else if (read_search(search,sizeof(search))) {
           sub_gold(100);
-          while (strlen(search)<5) {
-            gotoxy(10,9); textcolor(9);
-            txt_write("Enter Search String (5 chars min.) ? ");
-            strcpy(search,"");
-            readln(search);
-            }
           msg = find_gen(search);
           if (msg == 0) {
             gotoxy(10,9); textcolor(12);

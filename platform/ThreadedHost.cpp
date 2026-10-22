@@ -22,23 +22,27 @@ ThreadedHost::ThreadedHost(FrameMailbox& frames, InputQueue& input, GameWindow& 
   : frames_(frames), input_(input), window_(window) {
   }
 
-/* The window's message loop, until the game thread ends */
+/* The window's message loop, until the game thread ends; the window presents its frame clock's ticks between messages */
 int ThreadedHost::run() {
   GameThread game(*this, window_);
   MSG        message;
 
-  /* Special keys go to the window before TranslateMessage could turn them into characters */
-  while (GetMessageW(&message, nullptr, 0, 0) > 0) {
-    if (window_.translate(message)) continue;
-    TranslateMessage(&message);
-    DispatchMessageW(&message);
+  for (;;) {
+    window_.awaitMessage();
+
+    /* Special keys go to the window before TranslateMessage could turn them into characters */
+    while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE)) {
+      if (message.message == WM_QUIT) return static_cast<int>(message.wParam);
+      if (window_.translate(message)) continue;
+      TranslateMessage(&message);
+      DispatchMessageW(&message);
+      }
     }
-  return static_cast<int>(message.wParam);
   }
 
-/* The rest run on the game thread */
+/* The rest run on the game thread. The window shows the frame at its clock's next tick. */
 void ThreadedHost::present(Canvas& canvas) {
-  if (frames_.publish(canvas)) window_.requestFrame();
+  frames_.publish(canvas);
   }
 
 int32_t ThreadedHost::peekKey() {

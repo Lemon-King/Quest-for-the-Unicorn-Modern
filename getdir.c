@@ -13,7 +13,7 @@
 char get_dir(Int32* xdir,Int32* ydir) {
   char key;
   char flag;
-  msg("Dir ?",14);
+  prompt_question("Dir",14);
   flag = ' ';
   while (flag == ' ') {
     flag = '*';

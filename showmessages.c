@@ -24,12 +24,14 @@ void clear_messages(void) {
 void show_messages() {
   Int32 i;
   Int32 at;
-  char  words[23];
+  Int32 width;
+  char  words[WIDE_LOG_WIDTH + 2];
   clear_messages();
+  width = log_width();
   for (i=0; i<NUM_MSG; i++) {
     setcolor(msg_clr[i]);
-    while (strlen(messages[i]) < 22) strcat(messages[i]," ");
-  if (strlen(messages[i]) > 22) messages[i][21] = 0;
+    while ((Int32)strlen(messages[i]) < width + 1) strcat(messages[i]," ");
+  if ((Int32)strlen(messages[i]) > width + 1) messages[i][width] = 0;
     at = msg_name_at[i];
     if (msg_name_clr[i] == 0 || at >= (Int32)strlen(messages[i])) {
       outtextxy(screen_width-215,110+i*12,messages[i]);

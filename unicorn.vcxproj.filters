@@ -156,6 +156,9 @@
     <ClCompile Include="combathelp.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="combatlog.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="compass.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -399,6 +402,9 @@
     <ClCompile Include="houseinventory.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="identify.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="inkey.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -516,6 +522,9 @@
     <ClCompile Include="menu.c">
       <Filter>Display</Filter>
     </ClCompile>
+    <ClCompile Include="minimap.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="missile.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -589,6 +598,9 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="permadeath.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="pickup.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="pittrap.c">
@@ -717,9 +729,6 @@
     <ClCompile Include="showflt.c">
       <Filter>Display</Filter>
     </ClCompile>
-    <ClCompile Include="showgain.c">
-      <Filter>Display</Filter>
-    </ClCompile>
     <ClCompile Include="showgen.c">
       <Filter>Display</Filter>
     </ClCompile>
@@ -810,6 +819,9 @@
     <ClCompile Include="statstakedamage.c">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="steps.c">
+      <Filter>Game</Filter>
+    </ClCompile>
     <ClCompile Include="stockencounter.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -852,6 +864,9 @@
     <ClCompile Include="terminal.c">
       <Filter>Display</Filter>
     </ClCompile>
+    <ClCompile Include="textfield.c">
+      <Filter>Display</Filter>
+    </ClCompile>
     <ClCompile Include="throw.c">
       <Filter>Game</Filter>
     </ClCompile>
@@ -865,6 +880,9 @@
       <Filter>Display</Filter>
     </ClCompile>
     <ClCompile Include="touch.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="trade.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="transcribe.c">
@@ -919,6 +937,18 @@
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="wizard.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="words.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="worldmap.c">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="worldmapview.c">
+      <Filter>Display</Filter>
+    </ClCompile>
+    <ClCompile Include="worldplaces.c">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="worldpos.c">

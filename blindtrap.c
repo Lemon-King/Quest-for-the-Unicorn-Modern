@@ -16,7 +16,7 @@ void blind_trap() {
   i += u_random((player.diff+player.d_level) * 5);
   player.effect[PE_BLIND] += i;
   clear_prompt();
-  msg("Bright flash of light!",11);
+  log_blind_trap();
   show_side();
   show_map();
   run_x = 0;

@@ -29,7 +29,7 @@ void check_encounter() {
     }
   if (u_random(200)<chance) {
     stock_encounter();
-    arena(1,player.map[player.x][player.y],0,player.x,player.y);
+    arena(1,player.map[player.x][player.y],0,player.x,player.y,NULL);
     show_screen();
     }
 }

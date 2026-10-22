@@ -71,13 +71,14 @@ void arena_move_snake(Int32 x,Int32 y,Int32 floor) {
     target = player.map[x][y] - 400;
     i = get_skill(SK_MAGIC);
     noise(1000,100);
-    prompt("HIT !!!");
+    log_hit_shout();
     if (in_sight(x,y) == '*') {
       show_sprite(x-player.map_x,y-player.map_y,100);
       delay(delay_hit);
       show_spot(x,y);
       }
     player.monster[target][a_mon].hp -= i;
+    log_snake_bite(&(player.monster[target][a_mon]),i);
     dead_monster(&(player.monster[target][a_mon]),'Y',x,y);
     }
   }

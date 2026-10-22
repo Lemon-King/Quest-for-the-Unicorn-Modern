@@ -1066,8 +1066,14 @@ static Int32 show_objects(OBJECT_LIST* list,Int32 top) {
   return count;
   }
 
+/* With the Improved Items preference cyan for a quest item, as its name shows, or the colour of the item card's band;
+   without, the wizard's own bands */
 static void wizard_item_color(OBJECT_REC* item) {
   if (item == NULL) return;
+  if (improved_items == 'Y') {
+    textcolor((item->flags & OF_QUEST) ? CLR_CYAN : band_color(rarity_band(item)));
+    return;
+    }
   if (abs(item->rarity) > 2500) {               /* Common */
     textcolor(7);
     return;
@@ -1141,6 +1147,11 @@ static void view_object(Int32 num) {
     }
   else if (objects[num].effect == E_MUTA) {
     gotoxy(44,oy+2); txt_write("Mutable");
+    }
+  /* With the Improved Items preference the item card's bands, ending at column 52; without, the wizard's own */
+  else if (improved_items == 'Y') {
+    strcpy(buffer,band_name(rarity_band(&(objects[num]))));
+    gotoxy(52-(Int32)strlen(buffer),oy+2); txt_write(buffer);
     }
   else {
     if (abs(objects[num].rarity) > 2500) { gotoxy(46,oy+2);                             txt_write("Common"); }
@@ -1746,7 +1757,7 @@ static void mnsters(void) {
 
 static void password(WIZARD_PROMPT* entry) {
   strcpy(entry->buffer,"");
-  strcpy(entry->pword,"Password ?");
+  sprintf(entry->pword,"Password%s",question_mark());
   msg(entry->pword,11);
   entry->key = 0;
   while (entry->key != 13) {

@@ -13,7 +13,10 @@
 void get_shop_items(Int32 otype1,Int32 otype2,Int32 otype3,Int32 otype4,Int32 otype5,Int32 otype6,Int32 rarity) {
   Int32 i;
   n_shop_items = 0;
-  i = 0;
+
+  /* Row 0 of the objects table is a placeholder copy of the Dagger, which every random pick skips; with the Shop
+     Dagger change the shops skip it too, as 5.2.1's did, instead of selling the Dagger twice */
+  i = (change_shop_dagger == 'Y') ? 1 : 0;
   while (i >= 0) {
     if (objects[i].control2 >= 0 &&
         (objects[i].flags & OF_FOR_SALE) != 0 &&

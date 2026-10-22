@@ -34,9 +34,13 @@ char* link_name(Int32 region,Int32 x,Int32 y) {
   return NULL;
   }
 
-/* The name of the town or dungeon whose entrance is the square x,y of the overworld you are on, or NULL */
+/* The name of the town or dungeon whose entrance is the square x,y of the overworld you are on, past its region's
+   edges on the joined overworld, or NULL */
 char* entrance_name(Int32 x,Int32 y) {
-  if (player.map[x][y] != 5 && player.map[x][y] != 11) return NULL;
+  Int32 value;
 
-  return link_name(player.region,x,y);
+  value = square_value(x,y);
+  if (value != 5 && value != 11) return NULL;
+
+  return link_name(land_region(&x,&y),x,y);
   }

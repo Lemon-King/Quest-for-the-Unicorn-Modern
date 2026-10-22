@@ -40,13 +40,14 @@ void move_snake(Int32 x,Int32 y,Int32 floor) {
     target = &(player.monster[1][0-player.map[x+xdir][y+ydir]]);
     i = get_skill(SK_MAGIC);
     noise(1000,100);
-    prompt("HIT !!!");
+    log_hit_shout();
     if (in_sight(x+xdir,y+ydir) == '*') {
       show_sprite(x+xdir-player.map_x,y+ydir-player.map_y,100);
       delay(delay_hit);
       show_spot(x+xdir,y+ydir);
       }
     target->hp -= i;
+    log_snake_bite(target,i);
     dead_monster(target,'Y',x+xdir,y+ydir);
     player.map[x][y] = dungeon_floor;
     show_spot(x,y);

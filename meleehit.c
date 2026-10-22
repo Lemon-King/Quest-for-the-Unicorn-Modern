@@ -60,11 +60,11 @@ Int32 meleehit(Int32 who,OBJECT_REC* weapon,Int32 dmg,NPC_REC* target,char hand)
       if (is_weapon(weapon) && weapon->otype == O_WAND) dmg = weapon->weight;
       if (classes[player.class-1].flags & CF_MONK) {
         if (u_random(100) < player.level*2) {
-          msg("Paralyzed!",14); noise(1000,100); delay(delay_hit);
+          log_paralyzing_blow(target); noise(1000,100); delay(delay_hit);
           target->sleep = u_random(2*(player.level - target->level));
           show_spot(player.x,player.y);
           if (u_random(500) < player.level) {
-            msg("Killed!",15); noise(1000,100); delay(delay_hit);
+            log_killing_blow(target); noise(1000,100); delay(delay_hit);
             target->hp = 0;
             }
           }
@@ -80,7 +80,7 @@ Int32 meleehit(Int32 who,OBJECT_REC* weapon,Int32 dmg,NPC_REC* target,char hand)
       aoe(player.x,player.y,E_DAMG,0,-i,0,0,0,-100);
       }
     else {
-      msg("Miss . . .",9);
+      log_melee_miss(target);
       stats.counts[STAT_MISSES]++;
       noise(200,100);
       }

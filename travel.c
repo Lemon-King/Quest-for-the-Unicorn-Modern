@@ -91,6 +91,7 @@ static void new_town(Int32 where) {
   if (player.map_y<1) player.map_y = 1;
   if (player.map_x>100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y>100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
   i = 0;
   while (i >= 0) {
     if (forsale[i].region != 999) {
@@ -200,14 +201,14 @@ void travel(char* name) {
   while (flag == ' ') {
     textcolor(10); gotoxy(20,ndest+4);
     if (improved_interface == 'Y') {
-      txt_write("Where would you like to travel to (<ESC> to leave) ?");
+      txt_write("Where would you like to travel to (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {
       txt_write("Where would you like to travel to (<ESC> to leave) ?      ");
       gotoxy(73,ndest+4);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }

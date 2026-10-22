@@ -12,10 +12,10 @@
 
 #include <windows.h>
 
-#include <atomic>
 #include <cstdint>
 #include <memory>
 
+#include "FrameClock.h"
 #include "FrameMailbox.h"
 #include "InputQueue.h"
 #include "KeyTranslator.h"
@@ -24,11 +24,11 @@
 
 namespace platform {
 
-constexpr UINT WM_APP_FRAME = WM_APP + 1;        /* a frame was published: present it */
-constexpr UINT WM_APP_GAME_ENDED = WM_APP + 2;   /* run_game() returned: end the message loop */
+constexpr UINT WM_APP_GAME_ENDED = WM_APP + 1;   /* run_game() returned: end the message loop */
+constexpr UINT WM_APP_TICK = WM_APP + 2;         /* the frame clock ticked */
 
-/* The game's top-level window: opens at the sharpest size that fits, repaints from the newest frame whenever Windows
-   asks, turns key messages into game keys, and reports a close to the game */
+/* The game's top-level window: opens at the sharpest size that fits, shows the newest frame 60 times a second and
+   whenever Windows asks, turns key messages into game keys, and reports a close to the game */
 class GameWindow {
   public:
     GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval, bool integerScaling,
@@ -39,15 +39,18 @@ class GameWindow {
     GameWindow& operator=(const GameWindow&) = delete;
 
     HWND handle() const;
-    void showFrame();
-    void requestFrame();
     void gameEnded();
     bool translate(const MSG& message);
     void toggleFullscreen();
+    void awaitMessage();
+    void presentIfDue();
+    void presentFor(DWORD milliseconds);
 
   private:
     static LRESULT CALLBACK procedure(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
     LRESULT handle(UINT message, WPARAM wParam, LPARAM lParam);
+    void showFrame();
+    void presentTicks(DWORD timeout);
     bool route(const KeyRoute& route);
     int32_t openingScale() const;
     SIZE frameSize(int32_t clientWidth, int32_t clientHeight) const;
@@ -64,7 +67,7 @@ class GameWindow {
     ViewportLayout             layout_;
     Placement                  placement_;
     std::unique_ptr<Presenter> presenter_;
-    std::atomic<bool>          framePending_ = false;
+    FrameClock                 clock_;
     bool                       fullscreen_ = false;
     WINDOWPLACEMENT            restore_ = { sizeof(WINDOWPLACEMENT) };
   };

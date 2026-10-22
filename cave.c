@@ -10,6 +10,8 @@
 
 #include "header.h"
 
+#define LOOT_RANGE  100     /* find_empty() reaches across the whole level */
+
 static void cave_take_time(void) {
   player.min++;
   if (player.min > 59) {
@@ -123,11 +125,24 @@ static void search(void) {
   if (u_random(10) == 1) add_skill(SK_SCOUT,1);
   } /* void search() */
 
+/* Lays what an arena fight left on its floor on the free floor nearest you */
+static void lay_loot(ARENA_LOOT* loot) {
+  Int32 i;
+  Int32 x,y;
+
+  for (i=0; i<loot->count; i++)
+    if (find_empty(player.x,player.y,LOOT_RANGE,currentFloor,&x,&y)) {
+      player.map[x][y] = loot->values[i];
+      show_spot(x,y);
+      }
+  }
+
 static void attack(void) {
   Int32 xdir,ydir;
   char key;
+  ARENA_LOOT loot;
   clear_prompt();
-  prompt("Attack who ?");
+  prompt_question("Attack who",10);
   key = inkey();
   xdir = 0;
   ydir = 0;
@@ -141,15 +156,17 @@ static void attack(void) {
     case '7':ydir = -1; xdir = -1; break;
     case '9':ydir = -1; xdir = 1; break;
     }
+  loot.count = 0;
   player.x += xdir;
   player.y += ydir;
   if (player.map[player.x][player.y] < 0) {
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0))
-      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y,&loot);
     else hit_enemy();
     }
   player.x -= xdir;
   player.y -= ydir;
+  lay_loot(&loot);
   } /* void attack() */
 
 /*
@@ -201,6 +218,7 @@ static void move(Int32 xdir,Int32 ydir) {
   Int32 previous;
   Int32 ex,ey;
   Int32 blocked;
+  ARENA_LOOT loot;
   last_target_x = 0;
   last_target_y = 0;
   remove_player();
@@ -236,11 +254,12 @@ static void move(Int32 xdir,Int32 ydir) {
   else walk_aboard();
   if (player.map[player.x][player.y] < 0 &&
       (player.monster[1][0-player.map[player.x][player.y]].special & MS_FRIENDLY) == 0) {
+    loot.count = 0;
     if (combat_mode == 'F' || (player.monster[2][0-player.map[player.x][player.y]].hp != 0)) {
       ex = player.x;
       ey = player.y;
       previous = player.monster[1][0-player.map[ex][ey]].prev;
-      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y);
+      arena(0-player.map[player.x][player.y],7,barriers(),player.x,player.y,&loot);
       if (player.map[ex][ey] == 7) player.map[ex][ey] = previous;
       show_spot(ex,ey);
       }
@@ -254,6 +273,7 @@ static void move(Int32 xdir,Int32 ydir) {
       }
     player.x = x;
     player.y = y;
+    lay_loot(&loot);
     }
   if (player.effect[PE_ROOT] > 0) { player.x = x; player.y = y; }
   if (get_weight() > get_max_weight()) { player.x = x; player.y = y; msg("Overburdoned",15); }
@@ -303,6 +323,7 @@ static void down_level(Int32 check_clear) {
     if (player.map_y < 1) player.map_y = 1;
     if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
     if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    camera_arrive();
     show_screen();
 /*      activeDelay = 2; */
     if (in_room(player.x,player.y) && can_see()) light_room();
@@ -334,6 +355,7 @@ static void up_level(void) {
     if (player.map_y < 1) player.map_y = 1;
     if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
     if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+    camera_arrive();
     if (player.d_level != 0) show_screen();
 /*      activeDelay = 2; */
     if (in_room(player.x,player.y) && can_see()) light_room();
@@ -681,6 +703,7 @@ static void buy_item(Int32* i) {
 /*      show_screen(); */
     restoreScreen();
     show_player();
+    show_side();
     }
   } /* void buy_item() */
 
@@ -772,9 +795,10 @@ void cave() {
   double d;
   byte key;
   Int32 dmg;
-  char buffer[20];
   Int32  in_corridor = 0;
   Int32  command;
+  char   camera;
+  char   palette;
 
 /*  Int32  activeDelay; */
 
@@ -881,6 +905,7 @@ void cave() {
   if (player.map_y < 1) player.map_y = 1;
   if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
   if (player.in_city == 'Y') {
     for (x=1; x<=100; x++)
       for (y=1; y<=100; y++)
@@ -1046,6 +1071,7 @@ void cave() {
                  break;
         case 'w':if (player.gateway != '*') {
                   if (word_counter == 0) say_word();
+                    else if (easy_words_on()) msgf(12,"Your voice returns in %d turns",word_counter);
                   }
                  else {
                  clear_prompt();
@@ -1070,8 +1096,12 @@ void cave() {
               break;
         case 'O':
               saveScreen();
+              camera = follow_camera;
+              palette = color_palette;
               game_options();
-              if (set_screen_layout()) {
+
+              /* Turning the follow camera on or off moves the view, and a new palette shows once all is drawn again */
+              if (set_screen_layout() || follow_camera != camera || color_palette != palette) {
                 adjust_map();
                 show_screen();
                 }
@@ -1158,7 +1188,7 @@ void cave() {
           player.map[player.x][player.y] == 145) {
         if (player.gateway == '*' || has_intrinsic(A_FCNG) == 0) {
           clear_prompt();
-          msg("ZZZZAAAAPPPP!!!!!",12);
+          log_force_field(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
@@ -1166,14 +1196,14 @@ void cave() {
         }
       if (player.map[player.x][player.y] == 38) {
           clear_prompt();
-          msg("SIZZLE!!!!!",12);
+          log_fire_tile(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
         }
       if (player.map[player.x][player.y] == 39) {
           clear_prompt();
-          msg("GLUB GLUB!!!",12);
+          log_water_tile(player.chp - player.chp / 2);
           stats_take_damage(player.chp / 2);
           player.chp = player.chp / 2;
           show_side();
@@ -1237,18 +1267,16 @@ void cave() {
               if (player.monster[1][x].sleep<0) player.monster[1][x].sleep++;
               if (player.monster[1][x].fear>0) {
                 player.monster[1][x].fear--;
-                if (player.monster[1][x].fear == 0) msg("Mob no longer scared",7);
+                if (player.monster[1][x].fear == 0) log_creature_fear_over(&(player.monster[1][x]));
                 }
               if (player.monster[1][x].blind>0) player.monster[1][x].blind--;
               if (player.monster[1][x].confused>0) player.monster[1][x].confused--;
               if (player.monster[1][x].poison>0) {
-  msg("here",15);
-  sprintf(buffer,"poison=%d",player.monster[1][x].poison);
-  msg(buffer,15);
+                log_creature_poison_tick(&(player.monster[1][x]));
                 player.monster[1][x].poison--;
                 player.monster[1][x].hp -= 2;
                 poison_kill(&(player.monster[1][x]));
-  msg("done",15);
+                log_creature_poison_done();
                 }
             }
         }
@@ -1263,7 +1291,7 @@ void cave() {
               player.effect[PE_PROT]--;
               if (player.effect[PE_PROT] == 0) {
                 show_side();
-                msg("Protection fades",7);
+                log_protection_over();
                 }
             }
           if (player.effect[PE_FIRE]>0) {
@@ -1316,8 +1344,7 @@ void cave() {
             dmg = player.effect[PE_POISON] / 10;
             if (dmg < 1) dmg = 1;
             player.effect[PE_POISON] -= dmg;
-            sprintf(buffer,"%d poison damage",dmg);
-            msg(buffer,13);
+            log_poison_damage(dmg);
             stats_take_damage(dmg);
             player.chp -= dmg;
             show_side();
@@ -1326,8 +1353,7 @@ void cave() {
             dmg = player.effect[PE_DOT] / 10;
             if (dmg < 1) dmg = 1;
             player.effect[PE_DOT] -= dmg;
-            sprintf(buffer,"%d DOT damage",dmg);
-            msg(buffer,12);
+            log_wound_damage(dmg);
             stats_take_damage(dmg);
             player.chp -= dmg; show_side();
           }
@@ -1337,11 +1363,11 @@ void cave() {
         if (player.effect[PE_READLANG]>0) player.effect[PE_READLANG]--;
         if (player.effect[PE_FEAR]>0) {
           player.effect[PE_FEAR]--;
-          if (player.effect[PE_FEAR] == 0) msg("No longer afraid",14);
+          if (player.effect[PE_FEAR] == 0) log_fear_over();
           }
         if (player.effect[PE_CONFUSED]>0) {
           player.effect[PE_CONFUSED]--;
-          if (player.effect[PE_CONFUSED] == 0) msg("Your head clears",14);
+          if (player.effect[PE_CONFUSED] == 0) log_confusion_over();
           }
         if (player.effect[PE_LEV]>0) {
           player.effect[PE_LEV]--;

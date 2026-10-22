@@ -11,6 +11,11 @@
 #include "header.h"
 
 Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass) {
+  return los_through(x1,y1,x2,y2,monstPass,passable);
+  }
+
+/* Whether x2,y2 can be seen from x1,y1, with pass testing each square between: 0 when one blocks */
+Int32 los_through(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass,PASS_TEST pass) {
   Int32 x,y;
   Int32 ret;
   Int32 difx;
@@ -24,14 +29,14 @@ Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass) {
     y1++;
     y2--;
     for (y=y1; y<=y2; y++)
-      if (passable(x1,y,monstPass,'N') == 0) return 0;
+      if (pass(x1,y,monstPass,'N') == 0) return 0;
     }
   else if (y1 == y2) {
     if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
     x1++;
     x2--;
     for (x=x1; x<=x2; x++)
-      if (passable(x,y1,monstPass,'N') == 0) return 0;
+      if (pass(x,y1,monstPass,'N') == 0) return 0;
     }
   else {
     difx = abs(x1 - x2);
@@ -53,7 +58,7 @@ Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass) {
           count -= difx;
           y += dir;
           }
-        if (passable(x,y,monstPass,'N') == 0) return 0;
+        if (pass(x,y,monstPass,'N') == 0) return 0;
         }
       } else {
       if (y1 > y2) {
@@ -71,7 +76,7 @@ Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass) {
           count -= dify;
           x += dir;
           }
-        if (passable(x,y,monstPass,'N') == 0) return 0;
+        if (pass(x,y,monstPass,'N') == 0) return 0;
         }
       }
     }

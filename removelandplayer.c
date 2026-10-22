@@ -11,30 +11,9 @@
 #include "header.h"
 
 void remove_land_player() {
-  Int32 x,y;
-  Int32 color;
-  x = player.x; y = player.y;
-  show_sprite(player.x-player.map_x,player.y-player.map_y,
-              player.map[player.x][player.y]);
-  color = 0;
-  switch (player.map[x][y]) {
-    case 1:color = 10; break;
-    case 2:color = 2; break;
-    case 3:color = 6; break;
-    case 4:color = 1; break;
-    case 5:color = 4; break;
-    case 6:color = 3; break;
-    case 7:color = 8; break;
-    case 8:color = 14; break;
-    case 9:color = 5; break;
-    case 11:color = 4; break;
-    case 17:color = 4; break;
-    case 19:color = 6; break;
-    }
-  plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
-  plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
-  plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);
-  plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,color);
+  Int32 tile;
+  tile = square_value(player.x,player.y);
+  show_sprite(player.x-player.map_x,player.y-player.map_y,tile);
+  plot_minimap(player.x,player.y,land_color(tile));
   close_display();
   }
-

@@ -13,3 +13,4 @@ bin/
 *.exe
 .vs/
 *.vcxproj.user
+build/DebugSigning.user.props

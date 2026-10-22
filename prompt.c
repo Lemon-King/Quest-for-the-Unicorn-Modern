@@ -24,3 +24,19 @@ void promptNS(char* display) {
   msg(display,-10);
   }
 
+/* What ends a question: "Dir?" with Improved Interface, "Dir ?" without */
+char* question_mark() {
+  return (improved_interface == 'Y') ? "?" : " ?";
+  }
+
+void prompt_question(char* question,Int32 color) {
+  msgf(color,"%s%s",question,question_mark());
+  }
+
+/* A question on the text grid where the cursor stands; returns the columns it took */
+Int32 write_question(char* question) {
+  txt_write(question);
+  txt_write(question_mark());
+  return (Int32)(strlen(question) + strlen(question_mark()));
+  }
+

@@ -51,7 +51,8 @@ Int32 get_con_hp() {
 
 #define CHOICE_LINE    15     /* the heading over each list of choices */
 #define KEYS_LINE      25
-#define CHOICE_KEYS    "(8/2) Select   (ENTER) Choose"
+#define CHOICE_KEYS    "(8/2) Select   (ENTER) Choose   (R) Random"
+#define STAT_POINTS    18     /* a new character's points to spend on the stats */
 
 static char* sex_names[2] = { "Male", "Female" };
 
@@ -81,14 +82,19 @@ static void open_choices(MENU* menu,Int32 count,void (*draw_row)(MENU* menu,Int3
   draw_menu(menu);
   }
 
-/* The key that picks the row chosen in the numbered list it replaces; ESC does not back out */
-static char choose(MENU* menu) {
+/* The key that picks the row chosen in the numbered list it replaces; ESC does not back out. R picks a row at random
+   and sets *at_random, so every choice after it is random too. */
+static char choose(MENU* menu,Int32* at_random) {
   char key;
 
-  key = 27;
-  while (key == 27) key = menu_number(menu);
+  key = 0;
+  while (key != 13 && key != 'r' && key != 'R') key = menu_key(menu);
 
-  return key;
+  if (key == 13) return (char)('1' + menu->row);
+
+  *at_random = 1;
+
+  return (char)('1' + u_random(menu->rows.count));
   }
 
 static void clear_choice_keys(void) {
@@ -98,14 +104,14 @@ static void clear_choice_keys(void) {
   gotoxy(1,KEYS_LINE); txt_write(text);
   }
 
-static char choose_sex(void) {
+static char choose_sex(Int32* at_random) {
   MENU menu;
   char key;
 
   textcolor(14); gotoxy(10,3); txt_write("_");
   textcolor(9); gotoxy(5,CHOICE_LINE); txt_write("Character Sex:");
   open_choices(&menu,2,draw_sex,NULL);
-  key = choose(&menu);
+  key = choose(&menu,at_random);
 
   gotoxy(5,CHOICE_LINE); txt_write("              ");
   gotoxy(8,CHOICE_LINE + 1); txt_write("      ");
@@ -114,25 +120,158 @@ static char choose_sex(void) {
   return (key == '2') ? 'F' : 'M';
   }
 
-void make_char(Int32 rebirth) {
+static Int32 choose_race(Int32* at_random) {
+  MENU  menu;
+  char  buffer[80];
+  char  key;
+  Int32 i;
+
+  gotoxy(5,15); txt_write("Character Race:");
+  textcolor(15);
+
+  if (improved_interface == 'Y') open_choices(&menu,NUM_RACES,draw_race,NULL);
+  else {
+    for (i=0; i<NUM_RACES; i++) {
+      sprintf(buffer,"%d> %s",i+1,races[i].name);
+      gotoxy(5,16+i); txt_write(buffer);
+      }
+    }
+  textcolor(14);
+  gotoxy(10,4); txt_write("_");
+  key = '0';
+  if (improved_interface == 'Y') key = choose(&menu,at_random);
+  while (key<'1' || key>'0'+NUM_RACES) key = inkey();
+
+  return key - '1' + 1;
+  }
+
+/* The class picked from the classes a character can start as */
+static Int32 choose_class(Int32* starts,Int32 count,Int32* at_random) {
+  MENU  menu;
+  char  buffer[80];
+  char  key;
+  Int32 i;
+
+  textcolor(9);
+  gotoxy(5,15); txt_write("Character classes:");
+  textcolor(15);
+  if (improved_interface == 'Y') open_choices(&menu,count,draw_start,starts);
+  else {
+    for (i=0; i<count; i++) {
+      gotoxy(5,16+i);
+      sprintf(buffer,"%d> %s",i+1,classes[starts[i]-1].name);
+      txt_write(buffer);
+      }
+    }
+  gotoxy(10,7);
+  textcolor(14);
+  txt_write("_");
+  gotoxy(10,7);
+  key = '0';
+  if (improved_interface == 'Y') key = choose(&menu,at_random);
+  while (key<'1' || key>'0'+count) key = inkey();
+
+  return starts[key - '1'];
+  }
+
+/* Raises or lowers a stat by one, with the hit points, monk's weapon and abilities that follow from it */
+static void change_stat(Int32 stat,Int32 by,Int32 base_hp) {
+  player.stat[stat] += by;
+
+  if (stat == 3) {
+    player.mhp = base_hp + get_con_hp();
+    player.chp = player.mhp;
+    }
+
+  if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
+  adjust_abilities();
+  }
+
+/* 8/2 pick a stat and 4/6 raise or lower it, until ENTER with every point spent */
+static void spend_points(Int32 base_hp) {
+  Int32 i;
+  Int32 pool;
+  char  buffer[80];
+  char  key;
+
+  textcolor(14);
+  i = 1; pool = STAT_POINTS;
+  gotoxy(46,i);
+  sprintf(buffer,"<-%2d",pool);
+  txt_write(buffer);
+  key = 0;
+  while (key != 13) {
+    key = inkey();
+    textcolor(14);
+    switch (key) {
+      case '8':if (i>1) {
+                 gotoxy(46,i); txt_write("     ");
+                 i = i-1;
+                 gotoxy(46,i);
+                 sprintf(buffer,"<-%2d ",pool);
+                 txt_write(buffer);
+                 }
+               break;
+      case '2':if (i<6) {
+                 gotoxy(46,i); txt_write("     ");
+                 i = i+1;
+                 gotoxy(46,i);
+                 sprintf(buffer,"<-%2d ",pool);
+                 txt_write(buffer);
+                 }
+               break;
+      case '4':if (pool>0) {
+                 change_stat(i,1,base_hp);
+                 pool = pool-1;
+                 char_sheet_data();
+                 textcolor(14);
+                 gotoxy(46,i);
+                 sprintf(buffer,"<-%2d ",pool);
+                 txt_write(buffer);
+                 }
+               break;
+      case '6':if (player.stat[i]>8) {
+                 change_stat(i,-1,base_hp);
+                 pool = pool+1;
+                 char_sheet_data();
+                 textcolor(14);
+                 gotoxy(46,i);
+                 sprintf(buffer,"<-%2d ",pool);
+                 txt_write(buffer);
+                 }
+        }
+      if (key == 13 && pool != 0) key = 0;
+    }
+  }
+
+/* Each point goes to a stat picked at random */
+static void random_points(Int32 base_hp) {
+  Int32 pool;
+
+  for (pool=STAT_POINTS; pool>0; pool--) change_stat(1 + u_random(6),1,base_hp);
+  }
+
+/* Makes the character, ending on its sheet. Returns 1 when the sheet's R asks to start over. */
+static Int32 create_char(Int32 rebirth) {
   Int32 base_hp;
   Int32 con_hp;
-  Int32 pool;
   Int32 i,j;
   Int32 x,y;
 //  Int32 m_file;
   char buffer[80];
   Int32  starts[NUM_CLASSES];
   Int32  numStarts;
+  Int32  start;
+  Int32  at_random;
   char key;
-  MENU menu;
+  at_random = 0;
   clrscr();
   char_sheet_labels('N');
   textcolor(14);
   if (rebirth == 0) {
     strcpy(player.name,"");
     while (strlen(player.name) < 2) {
-      gotoxy(10,1); p_read(player.name);
+      gotoxy(10,1); p_read(player.name,sizeof(player.name));
       }
     player.age = u_random(10)+18;
     } else {
@@ -141,7 +280,7 @@ void make_char(Int32 rebirth) {
   gotoxy(10,2);
   sprintf(buffer,"%d",player.age);
   txt_write(buffer);
-  if (rebirth == 0 && improved_interface == 'Y') player.sex = choose_sex();
+  if (rebirth == 0 && improved_interface == 'Y') player.sex = choose_sex(&at_random);
   else if (rebirth == 0) {
     textcolor(2); gotoxy(10,3); textcolor(14); txt_write("(m/f) _");
     key = inkey();
@@ -157,25 +296,7 @@ void make_char(Int32 rebirth) {
   player.weapon = 0;
   show_health();
   show_align();
-  if (rebirth == 0) {
-    gotoxy(5,15); txt_write("Character Race:");
-    textcolor(15);
-
-    if (improved_interface == 'Y') open_choices(&menu,NUM_RACES,draw_race,NULL);
-    else {
-      for (i=0; i<NUM_RACES; i++) {
-        sprintf(buffer,"%d> %s",i+1,races[i].name);
-        gotoxy(5,16+i); txt_write(buffer);
-        }
-      }
-    textcolor(14);
-    gotoxy(10,4); txt_write("_");
-    key = '0';
-    if (improved_interface == 'Y') key = choose(&menu);
-    while (key<'1' || key>'0'+NUM_RACES) key = inkey();
-    gotoxy(10,4);
-    player.race = (key - '1' + 1);
-    }
+  if (rebirth == 0) player.race = at_random ? 1 + u_random(NUM_RACES) : choose_race(&at_random);
   textcolor(14);
   gotoxy(10,4);
   txt_write(races[player.race-1].name);
@@ -191,40 +312,20 @@ void make_char(Int32 rebirth) {
   player.exp = 0; gotoxy(10,6);
   sprintf(buffer,"%9.0f",player.exp);
   txt_write(buffer);
-  textcolor(9);
-  gotoxy(5,15); txt_write("Character classes:");
-  textcolor(15);
   numStarts = 0;
   for (i=0; i<NUM_CLASSES; i++)
-    if (classes[i].flags & 2048) {
-      if (improved_interface != 'Y') {
-        gotoxy(5,16+numStarts);
-        sprintf(buffer,"%d> %s",numStarts+1,classes[i].name);
-        txt_write(buffer);
-        }
-      starts[numStarts++] = i+1;
-    }
-  if (improved_interface == 'Y') open_choices(&menu,numStarts,draw_start,starts);
-  gotoxy(10,7);
-  textcolor(14);
-  txt_write("_");
-  gotoxy(10,7);
-  key = '0';
-  if (improved_interface == 'Y') {
-    key = choose(&menu);
-    clear_choice_keys();
-    textcolor(14);
-    gotoxy(10,7);
-    }
-  while (key<'1' || key>'0'+numStarts) key = inkey();
+    if (classes[i].flags & 2048) starts[numStarts++] = i+1;
+  start = at_random ? starts[u_random(numStarts)] : choose_class(starts,numStarts,&at_random);
+  if (improved_interface == 'Y') clear_choice_keys();
   if (rebirth == 0) {
     for (i=1; i<=19; i++) player.invent[i].otype = O_NONE;
     initial_inventory(I_LSHL,40);            /* Iron Rations sword */
     }
-  player.class = starts[key - '1'];
+  player.class = start;
   set_title();
   player.exp_next = classes[player.class-1].first_exp;
-  txt_write(classes[player.class-1].name);
+  textcolor(14);
+  gotoxy(10,7); txt_write(classes[player.class-1].name);
   if (rebirth == 0) {
     for (i=0; i<4; i++)
       if (classes[player.class-1].initial_inv_slot[i] > 0)
@@ -354,78 +455,8 @@ void make_char(Int32 rebirth) {
 /* ************************************************ */
   show_skills();
   char_sheet_data();
-  textcolor(14);
-  i = 1; pool = 18;
-  gotoxy(46,i);
-  sprintf(buffer,"<-%2d",pool);
-  txt_write(buffer);
-  key = 0;
-  while (key != 13) {
-    key = inkey();
-    textcolor(14);
-    switch (key) {
-      case '8':if (i>1) {
-                 gotoxy(46,i); txt_write("     ");
-                 i = i-1;
-                 gotoxy(46,i);
-                 sprintf(buffer,"<-%2d ",pool);
-                 txt_write(buffer);
-                 }
-               break;
-      case '2':if (i<6) {
-                 gotoxy(46,i); txt_write("     ");
-                 i = i+1;
-                 gotoxy(46,i);
-                 sprintf(buffer,"<-%2d ",pool);
-                 txt_write(buffer);
-                 }
-               break;
-      case '4':if (pool>0) {
-                 player.stat[i] = player.stat[i]+1;
-                 pool = pool-1;
-                 if (i == 3) {
-                   con_hp = get_con_hp();
-                   player.mhp = base_hp + con_hp;
-                   player.chp = player.mhp;
-                   }
-/*
-                 gotoxy(43,i);
-                 sprintf(buffer,"%2d",player.stat[i]);
-                 txt_write(buffer);
-*/
-                 if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
-                 adjust_abilities();
-                 char_sheet_data();
-                 textcolor(14);
-                 gotoxy(46,i);
-                 sprintf(buffer,"<-%2d ",pool);
-                 txt_write(buffer);
-                 }
-               break;
-      case '6':if (player.stat[i]>8) {
-                 player.stat[i] = player.stat[i]-1;
-                 pool = pool+1;
-                 if (i == 3) {
-                   con_hp = get_con_hp();
-                   player.mhp = base_hp + con_hp;
-                   player.chp = player.mhp;
-                   }
-/*
-                 gotoxy(43,i);
-                 sprintf(buffer,"%2d",player.stat[i]);
-                 txt_write(buffer);
-*/
-                 if (classes[player.class-1].flags & CF_MONK) check_monk_weapon();
-                 adjust_abilities();
-                 char_sheet_data();
-                 textcolor(14);
-                 gotoxy(46,i);
-                 sprintf(buffer,"<-%2d ",pool);
-                 txt_write(buffer);
-                 }
-        }
-      if (key == 13 && pool != 0) key = 0;
-    }
+  if (at_random) random_points(base_hp);
+  else spend_points(base_hp);
 /*
   gotoxy(46,i); txt_write("     ");
   for (i=1; i<=6; i++) {
@@ -586,5 +617,17 @@ void make_char(Int32 rebirth) {
       }
     while (is_weapon(&(player.invent[I_LHND]))) inventory(NULL);
     }
-  disp_char();
+  return confirm_char();
+  }
+
+/* A restart makes the character again from the player as it was before, which a rebirth has changed */
+void make_char(Int32 rebirth) {
+  PLAYER_REC* before;
+
+  before = malloc(sizeof(PLAYER_REC));
+  *before = player;
+
+  while (create_char(rebirth)) player = *before;
+
+  free(before);
   }

@@ -20,7 +20,7 @@ void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y) {
     if (strstr(mon->name,"Dragon") != NULL) stats.counts[STAT_DRAGONS]++;
     if (strcmp(mon->name,FINAL_BOSS) == 0) winner();
     mon->poison = 0;
-    gain_exp(mon->exp,0);
+    gain_exp(mon,0);
     if (tr == 'Y') {
       i = u_random(100);
       if (i >=0 && i<=60) {

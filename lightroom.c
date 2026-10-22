@@ -61,14 +61,7 @@ void light_room() {
           case   9:color = 5; break;
           case   2:color = 2; break;
           }
-//        plot(419+x*2,240+y*2,color);
-//        plot(420+x*2,240+y*2,color);
-//        plot(419+x*2,241+y*2,color);
-//        plot(420+x*2,241+y*2,color);
-        plot(smap_offset_x-2+x*2,smap_offset_y-1+y*2,color);
-        plot(smap_offset_x-1+x*2,smap_offset_y-1+y*2,color);
-        plot(smap_offset_x-2+x*2,smap_offset_y-0+y*2,color);
-        plot(smap_offset_x-1+x*2,smap_offset_y-0+y*2,color);
+        plot_minimap(x,y,color);
         }
   close_display();
   }

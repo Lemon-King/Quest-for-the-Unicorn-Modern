@@ -24,12 +24,21 @@ constexpr wchar_t CLASS_NAME[] = L"QuestForTheUnicorn";
 /* res/unicorn.rc: the unicorn sprite as the application icon */
 constexpr int APPLICATION_ICON = 1;
 
+/* The window shows the newest frame this often, however fast or slowly the game draws, and keeps showing a still
+   screen, so screen recorders keep getting frames */
+constexpr int32_t FRAME_RATE = 60;
+
+/* While Windows runs its own loop (sizing, moving, a menu) the frame clock's ticks wait for it; this timer checks the
+   clock meanwhile */
+constexpr UINT_PTR MODAL_TICK_TIMER = 1;
+
 }
 
 GameWindow::GameWindow(HINSTANCE instance, int32_t canvasWidth, int32_t canvasHeight, UINT syncInterval,
                        bool integerScaling, FrameMailbox& frames, InputQueue& input)
   : window_(nullptr), canvasWidth_(canvasWidth), canvasHeight_(canvasHeight), frames_(frames), input_(input), keys_(),
-    layout_(canvasWidth, canvasHeight, integerScaling), placement_{0, 0, canvasWidth, canvasHeight}, presenter_() {
+    layout_(canvasWidth, canvasHeight, integerScaling), placement_{0, 0, canvasWidth, canvasHeight}, presenter_(),
+    clock_(FRAME_RATE) {
   WNDCLASSEXW windowClass = {};
   windowClass.cbSize = sizeof(windowClass);
   windowClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -75,14 +84,36 @@ HWND GameWindow::handle() const {
   return window_;
   }
 
-/* Presents the newest frame, as published to the mailbox */
-void GameWindow::showFrame() {
-  if (presenter_ != nullptr) presenter_->present(frames_, placement_);
+/* Blocks until a message waits in this thread's queue, presenting at each tick of the frame clock meanwhile */
+void GameWindow::awaitMessage() {
+  presentTicks(INFINITE);
   }
 
-/* Safe from any thread; frames published while one is pending are shown together */
-void GameWindow::requestFrame() {
-  if (!framePending_.exchange(true)) PostMessageW(window_, WM_APP_FRAME, 0, 0);
+/* Presents a tick of the frame clock that is already due, without waiting */
+void GameWindow::presentIfDue() {
+  presentTicks(0);
+  }
+
+/* Waits that long, presenting at each tick of the frame clock meanwhile; no messages are handled */
+void GameWindow::presentFor(DWORD milliseconds) {
+  HANDLE        due = clock_.due();
+  LARGE_INTEGER frequency;
+  LARGE_INTEGER now;
+  LONGLONG      end;
+  DWORD         left;
+
+  QueryPerformanceFrequency(&frequency);
+  QueryPerformanceCounter(&now);
+  end = now.QuadPart + static_cast<LONGLONG>(milliseconds) * frequency.QuadPart / 1000;
+
+  for (;;) {
+    QueryPerformanceCounter(&now);
+    left = (now.QuadPart < end)
+         ? static_cast<DWORD>(((end - now.QuadPart) * 1000 + frequency.QuadPart - 1) / frequency.QuadPart)
+         : 0;
+    if (WaitForSingleObject(due, left) != WAIT_OBJECT_0) return;
+    SendMessageW(window_, WM_APP_TICK, 0, 0);
+    }
   }
 
 /* Safe from any thread */
@@ -110,7 +141,9 @@ bool GameWindow::translate(const MSG& message) {
   }
 
 /* Borderless over the whole monitor the window is on, then back to exactly where the window was. A popup has no
-   frame, so the minimum size lets it cover the monitor, and WM_SIZE resizes the swap chain as for any size. */
+   frame, so the minimum size lets it cover the monitor, and WM_SIZE resizes the swap chain as for any size. The old
+   window's pixels are discarded rather than kept across the move, and the frame is shown at once at the new size:
+   Windows 10 could otherwise leave the old caption and borders on screen until the game next drew. */
 void GameWindow::toggleFullscreen() {
   MONITORINFO monitor = { sizeof(MONITORINFO) };
 
@@ -120,16 +153,18 @@ void GameWindow::toggleFullscreen() {
     SetWindowLongPtrW(window_, GWL_STYLE, WS_POPUP | WS_VISIBLE);
     SetWindowPos(window_, HWND_TOP, monitor.rcMonitor.left, monitor.rcMonitor.top,
                  monitor.rcMonitor.right - monitor.rcMonitor.left, monitor.rcMonitor.bottom - monitor.rcMonitor.top,
-                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+                 SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOOWNERZORDER);
     fullscreen_ = true;
-    return;
+    }
+  else {
+    SetWindowLongPtrW(window_, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+    SetWindowPlacement(window_, &restore_);
+    SetWindowPos(window_, nullptr, 0, 0, 0, 0,
+                 SWP_FRAMECHANGED | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    fullscreen_ = false;
     }
 
-  SetWindowLongPtrW(window_, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
-  SetWindowPlacement(window_, &restore_);
-  SetWindowPos(window_, nullptr, 0, 0, 0, 0,
-               SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-  fullscreen_ = false;
+  showFrame();
   }
 
 bool GameWindow::route(const KeyRoute& route) {
@@ -227,8 +262,24 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
       input_.close();
       return 0;
 
-    case WM_APP_FRAME:
-      framePending_ = false;
+    case WM_ENTERSIZEMOVE:
+    case WM_ENTERMENULOOP:
+      SetTimer(window_, MODAL_TICK_TIMER, USER_TIMER_MINIMUM, nullptr);
+      return 0;
+
+    case WM_EXITSIZEMOVE:
+    case WM_EXITMENULOOP:
+      KillTimer(window_, MODAL_TICK_TIMER);
+      return 0;
+
+    case WM_TIMER:
+      if (wParam != MODAL_TICK_TIMER) break;
+      presentTicks(0);
+      return 0;
+
+    /* Every tick shows the newest frame, whether or not the game drew since the last one */
+    case WM_APP_TICK:
+      clock_.advance();
       showFrame();
       return 0;
 
@@ -238,6 +289,21 @@ LRESULT GameWindow::handle(UINT message, WPARAM wParam, LPARAM lParam) {
     }
 
   return DefWindowProcW(window_, message, wParam, lParam);
+  }
+
+/* Presents the newest frame, as published to the mailbox */
+void GameWindow::showFrame() {
+  if (presenter_ != nullptr) presenter_->present(frames_, placement_);
+  }
+
+/* Ticks go through the window procedure, which reports a failure as it does for every message; a waiting message ends
+   the wait */
+void GameWindow::presentTicks(DWORD timeout) {
+  HANDLE due = clock_.due();
+
+  while (MsgWaitForMultipleObjectsEx(1, &due, timeout, QS_ALLINPUT, MWMO_INPUTAVAILABLE) == WAIT_OBJECT_0) {
+    SendMessageW(window_, WM_APP_TICK, 0, 0);
+    }
   }
 
 /* The whole-number scale nearest the monitor's DPI at which the window still fits its work area */

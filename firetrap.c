@@ -16,7 +16,7 @@ void fire_trap() {
   i += u_random((player.diff+player.d_level) * 5);
   player.effect[PE_DOT] += i;
   clear_prompt();
-  msg("Burning!",11);
+  log_fire_trap();
   show_side();
   run_x = 0;
   run_y = 0;

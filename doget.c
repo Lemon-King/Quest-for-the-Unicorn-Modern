@@ -13,7 +13,6 @@
 void do_get() {
   Int32 i;
   OBJECT_REC* item;
-  char buffer[80];
   if (player.map[player.x][player.y] >= 2000 &&
       player.map[player.x][player.y] < 3000) {
     saveScreen();
@@ -47,8 +46,7 @@ void do_get() {
   else if (player.map[player.x][player.y] == 79) {
     i = u_random(player.diff * 10 + player.d_level)+1;
     clear_prompt();
-    sprintf(buffer,"Found %d Gold Pieces",i);
-    msg(buffer,14);
+    log_gold_found(i);
     player.map[player.x][player.y] = currentFloor;
     add_gold(i);
     stats.counts[STAT_GOLD_LOOTED] += i;

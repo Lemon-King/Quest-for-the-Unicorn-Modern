@@ -9,6 +9,12 @@
 */
 
 #include "header.h"
+#include <stdarg.h>
+
+/* Characters on a log line: the box's whole width with Improved Combat Logs */
+Int32 log_width(void) {
+  return (improved_combat_logs == 'Y') ? WIDE_LOG_WIDTH : LOG_WIDTH;
+  }
 
 static void copy_line(Int32 to,Int32 from) {
   strcpy(messages[to],messages[from]);
@@ -61,23 +67,25 @@ static void add_message(char* message,Int32 color,Int32 name_start,Int32 name_co
   char buffer[256];
   char *pChar;
   char *next;
+  Int32 width;
   strcpy(buffer,message);
   pChar = buffer;
+  width = log_width();
   if (color >= 0) {
     scroll_msg();
     }
   color = abs(color);
-  while (strlen(pChar) > 21) {
-    next = pChar + 21;
+  while ((Int32)strlen(pChar) > width) {
+    next = pChar + width;
     while (next > pChar && *next != ' ') next--;
 
     color_line(color,name_color,name_start - (Int32)(pChar - buffer));
 
     /* A word longer than a line breaks at the line's end */
     if (next == pChar) {
-      strncpy(messages[NUM_MSG-1],pChar,21);
-      messages[NUM_MSG-1][21] = 0;
-      pChar += 21;
+      strncpy(messages[NUM_MSG-1],pChar,width);
+      messages[NUM_MSG-1][width] = 0;
+      pChar += width;
       }
     else {
       *next = 0;
@@ -96,11 +104,28 @@ void msg(char* message,Int32 color) {
   add_message(message,color,0,0);
   }
 
+/* msg() with the line made by printf's format */
+void msgf(Int32 color,char* format,...) {
+  char message[256];
+  va_list args;
+
+  va_start(args,format);
+  vsnprintf(message,sizeof(message),format,args);
+  va_end(args);
+
+  msg(message,color);
+  }
+
 /* words, then an item's name, with only the name in its rarity colour, name_color */
 void msg_named(char* words,char* name,Int32 color,Int32 name_color) {
   char message[256];
 
   sprintf(message,"%s %.200s",words,name);
   add_message(message,color,(Int32)strlen(words) + 1,name_color);
+  }
+
+/* message in color, and from column at on in second_color, 0 for none; with color below 0 it replaces the newest line */
+void msg_split(char* message,Int32 color,Int32 at,Int32 second_color) {
+  add_message(message,color,at,second_color);
   }
 

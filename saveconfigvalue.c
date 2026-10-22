@@ -44,8 +44,8 @@ static Int32 sets_key(char* line,char* key) {
   return (_strnicmp(line,key,length) == 0 && line[length] == '=');
   }
 
-/* Replaces each line of <name>.cfg that sets key, or adds one at the end when no line does */
-void save_config_value(char* name,char* key,Int32 value) {
+/* Replaces each line of <name>.cfg that sets key with key=value, or adds one at the end when no line does */
+void save_config_text(char* name,char* key,char* value) {
   FILE*  file;
   char   filename[1024];
   char*  text;
@@ -70,7 +70,7 @@ void save_config_value(char* name,char* key,Int32 value) {
     if (end == NULL) end = text + length;
 
     if (sets_key(line,key)) {
-      fprintf(file,"%s=%d\n",key,value);
+      fprintf(file,"%s=%s\n",key,value);
       found = 'Y';
       }
     else {
@@ -81,7 +81,14 @@ void save_config_value(char* name,char* key,Int32 value) {
     line = end + 1;
     }
 
-  if (found == 'N') fprintf(file,"%s=%d\n",key,value);
+  if (found == 'N') fprintf(file,"%s=%s\n",key,value);
   fclose(file);
   free(text);
+  }
+
+void save_config_value(char* name,char* key,Int32 value) {
+  char number[16];
+
+  sprintf(number,"%d",value);
+  save_config_text(name,key,number);
   }

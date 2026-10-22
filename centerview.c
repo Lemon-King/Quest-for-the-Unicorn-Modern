@@ -10,7 +10,7 @@
 
 #include "header.h"
 
-/* Centres the map view on the player, keeping it inside the map */
+/* Centres the map view on the player, keeping it inside the map; the follow camera centres it to its own middle */
 void center_view() {
   player.map_x = player.x - (TILES_X / 2);
   player.map_y = player.y - (TILES_Y / 2);
@@ -18,4 +18,5 @@ void center_view() {
   if (player.map_y < 1) player.map_y = 1;
   if (player.map_x > 100-TILES_X) player.map_x = 100-TILES_X;
   if (player.map_y > 100-TILES_Y) player.map_y = 100-TILES_Y;
+  camera_arrive();
   }

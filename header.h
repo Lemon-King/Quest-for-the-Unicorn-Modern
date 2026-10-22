@@ -52,8 +52,18 @@ LINK Int32 NO_OF_MONSTERS;
 #define GATEWAY_REGION        12
 #define GATEWAY_X             80
 #define GATEWAY_Y             78
+
+/* The overworld: regions REGION_SQUARES a side, WORLD_COLUMNS across and WORLD_ROWS down (1-4, 5-8, 9-12) */
+#define REGION_SQUARES       100
+#define WORLD_COLUMNS          4
+#define WORLD_ROWS             3
+#define WORLD_WIDTH          (WORLD_COLUMNS * REGION_SQUARES)
+#define WORLD_HEIGHT         (WORLD_ROWS * REGION_SQUARES)
+#define MINIMAP_SQUARES      100              /* the minimap's squares a side */
 #define MESSAGE_HEIGHT        12
 #define MAX_MSG               60              /* Lines the message log keeps; NUM_MSG never shows more */
+#define LOG_WIDTH             21              /* Characters on a log line */
+#define WIDE_LOG_WIDTH        26              /* ... with Improved Combat Logs: the box's whole width */
 
 
 /*
@@ -64,7 +74,7 @@ LINK Int32 NO_OF_MONSTERS;
 #define NO_OF_SPELLS        215
 */
 #define GAME          "UNICORN"
-#define VERSION        "v7.1.0"
+#define VERSION        "v7.2.0"
 #define RECIPE_BASE        4000
 #define NPC_DIV              10
 
@@ -88,6 +98,15 @@ LINK Int32 NO_OF_MONSTERS;
 #define OF_OBJECT    (1 << 4)      /* must have item in flag2 for item to drop */
 #define OF_COUNTED   (1 << 5)      /* Object counted already for stats purposes */
 #define OF_IDENT     (1 << 6)      /* Object has been identified */
+
+/* An item's rarity band, as its card names it (rarity_band()), from the rarest up */
+#define RB_SPECIAL         0       /* a rarity of 0: shop goods and crafted or quest items, never loot */
+#define RB_ULTRA_RARE      1
+#define RB_VERY_RARE       2
+#define RB_RARE            3
+#define RB_UNCOMMON        4
+#define RB_COMMON          5
+#define NUM_RARITY_BANDS   6
 
 #define CF_MONK         (1 << 0)   /*     1  must check monk_weapon() for armor and weapons */
 #define CF_CASTER       (1 << 1)   /*     2  Class selects a spell when character is created */
@@ -534,22 +553,63 @@ LINK Int32 NO_OF_MONSTERS;
 #define M_BOW                  2
 #define M_PHYSICAL             3
 
-#define CLR_BLACK              0
-#define CLR_BLUE               1
-#define CLR_GREEN              2
-#define CLR_CYAN               3
-#define CLR_RED                4
-#define CLR_PURPLE             5
-#define CLR_BROWN              6
-#define CLR_GRAY               7
-#define CLR_DARKGRAY           8
-#define CLR_LIGHTBLUE          9
-#define CLR_LIGHTGREEN        10
-#define CLR_LIGHTCYAN         11
-#define CLR_LIGHTRED          12
-#define CLR_LIGHTPURPLE       13
-#define CLR_YELLOW            14
-#define CLR_WHITE             15
+/* The palette's 16 colours, by their index in X11_PALETTE and DOS_PALETTE (terminal.c) */
+typedef enum {
+  CLR_BLACK       =  0,
+  CLR_BLUE        =  1,
+  CLR_GREEN       =  2,
+  CLR_CYAN        =  3,
+  CLR_RED         =  4,
+  CLR_PURPLE      =  5,
+  CLR_BROWN       =  6,
+  CLR_GRAY        =  7,
+  CLR_DARKGRAY    =  8,
+  CLR_LIGHTBLUE   =  9,
+  CLR_LIGHTGREEN  = 10,
+  CLR_LIGHTCYAN   = 11,
+  CLR_LIGHTRED    = 12,
+  CLR_LIGHTPURPLE = 13,
+  CLR_YELLOW      = 14,
+  CLR_WHITE       = 15,
+  CLR_COUNT       = 16
+  } PALETTE_COLOR;
+
+/* The player's attributes, by their index in player.stat[] */
+typedef enum {
+  ATTR_STRENGTH     = 1,
+  ATTR_DEXTERITY    = 2,
+  ATTR_CONSTITUTION = 3,
+  ATTR_INTELLIGENCE = 4,
+  ATTR_WISDOM       = 5,
+  ATTR_CHARISMA     = 6
+  } ATTRIBUTE;
+
+/* What an altar's boon (special31()) raises */
+typedef enum {
+  ALTAR_STRENGTH,
+  ALTAR_DEXTERITY,
+  ALTAR_CONSTITUTION,
+  ALTAR_HIT_POINTS,
+  ALTAR_MANA,
+  ALTAR_SKILL,
+  ALTAR_CHARISMA,
+  ALTAR_BOONS
+  } ALTAR_BOON;
+
+/* The traps the player sets, by their map value */
+typedef enum {
+  TRAP_SMALL_EXPLOSIVE = 951,
+  TRAP_LARGE_EXPLOSIVE = 952,
+  TRAP_HUGE_EXPLOSIVE  = 953,
+  TRAP_FIRE            = 954,
+  TRAP_FROST           = 955,
+  TRAP_ELECTRIC        = 956,
+  TRAP_SLEEP           = 957,
+  TRAP_FEAR            = 958,
+  TRAP_BLINDNESS       = 959,
+  TRAP_POISON          = 960,
+  TRAP_CONFUSION       = 961
+  } PLAYER_TRAP;
 
 typedef char OUTSTRING[32];
 typedef char STRING32[32];
@@ -559,6 +619,9 @@ typedef char MSTRING[128];
 typedef int  MAP_TYPE[101][101];
 typedef byte KNOW_TYPE[101][101];
 typedef int  SPELLBOOK[1000];
+
+/* passable() or another test of one map square: 0 when it blocks */
+typedef Int32 (*PASS_TEST)(Int32 x,Int32 y,char monstPass,char doorPass);
 
 typedef struct {
   Int32  item;
@@ -883,6 +946,14 @@ typedef struct {
   Int32          treasurey;
   } DUNGEON;
 
+/* What an arena fight left on its floor, as map values: floor items, gold and torches */
+#define ARENA_LOOT_SLOTS 1000
+
+typedef struct {
+  Int32        count;
+  Int32        values[ARENA_LOOT_SLOTS];
+  } ARENA_LOOT;
+
 /* What the Load Game screen shows of a save, read by load_summary(). */
 typedef struct {
   Int32       class;
@@ -938,6 +1009,31 @@ typedef struct {
   Int32 x;
   } STATUS_NOTE;
 
+#define MAX_WORLD_PLACES 256   /* 173 on the shipped maps: you, 9 towns, 60 dungeons, 101 villages, Gateway, ship */
+
+/* A place the world map marks: its overworld position, the sprite of its marker (a place's tile is its sprite) and its
+   name */
+typedef struct {
+  Int32 px;
+  Int32 py;
+  Int32 sprite;
+  char  name[33];
+  } WORLD_PLACE;
+
+/* The places find_world_places() found, you first */
+typedef struct {
+  WORLD_PLACE list[MAX_WORLD_PLACES];
+  Int32       count;
+  } WORLD_PLACES;
+
+/* How fed you are, in the side panel's bands: the word, its colour, and whether the panel shows it (it leaves Healthy
+   blank) */
+typedef struct {
+  char* name;
+  Int32 color;
+  Int32 on_panel;
+  } HUNGER;
+
 typedef struct MENU MENU;
 
 struct MENU {
@@ -961,6 +1057,44 @@ typedef struct {
   } STORAGE;
 
 #define STORAGE_MOVED   'M'   /* storage_key(), storage_action(): items were moved or sorted, so draw them again */
+
+#define TEXT_LENGTH     80    /* the most a TEXT_FIELD takes */
+
+/* A line of typed text (textfield.c): in the log after its label, or on the text grid from column x of row y, with an
+   empty label. accepts says which keys it types, complete puts in word the one word the text begins, and key sees each
+   key first, returning the key to go on with or 0 when it used it up. */
+typedef struct TEXT_FIELD TEXT_FIELD;
+
+struct TEXT_FIELD {
+  char*  text;
+  Int32  length;
+  char   label[16];
+  Int32  x;
+  Int32  y;
+  Int32  color;
+  Int32  cancel;
+  Int32  (*accepts)(Int32 key);
+  Int32  (*complete)(TEXT_FIELD* field,char* word);
+  Int32  (*key)(TEXT_FIELD* field,Int32 key);
+  void*  data;
+  Int32  drawn;
+  };
+
+#define MAX_WORDS       16    /* in a WORD_BOOK */
+#define WORD_NONE       -1    /* word_choice(): ESC backed out */
+#define WORD_TYPED      -2    /* word_choice(): the word is to be typed */
+
+/* A Word of Power or a Talning rod function: as the lore writes it, what the lore says it does, and saying it */
+typedef struct {
+  char* word;
+  char* hint;
+  void  (*say)(void);
+  } WORD_OF_POWER;
+
+typedef struct {
+  WORD_OF_POWER* words;
+  Int32          count;
+  } WORD_BOOK;
 
 typedef struct {
   char      name[21];
@@ -1156,11 +1290,19 @@ LINK Int32                delay_hit;
 LINK Int32                delay_trap;
 LINK char               enhanced_sprites;
 LINK char               floor_item_names;
+LINK char               improved_items;
+LINK char               improved_combat_logs;
+LINK char               attack_source[40];    /* the spell, item or weapon the player attacks with, for the log */
 LINK char               gothic_scrolls;
 LINK char               improved_interface;
 LINK char               improved_status;
 LINK char               easy_spells;
+LINK char               easy_words;
 LINK char               show_mount;
+LINK char               seamless_world_map;
+LINK char               follow_camera;
+LINK char               world_map;            /* the World Map preference: 'N' Off, 'C' Color, 'A' Art */
+LINK char               color_palette;        /* the Color Palette preference: 'X' X11, 'D' DOS */
 LINK char               class_sprites;
 LINK char               permadeath;
 LINK char               change_eshter_spawns;
@@ -1173,7 +1315,6 @@ LINK char               change_blink_only;
 LINK char               change_blink_landing;
 LINK char               change_sleep_traps;
 LINK char               change_tardis_saves;
-LINK char               change_tardis_descriptions;
 LINK char               change_item_deck;
 LINK char               change_tripped_card;
 LINK char               change_lore_search;
@@ -1225,6 +1366,12 @@ LINK char               change_village_shops;
 LINK char               change_nether_core;
 LINK char               change_ship_improvements;
 LINK char               change_rarity_fix;
+LINK char               change_explored_land;
+LINK char               change_unified_pickup;
+LINK char               change_shop_dagger;
+LINK char               change_arena_held_keys;
+LINK char               change_safe_arena_loot;
+LINK char               change_flask_of_oil;
 LINK Int32                last_target_x;
 LINK Int32                last_target_y;
 LINK char               used_sunstone;
@@ -1263,13 +1410,16 @@ LINK Int32                debug_tab;
 
 /* advance.c */
 extern void advancement();
+extern double next_level_exp(double exp_next);
 extern void advance_stat();
 
 /* cave.c */
 extern void cave();
 
 /* combat.c */
-extern void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy);
+extern void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy,ARENA_LOOT* loot);
+extern Int32 off_arena(Int32 x,Int32 y);
+extern Int32 monsters_dead(void);
 
 /* help.c */
 extern void combat_help();
@@ -1294,6 +1444,7 @@ extern void gamble();
 extern Int32 haggle(double price,OBJECT_REC item);
 extern void cavalier(char* name);
 extern void library(char* name);
+extern Int32 read_search(char* search,Int32 size);
 extern void mounts(char* name);
 extern void non_magic_weapons(char* name);
 extern void pawn(char* name, byte city);
@@ -1336,6 +1487,7 @@ extern void show_detail_line(void);
 extern Int32 half_tile_width(void);
 extern Int32 half_tile_height(void);
 extern Int32 has_bottom_strip(void);
+extern Int32 side_panel_left(void);
 extern Int32 detail_line_top(void);
 extern Int32 detail_line_bottom(void);
 extern Int32 set_screen_layout(void);
@@ -1371,6 +1523,7 @@ extern char* transfer_action(OBJECT_REC* item);
 extern void show_in_air(OBJECT_REC* in_air,Int32 line);
 extern char ask_action(Int32 column,Int32 line,Int32 color,char* action,char* cancel,Int32 row);
 extern Int32 open_tab_menu(void);
+extern Int32 word_choice(WORD_BOOK* book,char* heading,char* other);
 extern Int32 merchant_beside(void);
 extern void clear_messages(void);
 extern void special8();
@@ -1398,6 +1551,7 @@ extern void bar(Int32 x1,Int32 y1,Int32 x2,Int32 y2);
 extern void clrscr();
 extern void delay(Int32 time);
 extern void draw(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 clr);
+extern void drop_keys();
 extern void gotoxy(Int32 x,Int32 y);
 extern void graphmode();
 extern void init_graph(GAME_HOST* host);
@@ -1407,9 +1561,10 @@ extern void outtextxyclr(Int32 x,Int32 y,char* buffer);
 extern void outtext_xy(Int32 x,Int32 y,char* buffer);
 extern void putimage(Int32 x,Int32 y,char** img,Int32 typ);
 extern void put_half_image(Int32 x,Int32 y,char** img);
+extern void put_tiled_image(Int32 x1,Int32 y1,Int32 x2,Int32 y2,Int32 origin_x,Int32 origin_y,char** img);
 extern Int32 readkey();
-extern void readln(char* buffer);
-extern Int32 p_read(char* buffer);
+extern void readln(char* buffer,Int32 size);
+extern Int32 p_read(char* buffer,Int32 size);
 extern void restoreScreen();
 extern void saveScreen();
 extern void screenshot();
@@ -1444,6 +1599,7 @@ extern char* show_align();
 extern char* show_int(Int32 n);
 extern char* show_flt(double n);
 extern void disp_char();
+extern Int32 confirm_char();
 extern void make_char(Int32 rebirth);
 extern void print_rec();
 
@@ -1453,6 +1609,7 @@ extern OBJECT_REC* inventory(OBJECT_REC* item);
 extern Int32 pack_count(void);
 extern Int32 is_quest_treasure(OBJECT_REC* item);
 extern void count_rarity(OBJECT_REC* item,char key);
+extern void pick_up_item(OBJECT_REC* item,char key);
 extern char inv_valid(OBJECT_REC* item,Int32 line);
 extern void show_inventory(OBJECT_REC* item);
 extern void compress();
@@ -1498,6 +1655,7 @@ extern Int32 find_gen(char* search);
 extern Int32 find_lore(char* search);
 extern Int32 found_row(Int32 found);
 extern char inkey();
+extern char typed_key();
 extern void load();
 extern Int32 load_summary(char* name, SAVE_SUMMARY* summary);
 extern void make_c();
@@ -1541,6 +1699,9 @@ extern void missile(Int32 damage,Int32 elem,Int32 radius);
 extern void noise(Int32 f,Int32 d);
 extern void prompt(char* display);
 extern void promptNS(char* display);
+extern char* question_mark();
+extern void prompt_question(char* question,Int32 color);
+extern Int32 write_question(char* question);
 extern void r_missile(Int32 damage);
 extern Int32 spell_target(Int32 cell);
 extern void spell_kill(NPC_REC* target,Int32 x,Int32 y);
@@ -1548,12 +1709,14 @@ extern void remove_land_player();
 extern void remove_player();
 extern void show_headings();
 extern void show_land();
+extern void show_land_square(Int32 x,Int32 y);
 extern void show_land_player();
 extern void show_map();
 extern void show_player();
 extern void show_screen();
 extern void show_side();
 extern void describe_status(Int32 i,STATUS_NOTE* note);
+extern HUNGER hunger_status(void);
 extern void show_sm_land();
 extern void show_sm_map();
 extern void show_spot(Int32 x,Int32 y);
@@ -1585,6 +1748,8 @@ extern void pack_it(Int32 floor);
 extern void party();
 extern void poison_trap();
 extern void say_word();
+extern WORD_BOOK* words_of_power(void);
+extern void pick_word(char* word);
 extern void show_log();
 extern void sleep_trap();
 extern void super(Int32 damage,Int32 elem);
@@ -1606,6 +1771,18 @@ extern STROKE_FONT* gothic_font();
 /* scrolltext.c */
 extern void scroll_text(char* message);
 
+/* textfield.c */
+extern void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* question,Int32 color);
+extern void open_grid_field(TEXT_FIELD* field,char* text,Int32 size,Int32 x,Int32 y,Int32 color);
+extern Int32 read_field(TEXT_FIELD* field);
+extern Int32 is_digit_key(Int32 key);
+
+/* words.c */
+extern Int32 easy_words_on(void);
+extern Int32 known_words(WORD_BOOK* book,Int32* list);
+extern WORD_OF_POWER* find_word(WORD_BOOK* book,char* text);
+extern Int32 complete_word(TEXT_FIELD* field,char* word);
+
 extern Int32 check_intrinsic(OBJECT_REC obj,Int32 intr);
 extern Int32 find_item_slot();
 extern Int32 has_intrinsic(Int32 intr);
@@ -1621,7 +1798,10 @@ extern void dead_monster(NPC_REC* mon,char tr,Int32 x,Int32 y);
 extern void poison_kill(NPC_REC* mon);
 extern void show_messages();
 extern void msg(char* message,Int32 color);
+extern void msgf(Int32 color,char* format,...);
 extern void msg_named(char* words,char* name,Int32 color,Int32 name_color);
+extern void msg_split(char* message,Int32 color,Int32 at,Int32 second_color);
+extern Int32 log_width(void);
 extern void crafting();
 extern void wizard();
 extern void show_gen(Int32 item);
@@ -1629,7 +1809,7 @@ extern void buy_house(Int32 hnum);
 extern void new_month();
 extern void auto_detect();
 extern void house_inventory(Int32 hnum);
-extern void gain_exp(double amt,Int32 who);
+extern void gain_exp(NPC_REC* slain,Int32 who);
 extern void show_quest();
 extern void new_game();
 extern void convert_time(Int32 t,char* buffer);
@@ -1686,27 +1866,76 @@ extern char* item_kind(OBJECT_REC* item);
 extern void draw_item_card(OBJECT_REC* item,Int32 column,Int32 line);
 extern void draw_card_panel(OBJECT_REC* item,Int32 top,Int32 bottom);
 extern void shorten_name(char* name,Int32 width);
+extern void trim_name(char* name);
 extern void list_item_name(OBJECT_REC* item,Int32 width,char* name);
+extern void kept_item_name(OBJECT_REC* item,Int32 width,char* name);
 extern char* base_name(char* buffer,OBJECT_REC* item);
 
 extern Int32 get_skill(Int32 num);
 extern void add_skill(Int32 skill,Int32 num);
-extern void show_gain(Int32 g);
 extern Int32 get_bonus(Int32 typ);
 extern void fire_wand(Int32 damage);
 extern void enchant(Int32 ench,Int32 limit);
 extern void show_legends();
 extern void mutable(OBJECT_REC* it);
+extern Int32 rarity_band(OBJECT_REC* item);
+extern char* band_name(Int32 band);
+extern Int32 band_color(Int32 band);
+extern char* named_gear_kind(OBJECT_REC* item);
 extern Int32 item_color(OBJECT_REC* item);
 extern void write_named(char* before,OBJECT_REC* item,char* name,char* after,Int32 color);
 extern void itemColor(OBJECT_REC* item);
+extern Int32 floor_item_color(OBJECT_REC* item);
+extern void marked_item_name(OBJECT_REC* item,char* name);
+/* identify.c */
+extern void identify_on_pickup(OBJECT_REC* item);
+extern void identify_common_item(OBJECT_REC* item);
 extern Int32 passable(Int32 x,Int32 y,char monstPass,char doorPass);
+extern Int32 value_passable(Int32 value,char monstPass,char doorPass);
 extern Int32 los(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass);
+extern Int32 los_through(Int32 x1,Int32 y1,Int32 x2,Int32 y2,char monstPass,PASS_TEST pass);
 extern void activate(Int32 x,Int32 y);
 extern char adjust_map();
+extern Int32 camera_follows(void);
+extern void camera_arrive(void);
 extern Int32 compass(Int32 suggest);
 extern Int32 getPX(Int32 r,Int32 x);
 extern Int32 getPY(Int32 r,Int32 y);
+extern Int32 world_region(Int32 px,Int32 py);
+
+/* worldmap.c */
+extern Int32 seamless_world(void);
+extern Int32 land_region(Int32* x,Int32* y);
+extern Int32 square_value(Int32 x,Int32 y);
+extern Int32 square_known(Int32 x,Int32 y);
+extern Int32 reveal_land(Int32 x,Int32 y);
+extern Int32 land_passable(Int32 x,Int32 y,char monstPass,char doorPass);
+extern Int32 gateway_tile(void);
+extern void view_from_region(Int32 region);
+extern void land_view_bounds(Int32* min_x,Int32* max_x,Int32* min_y,Int32* max_y);
+extern Int32 world_tile(Int32 px,Int32 py);
+extern Int32 world_known(Int32 px,Int32 py);
+
+/* worldplaces.c */
+extern void find_world_places(WORLD_PLACES* places);
+extern Int32 next_world_place(const WORLD_PLACES* places,Int32 from,Int32 dx,Int32 dy);
+
+/* worldmapview.c */
+extern void show_world_map(void);
+
+/* steps.c */
+extern Int32 step_x(Int32 d);
+extern Int32 step_y(Int32 d);
+extern char step_key(Int32 d);
+extern Int32 key_step(char key);
+
+/* minimap.c */
+extern Int32 minimap_left(void);
+extern Int32 minimap_top(void);
+extern void plot_minimap(Int32 x,Int32 y,Int32 color);
+extern Int32 land_color(Int32 tile);
+extern Int32 minimap_moved(void);
+extern void minimap_drawn(void);
 extern void level_legacy(OBJECT_REC* item);
 extern Int32 mutable_enchant();
 extern void check_level_legacy();
@@ -1727,7 +1956,132 @@ extern Int32 set_trap(Int32 n);
 extern void arena_party_heal(Int32 healer);
 extern void trigger_trap(Int32 x,Int32 y,Int32 trap_type);
 extern NPC_REC* get_monster(Int32 x,Int32 y);
+extern NPC_REC* monster_record(Int32 mon);
 extern void do_heal(Int32 amount,Int32 who);
+extern Int32 heal_player(Int32 amount);
+
+/* combatlog.c */
+
+/* Where the_name() puts a creature's name: within a line, or starting one, with a capital */
+typedef enum {
+  MID_LINE,
+  LINE_START
+  } NAME_POSITION;
+
+/* How a creature attacks: a blow from beside the player, or a bolt from afar */
+typedef enum {
+  BY_BLOW,
+  BY_BOLT
+  } ATTACK_FORM;
+
+/* How the player's attack fails: it misses, or the creature resists it */
+typedef enum {
+  MISSED,
+  RESISTED
+  } MISS_KIND;
+
+/* How the player's attack lands; aoe() and touch() mark a critical hit with any value but HIT_NORMAL */
+typedef enum {
+  HIT_NORMAL,
+  HIT_CRITICAL
+  } HIT_KIND;
+
+extern char* the_name(char* name,NAME_POSITION position);
+extern char* a_name(char* name);
+extern void set_attack_source(char* name);
+extern void set_attack_item(char* prefix,OBJECT_REC* item);
+extern void clear_attack_source(void);
+extern void log_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_wand_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_hit_shout(void);
+extern void log_spell_hit(NPC_REC* target,Int32 damage,Int32 crit);
+extern void log_miss(NPC_REC* target,MISS_KIND kind);
+extern void log_resist(NPC_REC* target);
+extern void log_melee_miss(NPC_REC* target);
+extern void log_shot_miss(NPC_REC* target);
+extern void log_paralyzing_blow(NPC_REC* target);
+extern void log_killing_blow(NPC_REC* target);
+extern void log_floor_item_destroyed(OBJECT_REC* item);
+extern void log_creature_healed(NPC_REC* target,Int32 amount);
+extern void log_creature_asleep(NPC_REC* target);
+extern void log_sleep_spell(NPC_REC* target);
+extern void log_creature_afraid(NPC_REC* target);
+extern void log_fear_spell(NPC_REC* target);
+extern void log_creature_blinded(NPC_REC* target);
+extern void log_creature_confused(NPC_REC* target);
+extern void log_creature_poisoned(NPC_REC* target);
+extern void log_charmed(NPC_REC* target);
+extern void log_charm_failed(NPC_REC* target);
+extern void log_pacified(NPC_REC* target);
+extern void log_creature_fear_over(NPC_REC* creature);
+extern void log_creature_poison_tick(NPC_REC* creature);
+extern void log_creature_poison_done(void);
+extern void log_slain(NPC_REC* slain,double exp);
+extern void log_spell_slain(NPC_REC* slain);
+extern void log_ally_level(NPC_REC* member);
+extern void log_dodge(NPC_REC* attacker,ATTACK_FORM form);
+extern void log_creature_hit(NPC_REC* attacker,Int32 damage,char* elem);
+extern void log_creature_dot(NPC_REC* attacker,Int32 damage);
+extern void log_creature_miss(NPC_REC* attacker,Int32 dodged);
+extern void log_creature_bolt(NPC_REC* attacker,Int32 damage,char* elem);
+extern void log_bolt_miss(NPC_REC* attacker,Int32 dodged);
+extern void log_bolt_reflected(OBJECT_REC* ring);
+extern void log_ring_melted(OBJECT_REC* ring,Int32 again);
+extern void log_rooted(NPC_REC* attacker);
+extern void log_slept(NPC_REC* attacker);
+extern void log_poisoned(NPC_REC* attacker);
+extern void log_scared(NPC_REC* attacker);
+extern void log_confused(NPC_REC* attacker);
+extern void log_level_drained(NPC_REC* attacker);
+extern void log_ally_struck(NPC_REC* attacker,NPC_REC* member,Int32 damage);
+extern void log_ally_bolted(NPC_REC* attacker,NPC_REC* member,Int32 damage);
+extern void log_ally_bolt_miss(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_hit(NPC_REC* member,NPC_REC* target,Int32 damage);
+extern void log_ally_spell_hit(NPC_REC* member,NPC_REC* target,Int32 damage);
+extern void log_ally_spell_miss(NPC_REC* member,NPC_REC* target);
+extern void log_ally_asleep(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_afraid(NPC_REC* attacker,NPC_REC* member);
+extern void log_ally_fallen(NPC_REC* member);
+extern void log_ally_heals_you(NPC_REC* healer,Int32 amount);
+extern void log_ally_heals(NPC_REC* healer,NPC_REC* member,Int32 amount);
+extern void log_snake_bite(NPC_REC* target,Int32 damage);
+extern void log_poison_damage(Int32 damage);
+extern void log_wound_damage(Int32 damage);
+extern void log_fear_over(void);
+extern void log_confusion_over(void);
+extern void log_protection_over(void);
+extern void log_polymorph(Int32 monster);
+extern void log_polymorph_failed(void);
+extern void log_polymorph_ending(Int32 turns);
+extern void log_polymorph_ended(void);
+extern void log_heal(Int32 amount,Int32 healed);
+extern void log_item_damage(Int32 damage);
+extern void log_item_poison(void);
+extern void log_dart_trap(Int32 damage);
+extern void log_poison_dart(void);
+extern void log_fire_trap(void);
+extern void log_blind_trap(void);
+extern void log_pit_trap(void);
+extern void log_root_trap(void);
+extern void log_sleep_trap(void);
+extern void log_force_field(Int32 loss);
+extern void log_fire_tile(Int32 loss);
+extern void log_water_tile(Int32 loss);
+extern void log_trap_sprung(NPC_REC* creature,Int32 trap_type);
+extern void log_explosion(void);
+extern void log_trap_blast(Int32 trap_type,Int32 damage);
+extern void log_level_up(void);
+extern void log_hp_gain(Int32 amount);
+extern void log_mana_gain(Int32 amount);
+extern void log_stat_gain(ATTRIBUTE stat);
+extern void log_skill_gain(Int32 skill);
+extern void log_level_skill(Int32 skill);
+extern void log_altar_boon(ALTAR_BOON boon,Int32 amount);
+extern void log_gold_found(Int32 gold);
+extern void log_know_enemy(NPC_REC* creature);
+extern void log_called(NPC_REC* ally);
+extern void log_summoned(NPC_REC* ally);
+extern void log_summon_failed(void);
 extern Int32 is_weapon(OBJECT_REC* item);
 extern Int32 meleehit(Int32 who,OBJECT_REC* weapon,Int32 dmg,NPC_REC* target,char hand);
 extern OBJECT_REC* get_item(Int32 x,Int32 y);
@@ -1755,6 +2109,12 @@ extern Int32 get_coins();
 extern void add_gold(Int32 g);
 extern void sub_gold(Int32 g);
 extern double typed_gold(double amount);
+extern void show_gold(Int32 column,Int32 line);
+/* trade.c */
+extern void sell_item(OBJECT_REC* item,double price);
+extern void identify_item(OBJECT_REC* item,double price);
+extern void sell_from_pack(double (*offer)(OBJECT_REC* item));
+extern void identify_from_pack(double (*cost)(OBJECT_REC* item));
 extern Int32 can_be_seen();
 extern void enemy_hit(Int32 x,Int32 y);
 extern void mutable_legendary(OBJECT_REC* item);
@@ -1780,11 +2140,13 @@ extern Int32 offhand_weapon();
 extern void show_time();
 extern void process_config(char* name);
 extern void save_config_value(char* name,char* key,Int32 value);
+extern void save_config_text(char* name,char* key,char* value);
 extern Int32 process_option(char* pChar);
 extern void remember_built_in_defaults();
 extern void remember_option_defaults();
 extern void game_setup();
 extern void game_options();
+extern void set_config_switch(char* key,char* name);
 extern void read_character_rules();
 extern void clear_gameplay_changes();
 extern void save_gameplay_changes(FILE* file);
@@ -1814,6 +2176,7 @@ extern void get_shop_recipes();
 extern Int32 check_level_cleared(Int32 lvl);
 extern void pit_trap();
 extern void fkey_pressed(Int32 n);
+extern Int32 fkey_number(Int32 key);
 extern void shift_fkey_pressed(Int32 n);
 extern void alt_key_pressed(Int32 n);
 extern void ctrl_fkey_pressed(Int32 n);

@@ -21,7 +21,7 @@ void display_msg(Int32 msg,char ext) {
   show_screen();
   }
 
-void special1() {
+void special1(void) {
   Int32 x,y;
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++)
@@ -70,7 +70,7 @@ void special5() {
   if (player.effect[PE_ETHER] > 100) player.effect[PE_ETHER] = 100;
   }
 
-void special6() {
+void special6(void) {
   player.effect[PE_LIGHT] += 5000;
   if (player.effect[PE_LIGHT] > 10000) player.effect[PE_LIGHT] = 10000;
   }
@@ -193,7 +193,7 @@ void special14() {
   add_skill(SK_ORACLE,1);
   }
 
-void special15() {
+void special15(void) {
   if (player.d_level > 0 && player.in_city != 'Y') save_level();
   player.d_level = 0;
   }
@@ -236,11 +236,11 @@ void special20() {
   restoreScreen();
   }
 
-void special21() {
+void special21(void) {
   player.effect[PE_READLANG] = 20;
   }
 
-void special22() {
+void special22(void) {
   Int32 x,y;
   for (x=player.map_x; x<=player.map_x+15; x++)
     for (y=player.map_y; y<=player.map_y+15; y++)
@@ -253,7 +253,7 @@ void special22() {
   show_screen();
   }
 
-void special23() {
+void special23(void) {
   char mflag;
   Int32  x,y;
   Int32  xdir,ydir;
@@ -273,13 +273,12 @@ void special23() {
       (player.map[x][y] >400 && player.map[x][y] <500)) {
     if (in_arena == 'Y') mon = player.map[x][y] - 400;
       else mon = 0-player.map[x][y];
-    if (in_arena == 'Y') prompt(player.monster[mon][a_mon].name);
-      else prompt(player.monster[1][mon].name);
+    log_know_enemy(monster_record(mon));
     delay(1000);
     }
   else {
     clear_prompt();
-    prompt("Fizzle. . .");
+    log_know_enemy(NULL);
     }
   }
 
@@ -298,7 +297,6 @@ void special26() {
 void special27(Int32 level) {
   Int32 slot;
   Int32  x,y;
-  char buffer[80];
   slot = 0;
   if (player.party[slot].hp != 0) {
     if (in_arena == 'Y') {
@@ -331,16 +329,15 @@ void special27(Int32 level) {
     show_spot(x,y);
     player.party[slot].treasure = (y << 8) | x;
     if (in_arena == 'Y') player.party[slot].treasure = 0;
-    sprintf(buffer,"Called a %s",player.party[slot].name);
-    prompt(buffer);
+    log_called(&(player.party[slot]));
     }
   else {
-    msg("Fizzle", 12);
+    log_summon_failed();
     player.party[slot].hp = 0;
     }
   }
 
-void special28() {
+void special28(void) {
   player.effect[PE_READLORE] = 20;
   }
 
@@ -374,39 +371,40 @@ void special31(Int32 max) {
   clear_prompt();
   n = u_random(25);
   while (n > max) n = u_random(25);
+  i = 0;
   switch (n) {
-    case 0:prompt("STR increased");
-           if (player.stat[1] < 99) player.stat[1] += 2;
+    case ALTAR_STRENGTH:
+           if (player.stat[ATTR_STRENGTH] < 99) player.stat[ATTR_STRENGTH] += 2;
            adjust_abilities();
            break;
-    case 1:prompt("DEX increased");
-           if (player.stat[2] < 99) player.stat[2] += 2;
+    case ALTAR_DEXTERITY:
+           if (player.stat[ATTR_DEXTERITY] < 99) player.stat[ATTR_DEXTERITY] += 2;
            adjust_abilities();
            break;
-    case 2:prompt("CON increased");
-           if (player.stat[3] < 99) player.stat[3] += 2;
+    case ALTAR_CONSTITUTION:
+           if (player.stat[ATTR_CONSTITUTION] < 99) player.stat[ATTR_CONSTITUTION] += 2;
            adjust_abilities();
            break;
-    case 3:prompt("HP increased");
+    case ALTAR_HIT_POINTS:
            i = u_random(10);
            player.chp += i;
            player.mhp += i;
            break;
-    case 4:prompt("Mana increased");
+    case ALTAR_MANA:
            i = u_random(10);
            player.cmana += i;
            player.mmana += i;
            break;
-    case 5:prompt("Skill increased");
-           i = u_random(16) + 1;
+    case ALTAR_SKILL:
+           i = u_random(SK_COMBAT) + SK_BOW;
            player.skill[i] += 200000;
            break;
-    case 6:prompt("CHR increased");
-           if (player.stat[6] < 99) player.stat[6] += 2;
+    case ALTAR_CHARISMA:
+           if (player.stat[ATTR_CHARISMA] < 99) player.stat[ATTR_CHARISMA] += 2;
            adjust_abilities();
            break;
-    default:prompt("Fizzle...");
     }
+  log_altar_boon(n,i);
   }
 
 void special34() {
@@ -476,7 +474,7 @@ void special42(Int32 mon) {
   Int32 x,y;
   mon = get_linked_monster(mon);
   if (mon < 0) {
-    msg("Fizzle", 12);
+    log_summon_failed();
     return;
     }
   slot = 0;
@@ -507,15 +505,16 @@ void special42(Int32 mon) {
     show_spot(x,y);
     player.party[slot].treasure = (y << 8) | x;
     if (in_arena == 'Y') player.party[slot].treasure = 0;
+    log_summoned(&(player.party[slot]));
     }
   else {
-    msg("Fizzle", 12);
+    log_summon_failed();
     player.party[slot].hp = 0;
     }
  
   }
 
-void special43() {
+void special43(void) {
   Int32 l;
   Int32 x,y;
   special37();
@@ -529,37 +528,56 @@ void special43() {
 //  show_screen();
   }
 
-void special46() {
-  char invoke[33];
-  char buffer[80];
-  char key;
-  strcpy(invoke,"");
-  prompt("Function ? _");
-  key = 0;
-  while (key != 13) {
-    key = inkey();
-    if (key > 31) {
-      invoke[strlen(invoke) + 1] = 0;
-      invoke[strlen(invoke)] = key;
-      sprintf(buffer,"Function ? %s_",invoke);
-      clear_prompt();
-      promptNS(buffer);
-      }
-    if (key == 8 && strlen(invoke) > 1) {
-      invoke[strlen(invoke) - 1] = 0;
-      sprintf(buffer,"Function ? %s_",invoke);
-      clear_prompt();
-      promptNS(buffer);
+/* The Talning rod's eight functions */
+static WORD_OF_POWER rod_functions[] = {
+  { "Auralal", "Clairaudience",         special1 },
+  { "Litraal", "Light",                 special6 },
+  { "Suraal",  "Return to the surface", special15 },
+  { "Reahl",   "Understand languages",  special21 },
+  { "Mala",    "Detect magic",          special22 },
+  { "Loeer",   "Understand lore",       special28 },
+  { "Detral",  "Find all traps",        special43 },
+  { "Idahl",   "Identify an enemy",     special23 }
+  };
+
+static WORD_BOOK rod_book = { rod_functions, sizeof(rod_functions) / sizeof(rod_functions[0]) };
+
+/* The function picked from those you know with Easy Words, or else the one typed; ESC backs out with Improved
+   Interface. Returns 0 when none is said. */
+static Int32 read_function(char* name,Int32 size) {
+  TEXT_FIELD field;
+  Int32      picked;
+
+  strcpy(name,"");
+  if (easy_words_on()) {
+    picked = word_choice(&rod_book,"Use which function?","Type a function");
+    show_messages();
+    if (picked == WORD_NONE) return 0;
+    if (picked >= 0) {
+      sprintf(name,"%.*s",size - 1,rod_functions[picked].word);
+      return 1;
       }
     }
-  if (_stricmp(invoke,"auralal") == 0) special1();
-  if (_stricmp(invoke,"litraal") == 0) special6();
-  if (_stricmp(invoke,"suraal") == 0) special15();
-  if (_stricmp(invoke,"reahl") == 0) special21();
-  if (_stricmp(invoke,"mala") == 0) special22();
-  if (_stricmp(invoke,"loeer") == 0) special28();
-  if (_stricmp(invoke,"detral") == 0) special43();
-  if (_stricmp(invoke,"idahl") == 0) special23();
+
+  open_log_field(&field,name,size,"Function",10);
+  field.cancel = (improved_interface == 'Y');
+  if (easy_words_on()) {
+    field.complete = complete_word;
+    field.data = &rod_book;
+    }
+
+  return read_field(&field);
+  }
+
+void special46() {
+  WORD_OF_POWER* function;
+  char           name[33];
+
+  if (!read_function(name,sizeof(name))) return;
+
+  function = find_word(&rod_book,name);
+  if (function != NULL) function->say();
+    else if (easy_words_on() && name[0] != 0) msg("The rod does not respond",12);
   }
 
 void special47() {
@@ -600,17 +618,10 @@ void special49() {
     txt_write("Halkanar Computer IBM Clone");
     textcolor(14);
     gotoxy(10,5);
-    txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+    write_question("Search for <L>ore, or <G>eneral Information"); txt_write(" (Q to quit)");
     key = inkey();
     if (key == 'q' || key == 'Q') flag = '*';
-    if (key == 'l' || key == 'L') {
-      strcpy(search,"");
-      while (strlen(search) < 5) {
-        gotoxy(10,9); textcolor(9);
-        txt_write("Enter Search String (5 chars min.) ? ");
-        strcpy(search,"");
-        readln(search);
-        }
+    if ((key == 'l' || key == 'L') && read_search(search,sizeof(search))) {
       msg = find_lore(search);
       if (msg == 0) {
         gotoxy(10,9); textcolor(12);
@@ -623,14 +634,7 @@ void special49() {
         display_msg(msg,'L');
         }
       }
-    if (key == 'g' || key == 'G') {
-      strcpy(search,"");
-      while (strlen(search) < 5) {
-        gotoxy(10,9); textcolor(9);
-        txt_write("Enter Search String (5 chars min.) ? ");
-        strcpy(search,"");
-        readln(search);
-        }
+    if ((key == 'g' || key == 'G') && read_search(search,sizeof(search))) {
       msg = find_gen(search);
       if (msg == 0) {
         gotoxy(10,9); textcolor(12);
@@ -1098,21 +1102,16 @@ void special87() {
 
 void special88() {
   Int32 i;
-  char buffer[20];
   i = get_skill(SK_HEAL);
   if (i < 1) i = 1;
   if (player.effect[PE_HEROIC] == 2) i *= 1.5;
   if (player.effect[PE_HEROIC] == 4) i *= 2;
   if (player.chp < get_mhp()) add_skill(SK_HEAL,1);
-  player.chp += i;
-  if (player.chp > get_mhp()) player.chp = get_mhp();
-  sprintf(buffer,"Healed %d",i);
-  msg(buffer,15);
+  log_heal(i,heal_player(i));
   }
 
 void special89(Int32 control) {
   Int32 i;
-  char buffer[64];
   i = 0;
   if (player.effect[PE_POLYTIME] > 0) {
     player.chp -= monsters[player.effect[PE_POLYMORPH]].hp;
@@ -1124,13 +1123,12 @@ void special89(Int32 control) {
       player.effect[PE_POLYTIME] = player.level * 25;
       player.chp += monsters[i].hp;
       player.mhp += monsters[i].hp;
-      sprintf(buffer,"Became %s",monsters[i].name);
-      msg(buffer,15);
+      log_polymorph(i);
       return;
       }
     i++;
     }
-  msg("Fizzle...",15);
+  log_polymorph_failed();
   }
 
 void special90(Int32 mtype) {
@@ -1144,7 +1142,7 @@ void special90(Int32 mtype) {
       monster = get_monster(x,y);
       if (monster != NULL && (mtype == 0 || monster->mtype == mtype)) {
         monster->special2 |= M2_PACIFIED;
-        msg("Pacified", 15);
+        log_pacified(monster);
         }
       }
   }
@@ -2035,7 +2033,6 @@ void enchant(Int32 ench,Int32 limit) {
 void perform_effect(OBJECT_REC* obj) {
   Int32 i;
   Int32 d;
-  char buffer[40];
   OBJECT_REC* item;
   Int32 amt;
   i = 0;
@@ -2092,12 +2089,13 @@ void perform_effect(OBJECT_REC* obj) {
     }
   if (obj->effect == E_DAMG) {
     i = u_random(obj->control);
-    sprintf(buffer,"Took %d damage",i);
-    msg(buffer,12);
+    log_item_damage(i);
     stats_take_damage(i);
     player.chp -= i;
     }
   if (obj->effect == E_SOCK) socket_item(obj);
+  set_attack_item("",obj);
+  if (obj->effect == E_SPEL) set_attack_source(spells[obj->control].name);
   if (obj->effect == E_ATCK)
     switch (obj->control) {
       case 1:touch(obj->damage,0); break;
@@ -2120,7 +2118,7 @@ void perform_effect(OBJECT_REC* obj) {
     if (has_intrinsic(A_NOPS)) amt = 0;
     if (has_intrinsic(A_RSPS) && u_random(100) < 50) amt = amt / 2;
     player.effect[PE_POISON] += amt;
-    if (amt > 0) msg("Poisoned!",13);
+    if (amt > 0) log_item_poison();
     }
   if (obj->effect == E_BLES) {
     player.effect[PE_PROT] = obj->control * 8;
@@ -2175,8 +2173,9 @@ void perform_effect(OBJECT_REC* obj) {
            else enchant(spells[obj->control].control,3);
            break;
         }
- 
+
     }
+  clear_attack_source();
   }
 
 Int32 triad_equipped() {

@@ -19,6 +19,7 @@ Int32 haggle(double price,OBJECT_REC item) {
   double sk;
   Int32 diff;
   char   buffer[80];
+  Int32  column;
   oprice = price;
   sk = get_skill(SK_CHARM);
   sk /= 200.0;
@@ -27,10 +28,10 @@ Int32 haggle(double price,OBJECT_REC item) {
   lastoffer = 0;
   offer = price;
   while (price != 0) {
-    gotoxy(15,23); textcolor(14); txt_write("Your offer ?          ");
-    gotoxy(28,23);
+    gotoxy(15,23); textcolor(14); column = 16 + write_question("Your offer"); txt_write("          ");
+    gotoxy(column,23);
     sprintf(buffer,"%d",offer);
-    if (p_read(buffer) == 0) {
+    if (p_read(buffer,sizeof(buffer)) == 0) {
       sscanf(buffer,"%d",&offer);
       } else offer = 0;
     if (offer == 0) price = 0;

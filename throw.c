@@ -41,7 +41,7 @@ void throw(char hnd) {
   else if (hnd == 'R') hand = I_RHND;
   else {
     clear_prompt();
-    prompt("<L>eft, or <R>ight hand ?");
+    prompt_question("<L>eft, or <R>ight hand",10);
     key = inkey();
     if (key == 'l' || key == 'L') hand = I_LHND;
     if (key == 'r' || key == 'R') hand = I_RHND;

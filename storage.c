@@ -57,7 +57,7 @@ static void draw_storage_row(MENU* menu,Int32 row,Int32 line) {
   width = MORE_COLUMN - menu->value_column;
 
   sprintf(label,"%*d:",storage->digits,row + 1);
-  list_item_name(item,width,name);
+  kept_item_name(item,width,name);
   sprintf(text,"%-*s",width,name);
 
   draw_menu_text(menu,line,label,"");
@@ -74,7 +74,7 @@ static void move_stored_item(MENU* menu) {
 
   storage = menu->screen;
   from = menu->row;
-  list_item_name(&(storage->slots[from]),MORE_COLUMN,name);
+  kept_item_name(&(storage->slots[from]),MORE_COLUMN,name);
   show_item_question(menu,15,"Move ",&(storage->slots[from]),name," to which slot?");
 
   to = menu_choice(menu);
@@ -249,13 +249,13 @@ char storage_action(MENU* menu,char* main) {
 
 /* The item a house or the portable hole holds in the air, on line */
 void show_in_air(OBJECT_REC* in_air,Int32 line) {
-  char buffer[128];
+  char buffer[160];
 
   textcolor(CLR_WHITE);
   gotoxy(20,line); txt_write("In Air: ");
   if (in_air == NULL || in_air->otype == O_NONE) return;
 
-  sprintf(buffer,"%s",get_name(in_air));
+  marked_item_name(in_air,buffer);
   shorten_name(buffer,30);
   itemColor(in_air);
   txt_write(buffer);

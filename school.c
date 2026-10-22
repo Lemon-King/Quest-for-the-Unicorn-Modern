@@ -104,14 +104,14 @@ void school(char* name) {
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
     if (improved_interface == 'Y') {
-      txt_write("Which course would you like to take (<ESC> to leave) ?");
+      txt_write("Which course would you like to take (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {
       txt_write("Which course would you like to take (<ESC> to leave) ?        ");
       gotoxy(70,17); textcolor(15);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }

@@ -120,6 +120,7 @@ static void move_player(void) {
   if (player.map_y<1) player.map_y = 1;
   if (player.map_x>84) player.map_x = 84;
   if (player.map_y>84) player.map_y = 84;
+  camera_arrive();
   restoreScreen();
   show_screen();
   saveScreen();
@@ -172,9 +173,25 @@ static void show_top(char* name,MENU* menu) {
   if (improved_interface == 'Y') draw_menu(menu);
     else show_numbered();
 
-  textcolor(14); gotoxy(35,24);
-  sprintf(buffer,"Gold = %d",get_gold());
+  show_gold(35,24);
+  }
+
+/* The meal or drink bought, with your hit points and how fed you are after it, shown until the next choice */
+static void show_fare_enjoyed(Int32 i) {
+  HUNGER hunger;
+  char   buffer[80];
+
+  sprintf(buffer,"You enjoy the %s.  HP %d/%d",fare[i].name,player.chp,get_mhp());
+  gotoxy(15,19); textcolor(11);
   txt_write(buffer);
+
+  hunger = hunger_status();
+  gotoxy(15,20);
+  txt_write("You are ");
+  textcolor(hunger.color);
+  txt_write(hunger.name);
+  textcolor(11);
+  txt_write(".");
   }
 
 void tavern(char* name) {
@@ -191,14 +208,14 @@ void tavern(char* name) {
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
     if (improved_interface == 'Y') {
-      txt_write("Which item would you like (<ESC> to leave) ?");
+      txt_write("Which item would you like (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {
       txt_write("Which item would you like (<ESC> to leave) ?        ");
       gotoxy(60,17); textcolor(15);
       strcpy(buffer,"");
-      if (p_read(buffer) == 0) {
+      if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%d",&option);
         } else option = 0;
       }
@@ -310,6 +327,7 @@ void tavern(char* name) {
                  break;
           }
         show_top(name,&menu);
+        if (option > 0) show_fare_enjoyed(option - 1);
         }
       }
     }

@@ -191,12 +191,19 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
   delay_trap = 100;
   enhanced_sprites = 'Y';
   show_mount = 'Y';
+  seamless_world_map = 'Y';
+  follow_camera = 'Y';
+  world_map = 'A';
+  color_palette = 'X';
   class_sprites = 'Y';
   floor_item_names = 'Y';
+  improved_items = 'Y';
+  improved_combat_logs = 'Y';
   gothic_scrolls = 'N';
   improved_interface = 'Y';
   improved_status = 'I';
   easy_spells = 'Y';
+  easy_words = 'N';
   permadeath = 'Y';
   encrypt_save_file = 'Y';
   start_time = (Int32)time(NULL);
@@ -302,6 +309,8 @@ Int32 configure_game(Int32 argc,char** argv,GAME_SETUP* setup) {
     printf("  Music Volume: %d\n", music_volume);
     printf("  Game Thread: %c\n", game_thread);
     printf("  Integer Scaling: %c\n", integer_scaling);
+    printf("  World Map: %c\n", world_map);
+    printf("  Color Palette: %c\n", color_palette);
     printf("Macros:\n");
     for (i=0; i<12; i++)
       printf("  F%d = %s\n",i+1,macros[i]);

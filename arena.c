@@ -48,7 +48,7 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
     if (i > 80) i = 80;
     if (u_random(100) < i) {
       clear_prompt();
-      prompt("HIT !!!");
+      log_hit_shout();
       noise(1000,100);
       if (in_sight(ex,ey) == '*') {
         show_sprite(ex-player.map_x,ey-player.map_y,100);
@@ -57,11 +57,12 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
         }
       i = party_blow(&player.monster[mon][a_mon]);
       player.party[target].hp -= i;
+      log_ally_struck(&(player.monster[mon][a_mon]),&(player.party[target]),i);
       if ((player.monster[mon][a_mon].special & MS_SLEEP) == MS_SLEEP) {
         hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
                if (u_random(100) < hit && player.party[target].sleep == 0) {
                  clear_prompt();
-                 prompt("Party slept!!!");
+                 log_ally_asleep(&(player.monster[mon][a_mon]),&(player.party[target]));
                  player.party[target].sleep = u_random(player.monster[mon][a_mon].level);
                  show_spot(ex,ey);
                  }
@@ -70,7 +71,7 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
         hit = 50 + ((player.monster[mon][a_mon].level - player.party[target].level) * 5);
                if (u_random(100) < hit && player.party[target].fear == 0) {
                  clear_prompt();
-                 prompt("Party scared!!!");
+                 log_ally_afraid(&(player.monster[mon][a_mon]),&(player.party[target]));
                  player.party[target].fear = 5 + u_random(player.monster[mon][a_mon].level);
                  }
         }
@@ -78,6 +79,7 @@ static void enemy_attack(Int32 floor,Int32 x,Int32 y) {
         player.map[ex][ey] = floor;
         player.party[target].hp = 0;
         show_spot(ex,ey);
+        log_ally_fallen(&(player.party[target]));
         }
       }
     }
@@ -110,7 +112,7 @@ static void party_attack(Int32 floor,Int32 x,Int32 y) {
     if (i > 80) i = 80;
     if (u_random(100) < i) {
       clear_prompt();
-      prompt("HIT !!!");
+      log_hit_shout();
       noise(1000,100);
       if (in_sight(ex,ey) == '*') {
         show_sprite(ex-player.map_x,ey-player.map_y,100);
@@ -121,13 +123,14 @@ static void party_attack(Int32 floor,Int32 x,Int32 y) {
       if (party_combat_mode != 'F') i /= NPC_DIV;
       if (i < 1) i = 1;
       player.monster[target][a_mon].hp -= i;
+      log_ally_hit(&(player.party[mon]),&(player.monster[target][a_mon]),i);
       dead_monster(&(player.monster[target][a_mon]),'Y',ex,ey);
 /*
       if (player.monster[target][a_mon].hp <= 0) {
         player.map[ex][ey] = floor;
         player.monster[target][a_mon].hp = 0;
         show_spot(ex,ey);
-        gain_exp(player.monster[target][a_mon].exp,mon);
+        gain_exp(&(player.monster[target][a_mon]),mon);
         }
 */
       }
@@ -209,7 +212,7 @@ static void arena_party_missile(Int32 floor,Int32 ex,Int32 ey) {
     i = 90;
     if (u_random(100) < i) {
       clear_prompt();
-      prompt("HIT !!!");
+      log_hit_shout();
       noise(1000,100);
       if (in_sight(x,y) == '*') {
         show_sprite(x-player.map_x,y-player.map_y,100);
@@ -220,19 +223,20 @@ static void arena_party_missile(Int32 floor,Int32 ex,Int32 ey) {
       if (party_combat_mode != 'F') i /= NPC_DIV;
       if (i < 1) i = 1;
       player.monster[target][a_mon].hp -= i;
+      log_ally_spell_hit(&(player.party[mon]),&(player.monster[target][a_mon]),i);
       dead_monster(&(player.monster[target][a_mon]),'Y',x,y);
 /*
       if (player.monster[target][a_mon].hp <= 0) {
         player.map[x][y] = floor;
         player.monster[target][a_mon].hp = 0;
         show_spot(x,y);
-        gain_exp(player.monster[target][a_mon].exp,mon);
+        gain_exp(&(player.monster[target][a_mon]),mon);
         }
 */
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_ally_spell_miss(&(player.party[mon]),&(player.monster[target][a_mon]));
       }
     }
   }
@@ -261,12 +265,15 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
   Int32  target;
   Int32  i,j;
   Int32  ring;
+  Int32  dodged;
+  Int32  melted;
   double  fx,fy;
   double  xdir,ydir;
   char elem[20];
-  char buffer[60];
+  NPC_REC* attacker;
 
   mon = player.map[ex][ey] - 400;
+  attacker = &(player.monster[mon][a_mon]);
   enemy_missile_target(ex,ey,&targetx,&targety,&dist);
   xdir = targetx - ex;
   ydir = targety - ey;
@@ -316,9 +323,11 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
     i -= get_bonus(S_DDG) * 2;
     if (i > 90) i = 90;
     if (i < 10) i = 10;
+    dodged = 0;
     if (u_random(100) < get_dodge()) {
       i = 0;
-      msg("Dodged",7);
+      log_dodge(attacker,BY_BOLT);
+      dodged = 1;
       }
     if (u_random(100) < i) {
       strcpy(elem,"");
@@ -363,28 +372,32 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
           }
         i = magic_adjust(i);
         if (u_random(100) < (20+player.ability[5] * 20)) i /= 2;
-        sprintf(buffer,"ZAP for %d%s",i,elem);
-        msg(buffer,12);
+        log_creature_bolt(attacker,i,elem);
         stats_take_damage(i);
         player.chp -= i;
         if (player.chp < 0) player.chp = 0;
         show_player();
         }
       if (ring != 0) {
+        log_bolt_reflected(&(player.invent[ring]));
+        set_attack_source("reflected bolt");
         r_missile(player.monster[mon][a_mon].mana / 4 + 1);
+        clear_attack_source();
         i = get_skill(8) + (player.level - player.monster[mon][a_mon].level);
         i += player.ability[10] * 5;
         if (i>0) i += 75;
         if (i > 98) i = 98;
+        melted = 0;
         if (i < 0) {
           player.invent[ring].otype = O_NONE;
           clear_prompt();
-          prompt("Ring Melted!!");
+          log_ring_melted(&(player.invent[ring]),melted);
+          melted = 1;
           }
         if (u_random(101) > i) {
           player.invent[ring].otype = O_NONE;
           clear_prompt();
-          prompt("Ring Melted!!");
+          log_ring_melted(&(player.invent[ring]),melted);
           }
         }
       show_side();
@@ -392,7 +405,7 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_bolt_miss(attacker,dodged);
       show_player();
       }
     }
@@ -401,7 +414,7 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
     i = 90;
     if (u_random(100) < i) {
       clear_prompt();
-      prompt("HIT !!!");
+      log_hit_shout();
       noise(1000,100);
       if (in_sight(x,y) == '*') {
         show_sprite(x-player.map_x,y-player.map_y,100);
@@ -412,15 +425,17 @@ static void arena_enemy_missile(Int32 floor,Int32 ex,Int32 ey) {
       if (party_combat_mode != 'F') i /= NPC_DIV;
       if (i < 1) i = 1;
       player.party[target].hp -= i;
+      log_ally_bolted(attacker,&(player.party[target]),i);
       if (player.party[target].hp <= 0) {
         player.map[x][y] = floor;
         player.party[target].hp = 0;
         show_spot(x,y);
+        log_ally_fallen(&(player.party[target]));
         }
       }
     else {
       clear_prompt();
-      prompt("Fizzle. . .");
+      log_ally_bolt_miss(attacker,&(player.party[target]));
       }
     }
   }
@@ -435,6 +450,11 @@ static void hit_enemy(void) {
     meleehit(0,&(player.invent[I_LHND]),offhand_weapon() / 2,monster,'L');
   }
 
+/* Whether x,y lies off the arena's field, where a step leaves the fight */
+Int32 off_arena(Int32 x,Int32 y) {
+  return (x <= offset_x || y <= offset_y || x >= offset_x + ARENA_SIZE_X || y >= offset_y + ARENA_SIZE_Y);
+  }
+
 static void move(Int32 xdir,Int32 ydir) {
   Int32 x,y;
   last_target_x = 0;
@@ -445,10 +465,7 @@ static void move(Int32 xdir,Int32 ydir) {
   player.x += xdir;
   player.y += ydir;
 
-  if (player.effect[PE_FEAR] > 0 &&
-      (player.x <= offset_x || player.y <= offset_y ||
-       player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y)
-      ) {
+  if (player.effect[PE_FEAR] > 0 && off_arena(player.x,player.y)) {
     player.x -= xdir;
     player.y -= ydir;
     }
@@ -510,7 +527,7 @@ static void pick_spot(Int32* x,Int32* y,Int32 what) {
   }
 
 /* -1 when every monster of the arena's group is dead, else 0 */
-static Int32 monsters_dead(void) {
+Int32 monsters_dead(void) {
   Int32 i;
 
   for (i=1; i<=5; i++)
@@ -534,6 +551,52 @@ static void free_arena_items(char* in_use) {
     if (!in_use[i]) player.map_objects[i].otype = O_NONE;
   }
 
+/* Whether a map value is something a fight can leave on the floor: a floor item, gold or a torch */
+static Int32 is_loot(Int32 value) {
+  return ((value >= 1000 && value < 2000) || value == 79 || value == 84);
+  }
+
+/* What lies on arena square x,y, under any creature standing there */
+static Int32 ground_at(Int32 x,Int32 y) {
+  Int32 value;
+
+  value = player.map[x][y];
+  if (value >= 300 && value < 400) return player.party[value-300].prev;
+  if (value > 400 && value < 500) return player.monster[value-400][a_mon].prev;
+
+  return value;
+  }
+
+/* Gathers what the fight left on the arena's floor, before the level's map is put back */
+static void gather_loot(ARENA_LOOT* loot) {
+  Int32 x,y;
+  Int32 value;
+
+  for (x=1; x<=100; x++)
+    for (y=1; y<=100; y++) {
+      value = ground_at(x,y);
+      if (is_loot(value) && loot->count < ARENA_LOOT_SLOTS) {
+        loot->values[loot->count] = value;
+        loot->count++;
+        }
+      }
+  }
+
+/* Marks the floor slots of the loot taken back, so freeing the fight's slots keeps them */
+static void keep_loot_slots(ARENA_LOOT* loot,char* in_use) {
+  Int32 i;
+
+  for (i=0; i<loot->count; i++)
+    if (loot->values[i] >= 1000) in_use[loot->values[i] - 1000] = 1;
+  }
+
+/* Drops the keys typed ahead as a fight starts or ends. Without the Arena Held Keys change it then waits for one more
+   key, on the screen being left, and drops that too. */
+static void drop_held_keys(void) {
+  if (change_arena_held_keys == 'Y') drop_keys();
+    else while (keypressed()) inkey();
+  }
+
 static void find_closest_mob(Int32* x,Int32* y) {
   Int32 dist;
   Int32 closestX;
@@ -555,7 +618,7 @@ static void find_closest_mob(Int32* x,Int32* y) {
   target_y = closestY;
   }
 
-void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
+void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy,ARENA_LOOT* loot) {
   KNOW_TYPE tmp_known;
   MAP_TYPE  tmp_map;
   byte key;
@@ -570,10 +633,10 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   byte ofloor;
   Int32  x,y;
   Int32 dmg;
-  char buffer[20];
   Int32 all_dead;
   Int32 arena_x;
   Int32 arena_y;
+  Int32 command;
   char  floor_items[FLOOR_SLOTS];
 
   /* ************************************** */
@@ -583,7 +646,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   arena_y = srcy;
   all_dead = 0;
   note_floor_items(floor_items);
-  while (keypressed()) key=inkey();
+  drop_held_keys();
   lastFloor = currentFloor;
   snakes = 0;
   haste_flag = ' ';
@@ -739,6 +802,14 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
     show_time();
     if (player.effect[PE_SLEEP] != 0) key = ' ';
       else key = inkey();
+
+    /* TAB opens the Tab Menu, which types the command chosen */
+    if (key == 9 && improved_interface == 'Y') {
+      command = open_tab_menu();
+      if (command <= 0) continue;
+      key = (byte)command;
+      }
+
       if (player.effect[PE_FEAR] > 0 &&
           ((key >= '1' && key <= '9') || key == 'f')) {
         find_closest_mob(&x,&y);
@@ -1008,8 +1079,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         dmg = player.effect[PE_POISON] / 10;
         if (dmg < 1) dmg = 1;
         player.effect[PE_POISON] -= dmg;
-        sprintf(buffer,"%d poison damage",dmg);
-        msg(buffer,13);
+        log_poison_damage(dmg);
         stats_take_damage(dmg);
         player.chp -= dmg;
         show_side();
@@ -1018,8 +1088,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
           dmg = player.effect[PE_DOT] / 10;
           if (dmg < 1) dmg = 1;
           player.effect[PE_DOT] -= dmg;
-          sprintf(buffer,"%d DOT damage",dmg);
-          msg(buffer,12);
+          log_wound_damage(dmg);
           stats_take_damage(dmg);
           player.chp -= dmg; show_side();
         }
@@ -1029,7 +1098,7 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
       if (player.effect[PE_READLANG] > 0) player.effect[PE_READLANG]--;
       if (player.effect[PE_FEAR] > 0) {
          player.effect[PE_FEAR]--;
-         if (player.effect[PE_FEAR] == 0) msg("No longer afraid",14);
+         if (player.effect[PE_FEAR] == 0) log_fear_over();
          }
       if (player.effect[PE_SLEEP] > 0) player.effect[PE_SLEEP]--;
       if (player.effect[PE_LEV] > 0) player.effect[PE_LEV]--;
@@ -1063,20 +1132,25 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
         show_side();
         }
       if (player.chp < 1) exitf = 6;
-      if (player.x <= offset_x || player.y <= offset_y ||
-          player.x >= offset_x + ARENA_SIZE_X || player.y >= offset_y + ARENA_SIZE_Y) exitf = 1;
+      if (off_arena(player.x,player.y)) exitf = 1;
       }
     show_floor_item();
     } /* while (exitf == 0) */
   hide_bottom_name();
   exitf = 0;
+
+  /* With the Safe Arena Loot change a caller that takes the loot gets back what the fight left on its floor, to lay
+     around you; the overworld takes none */
+  if (loot != NULL) loot->count = 0;
+  if (loot != NULL && change_safe_arena_loot == 'Y') gather_loot(loot);
   for (x=1; x<=100; x++)
     for (y=1; y<=100; y++) {
       player.known[x][y] = tmp_known[x][y];
       player.map[x][y] = tmp_map[x][y];
       }
 
-  /* Without the Floor Items change the items left on the arena's floor keep their slots */
+  /* The loot taken back keeps its slots; without the Floor Items change so do the items left on the arena's floor */
+  if (loot != NULL) keep_loot_slots(loot,floor_items);
   if (change_floor_items == 'Y') free_arena_items(floor_items);
   player.x = hold_x;
   player.y = hold_y;
@@ -1129,6 +1203,6 @@ void arena(Int32 monster,Int32 floor,Int32 barriers,Int32 srcx,Int32 srcy) {
   show_map();
   show_sm_map();
   show_side();
-  while (keypressed()) key=inkey();
+  drop_held_keys();
   }
 

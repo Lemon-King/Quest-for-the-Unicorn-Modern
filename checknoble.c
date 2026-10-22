@@ -25,7 +25,7 @@ void check_noble() {
     textmode(3);
     textcolor(2);
     gotoxy(25,5); txt_write("You have been offered Nobility");
-    gotoxy(25,7); txt_write("Do you accept (Y/N) ?");
+    gotoxy(25,7); write_question("Do you accept (Y/N)");
     key = ' ';
     while (key != 'Y' && key != 'N') {
       key = inkey();

@@ -13,7 +13,7 @@
 void fire_wand(Int32 damage) {
   Int32  x,y;
   Int32  i;
-  char buffer[20];
+  Int32  crit;
   NPC_REC* monster;
   OBJECT_REC* weapon;
   target(100,0,-1);
@@ -21,6 +21,7 @@ void fire_wand(Int32 damage) {
   y = target_y;
   weapon = &(player.invent[I_RHND]);
   monster = get_monster(x,y);
+  set_attack_item("",weapon);
   if (monster != NULL) {
     i = 10;
     i += 2 * (player.level - monster->level);
@@ -54,12 +55,13 @@ void fire_wand(Int32 damage) {
         show_spot(x,y);
         }
       i = u_random(damage) + 1;
+      crit = HIT_NORMAL;
       if (u_random(100) < get_crit()) {
         i *= 2;
         stats.counts[STAT_CRITS]++;
-        sprintf(buffer,"CRIT for %d",i);
-        } else sprintf(buffer,"HIT for %d",i);
-      msg(buffer,4);
+        crit = HIT_CRITICAL;
+        }
+      log_wand_hit(monster,i,crit);
       stats_do_damage(i);
       monster->hp -= i;
       i=monster->hp;
@@ -77,8 +79,10 @@ void fire_wand(Int32 damage) {
       }
     else {
       clear_prompt();
-      prompt("Missed. . .");
+      log_shot_miss(monster);
       stats.counts[STAT_MISSES]++;
       }
     }
+
+  clear_attack_source();
   }

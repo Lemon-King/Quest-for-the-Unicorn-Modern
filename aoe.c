@@ -34,7 +34,6 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
   Int32 tmp;
   Int32 needed;
   char crit;
-  char buffer[32];
   for (y=cy-range; y<=cy+range; y++)
     for (x=cx-range; x<=cx+range; x++) {
       monster = get_monster(x,y);
@@ -57,7 +56,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* *********************** */
           if (effect == E_HEAL) {
             monster->hp += dmg;
-            prompt("Healed !!!");
+            log_creature_healed(monster,dmg);
             }
 
           /* ************************* */
@@ -81,9 +80,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
               } else {
               tmp -= (Int32)(monster->defense / 100.0 * tmp);
               }
-            if (crit) sprintf(buffer,"Crit hit for %d",tmp);
-              else sprintf(buffer,"Hit for %d",tmp);
-            prompt(buffer);
+            log_hit(monster,tmp,crit);
             stats_do_damage(tmp);
             monster->hp -= tmp;
             dead_monster(monster,'Y',x,y);
@@ -95,7 +92,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* ************************ */
           if (effect == E_SPCL && control == 60) {
             monster->sleep = dmg;
-            prompt("Slept !!!");
+            log_creature_asleep(monster);
             }
 
           /* *********************** */
@@ -103,7 +100,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* *********************** */
           if (effect == E_SPCL && control == 61) {
             monster->fear = dmg;
-            prompt("Scared !!!");
+            log_creature_afraid(monster);
             }
 
           /* ************************ */
@@ -111,7 +108,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* ************************ */
           if (effect == E_SPCL && control == 62) {
             monster->blind = dmg;
-            prompt("Blinded !!!");
+            log_creature_blinded(monster);
             }
 
           /* ***************************** */
@@ -119,7 +116,7 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* ***************************** */
           if (effect == E_SPCL && control == 63) {
             monster->confused = dmg;
-            prompt("Confused !!!");
+            log_creature_confused(monster);
             }
 
           /* *********************************** */
@@ -158,10 +155,10 @@ void aoe(Int32 cx,Int32 cy,Int32 effect,Int32 control,Int32 damage,Int32 element
           /* ************************* */
           if (effect == E_POSN) {
             monster->poison = dmg;
-            prompt("Poisoned !!!");
+            log_creature_poisoned(monster);
             }
         }
-      else prompt("Fizzle. . .");
+      else log_miss(monster,(needed == 0) ? RESISTED : MISSED);
       }
     }
 
