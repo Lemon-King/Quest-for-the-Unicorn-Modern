@@ -1195,6 +1195,13 @@
      ask for the member with the cursor), and a new character's sex, race
      and class.
 
+       A new character's sex, race and class menus also take <R>, which
+     makes that choice and every one after it at random, spends the stat
+     points at random too, and shows the finished character sheet.  On
+     the sheet that ends making a character, <Enter> or <ESC> starts the
+     game and <R> starts over: from the name, or from the class after
+     rebirth.
+
        With the preference an item merchant lists the goods down the left
      and shows the selected item's info card on the right, as <I> would:
      its name in the colour of its rarity, its kind and rarity, what it

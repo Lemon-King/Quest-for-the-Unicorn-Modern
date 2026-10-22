@@ -198,8 +198,6 @@ void do_disp_char() {
   char_sheet_labels('Y');
   char_sheet_data();
   show_skills();
-  textcolor(14);
-  gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, <F>keys");
   if (player.effect[PE_HEROIC] < 0) {
     textcolor(10);
     gotoxy(1,25); txt_write("Casual");
@@ -214,30 +212,67 @@ void do_disp_char() {
     }
   }
 
-void disp_char() {
-  char key;
+static Int32 is_restart_key(char key) {
+  return key == 'r' || key == 'R';
+  }
+
+/* The sheet's key tips, with s<K>ills in place of <F>keys while the F keys show. Making a character, they are centred on
+   two lines, starting or restarting above the sheet's other keys. */
+static void draw_sheet_keys(Int32 restart,Int32 fkeys) {
+  char views[41];
+
+  sprintf(views,"<T>rophies, <S>tatistics, %s",fkeys ? "s<K>ills" : "<F>keys ");
+
+  if (restart) {
+    write_centred(24,14,"<ENTER,ESC> to Start, <R> to Restart");
+    write_centred(25,14,views);
+    return;
+    }
+
+  textcolor(14);
+  gotoxy(14,24); txt_write("<ENTER,ESC> to exit, "); txt_write(views);
+  }
+
+static void draw_sheet(Int32 restart) {
   do_disp_char();
+  draw_sheet_keys(restart,0);
+  }
+
+/* Reads the sheet's keys until ENTER or ESC, or R where it offers a restart. Returns the key that closed it. */
+static char read_sheet(Int32 restart) {
+  char key;
+  draw_sheet(restart);
   key = ' ';
   while (key != 13 && key != 27) {
     key = inkey();
+    if (restart && is_restart_key(key)) return key;
     if (key == 's' || key == 'S') {
       show_stats();
-      do_disp_char();
+      draw_sheet(restart);
       }
     if (key == 't' || key == 'T') {
       show_trophies();
-      do_disp_char();
+      draw_sheet(restart);
       }
     if (key == 'f' || key == 'F') {
       show_f_keys();
-      textcolor(14);
-      gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, s<K>ills");
+      draw_sheet_keys(restart,1);
       }
     if (key == 'k' || key == 'K') {
       show_skills();
-      textcolor(14);
-      gotoxy(14,24); txt_write("<ENTER,ESC> to exit, <T>rophies, <S>tatistics, <F>keys ");
+      draw_sheet_keys(restart,0);
       }
     }
+
+  return key;
+  }
+
+void disp_char() {
+  read_sheet(0);
+  }
+
+/* The sheet as the last step of making a character, where with Improved Interface R starts over. Returns 1 for R. */
+Int32 confirm_char() {
+  return is_restart_key(read_sheet(improved_interface == 'Y'));
   }
 

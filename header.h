@@ -1596,6 +1596,7 @@ extern char* show_align();
 extern char* show_int(Int32 n);
 extern char* show_flt(double n);
 extern void disp_char();
+extern Int32 confirm_char();
 extern void make_char(Int32 rebirth);
 extern void print_rec();
 
