@@ -15,6 +15,13 @@
 #define STATUS_BASELINE   (STATUS_LINE * 11)     /* outtext_xy()'s baseline for the line */
 #define NO_STATUS_TILE    10
 
+#define LEVEL_LINE         5
+#define HUNGER_LINE        6
+#define XP_BAR_TOP        (LEVEL_LINE * 11 + 2)  /* two pixels under the Level line's letters */
+#define XP_BAR_HEIGHT      4
+#define HUNGER_DROP        6                     /* the hunger line moves down past the XP bar */
+#define EXP_STEP_MARGIN    1.01                  /* a saved exp_next can be off its step by rounding */
+
 /* A status: its letter, its colour, its icon, and whether the player has it */
 typedef struct {
   char  letter;
@@ -217,10 +224,96 @@ HUNGER hunger_status(void) {
   return dead;
   }
 
+/* The experience the current level began at: the step before exp_next in the class's steps, which are at least 20%
+   apart */
+static double level_start_exp(void) {
+  double start;
+  double next;
+
+  start = 0;
+  next = classes[player.class-1].first_exp;
+  while (next * EXP_STEP_MARGIN < player.exp_next) {
+    start = next;
+    next = next_level_exp(next);
+    }
+
+  return start;
+  }
+
+/* How far through the current level the player is, from 0 to 1 */
+static double level_progress(void) {
+  double start;
+  double progress;
+
+  start = level_start_exp();
+  if (player.exp_next <= start) return 0;
+
+  progress = (player.exp - start) / (player.exp_next - start);
+  if (progress < 0) return 0;
+  if (progress > 1) return 1;
+
+  return progress;
+  }
+
+/* The XP bar and the hunger line under it span the panel's rows, as far from the screen's right edge as from the frame
+   on their left */
+static Int32 row_left(void) {
+  return status_column(0) * 8;
+  }
+
+static Int32 row_right(void) {
+  return screen_width - (row_left() - side_panel_left());
+  }
+
+/* With Improved Interface, a bar under Level, yellow on grey for the level's progress; without it, its place is
+   cleared */
+static void show_xp_bar(void) {
+  Int32 left;
+  Int32 right;
+  Int32 filled;
+
+  left = row_left();
+  right = row_right();
+
+  if (improved_interface != 'Y') {
+    setfillstyle(1,CLR_BLACK);
+    bar(left,XP_BAR_TOP,right,XP_BAR_TOP + XP_BAR_HEIGHT);
+    return;
+    }
+
+  filled = left + (Int32)(level_progress() * (right - left));
+
+  setfillstyle(1,CLR_GRAY);
+  bar(filled,XP_BAR_TOP,right,XP_BAR_TOP + XP_BAR_HEIGHT);
+  setfillstyle(1,CLR_YELLOW);
+  bar(left,XP_BAR_TOP,filled,XP_BAR_TOP + XP_BAR_HEIGHT);
+  }
+
+/* With Improved Interface the hunger line is centred under the XP bar. Its line there is cleared either way, so a
+   shorter name, or turning the preference off, leaves nothing behind. */
+static void show_hunger(void) {
+  HUNGER hunger;
+  Int32  baseline;
+  Int32  x;
+
+  baseline = HUNGER_LINE * 11 + HUNGER_DROP;
+  setfillstyle(1,CLR_BLACK);
+  bar(row_left(),baseline - 10,row_right(),baseline + 2);
+
+  hunger = hunger_status();
+  if (!hunger.on_panel) return;
+
+  setcolor(hunger.color);
+  if (improved_interface == 'Y') {
+    x = (row_left() + row_right() - 8 * (Int32)strlen(hunger.name)) / 2;
+    outtextxy(x,baseline,hunger.name);
+    }
+  else outtext_xy(TEXT_GRID_WIDTH - 15,HUNGER_LINE,hunger.name);
+  }
+
 void show_side() {
   char        buffer[80];
   STATUS_MARK marks[STATUS_COUNT];
-  HUNGER      hunger;
   setfillstyle(1,0);
   bar(screen_width - 130,10,screen_width,100);
   settextstyle(0,0,1);
@@ -244,14 +337,11 @@ void show_side() {
   outtext_xy(TEXT_GRID_WIDTH - 15,3,buffer);
   sprintf(buffer,"%d/%d    ",player.cmana,get_mmana());
   outtext_xy(TEXT_GRID_WIDTH - 15,4,buffer);
-  outtext_xy(TEXT_GRID_WIDTH - 15,5,make_str(player.level));
+  outtext_xy(TEXT_GRID_WIDTH - 15,LEVEL_LINE,make_str(player.level));
   sprintf(buffer,"(%s)",make_str(player.exp));
-  outtext_xy(TEXT_GRID_WIDTH - 12,5,buffer);
-  hunger = hunger_status();
-  if (hunger.on_panel) {
-    setcolor(hunger.color);
-    outtext_xy(TEXT_GRID_WIDTH - 15,6,hunger.name);
-    }
+  outtext_xy(TEXT_GRID_WIDTH - 12,LEVEL_LINE,buffer);
+  show_xp_bar();
+  show_hunger();
   setcolor(CLR_YELLOW);
 /*  show_sprite(22,2,((player.fire != 0)?44:10)); */
 /*  show_sprite(20,2,((player.giant != 0)?45:10)); */

@@ -1409,6 +1409,7 @@ LINK Int32                debug_tab;
 
 /* advance.c */
 extern void advancement();
+extern double next_level_exp(double exp_next);
 extern void advance_stat();
 
 /* cave.c */
@@ -1485,6 +1486,7 @@ extern void show_detail_line(void);
 extern Int32 half_tile_width(void);
 extern Int32 half_tile_height(void);
 extern Int32 has_bottom_strip(void);
+extern Int32 side_panel_left(void);
 extern Int32 detail_line_top(void);
 extern Int32 detail_line_bottom(void);
 extern Int32 set_screen_layout(void);

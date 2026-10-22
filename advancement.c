@@ -222,6 +222,13 @@ static void skills7(void) {
     }
   }
 
+/* The experience the next level needs, after a level needing exp_next */
+double next_level_exp(double exp_next) {
+  if (exp_next < 1e5) return exp_next + exp_next;
+
+  return exp_next * classes[player.class-1].next_exp;
+  }
+
 void advancement() {
   Int32 i;
 
@@ -268,8 +275,7 @@ void advancement() {
 /*    new_spell();  */
     show_screen();
     }
-  if (player.exp_next<1e5) player.exp_next += player.exp_next;
-    else player.exp_next *= classes[player.class-1].next_exp;
+  player.exp_next = next_level_exp(player.exp_next);
 
   i = u_random(4);
   if (classes[player.class-1].level_skills[i] > 0) {
