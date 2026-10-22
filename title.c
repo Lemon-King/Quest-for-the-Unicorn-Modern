@@ -16,6 +16,9 @@
 #define MENU_LOAD_GAME   1
 #define MENU_COUNT       2
 
+#define CENTRED         -1       /* a title line's x when it is centred on the text grid */
+#define GRID_WIDTH     640       /* the 80-column text grid in pixels */
+
 static char* MENU_LABELS[MENU_COUNT] = { "New Game", "Load Game" };
 
 typedef struct {
@@ -26,13 +29,14 @@ typedef struct {
   char*  text;
   } TITLE_LINE;
 
-/* The title block in Gothic, placed where the DOS release drew it on a 640x480 screen. */
+/* The title block in Gothic at the DOS release's heights on a 640x480 screen: the title and version centred, the
+   author where DOS drew it. */
 static const TITLE_LINE TITLE_LINES[] = {
-  { 275,  27, 4, 14, "Quest" },
-  { 285,  82, 2,  2, "for the" },
-  { 265, 110, 4, 14, "Unicorn" },
-  { 300, 158, 2,  4, VERSION },
-  { 245, 185, 3,  9, "by Mike Riley" }
+  { CENTRED,  27, 4, 14, "Quest" },
+  { CENTRED,  82, 2,  2, "for the" },
+  { CENTRED, 110, 4, 14, "Unicorn" },
+  { CENTRED, 158, 2,  4, VERSION },
+  { 245,     185, 3,  9, "by Mike Riley" }
   };
 
 #define TITLE_LINE_COUNT ((Int32)(sizeof(TITLE_LINES) / sizeof(TITLE_LINE)))
@@ -51,9 +55,11 @@ static void show_text_title() {
   }
 
 static char show_gothic_title() {
-  STROKE_FONT* font;
-  Int32        i;
-  Int32        left,top;
+  STROKE_FONT*      font;
+  const TITLE_LINE* line;
+  Int32             i;
+  Int32             x;
+  Int32             left,top;
 
   font = gothic_font();
   if (font == NULL) return 'N';
@@ -62,8 +68,12 @@ static char show_gothic_title() {
   top = text_offset_y * 19;
 
   for (i=0; i<TITLE_LINE_COUNT; i++) {
-    stroke_font_draw(font,left + TITLE_LINES[i].x,top + TITLE_LINES[i].y,TITLE_LINES[i].size,
-                     TITLE_LINES[i].color,TITLE_LINES[i].text);
+    line = &TITLE_LINES[i];
+
+    x = line->x;
+    if (x == CENTRED) x = (GRID_WIDTH - stroke_font_width(font,line->size,line->text)) / 2;
+
+    stroke_font_draw(font,left + x,top + line->y,line->size,line->color,line->text);
     }
 
   return 'Y';
