@@ -651,6 +651,14 @@
        Preferences can be changed at any time by pressing O in the upland,
      in towns and in dungeons:
 
+         Music Volume         Volume of the background music, 0% to 100%
+         Color Palette        The 16 colours the game draws its text,
+                              frames and maps in: X11, the colours the
+                              Windows game has always drawn, or DOS,
+                              the CGA, EGA and VGA colours of the DOS
+                              release, whose reds, greens and blues
+                              are softer.  The tile art keeps its own
+                              colours either way
          Auto-Target          Target the nearest monster automatically
          Auto-Open Doors      Doors open automatically
          Auto-Search Walls    Search walls automatically
@@ -768,17 +776,9 @@
                               letters.  Either way each line is centred,
                               and text too long for the scroll moves
                               with Up/Down and PgUp/PgDn
-         Color Palette        The 16 colours the game draws its text,
-                              frames and maps in: X11, the colours the
-                              Windows game has always drawn, or DOS,
-                              the CGA, EGA and VGA colours of the DOS
-                              release, whose reds, greens and blues
-                              are softer.  The tile art keeps its own
-                              colours either way
          Ranged Delay (ms)    Ranged attack flight delay
          Hit Delay (ms)       Successful hit effect delay
          Trap Delay (ms)      Trap effects delay
-         Music Volume         Volume of the background music, 0% to 100%
 
        Music Volume is heard at once as it changes, and is saved in
      unicorn.cfg as MusicVolume, so it applies to every character.  World
