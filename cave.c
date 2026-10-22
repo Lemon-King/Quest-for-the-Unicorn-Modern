@@ -142,7 +142,7 @@ static void attack(void) {
   char key;
   ARENA_LOOT loot;
   clear_prompt();
-  prompt("Attack who ?");
+  prompt_question("Attack who",10);
   key = inkey();
   xdir = 0;
   ydir = 0;

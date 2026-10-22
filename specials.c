@@ -559,7 +559,7 @@ static Int32 read_function(char* name,Int32 size) {
       }
     }
 
-  open_log_field(&field,name,size,"Function ? ",10);
+  open_log_field(&field,name,size,"Function",10);
   field.cancel = (improved_interface == 'Y');
   if (easy_words_on()) {
     field.complete = complete_word;

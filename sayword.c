@@ -154,7 +154,7 @@ static Int32 read_word(char* word,Int32 size) {
     }
 
   strcpy(word,"");
-  open_log_field(&field,word,size,"Say ? ",10);
+  open_log_field(&field,word,size,"Say",10);
   field.cancel = (improved_interface == 'Y');
   if (easy_words_on()) {
     field.complete = complete_word;

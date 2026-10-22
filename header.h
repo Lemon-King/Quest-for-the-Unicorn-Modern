@@ -1060,15 +1060,15 @@ typedef struct {
 
 #define TEXT_LENGTH     80    /* the most a TEXT_FIELD takes */
 
-/* A line of typed text (textfield.c): in the log after its label, or on the text grid from column x of row y. accepts
-   says which keys it types, complete puts in word the one word the text begins, and key sees each key first, returning
-   the key to go on with or 0 when it used it up. */
+/* A line of typed text (textfield.c): in the log after its label, or on the text grid from column x of row y, with an
+   empty label. accepts says which keys it types, complete puts in word the one word the text begins, and key sees each
+   key first, returning the key to go on with or 0 when it used it up. */
 typedef struct TEXT_FIELD TEXT_FIELD;
 
 struct TEXT_FIELD {
   char*  text;
   Int32  length;
-  char*  label;
+  char   label[16];
   Int32  x;
   Int32  y;
   Int32  color;
@@ -1696,6 +1696,8 @@ extern void missile(Int32 damage,Int32 elem,Int32 radius);
 extern void noise(Int32 f,Int32 d);
 extern void prompt(char* display);
 extern void promptNS(char* display);
+extern char* question_mark();
+extern void prompt_question(char* question,Int32 color);
 extern void r_missile(Int32 damage);
 extern Int32 spell_target(Int32 cell);
 extern void spell_kill(NPC_REC* target,Int32 x,Int32 y);
@@ -1766,7 +1768,7 @@ extern STROKE_FONT* gothic_font();
 extern void scroll_text(char* message);
 
 /* textfield.c */
-extern void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* label,Int32 color);
+extern void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* question,Int32 color);
 extern void open_grid_field(TEXT_FIELD* field,char* text,Int32 size,Int32 x,Int32 y,Int32 color);
 extern Int32 read_field(TEXT_FIELD* field);
 extern Int32 is_digit_key(Int32 key);

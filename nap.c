@@ -16,7 +16,7 @@ void nap() {
   char       hours[5];
 
   strcpy(hours,"");
-  open_log_field(&field,hours,sizeof(hours),"How long ? ",11);
+  open_log_field(&field,hours,sizeof(hours),"How long",11);
   field.cancel = (improved_interface == 'Y');
   field.accepts = is_digit_key;
   if (!read_field(&field)) strcpy(hours,"");

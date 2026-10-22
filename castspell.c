@@ -135,7 +135,7 @@ static Int32 read_spell(Int32 slot) {
   strcpy(name,(slot != 0) ? player.fspell[slot] : "");
   if (slot != 0 && name[0] == 0) return 0;
 
-  open_log_field(&field,name,sizeof(name),"Spell ? ",10);
+  open_log_field(&field,name,sizeof(name),"Spell",10);
   field.cancel = 1;
   field.complete = complete_spell;
   field.key = spell_key;

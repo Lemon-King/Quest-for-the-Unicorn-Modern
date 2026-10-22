@@ -28,7 +28,7 @@ Int32 is_digit_key(Int32 key) {
 static void open_field(TEXT_FIELD* field,char* text,Int32 size,Int32 length,Int32 color) {
   field->text = text;
   field->length = (size - 1 < length) ? size - 1 : length;
-  field->label = NULL;
+  field->label[0] = 0;
   field->x = 0;
   field->y = 0;
   field->color = color;
@@ -42,9 +42,10 @@ static void open_field(TEXT_FIELD* field,char* text,Int32 size,Int32 length,Int3
   if ((Int32)strlen(text) > field->length) text[field->length] = 0;
   }
 
-void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* label,Int32 color) {
+/* The label asks the question, ended by question_mark(): "Say? " with Improved Interface, "Say ? " without */
+void open_log_field(TEXT_FIELD* field,char* text,Int32 size,char* question,Int32 color) {
   open_field(field,text,size,TEXT_LENGTH,color);
-  field->label = label;
+  sprintf(field->label,"%.*s%s ",(Int32)sizeof(field->label) - 4,question,question_mark());
   }
 
 /* Columns x to 80 hold the text and its cursor */
@@ -56,7 +57,7 @@ void open_grid_field(TEXT_FIELD* field,char* text,Int32 size,Int32 x,Int32 y,Int
 
 /* The columns the text, the rest of an offered word and the cursor share */
 static Int32 field_room(TEXT_FIELD* field) {
-  if (field->label != NULL) return log_width() - (Int32)strlen(field->label);
+  if (field->label[0] != 0) return log_width() - (Int32)strlen(field->label);
 
   return 81 - field->x;
   }
@@ -113,7 +114,7 @@ static void draw_field(TEXT_FIELD* field,char* word,char* cursor) {
   if ((Int32)strlen(word) > length) sprintf(rest,"%.*s",room - (Int32)strlen(shown),word + length);
     else strcpy(rest,"");
 
-  if (field->label != NULL) draw_in_log(field,shown,rest,cursor);
+  if (field->label[0] != 0) draw_in_log(field,shown,rest,cursor);
     else draw_on_grid(field,shown,rest,cursor);
   }
 

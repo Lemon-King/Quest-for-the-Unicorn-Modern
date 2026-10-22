@@ -24,3 +24,12 @@ void promptNS(char* display) {
   msg(display,-10);
   }
 
+/* What ends a question in the log: "Dir?" with Improved Interface, "Dir ?" without */
+char* question_mark() {
+  return (improved_interface == 'Y') ? "?" : " ?";
+  }
+
+void prompt_question(char* question,Int32 color) {
+  msgf(color,"%s%s",question,question_mark());
+  }
+

@@ -423,7 +423,7 @@ static void new_tardis(Int32 i) {
   STRING32   description;
   if (has_intrinsic(A_TARD)) {
     strcpy(description,"");
-    open_log_field(&field,description,sizeof(description),"Desc ? ",10);
+    open_log_field(&field,description,sizeof(description),"Desc",10);
     field.cancel = (improved_interface == 'Y');
     if (!read_field(&field)) return;
 
