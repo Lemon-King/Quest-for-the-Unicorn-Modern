@@ -245,6 +245,26 @@ void log_killing_blow(NPC_REC* target) {
     else msg("Killed!",CLR_WHITE);
   }
 
+/* A shot destroys an item on the floor, named as the look command names it, in its colour with the Improved Interface
+   preference; the old log said nothing */
+void log_floor_item_destroyed(OBJECT_REC* item) {
+  char  words[sizeof(attack_source) + 32];
+  char  name[ITEM_NAME_SIZE + 2];
+  Int32 name_color;
+
+  if (!improved()) return;
+
+  if (attack_source[0] == 0) strcpy(words,"You have destroyed the");
+    else snprintf(words,sizeof(words),"Your %s has destroyed the",attack_source);
+
+  marked_item_name(item,name);
+  trim_name(name);
+  strcat(name,"!");
+
+  name_color = (improved_interface == 'Y') ? floor_item_color(item) : CLR_LIGHTCYAN;
+  msg_named(words,name,CLR_LIGHTCYAN,name_color);
+  }
+
 /* ***** What the player's spells and potions do to creatures ***** */
 
 static void creature_effect(NPC_REC* target,char* effect,char* old_text) {

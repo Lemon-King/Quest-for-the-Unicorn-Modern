@@ -6,6 +6,7 @@
 #define S_TREASUREFF          359
 #define FINAL_BOSS            "Eshter"
 #define FINAL_GOLD_REWARD     50000
+#define ITEM_FLASK_OF_OIL      455
 #define SPELL_SCROLL           498
 #define ITEM_SUNSTONE          522
 #define ITEM_RECIPE            639

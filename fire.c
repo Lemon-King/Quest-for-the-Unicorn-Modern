@@ -16,6 +16,22 @@ static Int32 is_bow(OBJECT_REC* weapon) {
   return (weapon->otype == O_BOW);
   }
 
+/* Without the Flask of Oil change the flask is looked for by a name it never has, so an arrow does nothing to it */
+static Int32 is_flask_of_oil(OBJECT_REC* item) {
+  if (change_flask_of_oil == 'Y') return (item->link == ITEM_FLASK_OF_OIL);
+  return (strcmp(item->name,"Flask_of_Oil") == 0);
+  }
+
+/* An arrow breaks the item on the floor at x,y, whose burst the log then names in place of the bow; without the Floor
+   Items change its slot is never freed for reuse */
+static void break_floor_item(Int32 x,Int32 y,OBJECT_REC* item) {
+  player.map[x][y] = currentFloor;
+  show_spot(x,y);
+  log_floor_item_destroyed(item);
+  set_attack_item("",item);
+  if (change_floor_items == 'Y') item->otype = O_NONE;
+  }
+
 /* The log names a shot by its bow or the thrown item, and a throw with no weapon as a throw */
 static void name_shot(OBJECT_REC* weapon) {
   if (weapon == NULL) set_attack_source("throw");
@@ -105,13 +121,13 @@ void fire(Int32 damage,OBJECT_REC* weapon) {
     }
   else if (item != NULL && is_bow(weapon)) {
     if (item->otype == O_POTN) {
-      player.map[x][y] = currentFloor;
-      show_spot(x,y);
+      break_floor_item(x,y,item);
       aoe(x,y,item->effect,item->control,item->damage,0,1,0,-100);
       }
-    if (strcmp(item->name,"Flask_of_Oil") == 0) {
-      player.map[x][y] = currentFloor;
-      show_spot(x,y);
+
+    /* Only when no potion broke: a creature its burst kills can drop an item into the freed slot */
+    else if (is_flask_of_oil(item)) {
+      break_floor_item(x,y,item);
       aoe(x,y,E_DAMG,0,8,MS_FIRE_ATK,1,0,-100);
       }
     }

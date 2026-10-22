@@ -18,14 +18,18 @@ void shorten_name(char* name,Int32 width) {
     }
   }
 
-/* A name for a list, without its trailing spaces, cut to width with its "..." */
-static void fit_list_name(char* name,Int32 width) {
+/* A name without the trailing spaces get_name() pads it with */
+void trim_name(char* name) {
   Int32 end;
 
   end = (Int32)strlen(name);
   while (end > 0 && name[end - 1] == ' ') end--;
   name[end] = 0;
+  }
 
+/* A name for a list, without its trailing spaces, cut to width with its "..." */
+static void fit_list_name(char* name,Int32 width) {
+  trim_name(name);
   shorten_name(name,width - 3);
   }
 

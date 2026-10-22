@@ -19,7 +19,7 @@
 #define NUM_MODES       4
 #define NUM_RULES       7
 #define NUM_PREFS      24
-#define NUM_CHANGES    66
+#define NUM_CHANGES    67
 #define FIRST_CHANGE   (NUM_RULES + NUM_PREFS)
 #define NUM_OPTIONS    (FIRST_CHANGE + NUM_CHANGES)
 
@@ -278,6 +278,9 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
   { .label = "Thrown Weapons",
     .help  = "Thrown rocks and stars no longer crash the game when they land on an item",
     .kind  = OPT_SWITCH, .flag = &change_thrown_weapons, .on = 'Y', .off = 'N', .key = "ThrownWeapons" },
+  { .label = "Flask of Oil",
+    .help  = "An arrow breaks a Flask of Oil on the floor, which bursts into flame",
+    .kind  = OPT_SWITCH, .flag = &change_flask_of_oil, .on = 'Y', .off = 'N', .key = "FlaskOfOil" },
   { .label = "Poison Kills",
     .help  = "A creature killed by poison leaves the map where it died, not under you",
     .kind  = OPT_SWITCH, .flag = &change_poison_kills, .on = 'Y', .off = 'N', .key = "PoisonKills" },
@@ -340,7 +343,7 @@ static OPTION_ROW option_rows[NUM_OPTIONS] = {
     .help  = "Packing with G adds cards to your collection and completes quests, as g does",
     .kind  = OPT_SWITCH, .flag = &change_unified_pickup, .on = 'Y', .off = 'N', .key = "UnifiedPickup" },
   { .label = "Floor Items",
-    .help  = "Packed items and arena loot free their spots, and a full floor drops nothing",
+    .help  = "Packed, broken and arena items free their spots; a full floor drops nothing",
     .kind  = OPT_SWITCH, .flag = &change_floor_items, .on = 'Y', .off = 'N', .key = "FloorItems" },
   { .label = "Lore Books",
     .help  = "G and P on a lore book do nothing, instead of copying a Portable Hole item",

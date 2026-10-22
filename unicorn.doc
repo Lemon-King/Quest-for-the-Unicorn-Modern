@@ -457,6 +457,10 @@
                               and every hit is counted twice
          Thrown Weapons       Thrown rocks and stars that land on an
                               item do nothing.  Off, the game crashes
+         Flask of Oil         An arrow that hits a Flask of Oil on the
+                              floor breaks it, and it bursts into
+                              flame, burning the creatures beside it.
+                              Off, the arrow does nothing to it
          Poison Kills         A creature that poison kills leaves the
                               map, and drops its loot, where it died.
                               Off, it stays standing there, dead, and
@@ -559,10 +563,11 @@
          Floor Items          Putting an item from the floor straight
                               into your pack frees its place in the
                               level's list of floor items, as does
-                              leaving an item on an arena's floor or in
-                              the final boss's realm, which is laid out
-                              afresh at each visit, and when that list
-                              is full a slain monster drops nothing
+                              an arrow breaking one, or leaving an
+                              item on an arena's floor or in the final
+                              boss's realm, which is laid out afresh
+                              at each visit, and when that list is
+                              full a slain monster drops nothing
                               instead of an item.  Off, those items
                               keep their place, and a full list leaves
                               a stray tile where the item should have
@@ -735,10 +740,11 @@
                               your bow, wand or what you throw, and
                               traps, effects that wear off, and the
                               levels, stats and skills you gain say
-                              what changed and by how much.  The log
-                              fills the whole width of its box.  Off,
-                              the log keeps the game's first lines,
-                              such as "OUCH! for 3" and "Exp=9"
+                              what changed and by how much.  A shot
+                              that destroys an item on the floor names
+                              it.  The log fills the whole width of its
+                              box.  Off, the log keeps the game's first
+                              lines, such as "OUCH! for 3" and "Exp=9"
          Enhanced Sprites     Show the tile under creatures and items
          Unique Class Sprites Show your class as its own figure where the
                               game has one: a Cavalier in mail with a
