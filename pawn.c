@@ -165,7 +165,7 @@ void pawn(char* name, byte city) {
   while (option != 0) {
     gotoxy(15,19); textcolor(10);
     if (improved_interface == 'Y') {
-      txt_write("Which item would you like (<ESC> to leave) ?");
+      txt_write("Which item would you like (<ESC> to leave)?");
       option = pick_option(&menu);
       }
     else {

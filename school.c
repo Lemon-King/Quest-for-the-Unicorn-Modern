@@ -104,7 +104,7 @@ void school(char* name) {
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
     if (improved_interface == 'Y') {
-      txt_write("Which course would you like to take (<ESC> to leave) ?");
+      txt_write("Which course would you like to take (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {

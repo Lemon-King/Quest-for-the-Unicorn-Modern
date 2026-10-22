@@ -78,7 +78,8 @@ void bank(char* name) {
     if (key == 27) key = '0';
     if (key == '1' && get_gold() > 0) {
       gotoxy(30,19); textcolor(14);
-      txt_write("How much to deposit ?");
+      write_question("How much to deposit");
+      if (improved_interface == 'Y') txt_write(" ");
       strcpy(buffer,"");
       if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%lf",&amt);
@@ -97,7 +98,8 @@ void bank(char* name) {
       }
     if (key == '2' && player.bank > 0) {
       gotoxy(30,19); textcolor(14);
-      txt_write("How much to withdraw ?");
+      write_question("How much to withdraw");
+      if (improved_interface == 'Y') txt_write(" ");
       strcpy(buffer,"");
       if (p_read(buffer,sizeof(buffer)) == 0) {
         sscanf(buffer,"%lf",&amt);

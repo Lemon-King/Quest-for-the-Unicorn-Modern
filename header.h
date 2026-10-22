@@ -1698,6 +1698,7 @@ extern void prompt(char* display);
 extern void promptNS(char* display);
 extern char* question_mark();
 extern void prompt_question(char* question,Int32 color);
+extern Int32 write_question(char* question);
 extern void r_missile(Int32 damage);
 extern Int32 spell_target(Int32 cell);
 extern void spell_kill(NPC_REC* target,Int32 x,Int32 y);

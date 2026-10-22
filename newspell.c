@@ -19,6 +19,7 @@ void new_spell() {
   Int32  level = 0;
   Int32  no_spells;
   char buffer[80];
+  Int32 column;
   no_spells = 0;
   allign = classes[player.class-1].spell_group;
   level = (player.level - classes[player.class-1].becomes_caster) + 1;
@@ -47,9 +48,9 @@ void new_spell() {
   if (no_spells != 0) { 
     flag = ' '; 
     while (flag == ' ') {
-      gotoxy(1,1); textcolor(11); txt_write("Select which spell ?          ");
-      gotoxy(22,1); txt_write("_");
-      newone = get_spell_name(22,1,level,allign);
+      gotoxy(1,1); textcolor(11); column = 2 + write_question("Select which spell"); txt_write("          ");
+      gotoxy(column,1); txt_write("_");
+      newone = get_spell_name(column,1,level,allign);
       if (newone != 0) flag = '*';
       }
     i = 1;

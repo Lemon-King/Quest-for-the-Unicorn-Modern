@@ -534,7 +534,8 @@ void save_new() {
     strcpy(filename,loadname);
     if (strlen(filename) == 0) strcpy(filename,player.name);
     gotoxy(1,1); textcolor(14);
-    txt_write("Filename to save under (No Extension) ?");
+    write_question("Filename to save under (No Extension)");
+    if (improved_interface == 'Y') txt_write(" ");
     readln(filename,sizeof(filename));
     }
   save_game(filename);

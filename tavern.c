@@ -208,7 +208,7 @@ void tavern(char* name) {
   while (option != 0) {
     gotoxy(15,17); textcolor(10);
     if (improved_interface == 'Y') {
-      txt_write("Which item would you like (<ESC> to leave) ?");
+      txt_write("Which item would you like (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {

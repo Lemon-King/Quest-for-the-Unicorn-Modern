@@ -201,7 +201,7 @@ void travel(char* name) {
   while (flag == ' ') {
     textcolor(10); gotoxy(20,ndest+4);
     if (improved_interface == 'Y') {
-      txt_write("Where would you like to travel to (<ESC> to leave) ?");
+      txt_write("Where would you like to travel to (<ESC> to leave)?");
       option = menu_choice(&menu) + 1;
       }
     else {

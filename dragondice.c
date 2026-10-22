@@ -40,9 +40,9 @@ void dragon_dice() {
   while (bet != 0) {
     show_gold(35,24);
     gotoxy(27,3); textcolor(11);
-    txt_write("Enter bet (0 to leave) ?               ");
+    write_question("Enter bet (0 to leave)"); txt_write("               ");
     gotoxy(27,3); textcolor(11);
-    txt_write("Enter bet (0 to leave) ? ");
+    write_question("Enter bet (0 to leave)"); txt_write(" ");
     strcpy(buffer,"");
     readln(buffer,sizeof(buffer));
     sscanf(buffer,"%lf",&bet);

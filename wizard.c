@@ -1757,7 +1757,7 @@ static void mnsters(void) {
 
 static void password(WIZARD_PROMPT* entry) {
   strcpy(entry->buffer,"");
-  strcpy(entry->pword,"Password ?");
+  sprintf(entry->pword,"Password%s",question_mark());
   msg(entry->pword,11);
   entry->key = 0;
   while (entry->key != 13) {

@@ -618,7 +618,7 @@ void special49() {
     txt_write("Halkanar Computer IBM Clone");
     textcolor(14);
     gotoxy(10,5);
-    txt_write("Search for <L>ore, or <G>eneral Information ? (Q to quit)");
+    write_question("Search for <L>ore, or <G>eneral Information"); txt_write(" (Q to quit)");
     key = inkey();
     if (key == 'q' || key == 'Q') flag = '*';
     if ((key == 'l' || key == 'L') && read_search(search,sizeof(search))) {
